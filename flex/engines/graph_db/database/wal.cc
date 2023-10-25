@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "flex/engines/graph_db/database/wal.h"
 
@@ -23,8 +23,7 @@ namespace gs {
 void WalWriter::open(const std::string& prefix, int thread_id) {
   const int max_version = 65536;
   for (int version = 0; version != max_version; ++version) {
-    std::string path = prefix + "/thread_" + std::to_string(thread_id) + "_" +
-                       std::to_string(version) + ".wal";
+    std::string path = prefix + "/thread_" + std::to_string(thread_id) + "_" + std::to_string(version) + ".wal";
     if (std::filesystem::exists(path)) {
       continue;
     }
@@ -54,11 +53,12 @@ void WalWriter::close() {
 
 void WalWriter::append(const char* data, size_t length) {
   if (unlikely(fd_ == -1)) {
-    return;
+    return ;
   }
   size_t expected_size = file_used_ + length;
   if (expected_size > file_size_) {
-    size_t new_file_size = (expected_size / TRUNC_SIZE + 1) * TRUNC_SIZE;
+    size_t new_file_size =
+        (expected_size / TRUNC_SIZE + 1) * TRUNC_SIZE;
     if (ftruncate(fd_, new_file_size) != 0) {
       LOG(FATAL) << "Failed to truncate wal file";
     }
@@ -77,8 +77,7 @@ void WalWriter::append(const char* data, size_t length) {
     LOG(FATAL) << "Failed to fcntl sync wal file";
   }
 #else
-  // if (fsync(fd_) != 0) {
-  if (fdatasync(fd_) != 0) {
+  if (fsync(fd_) != 0) {
     LOG(FATAL) << "Failed to fsync wal file";
   }
 #endif

@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #ifndef GRAPHSCOPE_PROPERTY_COLUMN_H_
 #define GRAPHSCOPE_PROPERTY_COLUMN_H_
@@ -19,9 +19,9 @@
 #include <string>
 #include <string_view>
 
-#include "flex/utils/mmap_array.h"
-#include "flex/utils/property/types.h"
 #include "grape/serialization/out_archive.h"
+#include "flex/utils/property/types.h"
+#include "flex/utils/mmap_array.h"
 
 namespace gs {
 
@@ -99,31 +99,6 @@ using StringColumn = TypedColumn<std::string_view>;
 
 std::shared_ptr<ColumnBase> CreateColumn(
     PropertyType type, StorageStrategy strategy = StorageStrategy::kMem);
-
-/// Create RefColumn for ease of usage for hqps
-class RefColumnBase {
- public:
-  virtual ~RefColumnBase() {}
-};
-
-// Different from TypedColumn, RefColumn is a wrapper of mmap_array
-template <typename T>
-class TypedRefColumn : public RefColumnBase {
- public:
-  using value_type = T;
-
-  TypedRefColumn(const mmap_array<T>& buffer, StorageStrategy strategy)
-      : buffer_(buffer), strategy_(strategy) {}
-  TypedRefColumn(const TypedColumn<T>& column)
-      : buffer_(column.buffer()), strategy_(column.storage_strategy()) {}
-  ~TypedRefColumn() {}
-
-  inline T get_view(size_t index) const { return buffer_[index]; }
-
- private:
-  const mmap_array<T>& buffer_;
-  StorageStrategy strategy_;
-};
 
 }  // namespace gs
 

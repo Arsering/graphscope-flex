@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #ifndef GRAPHSCOPE_DATABASE_GRAPH_DB_H_
 #define GRAPHSCOPE_DATABASE_GRAPH_DB_H_
@@ -45,13 +45,18 @@ class GraphDB {
 
   static GraphDB& get();
 
-  void Init(
-      const Schema& schema,
-      const std::vector<std::pair<std::string, std::string>>& vertex_files,
-      const std::vector<std::tuple<std::string, std::string, std::string,
-                                   std::string>>& edge_files,
-      const std::vector<std::string>& plugins, const std::string& data_dir,
-      int thread_num = 1);
+  void Init(const Schema& schema,
+            const std::vector<std::pair<std::string, std::string>>& vertex_files,
+            const std::vector<std::tuple<std::string, std::string, std::string, std::string>>& edge_files,
+            const std::vector<std::string>& plugins,
+            const std::string& data_dir,
+            int thread_num = 1);
+
+  // void Init(const Schema& schema, const std::string& data_dir = "",
+            // int thread_num = 1);
+
+  // void Init(const std::string& graph_dir, const std::string& data_dir,
+            // int thread_num);
 
   /** @brief Create a transaction to read vertices and edges.
    *
@@ -71,8 +76,7 @@ class GraphDB {
    * @param alloc Allocator to allocate memory for graph.
    * @return SingleVertexInsertTransaction
    */
-  SingleVertexInsertTransaction GetSingleVertexInsertTransaction(
-      int thread_id = 0);
+  SingleVertexInsertTransaction GetSingleVertexInsertTransaction(int thread_id = 0);
 
   /** @brief Create a transaction to insert a single edge.
    *
@@ -81,12 +85,14 @@ class GraphDB {
    */
   SingleEdgeInsertTransaction GetSingleEdgeInsertTransaction(int thread_id = 0);
 
+
   /** @brief Create a transaction to update vertices and edges.
    *
    * @param alloc Allocator to allocate memory for graph.
    * @return UpdateTransaction
    */
   UpdateTransaction GetUpdateTransaction(int thread_id = 0);
+
 
   const MutablePropertyFragment& graph() const;
   MutablePropertyFragment& graph();
@@ -98,6 +104,8 @@ class GraphDB {
 
   AppWrapper CreateApp(uint8_t app_type, int thread_id);
 
+  void RegisterApp(const std::string& path, uint8_t index = 0);
+
   void GetAppInfo(Encoder& result);
 
   GraphDBSession& GetSession(int thread_id);
@@ -105,8 +113,6 @@ class GraphDB {
   int SessionNum() const;
 
  private:
-  void registerApp(const std::string& path, uint8_t index = 0);
-
   void ingestWals(const std::vector<std::string>& wals, int thread_num);
 
   void initApps(const std::vector<std::string>& plugins);
@@ -115,6 +121,9 @@ class GraphDB {
 
   SessionLocalContext* contexts_;
 
+  // std::vector<ArenaAllocator> allocators_;
+  // std::vector<WalWriter> loggers_;
+  // GraphDBSession* sessions_;
   int thread_num_;
 
   MutablePropertyFragment graph_;
@@ -122,6 +131,7 @@ class GraphDB {
 
   std::array<std::string, 256> app_paths_;
   std::array<std::shared_ptr<AppFactoryBase>, 256> app_factories_;
+  std::mutex apps_lock_;
 };
 
 }  // namespace gs

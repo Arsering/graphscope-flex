@@ -17,3 +17,10 @@ install(TARGETS rt_admin
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
+add_executable(flex_analytical_engine flex_analytical_engine.cc)
+target_link_libraries(flex_analytical_engine flex_immutable_graph flex_bsp ${GLOG_LIBRARIES} ${GFLAGS_LIBRARIES})
+
+install(TARGETS flex_analytical_engine
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)

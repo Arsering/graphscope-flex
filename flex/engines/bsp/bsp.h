@@ -13,11 +13,15 @@
 * limitations under the License.
 */
 
-#include "flex/engines/graph_db/server/options.h"
+#ifndef ENGINES_BSP_BSP_H_
+#define ENGINES_BSP_BSP_H_
 
-namespace server {
+namespace bsp {
 
-uint32_t shard_query_concurrency = 16;
-uint32_t shard_update_concurrency = 4;
+void Init();
 
-}  // namespace server
+void Finalize();
+
+}  // namespace bsp
+
+#endif  // ENGINES_BSP_BSP_H_

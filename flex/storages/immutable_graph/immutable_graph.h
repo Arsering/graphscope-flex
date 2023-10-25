@@ -13,11 +13,18 @@
 * limitations under the License.
 */
 
-#include "flex/engines/graph_db/server/options.h"
+#ifndef STORAGES_IMMUTABLE_GRAPH_IMMUTABLE_GRAPH_H_
+#define STORAGES_IMMUTABLE_GRAPH_IMMUTABLE_GRAPH_H_
 
-namespace server {
+#include "grape/types.h"
+#include "grape/fragment/immutable_edgecut_fragment.h"
 
-uint32_t shard_query_concurrency = 16;
-uint32_t shard_update_concurrency = 4;
+namespace immutable_graph {
 
-}  // namespace server
+template <typename OID_T, typename VID_T, typename VDATA_T, typename EDATA_T, grape::LoadStrategy load_strategy, typename VM_T>
+using ImmutableGraph = grape::ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T, load_strategy, VM_T>;
+
+}  // namespace immutable_graph
+
+
+#endif  // STORAGES_IMMUTABLE_GRAPH_IMMUTABLE_GRAPH_H_

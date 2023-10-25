@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "flex/storages/rt_mutable_graph/schema.h"
 
@@ -65,8 +65,7 @@ bool Schema::contains_vertex_label(const std::string& label) const {
 
 label_t Schema::get_vertex_label_id(const std::string& label) const {
   label_t ret;
-  CHECK(vlabel_indexer_.get_index(label, ret))
-      << "Fail to get vertex label: " << label;
+  CHECK(vlabel_indexer_.get_index(label, ret));
   return ret;
 }
 
@@ -233,80 +232,6 @@ uint32_t Schema::generate_edge_label(label_t src, label_t dst,
   return ret;
 }
 
-bool Schema::Equals(const Schema& other) const {
-  if (vertex_label_num() != other.vertex_label_num() ||
-      edge_label_num() != other.edge_label_num()) {
-    return false;
-  }
-  for (label_t i = 0; i < vertex_label_num(); ++i) {
-    std::string label_name = get_vertex_label_name(i);
-    {
-      const auto& lhs = get_vertex_properties(label_name);
-      const auto& rhs = other.get_vertex_properties(label_name);
-      if (lhs != rhs) {
-        return false;
-      }
-    }
-    {
-      const auto& lhs = get_vertex_storage_strategies(label_name);
-      const auto& rhs = other.get_vertex_storage_strategies(label_name);
-      if (lhs != rhs) {
-        return false;
-      }
-    }
-    if (get_max_vnum(label_name) != other.get_max_vnum(label_name)) {
-      return false;
-    }
-  }
-  for (label_t src_label = 0; src_label < vertex_label_num(); ++src_label) {
-    for (label_t dst_label = 0; dst_label < vertex_label_num(); ++dst_label) {
-      for (label_t edge_label = 0; edge_label < edge_label_num();
-           ++edge_label) {
-        std::string src_label_name = get_vertex_label_name(src_label);
-        std::string dst_label_name = get_vertex_label_name(dst_label);
-        std::string edge_label_name = get_edge_label_name(edge_label);
-        auto lhs_exists =
-            exist(src_label_name, dst_label_name, edge_label_name);
-        auto rhs_exists =
-            other.exist(src_label_name, dst_label_name, edge_label_name);
-        if (lhs_exists != rhs_exists) {
-          return false;
-        }
-        if (lhs_exists) {
-          {
-            const auto& lhs = get_edge_properties(
-                src_label_name, dst_label_name, edge_label_name);
-            const auto& rhs = other.get_edge_properties(
-                src_label_name, dst_label_name, edge_label_name);
-            if (lhs != rhs) {
-              return false;
-            }
-          }
-          {
-            auto lhs = get_incoming_edge_strategy(
-                src_label_name, dst_label_name, edge_label_name);
-            auto rhs = other.get_incoming_edge_strategy(
-                src_label_name, dst_label_name, edge_label_name);
-            if (lhs != rhs) {
-              return false;
-            }
-          }
-          {
-            auto lhs = get_outgoing_edge_strategy(
-                src_label_name, dst_label_name, edge_label_name);
-            auto rhs = other.get_outgoing_edge_strategy(
-                src_label_name, dst_label_name, edge_label_name);
-            if (lhs != rhs) {
-              return false;
-            }
-          }
-        }
-      }
-    }
-  }
-  return true;
-}
-
 namespace config_parsing {
 
 template <typename T>
@@ -425,6 +350,51 @@ static bool parse_vertex_properties(YAML::Node node,
   return true;
 }
 
+static bool parse_vertex_schema(
+    YAML::Node node, Schema& schema, const std::string& prefix,
+    std::vector<std::pair<std::string, std::string>>& files) {
+  std::string label_name;
+  if (!get_scalar(node, "label_name", label_name)) {
+    return false;
+  }
+  size_t max_num = ((size_t) 1) << 32;
+  get_scalar(node, "max_vertex_num", max_num);
+  std::vector<PropertyType> property_types;
+  std::vector<StorageStrategy> strategies;
+  if (!parse_vertex_properties(node["properties"], label_name, property_types,
+                               strategies)) {
+    return false;
+  }
+  schema.add_vertex_label(label_name, property_types, strategies, max_num);
+  std::vector<std::string> files_got;
+  get_sequence(node, "files", files_got);
+  for (auto& f : files_got) {
+    if (f[0] == '/') {
+      files.emplace_back(label_name, f);
+    } else {
+      files.emplace_back(label_name, prefix + f);
+    }
+  }
+
+  return true;
+}
+
+static bool parse_vertices_schema(
+    YAML::Node node, Schema& schema, const std::string& prefix,
+    std::vector<std::pair<std::string, std::string>>& files) {
+  if (!node.IsSequence()) {
+    LOG(ERROR) << "vertex is not set properly";
+    return false;
+  }
+  int num = node.size();
+  for (int i = 0; i < num; ++i) {
+    if (!parse_vertex_schema(node[i], schema, prefix, files)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static bool parse_edge_properties(YAML::Node node,
                                   const std::string& label_name,
                                   std::vector<PropertyType>& types) {
@@ -467,38 +437,10 @@ static bool parse_edge_properties(YAML::Node node,
   return true;
 }
 
-static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
-  std::string label_name;
-  if (!get_scalar(node, "label_name", label_name)) {
-    return false;
-  }
-  size_t max_num = ((size_t) 1) << 32;
-  get_scalar(node, "max_vertex_num", max_num);
-  std::vector<PropertyType> property_types;
-  std::vector<StorageStrategy> strategies;
-  if (!parse_vertex_properties(node["properties"], label_name, property_types,
-                               strategies)) {
-    return false;
-  }
-  schema.add_vertex_label(label_name, property_types, strategies, max_num);
-  return true;
-}
-
-static bool parse_vertices_schema(YAML::Node node, Schema& schema) {
-  if (!node.IsSequence()) {
-    LOG(ERROR) << "vertex is not set properly";
-    return false;
-  }
-  int num = node.size();
-  for (int i = 0; i < num; ++i) {
-    if (!parse_vertex_schema(node[i], schema)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool parse_edge_schema(YAML::Node node, Schema& schema) {
+static bool parse_edge_schema(
+    YAML::Node node, Schema& schema, const std::string& prefix,
+    std::vector<std::tuple<std::string, std::string, std::string, std::string>>&
+    files) {
   std::string src_label_name, dst_label_name, edge_label_name;
   if (!get_scalar(node, "src_label_name", src_label_name)) {
     return false;
@@ -525,17 +467,31 @@ static bool parse_edge_schema(YAML::Node node, Schema& schema) {
   }
   schema.add_edge_label(src_label_name, dst_label_name, edge_label_name,
                         property_types, oe, ie);
+  std::vector<std::string> files_got;
+  get_sequence(node, "files", files_got);
+  for (auto& f : files_got) {
+    if (f[0] == '/') {
+      files.emplace_back(src_label_name, dst_label_name, edge_label_name, f);
+    } else {
+      files.emplace_back(src_label_name, dst_label_name, edge_label_name,
+                         prefix + f);
+    }
+  }
+
   return true;
 }
 
-static bool parse_edges_schema(YAML::Node node, Schema& schema) {
+static bool parse_edges_schema(
+    YAML::Node node, Schema& schema, const std::string& prefix,
+    std::vector<std::tuple<std::string, std::string, std::string, std::string>>&
+    files) {
   if (!node.IsSequence()) {
     LOG(ERROR) << "edge is not set properly";
     return false;
   }
   int num = node.size();
   for (int i = 0; i < num; ++i) {
-    if (!parse_edge_schema(node[i], schema)) {
+    if (!parse_edge_schema(node[i], schema, prefix, files)) {
       return false;
     }
   }
@@ -543,158 +499,22 @@ static bool parse_edges_schema(YAML::Node node, Schema& schema) {
   return true;
 }
 
-static bool parse_vertex_files(
-    YAML::Node node, std::vector<std::pair<std::string, std::string>>& files) {
-  std::string label_name;
-  if (!get_scalar(node, "label_name", label_name)) {
-    return false;
-  }
-  YAML::Node files_node = node["files"];
-  if (files_node) {
-    if (!files_node.IsSequence()) {
-      LOG(ERROR) << "files is not set properly";
-      return false;
-    }
-    int num = files_node.size();
-    for (int i = 0; i < num; ++i) {
-      std::string file_format;
-      std::string file_path;
-      if (!get_scalar(files_node[i], "format", file_format)) {
-        return false;
-      }
-      if (file_format != "standard_csv") {
-        LOG(INFO) << "file_format is not set properly";
-        return false;
-      }
-      if (!get_scalar(files_node[i], "path", file_path)) {
-        return false;
-      }
-      std::filesystem::path path(file_path);
-      if (!std::filesystem::exists(path)) {
-        LOG(ERROR) << "vertex file - " << file_path << " file not found...";
-      }
-      files.emplace_back(label_name, std::filesystem::canonical(path));
-    }
-    return true;
-  } else {
-    return true;
-  }
-}
-
-static bool parse_vertices_files_schema(
-    YAML::Node node, std::vector<std::pair<std::string, std::string>>& files) {
-  if (!node.IsSequence()) {
-    LOG(ERROR) << "vertex is not set properly";
-    return false;
-  }
-  int num = node.size();
-  for (int i = 0; i < num; ++i) {
-    if (!parse_vertex_files(node[i], files)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool parse_edge_files(
-    YAML::Node node,
-    std::vector<std::tuple<std::string, std::string, std::string, std::string>>&
-        files) {
-  std::string src_label, dst_label, edge_label;
-  if (!get_scalar(node, "src_label_name", src_label)) {
-    return false;
-  }
-  if (!get_scalar(node, "dst_label_name", dst_label)) {
-    return false;
-  }
-  if (!get_scalar(node, "edge_label_name", edge_label)) {
-    return false;
-  }
-  YAML::Node files_node = node["files"];
-  if (files_node) {
-    if (!files_node.IsSequence()) {
-      LOG(ERROR) << "files is not set properly";
-      return false;
-    }
-    int num = files_node.size();
-    for (int i = 0; i < num; ++i) {
-      std::string file_format;
-      std::string file_path;
-      if (!get_scalar(files_node[i], "format", file_format)) {
-        return false;
-      }
-      if (file_format != "standard_csv") {
-        LOG(INFO) << "file_format is not set properly";
-        return false;
-      }
-      if (!get_scalar(files_node[i], "path", file_path)) {
-        return false;
-      }
-      std::filesystem::path path(file_path);
-      if (!std::filesystem::exists(path)) {
-        LOG(ERROR) << "edge file - " << file_path << " file not found...";
-      }
-      files.emplace_back(src_label, dst_label, edge_label,
-                         std::filesystem::canonical(path));
-    }
-    return true;
-  } else {
-    return true;
-  }
-}
-
-static bool parse_edges_files_schema(
-    YAML::Node node,
-    std::vector<std::tuple<std::string, std::string, std::string, std::string>>&
-        files) {
-  if (!node.IsSequence()) {
-    LOG(ERROR) << "edge is not set properly";
-    return false;
-  }
-  int num = node.size();
-  for (int i = 0; i < num; ++i) {
-    if (!parse_edge_files(node[i], files)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool parse_bulk_load_config_file(
-    const std::string& load_config,
+static bool parse_config_file(
+    const std::string& path, Schema& schema,
+    std::vector<std::string>& stored_procedures,
     std::vector<std::pair<std::string, std::string>>& vertex_files,
     std::vector<std::tuple<std::string, std::string, std::string, std::string>>&
-        edge_files) {
-  YAML::Node root = YAML::LoadFile(load_config);
-  YAML::Node graph_node = root["graph"];
-  if (!graph_node || !graph_node.IsMap()) {
-    LOG(ERROR) << "graph is not set properly";
-    return false;
-  }
-  if (graph_node["vertex"]) {
-    if (!parse_vertices_files_schema(graph_node["vertex"], vertex_files)) {
-      return false;
-    }
-  }
-  if (graph_node["edge"]) {
-    if (!parse_edges_files_schema(graph_node["edge"], edge_files)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool parse_schema_config_file(
-    const std::string& path, Schema& schema,
-    std::vector<std::string>& stored_procedures) {
+    edge_files) {
   YAML::Node root = YAML::LoadFile(path);
   YAML::Node graph_node = root["graph"];
   if (!graph_node || !graph_node.IsMap()) {
     LOG(ERROR) << "graph is not set properly";
     return false;
   }
+  if (!expect_config(graph_node, "file_format", "standard_csv")) {
+    return false;
+  }
   if (!expect_config(graph_node, "graph_store", "mutable_csr")) {
-    LOG(ERROR) << "graph_store is not set properly";
     return false;
   }
 
@@ -703,27 +523,50 @@ static bool parse_schema_config_file(
     return false;
   }
 
-  if (!parse_vertices_schema(graph_node["vertex"], schema)) {
+  std::string graph_data_prefix;
+  get_scalar(root, "graph_dir", graph_data_prefix);
+  if (!graph_data_prefix.empty()) {
+    if (*graph_data_prefix.rbegin() != '/') {
+      graph_data_prefix += '/';
+    }
+  }
+
+  if (!parse_vertices_schema(graph_node["vertex"], schema, graph_data_prefix,
+                             vertex_files)) {
     return false;
   }
 
   if (graph_node["edge"]) {
-    if (!parse_edges_schema(graph_node["edge"], schema)) {
+    if (!parse_edges_schema(graph_node["edge"], schema, graph_data_prefix,
+                            edge_files)) {
       return false;
     }
   }
 
   if (root["stored_procedures"]) {
+    std::string stored_procedures_prefix;
+    get_scalar(root, "stored_procedures_dir", stored_procedures_prefix);
+    if (!stored_procedures_prefix.empty()) {
+      if (*stored_procedures_prefix.rbegin() != '/') {
+        stored_procedures_prefix += '/';
+      }
+    }
     std::vector<std::string> files_got;
     if (!get_sequence(root, "stored_procedures", files_got)) {
       LOG(ERROR) << "stored_procedures is not set properly";
     }
     for (auto& f : files_got) {
-      if (!std::filesystem::exists(f)) {
-        LOG(ERROR) << "plugin - " << f << " file not found...";
+      std::string path;
+      if (f[0] == '/') {
+        path = f;
+      } else {
+        path = stored_procedures_prefix + f;
+      }
+      if (!std::filesystem::exists(path)) {
+        LOG(ERROR) << "plugin - " << path << " file not found...";
         return false;
       }
-      stored_procedures.push_back(std::filesystem::canonical(f));
+      stored_procedures.push_back(std::filesystem::canonical(path));
     }
   }
 
@@ -732,27 +575,22 @@ static bool parse_schema_config_file(
 
 }  // namespace config_parsing
 
-std::tuple<
-    Schema, std::vector<std::pair<std::string, std::string>>,
+std::tuple<Schema,
+    std::vector<std::pair<std::string, std::string>>,
     std::vector<std::tuple<std::string, std::string, std::string, std::string>>,
     std::vector<std::string>>
-Schema::LoadFromYaml(const std::string& schema_config,
-                     const std::string& load_config) {
+Schema::LoadFromYaml(const std::string& path) {
   Schema schema;
-  std::vector<std::string> plugins;
-  if (!schema_config.empty() && std::filesystem::exists(schema_config)) {
-    config_parsing::parse_schema_config_file(schema_config, schema, plugins);
-  }
-
   std::vector<std::pair<std::string, std::string>> vertex_files;
   std::vector<std::tuple<std::string, std::string, std::string, std::string>>
       edge_files;
-  if (!load_config.empty() && std::filesystem::exists(load_config)) {
-    config_parsing::parse_bulk_load_config_file(load_config, vertex_files,
-                                                edge_files);
-  }
+  std::vector<std::string> plugins;
+
+  config_parsing::parse_config_file(path, schema, plugins, vertex_files,
+                                    edge_files);
 
   return std::make_tuple(schema, vertex_files, edge_files, plugins);
 }
+
 
 }  // namespace gs

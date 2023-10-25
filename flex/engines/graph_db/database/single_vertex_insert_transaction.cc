@@ -1,32 +1,34 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "grape/serialization/out_archive.h"
 
 #include "flex/engines/graph_db/database/single_vertex_insert_transaction.h"
 #include "flex/engines/graph_db/database/transaction_utils.h"
-#include "flex/engines/graph_db/database/version_manager.h"
 #include "flex/engines/graph_db/database/wal.h"
-#include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
+#include "flex/engines/graph_db/database/version_manager.h"
 #include "flex/utils/property/types.h"
+#include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
 namespace gs {
 
 SingleVertexInsertTransaction::SingleVertexInsertTransaction(
-    MutablePropertyFragment& graph, ArenaAllocator& alloc, WalWriter& logger,
-    VersionManager& vm, timestamp_t timestamp)
+    MutablePropertyFragment& graph, ArenaAllocator& alloc,
+    WalWriter& logger,
+    VersionManager& vm,
+    timestamp_t timestamp)
     : graph_(graph),
       alloc_(alloc),
       logger_(logger),
@@ -44,10 +46,6 @@ bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,
       graph_.schema().get_vertex_properties(label);
   if (types.size() != props.size()) {
     arc_.Resize(arc_size);
-    std::string label_name = graph_.schema().get_vertex_label_name(label);
-    LOG(ERROR) << "Vertex [" << label_name
-               << "] properties size not match, expected " << types.size()
-               << ", but got " << props.size();
     return false;
   }
   int col_num = props.size();
@@ -55,10 +53,6 @@ bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,
     auto& prop = props[col_i];
     if (prop.type != types[col_i]) {
       arc_.Resize(arc_size);
-      std::string label_name = graph_.schema().get_vertex_label_name(label);
-      LOG(ERROR) << "Vertex [" << label_name << "][" << col_i
-                 << "] property type not match, expected " << types[col_i]
-                 << ", but got " << prop.type;
       return false;
     }
     serialize_field(arc_, prop);
@@ -75,40 +69,25 @@ bool SingleVertexInsertTransaction::AddEdge(label_t src_label, oid_t src,
   vid_t src_vid, dst_vid;
   if (src == added_vertex_id_ && src_label == added_vertex_label_) {
     if (!graph_.get_lid(dst_label, dst, dst_vid)) {
-      std::string label_name = graph_.schema().get_vertex_label_name(dst_label);
-      LOG(ERROR) << "Destination vertex " << label_name << "[" << dst
-                 << "] not found...";
       return false;
     }
     src_vid = std::numeric_limits<vid_t>::max();
   } else if (dst == added_vertex_id_ && dst_label == added_vertex_label_) {
     if (!graph_.get_lid(src_label, src, src_vid)) {
-      std::string label_name = graph_.schema().get_vertex_label_name(src_label);
-      LOG(ERROR) << "Source vertex " << label_name << "[" << src
-                 << "] not found...";
       return false;
     }
     dst_vid = std::numeric_limits<vid_t>::max();
   } else {
     if (!graph_.get_lid(dst_label, dst, dst_vid)) {
-      std::string label_name = graph_.schema().get_vertex_label_name(dst_label);
-      LOG(ERROR) << "Destination vertex " << label_name << "[" << dst
-                 << "] not found...";
       return false;
     }
     if (!graph_.get_lid(src_label, src, src_vid)) {
-      std::string label_name = graph_.schema().get_vertex_label_name(src_label);
-      LOG(ERROR) << "Source vertex " << label_name << "[" << src
-                 << "] not found...";
       return false;
     }
   }
   const PropertyType& type =
       graph_.schema().get_edge_property(src_label, dst_label, edge_label);
   if (prop.type != type) {
-    std::string label_name = graph_.schema().get_edge_label_name(edge_label);
-    LOG(ERROR) << "Edge property " << label_name << " type not match, expected "
-               << type << ", got " << prop.type;
     return false;
   }
   arc_ << static_cast<uint8_t>(1) << src_label << src << dst_label << dst

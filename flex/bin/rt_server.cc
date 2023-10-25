@@ -1,23 +1,23 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "grape/util.h"
 
-#include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/engines/graph_db/server/options.h"
 #include "flex/engines/graph_db/server/service.h"
+#include "flex/engines/graph_db/database/graph_db.h"
 
 #include <boost/program_options.hpp>
 #include <seastar/core/alien.hh>
@@ -29,15 +29,14 @@ namespace bpo = boost::program_options;
 
 int main(int argc, char** argv) {
   bpo::options_description desc("Usage:");
-  desc.add_options()("help", "Display help message")(
-      "version,v", "Display version")("shard-num,s",
-                                      bpo::value<uint32_t>()->default_value(1),
-                                      "shard number of actor system")(
-      "http-port,p", bpo::value<uint16_t>()->default_value(10000),
-      "http port of query handler")("graph-config,g", bpo::value<std::string>(),
-                                    "graph schema config file")(
-      "data-path,d", bpo::value<std::string>(), "data directory path")(
-      "bulk-load,l", bpo::value<std::string>(), "bulk-load config file");
+  desc.add_options()
+    ("help", "Display help message")
+    ("version,v", "Display version")
+    ("enable-dpdk", "enable dpdk of hiactor engine")
+    ("shard-num,s", bpo::value<uint32_t>()->default_value(1), "shard number of actor system")
+    ("http-port,p", bpo::value<uint16_t>()->default_value(10000), "http port of query handler")
+    ("graph-config,g", bpo::value<std::string>(), "graph config path")
+    ("data-path,d", bpo::value<std::string>(), "data path");
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
 
@@ -54,27 +53,17 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  bool enable_dpdk = false;
+  bool enable_dpdk = vm.count("enable-dpdk");
   uint32_t shard_num = vm["shard-num"].as<uint32_t>();
   uint16_t http_port = vm["http-port"].as<uint16_t>();
 
-  std::string graph_schema_path = "";
-  std::string data_path = "";
-  std::string bulk_load_config_path = "";
-
-  if (!vm.count("graph-config")) {
-    LOG(ERROR) << "graph-config is required";
+  if (!vm.count("graph-config") || !vm.count("data-path")) {
+    LOG(ERROR) << "Missing graph config or data path!";
     return -1;
   }
-  graph_schema_path = vm["graph-config"].as<std::string>();
-  if (!vm.count("data-path")) {
-    LOG(ERROR) << "data-path is required";
-    return -1;
-  }
-  data_path = vm["data-path"].as<std::string>();
-  if (vm.count("bulk-load")) {
-    bulk_load_config_path = vm["bulk-load"].as<std::string>();
-  }
+  std::string graph_path = vm["graph-config"].as<std::string>();
+  std::string data_path = vm["data-path"].as<std::string>();
+  LOG(INFO) << "Start loading graph defined by: " << graph_path;
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
@@ -82,9 +71,8 @@ int main(int argc, char** argv) {
   double t0 = -grape::GetCurrentTime();
   auto& db = gs::GraphDB::get();
 
-  auto ret = gs::Schema::LoadFromYaml(graph_schema_path, bulk_load_config_path);
-  db.Init(std::get<0>(ret), std::get<1>(ret), std::get<2>(ret),
-          std::get<3>(ret), data_path, shard_num);
+  auto ret = gs::Schema::LoadFromYaml(graph_path);
+  db.Init(std::get<0>(ret), std::get<1>(ret), std::get<2>(ret), std::get<3>(ret), data_path, shard_num);
 
   t0 += grape::GetCurrentTime();
 

@@ -25,7 +25,11 @@ The configuration file ([modern graph example](./modern_graph/modern_graph.yaml)
 Here is an example of a configuration file:
 
 ```yaml
+graph_dir: /path/to/modern_graph
+stored_procedures_dir: /path/to/modern_graph
+
 graph:
+  file_format: standard_csv
   graph_store: mutable_csr
   vertex:
     - label_name: person
@@ -37,6 +41,8 @@ graph:
         - name: age
           type: int32
       max_vertex_num: 100
+      files:
+        - person.csv
     - label_name: software
       properties:
         - name: _ID
@@ -46,6 +52,8 @@ graph:
         - name: lang
           type: String
       max_vertex_num: 100
+      files:
+        - software.csv
   edge:
     - src_label_name: person
       dst_label_name: software
@@ -59,6 +67,8 @@ graph:
           type: double
       incoming_edge_strategy: None
       outgoing_edge_strategy: Single
+      files:
+        - person_created_software.csv
     - src_label_name: person
       dst_label_name: person
       edge_label_name: knows
@@ -71,6 +81,8 @@ graph:
           type: double
       incoming_edge_strategy: None
       outgoing_edge_strategy: Multiple
+      files:
+        - person_knows_person.csv
 
 stored_procedures:
   - libxxx.so

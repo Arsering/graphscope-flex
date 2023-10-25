@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "flex/engines/graph_db/app/server_app.h"
 
@@ -87,7 +87,15 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
   for (auto& c : op) {
     c = toupper(c);
   }
-  if (op == "SHOW_STORED_PROCEDURES") {
+  if (op == "ADD_STORED_PROCEDURE") {
+    std::string path = std::string(input.get_string());
+    uint8_t index = input.get_byte();
+    CHECK(input.empty());
+    if (std::filesystem::exists(path)) {
+      graph_.RegisterApp(path, index);
+      return true;
+    }
+  } else if (op == "SHOW_STORED_PROCEDURES") {
     CHECK(input.empty());
     graph_.GetAppInfo(output);
     return true;

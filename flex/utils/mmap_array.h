@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #ifndef GRAPHSCOPE_UTILS_MMAP_ARRAY_H_
 #define GRAPHSCOPE_UTILS_MMAP_ARRAY_H_
@@ -72,8 +72,7 @@ class mmap_array {
         mmap(NULL, size_in_bytes, PROT_WRITE, MAP_SHARED, fd, 0));
     if (md == MAP_FAILED) {
       perror("mmap: ");
-      LOG(FATAL) << "mmap " << filename << ", with length " << size_in_bytes
-                 << " failed...";
+      LOG(FATAL) << "mmap " << filename << ", with length " << size_in_bytes << " failed...";
       return;
     }
     memcpy(md, data_, size_in_bytes);
@@ -151,8 +150,8 @@ class mmap_array {
 };
 
 struct string_item {
-  uint64_t offset : 48;
-  uint32_t length : 16;
+  int offset;
+  int length;
 };
 
 template <>

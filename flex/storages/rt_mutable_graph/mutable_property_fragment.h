@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #ifndef GRAPHSCOPE_FRAGMENT_MUTABLE_PROPERTY_FRAGMENT_H_
 #define GRAPHSCOPE_FRAGMENT_MUTABLE_PROPERTY_FRAGMENT_H_
@@ -22,12 +22,12 @@
 
 #include "flex/storages/rt_mutable_graph/schema.h"
 
-#include "flex/storages/rt_mutable_graph/mutable_csr.h"
-#include "flex/storages/rt_mutable_graph/types.h"
-#include "flex/utils/id_indexer.h"
-#include "flex/utils/property/table.h"
 #include "grape/io/local_io_adaptor.h"
 #include "grape/serialization/out_archive.h"
+#include "flex/utils/id_indexer.h"
+#include "flex/storages/rt_mutable_graph/mutable_csr.h"
+#include "flex/utils/property/table.h"
+#include "flex/storages/rt_mutable_graph/types.h"
 
 namespace gs {
 
@@ -94,14 +94,10 @@ class MutablePropertyFragment {
                         const std::vector<std::string>& filenames,
                         IdIndexer<oid_t, vid_t>& indexer);
 
-  void initVertices(
-      label_t v_label_i,
-      const std::vector<std::pair<std::string, std::string>>& vertex_files);
+  void initVertices(label_t v_label_i, const std::vector<std::pair<std::string, std::string>>& vertex_files);
 
-  void initEdges(
-      label_t src_label_i, label_t dst_label_i, label_t edge_label_i,
-      const std::vector<std::tuple<std::string, std::string, std::string,
-                                   std::string>>& edge_files);
+  void initEdges(label_t src_label_i, label_t dst_label_i, label_t edge_label_i,
+                 const std::vector<std::tuple<std::string, std::string, std::string, std::string>>& edge_files);
 
   Schema schema_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;

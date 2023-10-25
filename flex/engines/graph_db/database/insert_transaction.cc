@@ -1,29 +1,31 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "flex/engines/graph_db/database/insert_transaction.h"
 #include "flex/engines/graph_db/database/transaction_utils.h"
-#include "flex/engines/graph_db/database/version_manager.h"
 #include "flex/engines/graph_db/database/wal.h"
+#include "flex/engines/graph_db/database/version_manager.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
 namespace gs {
 
 InsertTransaction::InsertTransaction(MutablePropertyFragment& graph,
-                                     ArenaAllocator& alloc, WalWriter& logger,
-                                     VersionManager& vm, timestamp_t timestamp)
+                                     ArenaAllocator& alloc,
+                                     WalWriter& logger,
+                                     VersionManager& vm,
+                                     timestamp_t timestamp )
     : graph_(graph),
       alloc_(alloc),
       logger_(logger),
@@ -42,10 +44,6 @@ bool InsertTransaction::AddVertex(label_t label, oid_t id,
       graph_.schema().get_vertex_properties(label);
   if (types.size() != props.size()) {
     arc_.Resize(arc_size);
-    std::string label_name = graph_.schema().get_vertex_label_name(label);
-    LOG(ERROR) << "Vertex [" << label_name
-               << "] properties size not match, expected " << types.size()
-               << ", but got " << props.size();
     return false;
   }
   int col_num = props.size();
@@ -53,10 +51,6 @@ bool InsertTransaction::AddVertex(label_t label, oid_t id,
     auto& prop = props[col_i];
     if (prop.type != types[col_i]) {
       arc_.Resize(arc_size);
-      std::string label_name = graph_.schema().get_vertex_label_name(label);
-      LOG(ERROR) << "Vertex [" << label_name << "][" << col_i
-                 << "] property type not match, expected " << types[col_i]
-                 << ", but got " << prop.type;
       return false;
     }
     serialize_field(arc_, prop);
@@ -72,27 +66,18 @@ bool InsertTransaction::AddEdge(label_t src_label, oid_t src, label_t dst_label,
   if (!graph_.get_lid(src_label, src, lid)) {
     if (added_vertices_.find(std::make_pair(src_label, src)) ==
         added_vertices_.end()) {
-      std::string label_name = graph_.schema().get_vertex_label_name(src_label);
-      LOG(ERROR) << "Source vertex " << label_name << "[" << src
-                 << "] not found...";
       return false;
     }
   }
   if (!graph_.get_lid(dst_label, dst, lid)) {
     if (added_vertices_.find(std::make_pair(dst_label, dst)) ==
         added_vertices_.end()) {
-      std::string label_name = graph_.schema().get_vertex_label_name(dst_label);
-      LOG(ERROR) << "Destination vertex " << label_name << "[" << dst
-                 << "] not found...";
       return false;
     }
   }
   const PropertyType& type =
       graph_.schema().get_edge_property(src_label, dst_label, edge_label);
   if (prop.type != type) {
-    std::string label_name = graph_.schema().get_edge_label_name(edge_label);
-    LOG(ERROR) << "Edge property " << label_name << " type not match, expected "
-               << type << ", got " << prop.type;
     return false;
   }
   arc_ << static_cast<uint8_t>(1) << src_label << src << dst_label << dst

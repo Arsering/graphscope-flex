@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
@@ -32,9 +32,8 @@ MutablePropertyFragment::~MutablePropertyFragment() {
   }
 }
 
-void MutablePropertyFragment::initVertices(
-    label_t v_label_i,
-    const std::vector<std::pair<std::string, std::string>>& vertex_files) {
+void MutablePropertyFragment::initVertices(label_t v_label_i,
+                                           const std::vector<std::pair<std::string, std::string>>& vertex_files) {
   IdIndexer<oid_t, vid_t> indexer;
   std::string v_label_name = schema_.get_vertex_label_name(v_label_i);
   std::vector<std::string> filenames;
@@ -202,10 +201,9 @@ std::pair<MutableCsrBase*, MutableCsrBase*> construct_csr(
   return std::make_pair(ie_csr, oe_csr);
 }
 
-void MutablePropertyFragment::initEdges(
-    label_t src_label_i, label_t dst_label_i, label_t edge_label_i,
-    const std::vector<std::tuple<std::string, std::string, std::string,
-                                 std::string>>& edge_files) {
+void MutablePropertyFragment::initEdges(label_t src_label_i, label_t dst_label_i,
+                                        label_t edge_label_i,
+                                        const std::vector<std::tuple<std::string, std::string, std::string, std::string>>& edge_files) {
   std::string src_label_name = schema_.get_vertex_label_name(src_label_i);
   std::string dst_label_name = schema_.get_vertex_label_name(dst_label_i);
   std::string edge_label_name = schema_.get_edge_label_name(edge_label_i);
@@ -217,8 +215,7 @@ void MutablePropertyFragment::initEdges(
       filenames.push_back(std::get<3>(tuple));
     }
   }
-  auto& property_types = schema_.get_edge_properties(
-      src_label_name, dst_label_name, edge_label_name);
+  auto& property_types = schema_.get_edge_properties(src_label_name, dst_label_name, edge_label_name);
   size_t col_num = property_types.size();
   CHECK_LE(col_num, 1) << "Only single or no property is supported for edge.";
 
@@ -231,44 +228,31 @@ void MutablePropertyFragment::initEdges(
 
   if (col_num == 0) {
     if (filenames.empty()) {
-      std::tie(ie_[index], oe_[index]) =
-          construct_empty_csr<grape::EmptyType>(ie_strtagy, oe_strtagy);
+      std::tie(ie_[index], oe_[index]) = construct_empty_csr<grape::EmptyType>(ie_strtagy, oe_strtagy);
     } else {
-      std::tie(ie_[index], oe_[index]) = construct_csr<grape::EmptyType>(
-          filenames, property_types, ie_strtagy, oe_strtagy,
-          lf_indexers_[src_label_i], lf_indexers_[dst_label_i]);
+      std::tie(ie_[index], oe_[index]) = construct_csr<grape::EmptyType>(filenames, property_types, ie_strtagy, oe_strtagy, lf_indexers_[src_label_i], lf_indexers_[dst_label_i]);
     }
   } else if (property_types[0] == PropertyType::kDate) {
     if (filenames.empty()) {
-      std::tie(ie_[index], oe_[index]) =
-          construct_empty_csr<Date>(ie_strtagy, oe_strtagy);
+      std::tie(ie_[index], oe_[index]) = construct_empty_csr<Date>(ie_strtagy, oe_strtagy);
     } else {
-      std::tie(ie_[index], oe_[index]) = construct_csr<Date>(
-          filenames, property_types, ie_strtagy, oe_strtagy,
-          lf_indexers_[src_label_i], lf_indexers_[dst_label_i]);
+      std::tie(ie_[index], oe_[index]) = construct_csr<Date>(filenames, property_types, ie_strtagy, oe_strtagy, lf_indexers_[src_label_i], lf_indexers_[dst_label_i]);
     }
   } else if (property_types[0] == PropertyType::kInt32) {
     if (filenames.empty()) {
-      std::tie(ie_[index], oe_[index]) =
-          construct_empty_csr<int>(ie_strtagy, oe_strtagy);
+      std::tie(ie_[index], oe_[index]) = construct_empty_csr<int>(ie_strtagy, oe_strtagy);
     } else {
-      std::tie(ie_[index], oe_[index]) = construct_csr<int>(
-          filenames, property_types, ie_strtagy, oe_strtagy,
-          lf_indexers_[src_label_i], lf_indexers_[dst_label_i]);
+      std::tie(ie_[index], oe_[index]) = construct_csr<int>(filenames, property_types, ie_strtagy, oe_strtagy, lf_indexers_[src_label_i], lf_indexers_[dst_label_i]);
     }
   } else if (property_types[0] == PropertyType::kInt64) {
     if (filenames.empty()) {
-      std::tie(ie_[index], oe_[index]) =
-          construct_empty_csr<int64_t>(ie_strtagy, oe_strtagy);
+      std::tie(ie_[index], oe_[index]) = construct_empty_csr<int64_t>(ie_strtagy, oe_strtagy);
     } else {
-      std::tie(ie_[index], oe_[index]) = construct_csr<int64_t>(
-          filenames, property_types, ie_strtagy, oe_strtagy,
-          lf_indexers_[src_label_i], lf_indexers_[dst_label_i]);
+      LOG(FATAL) << "Unsupported edge property type.";
     }
   } else if (property_types[0] == PropertyType::kString) {
     if (filenames.empty()) {
-      std::tie(ie_[index], oe_[index]) =
-          construct_empty_csr<std::string>(ie_strtagy, oe_strtagy);
+      std::tie(ie_[index], oe_[index]) = construct_empty_csr<std::string>(ie_strtagy, oe_strtagy);
     } else {
       LOG(FATAL) << "Unsupported edge property type.";
     }
@@ -307,8 +291,7 @@ void MutablePropertyFragment::Init(
         std::string dst_label_name = schema_.get_vertex_label_name(dst_label_i);
         for (size_t e_label_i = 0; e_label_i != edge_label_num_; ++e_label_i) {
           std::string e_label_name = schema_.get_edge_label_name(e_label_i);
-          if (schema_.valid_edge_property(src_label_name, dst_label_name,
-                                          e_label_name)) {
+          if (schema_.valid_edge_property(src_label_name, dst_label_name, e_label_name)) {
             initEdges(src_label_i, dst_label_i, e_label_i, edge_files);
           }
         }
@@ -376,6 +359,7 @@ void MutablePropertyFragment::Init(
     }
   }
 }
+
 
 void MutablePropertyFragment::IngestEdge(label_t src_label, vid_t src_lid,
                                          label_t dst_label, vid_t dst_lid,
@@ -461,14 +445,6 @@ inline MutableCsrBase* create_csr(EdgeStrategy es,
       return new MutableCsr<Date>();
     } else if (es == EdgeStrategy::kNone) {
       return new EmptyCsr<Date>();
-    }
-  } else if (properties[0] == PropertyType::kInt64) {
-    if (es == EdgeStrategy::kSingle) {
-      return new SingleMutableCsr<int64_t>();
-    } else if (es == EdgeStrategy::kMultiple) {
-      return new MutableCsr<int64_t>();
-    } else if (es == EdgeStrategy::kNone) {
-      return new EmptyCsr<int64_t>();
     }
   }
   LOG(FATAL) << "not support edge strategy or edge data type";
@@ -675,5 +651,6 @@ void MutablePropertyFragment::parseVertexFiles(
     fclose(fin);
   }
 }
+
 
 }  // namespace gs

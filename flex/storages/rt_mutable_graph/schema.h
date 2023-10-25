@@ -1,24 +1,24 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #ifndef GRAPHSCOPE_FRAGMENT_SCHEMA_H_
 #define GRAPHSCOPE_FRAGMENT_SCHEMA_H_
 
 #include "flex/storages/rt_mutable_graph/types.h"
-#include "flex/utils/id_indexer.h"
 #include "flex/utils/property/table.h"
+#include "flex/utils/id_indexer.h"
 
 namespace gs {
 
@@ -94,14 +94,11 @@ class Schema {
 
   void Deserialize(std::unique_ptr<grape::LocalIOAdaptor>& reader);
 
-  static std::tuple<Schema, std::vector<std::pair<std::string, std::string>>,
-                    std::vector<std::tuple<std::string, std::string,
-                                           std::string, std::string>>,
+  static std::tuple<Schema,
+                    std::vector<std::pair<std::string, std::string>>,
+                    std::vector<std::tuple<std::string, std::string, std::string, std::string>>,
                     std::vector<std::string>>
-  LoadFromYaml(const std::string& schema_config,
-               const std::string& load_config);
-
-  bool Equals(const Schema& other) const;
+      LoadFromYaml(const std::string& path);
 
  private:
   label_t vertex_label_to_index(const std::string& label);
@@ -120,6 +117,6 @@ class Schema {
   std::vector<size_t> max_vnum_;
 };
 
-}  // namespace gs
+}
 
 #endif  // GRAPHSCOPE_FRAGMENT_SCHEMA_H_

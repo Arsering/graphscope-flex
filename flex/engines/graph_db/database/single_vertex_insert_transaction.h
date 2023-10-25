@@ -1,23 +1,23 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #ifndef GRAPHSCOPE_DATABASE_SINGLE_VERTEX_INSERT_TRANSACTION_H_
 #define GRAPHSCOPE_DATABASE_SINGLE_VERTEX_INSERT_TRANSACTION_H_
 
-#include "flex/storages/rt_mutable_graph/types.h"
 #include "grape/serialization/in_archive.h"
+#include "flex/storages/rt_mutable_graph/types.h"
 
 namespace gs {
 
@@ -30,8 +30,10 @@ class Any;
 class SingleVertexInsertTransaction {
  public:
   SingleVertexInsertTransaction(MutablePropertyFragment& graph,
-                                ArenaAllocator& alloc, WalWriter& logger,
-                                VersionManager& vm, timestamp_t timestamp);
+                                ArenaAllocator& alloc,
+                                WalWriter& logger,
+                                VersionManager& vm,
+                                timestamp_t timestamp);
   ~SingleVertexInsertTransaction();
 
   bool AddVertex(label_t label, oid_t id, const std::vector<Any>& props);

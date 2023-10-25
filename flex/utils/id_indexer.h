@@ -25,12 +25,12 @@ limitations under the License.
 #include <vector>
 
 #include "flat_hash_map/flat_hash_map.hpp"
-#include "flex/utils/mmap_array.h"
-#include "flex/utils/string_view_vector.h"
 #include "glog/logging.h"
 #include "grape/io/local_io_adaptor.h"
 #include "grape/serialization/in_archive.h"
 #include "grape/serialization/out_archive.h"
+#include "flex/utils/mmap_array.h"
+#include "flex/utils/string_view_vector.h"
 
 namespace gs {
 
@@ -278,9 +278,6 @@ class LFIndexer {
     num_elements_.store(num_elements);
   }
 
-  // get keys
-  const mmap_array<int64_t>& get_keys() const { return keys_; }
-
  private:
   mmap_array<int64_t> keys_;
   mmap_array<INDEX_T> indices_;
@@ -496,9 +493,8 @@ class IdIndexer {
   void Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) {
     id_indexer_impl::KeyBuffer<KEY_T>::serialize(writer, keys_);
     grape::InArchive arc;
-    arc << hash_policy_.get_mod_function_index() << max_lookups_
-        << num_elements_ << num_slots_minus_one_ << indices_.size()
-        << distances_.size();
+    arc << hash_policy_.get_mod_function_index() << max_lookups_ << num_elements_
+        << num_slots_minus_one_ << indices_.size() << distances_.size();
     CHECK(writer->WriteArchive(arc));
     arc.Clear();
 
@@ -506,8 +502,7 @@ class IdIndexer {
       CHECK(writer->Write(indices_.data(), indices_.size() * sizeof(INDEX_T)));
     }
     if (distances_.size() > 0) {
-      CHECK(
-          writer->Write(distances_.data(), distances_.size() * sizeof(int8_t)));
+      CHECK(writer->Write(distances_.data(), distances_.size() * sizeof(int8_t)));
     }
   }
 
@@ -528,8 +523,7 @@ class IdIndexer {
       CHECK(reader->Read(indices_.data(), indices_.size() * sizeof(INDEX_T)));
     }
     if (distances_size > 0) {
-      CHECK(
-          reader->Read(distances_.data(), distances_.size() * sizeof(int8_t)));
+      CHECK(reader->Read(distances_.data(), distances_.size() * sizeof(int8_t)));
     }
   }
 

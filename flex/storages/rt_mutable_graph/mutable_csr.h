@@ -1,40 +1,39 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* 	http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #ifndef GRAPHSCOPE_GRAPH_MUTABLE_CSR_H_
 #define GRAPHSCOPE_GRAPH_MUTABLE_CSR_H_
 
-#include <atomic>
 #include <type_traits>
 #include <vector>
+#include <atomic>
 
-#include "flex/storages/rt_mutable_graph/types.h"
-#include "flex/utils/allocators.h"
-#include "flex/utils/mmap_array.h"
-#include "flex/utils/property/types.h"
 #include "grape/serialization/in_archive.h"
 #include "grape/serialization/out_archive.h"
 #include "grape/utils/concurrent_queue.h"
+#include "flex/utils/property/types.h"
+#include "flex/storages/rt_mutable_graph/types.h"
+#include "flex/utils/allocators.h"
+#include "flex/utils/mmap_array.h"
 
 namespace gs {
 
 template <typename EDATA_T>
 struct MutableNbr {
   MutableNbr() = default;
-  MutableNbr(const MutableNbr& rhs)
-      : neighbor(rhs.neighbor), timestamp(rhs.timestamp.load()), data(data) {}
+  MutableNbr(const MutableNbr& rhs) : neighbor(rhs.neighbor), timestamp(rhs.timestamp.load()), data(data) {}
   ~MutableNbr() = default;
 
   vid_t neighbor;
@@ -45,8 +44,7 @@ struct MutableNbr {
 template <>
 struct MutableNbr<grape::EmptyType> {
   MutableNbr() = default;
-  MutableNbr(const MutableNbr& rhs)
-      : neighbor(rhs.neighbor), timestamp(rhs.timestamp.load()) {}
+  MutableNbr(const MutableNbr& rhs) : neighbor(rhs.neighbor), timestamp(rhs.timestamp.load()) {}
   ~MutableNbr() = default;
 
   vid_t neighbor;
@@ -275,7 +273,6 @@ class MutableCsrConstEdgeIterBase {
   virtual vid_t get_neighbor() const = 0;
   virtual Any get_data() const = 0;
   virtual timestamp_t get_timestamp() const = 0;
-  virtual size_t size() const = 0;
 
   virtual void next() = 0;
   virtual bool is_valid() const = 0;
@@ -335,7 +332,6 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   void next() { ++cur_; }
   bool is_valid() const { return cur_ != end_; }
-  size_t size() const { return end_ - cur_; }
 
  private:
   const nbr_t* cur_;
@@ -610,8 +606,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
                       timestamp_t ts = 0) override {
     nbr_list_[src].neighbor = dst;
     nbr_list_[src].data = data;
-    CHECK_EQ(nbr_list_[src].timestamp.load(),
-             std::numeric_limits<timestamp_t>::max());
+    CHECK_EQ(nbr_list_[src].timestamp.load(), std::numeric_limits<timestamp_t>::max());
     nbr_list_[src].timestamp.store(ts);
   }
 
@@ -632,10 +627,9 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
   slice_t get_edges(vid_t i) const override {
     slice_t ret;
-    ret.set_size(nbr_list_[i].timestamp.load() ==
-                         std::numeric_limits<timestamp_t>::max()
-                     ? 0
-                     : 1);
+    ret.set_size(
+        nbr_list_[i].timestamp.load() == std::numeric_limits<timestamp_t>::max() ? 0
+                                                                          : 1);
     if (ret.size() != 0) {
       ret.set_begin(&nbr_list_[i]);
     }
@@ -644,10 +638,9 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
   mut_slice_t get_edges_mut(vid_t i) {
     mut_slice_t ret;
-    ret.set_size(nbr_list_[i].timestamp.load() ==
-                         std::numeric_limits<timestamp_t>::max()
-                     ? 0
-                     : 1);
+    ret.set_size(
+        nbr_list_[i].timestamp.load() == std::numeric_limits<timestamp_t>::max() ? 0
+                                                                          : 1);
     if (ret.size() != 0) {
       ret.set_begin(&nbr_list_[i]);
     }

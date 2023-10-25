@@ -13,11 +13,11 @@
 * limitations under the License.
 */
 
-#include "flex/engines/graph_db/server/options.h"
+#include "flex/storages/immutable_graph/immutable_graph.h"
 
-namespace server {
+#include "grape/vertex_map/global_vertex_map.h"
+#include "grape/fragment/partitioner.h"
 
-uint32_t shard_query_concurrency = 16;
-uint32_t shard_update_concurrency = 4;
+template class grape::ImmutableEdgecutFragment<int64_t, uint32_t, grape::EmptyType, double, grape::LoadStrategy::kOnlyOut, grape::GlobalVertexMap<int64_t, uint32_t, grape::SegmentedPartitioner<int64_t>>>;
+template class grape::ImmutableEdgecutFragment<int64_t, uint32_t, grape::EmptyType, grape::EmptyType, grape::LoadStrategy::kOnlyOut, grape::GlobalVertexMap<int64_t, uint32_t, grape::SegmentedPartitioner<int64_t>>>;
 
-}  // namespace server

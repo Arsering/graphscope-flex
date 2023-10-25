@@ -13,11 +13,14 @@
 * limitations under the License.
 */
 
-#include "flex/engines/graph_db/server/options.h"
+#include "flex/engines/bsp/bsp.h"
 
-namespace server {
+#include "grape/communication/sync_comm.h"
 
-uint32_t shard_query_concurrency = 16;
-uint32_t shard_update_concurrency = 4;
+namespace bsp {
 
-}  // namespace server
+void Init() { grape::InitMPIComm(); }
+
+void Finalize() { grape::FinalizeMPIComm(); }
+
+}  // namespace bsp
