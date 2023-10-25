@@ -1,41 +1,47 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* 	http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef GRAPHSCOPE_FRAGMENT_SCHEMA_H_
 #define GRAPHSCOPE_FRAGMENT_SCHEMA_H_
 
 #include "flex/storages/rt_mutable_graph/types.h"
-#include "flex/utils/property/table.h"
 #include "flex/utils/id_indexer.h"
+#include "flex/utils/property/table.h"
+#include "flex/utils/yaml_utils.h"
 
 namespace gs {
 
 class Schema {
  public:
+  using label_type = label_t;
   Schema();
   ~Schema();
 
-  void add_vertex_label(const std::string& label,
-                        const std::vector<PropertyType>& properties,
-                        const std::vector<StorageStrategy>& strategies = {},
-                        size_t max_vnum = static_cast<size_t>(1) << 32);
+  void add_vertex_label(
+      const std::string& label, const std::vector<PropertyType>& property_types,
+      const std::vector<std::string>& property_names,
+      const std::vector<std::tuple<PropertyType, std::string, size_t>>&
+          primary_key,
+      const std::vector<StorageStrategy>& strategies = {},
+      size_t max_vnum = static_cast<size_t>(1) << 32);
 
   void add_edge_label(const std::string& src_label,
                       const std::string& dst_label,
                       const std::string& edge_label,
                       const std::vector<PropertyType>& properties,
+                      const std::vector<std::string>& prop_names,
                       EdgeStrategy oe = EdgeStrategy::kMultiple,
                       EdgeStrategy ie = EdgeStrategy::kMultiple);
 
@@ -54,7 +60,13 @@ class Schema {
   const std::vector<PropertyType>& get_vertex_properties(
       const std::string& label) const;
 
+  const std::vector<std::string>& get_vertex_property_names(
+      const std::string& label) const;
+
   const std::vector<PropertyType>& get_vertex_properties(label_t label) const;
+
+  const std::vector<std::string>& get_vertex_property_names(
+      label_t label) const;
 
   const std::vector<StorageStrategy>& get_vertex_storage_strategies(
       const std::string& label) const;
@@ -68,7 +80,36 @@ class Schema {
       const std::string& src_label, const std::string& dst_label,
       const std::string& label) const;
 
+  const std::vector<PropertyType>& get_edge_properties(label_t src_label,
+                                                       label_t dst_label,
+                                                       label_t label) const;
+
   PropertyType get_edge_property(label_t src, label_t dst, label_t edge) const;
+
+  const std::vector<std::string>& get_edge_property_names(
+      const std::string& src_label, const std::string& dst_label,
+      const std::string& label) const;
+
+  const std::vector<std::string>& get_edge_property_names(
+      const label_t& src_label, const label_t& dst_label,
+      const label_t& label) const;
+
+  bool vertex_has_property(const std::string& label,
+                           const std::string& prop) const;
+
+  bool vertex_has_primary_key(const std::string& label,
+                              const std::string& prop) const;
+
+  bool edge_has_property(const std::string& src_label,
+                         const std::string& dst_label,
+                         const std::string& edge_label,
+                         const std::string& prop) const;
+
+  bool has_vertex_label(const std::string& label) const;
+
+  bool has_edge_label(const std::string& src_label,
+                      const std::string& dst_label,
+                      const std::string& edge_label) const;
 
   bool valid_edge_property(const std::string& src_label,
                            const std::string& dst_label,
@@ -90,15 +131,22 @@ class Schema {
 
   std::string get_edge_label_name(label_t index) const;
 
-  void Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer);
+  const std::vector<std::tuple<PropertyType, std::string, size_t>>&
+  get_vertex_primary_key(label_t index) const;
+
+  const std::string& get_vertex_primary_key_name(label_t index) const;
+
+  void Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) const;
 
   void Deserialize(std::unique_ptr<grape::LocalIOAdaptor>& reader);
 
-  static std::tuple<Schema,
-                    std::vector<std::pair<std::string, std::string>>,
-                    std::vector<std::tuple<std::string, std::string, std::string, std::string>>,
-                    std::vector<std::string>>
-      LoadFromYaml(const std::string& path);
+  static Schema LoadFromYaml(const std::string& schema_config);
+
+  bool Equals(const Schema& other) const;
+
+  const std::vector<std::string>& GetPluginsList() const;
+
+  void EmplacePlugin(const std::string& plugin_name);
 
  private:
   label_t vertex_label_to_index(const std::string& label);
@@ -110,13 +158,19 @@ class Schema {
   IdIndexer<std::string, label_t> vlabel_indexer_;
   IdIndexer<std::string, label_t> elabel_indexer_;
   std::vector<std::vector<PropertyType>> vproperties_;
+  std::vector<std::vector<std::string>> vprop_names_;
+  std::vector<std::vector<std::tuple<PropertyType, std::string, size_t>>>
+      v_primary_keys_;  // the third element is the index of the property in the
+                        // vertex property list
   std::vector<std::vector<StorageStrategy>> vprop_storage_;
   std::map<uint32_t, std::vector<PropertyType>> eproperties_;
+  std::map<uint32_t, std::vector<std::string>> eprop_names_;
   std::map<uint32_t, EdgeStrategy> oe_strategy_;
   std::map<uint32_t, EdgeStrategy> ie_strategy_;
   std::vector<size_t> max_vnum_;
+  std::vector<std::string> plugin_list_;
 };
 
-}
+}  // namespace gs
 
 #endif  // GRAPHSCOPE_FRAGMENT_SCHEMA_H_

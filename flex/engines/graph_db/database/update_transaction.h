@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* 	http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef GRAPHSCOPE_DATABASE_UPDATE_TRANSACTION_H_
 #define GRAPHSCOPE_DATABASE_UPDATE_TRANSACTION_H_
@@ -20,23 +20,23 @@
 #include <utility>
 
 #include "flat_hash_map/flat_hash_map.hpp"
-#include "grape/serialization/in_archive.h"
-#include "flex/storages/rt_mutable_graph/types.h"
-#include "flex/utils/property/types.h"
-#include "flex/utils/property/table.h"
-#include "flex/utils/id_indexer.h"
 #include "flex/storages/rt_mutable_graph/mutable_csr.h"
+#include "flex/storages/rt_mutable_graph/types.h"
+#include "flex/utils/id_indexer.h"
+#include "flex/utils/property/table.h"
+#include "flex/utils/property/types.h"
+#include "grape/serialization/in_archive.h"
 
 namespace gs {
 
 class MutablePropertyFragment;
-class ArenaAllocator;
 class WalWriter;
 class VersionManager;
 
 class UpdateTransaction {
  public:
-  UpdateTransaction(MutablePropertyFragment& graph, ArenaAllocator& alloc, WalWriter& logger,
+  UpdateTransaction(MutablePropertyFragment& graph, MMapAllocator& alloc,
+                    const std::string& work_dir, WalWriter& logger,
                     VersionManager& vm, timestamp_t timestamp);
 
   ~UpdateTransaction();
@@ -135,8 +135,9 @@ class UpdateTransaction {
                           label_t neighbor_label, vid_t nbr, label_t edge_label,
                           Any& ret) const;
 
-  static void IngestWal(MutablePropertyFragment& graph, uint32_t timestamp,
-                        char* data, size_t length, ArenaAllocator& alloc);
+  static void IngestWal(MutablePropertyFragment& graph,
+                        const std::string& work_dir, uint32_t timestamp,
+                        char* data, size_t length, MMapAllocator& alloc);
 
  private:
   size_t get_in_csr_index(label_t src_label, label_t dst_label,
@@ -156,7 +157,7 @@ class UpdateTransaction {
   void applyEdgesUpdates();
 
   MutablePropertyFragment& graph_;
-  ArenaAllocator& alloc_;
+  MMapAllocator& alloc_;
   WalWriter& logger_;
   VersionManager& vm_;
   timestamp_t timestamp_;

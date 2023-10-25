@@ -25,12 +25,12 @@ limitations under the License.
 #include <vector>
 
 #include "flat_hash_map/flat_hash_map.hpp"
+#include "flex/utils/mmap_array.h"
+#include "flex/utils/string_view_vector.h"
 #include "glog/logging.h"
 #include "grape/io/local_io_adaptor.h"
 #include "grape/serialization/in_archive.h"
 #include "grape/serialization/out_archive.h"
-#include "flex/utils/mmap_array.h"
-#include "flex/utils/string_view_vector.h"
 
 namespace gs {
 
@@ -59,7 +59,8 @@ struct KeyBuffer {
   using type = std::vector<T>;
 
   template <typename IOADAPTOR_T>
-  static void serialize(std::unique_ptr<IOADAPTOR_T>& writer, type& buffer) {
+  static void serialize(std::unique_ptr<IOADAPTOR_T>& writer,
+                        const type& buffer) {
     size_t size = buffer.size();
     CHECK(writer->Write(&size, sizeof(size_t)));
     if (size > 0) {
@@ -83,7 +84,8 @@ struct KeyBuffer<std::string> {
   using type = std::vector<std::string>;
 
   template <typename IOADAPTOR_T>
-  static void serialize(std::unique_ptr<IOADAPTOR_T>& writer, type& buffer) {
+  static void serialize(std::unique_ptr<IOADAPTOR_T>& writer,
+                        const type& buffer) {
     grape::InArchive arc;
     arc << buffer;
     CHECK(writer->WriteArchive(arc));
@@ -102,7 +104,8 @@ struct KeyBuffer<std::string_view> {
   using type = StringViewVector;
 
   template <typename IOADAPTOR_T>
-  static void serialize(std::unique_ptr<IOADAPTOR_T>& writer, type& buffer) {
+  static void serialize(std::unique_ptr<IOADAPTOR_T>& writer,
+                        const type& buffer) {
     size_t content_buffer_size = buffer.content_buffer().size();
     CHECK(writer->Write(&content_buffer_size, sizeof(size_t)));
     if (content_buffer_size > 0) {
@@ -146,7 +149,7 @@ struct GHash {
 template <>
 struct GHash<int64_t> {
   size_t operator()(const int64_t& val) const {
-    uint64_t x = static_cast<int64_t>(val);
+    uint64_t x = static_cast<uint64_t>(val);
     x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
     x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
     x = x ^ (x >> 31);
@@ -162,15 +165,16 @@ class LFIndexer;
 
 template <class INDEX_T>
 void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
-                      LFIndexer<INDEX_T>& output, double rate = 0.8);
+                      const std::string& filename, LFIndexer<INDEX_T>& output,
+                      double rate = 0.8);
 
 template <typename INDEX_T>
 class LFIndexer {
  public:
   LFIndexer() : num_elements_(0), hasher_() {}
-  LFIndexer(const LFIndexer& rhs)
-      : keys_(rhs.keys_),
-        indices_(rhs.indices_),
+  LFIndexer(LFIndexer&& rhs)
+      : keys_(std::move(rhs.keys_)),
+        indices_(std::move(rhs.indices_)),
         num_elements_(rhs.num_elements_.load()),
         num_slots_minus_one_(rhs.num_slots_minus_one_),
         hasher_(rhs.hasher_) {
@@ -182,12 +186,13 @@ class LFIndexer {
 
   INDEX_T insert(int64_t oid) {
     INDEX_T ind = static_cast<INDEX_T>(num_elements_.fetch_add(1));
-    keys_[ind] = oid;
+    keys_.set(ind, oid);
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
-      if (__sync_bool_compare_and_swap(&indices_[index], sentinel, ind)) {
+      if (__sync_bool_compare_and_swap(&indices_.data()[index], sentinel,
+                                       ind)) {
         break;
       }
       index = (index + 1) % num_slots_minus_one_;
@@ -200,13 +205,13 @@ class LFIndexer {
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
-      INDEX_T ind = indices_[index];
+      INDEX_T ind = indices_.get(index);
       if (ind == sentinel) {
         LOG(FATAL) << "cannot find " << oid << " in id_indexer";
-      } else if (keys_[ind] == oid) {
+      } else if (keys_.get(ind) == oid) {
         return ind;
       } else {
-        index = (index + 1) % indices_size_;
+        index = (index + 1) % num_slots_minus_one_;
       }
     }
   }
@@ -216,10 +221,10 @@ class LFIndexer {
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
-      INDEX_T ind = indices_[index];
+      INDEX_T ind = indices_.get(index);
       if (ind == sentinel) {
         return false;
-      } else if (keys_[ind] == oid) {
+      } else if (keys_.get(ind) == oid) {
         ret = ind;
         return true;
       } else {
@@ -229,58 +234,62 @@ class LFIndexer {
     return false;
   }
 
-  int64_t get_key(const INDEX_T& index) const { return keys_[index]; }
+  int64_t get_key(const INDEX_T& index) const { return keys_.get(index); }
 
-  void Serialize(const std::string& prefix) {
-    {
-      grape::InArchive arc;
-      arc << keys_.size() << indices_.size();
-      arc << hash_policy_.get_mod_function_index() << num_elements_.load()
-          << num_slots_minus_one_ << indices_size_;
-      std::string meta_file_path = prefix + ".meta";
-      FILE* fout = fopen(meta_file_path.c_str(), "wb");
-      fwrite(arc.GetBuffer(), sizeof(char), arc.GetSize(), fout);
-      fflush(fout);
-      fclose(fout);
+  void open(const std::string& name, const std::string& snapshot_dir,
+            const std::string& work_dir) {
+    keys_.open(snapshot_dir + "/" + name + ".keys", true);
+    keys_.touch(work_dir + "/" + name + ".keys");
+    indices_.open(snapshot_dir + "/" + name + ".indices", true);
+    indices_.touch(work_dir + "/" + name + ".indices");
+    indices_size_ = indices_.size();
+
+    for (size_t k = keys_.size() - 1; k >= 0; --k) {
+      if (keys_.get(k) != std::numeric_limits<int64_t>::max()) {
+        num_elements_.store(k + 1);
+        break;
+      }
     }
 
-    if (keys_.size() > 0) {
-      keys_.dump_to_file(prefix + ".keys");
-    }
-    if (indices_.size() > 0) {
-      indices_.dump_to_file(prefix + ".indices");
-    }
+    load_meta(snapshot_dir + "/" + name + ".meta");
   }
 
-  void Deserialize(const std::string& prefix) {
-    size_t keys_size, indices_size;
+  void dump(const std::string& name, const std::string& snapshot_dir) {
+    keys_.dump(snapshot_dir + "/" + name + ".keys");
+    indices_.dump(snapshot_dir + "/" + name + ".indices");
+    dump_meta(snapshot_dir + "/" + name + ".meta");
+  }
+
+  void dump_meta(const std::string& filename) const {
+    grape::InArchive arc;
+    arc << num_slots_minus_one_ << hash_policy_.get_mod_function_index();
+    FILE* fout = fopen(filename.c_str(), "wb");
+    fwrite(arc.GetBuffer(), sizeof(char), arc.GetSize(), fout);
+    fflush(fout);
+    fclose(fout);
+  }
+
+  void load_meta(const std::string& filename) {
+    grape::OutArchive arc;
+    FILE* fin = fopen(filename.c_str(), "r");
+    size_t meta_file_size = std::filesystem::file_size(filename);
+    std::vector<char> buf(meta_file_size);
+    CHECK_EQ(fread(buf.data(), sizeof(char), meta_file_size, fin),
+             meta_file_size);
+    arc.SetSlice(buf.data(), meta_file_size);
     size_t mod_function_index;
-    size_t num_elements;
-    {
-      std::string meta_file_path = prefix + ".meta";
-      size_t meta_file_size = std::filesystem::file_size(meta_file_path);
-      std::vector<char> buf(meta_file_size);
-      FILE* fin = fopen(meta_file_path.c_str(), "r");
-      CHECK_EQ(fread(buf.data(), sizeof(char), meta_file_size, fin),
-               meta_file_size);
-      grape::OutArchive arc;
-      arc.SetSlice(buf.data(), meta_file_size);
-
-      arc >> keys_size >> indices_size;
-      arc >> mod_function_index >> num_elements >> num_slots_minus_one_ >>
-          indices_size_;
-    }
-    keys_.open_for_read(prefix + ".keys");
-    CHECK_EQ(keys_.size(), keys_size);
-    indices_.open_for_read(prefix + ".indices");
-    CHECK_EQ(indices_.size(), indices_size);
+    arc >> num_slots_minus_one_ >> mod_function_index;
     hash_policy_.set_mod_function_by_index(mod_function_index);
-    num_elements_.store(num_elements);
   }
+
+  // get keys
+  const mmap_array<int64_t>& get_keys() const { return keys_; }
 
  private:
   mmap_array<int64_t> keys_;
-  mmap_array<INDEX_T> indices_;
+  mmap_array<INDEX_T>
+      indices_;  // size() == indices_size_ == num_slots_minus_one_ +
+                 // log(num_slots_minus_one_)
   std::atomic<size_t> num_elements_;
   size_t num_slots_minus_one_;
   size_t indices_size_;
@@ -289,6 +298,7 @@ class LFIndexer {
 
   template <typename _INDEX_T>
   friend void build_lf_indexer(const IdIndexer<int64_t, _INDEX_T>& input,
+                               const std::string& filename,
                                LFIndexer<_INDEX_T>& output, double rate);
 };
 
@@ -490,19 +500,22 @@ class IdIndexer {
 
   key_buffer_t& keys() { return keys_; }
 
-  void Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) {
+  void Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) const {
     id_indexer_impl::KeyBuffer<KEY_T>::serialize(writer, keys_);
     grape::InArchive arc;
-    arc << hash_policy_.get_mod_function_index() << max_lookups_ << num_elements_
-        << num_slots_minus_one_ << indices_.size() << distances_.size();
+    arc << hash_policy_.get_mod_function_index() << max_lookups_
+        << num_elements_ << num_slots_minus_one_ << indices_.size()
+        << distances_.size();
     CHECK(writer->WriteArchive(arc));
     arc.Clear();
 
     if (indices_.size() > 0) {
-      CHECK(writer->Write(indices_.data(), indices_.size() * sizeof(INDEX_T)));
+      CHECK(writer->Write(const_cast<uint8_t*>(indices_.data()),
+                          indices_.size() * sizeof(INDEX_T)));
     }
     if (distances_.size() > 0) {
-      CHECK(writer->Write(distances_.data(), distances_.size() * sizeof(int8_t)));
+      CHECK(writer->Write(const_cast<int8_t*>(distances_.data()),
+                          distances_.size() * sizeof(int8_t)));
     }
   }
 
@@ -523,7 +536,8 @@ class IdIndexer {
       CHECK(reader->Read(indices_.data(), indices_.size() * sizeof(INDEX_T)));
     }
     if (distances_size > 0) {
-      CHECK(reader->Read(distances_.data(), distances_.size() * sizeof(int8_t)));
+      CHECK(
+          reader->Read(distances_.data(), distances_.size() * sizeof(int8_t)));
     }
   }
 
@@ -659,12 +673,14 @@ class IdIndexer {
 
   template <typename _INDEX_T>
   friend void build_lf_indexer(const IdIndexer<int64_t, _INDEX_T>& input,
+                               const std::string& filename,
                                LFIndexer<_INDEX_T>& output, double rate);
 };
 
 template <class INDEX_T>
 void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
-                      LFIndexer<INDEX_T>& lf, double rate) {
+                      const std::string& filename, LFIndexer<INDEX_T>& lf,
+                      double rate) {
   double indices_rate = static_cast<double>(input.keys_.size()) /
                         static_cast<double>(input.indices_.size());
   CHECK_LT(indices_rate, rate);
@@ -673,19 +689,26 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
   size_t lf_size = static_cast<double>(size) / rate + 1;
   lf_size = std::max(lf_size, static_cast<size_t>(1024));
 
+  lf.keys_.open(filename + ".keys", false);
   lf.keys_.resize(lf_size);
   memcpy(lf.keys_.data(), input.keys_.data(), sizeof(int64_t) * size);
+  for (size_t k = size; k != lf_size; ++k) {
+    lf.keys_.set(k, std::numeric_limits<int64_t>::max());
+  }
 
   lf.num_elements_.store(size);
 
-  lf.indices_.clear();
-  lf.indices_.resize_fill(input.indices_.size(),
-                          std::numeric_limits<INDEX_T>::max());
+  lf.indices_.open(filename + ".indices", false);
+  lf.indices_.resize(input.indices_.size());
+  for (size_t k = 0; k != input.indices_.size(); ++k) {
+    lf.indices_[k] = std::numeric_limits<INDEX_T>::max();
+  }
   lf.indices_size_ = input.indices_.size();
 
   lf.hash_policy_.set_mod_function_by_index(
       input.hash_policy_.get_mod_function_index());
   lf.num_slots_minus_one_ = input.num_slots_minus_one_;
+  std::vector<std::pair<int64_t, INDEX_T>> extra;
 
   for (auto oid : input.keys_) {
     size_t index = input.hash_policy_.index_for_hash(
@@ -694,11 +717,30 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
          ++distance, ++index) {
       INDEX_T ret = input.indices_[index];
       if (input.keys_[ret] == oid) {
-        lf.indices_[index] = ret;
+        if (index >= input.num_slots_minus_one_) {
+          extra.emplace_back(oid, ret);
+        } else {
+          lf.indices_[index] = ret;
+        }
         break;
       }
     }
   }
+
+  static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+  for (auto& pair : extra) {
+    size_t index = input.hash_policy_.index_for_hash(
+        input.hasher_(pair.first), input.num_slots_minus_one_);
+    while (true) {
+      if (lf.indices_[index] == sentinel) {
+        lf.indices_[index] = pair.second;
+        break;
+      }
+      index = (index + 1) % input.num_slots_minus_one_;
+    }
+  }
+
+  lf.dump_meta(filename + ".meta");
 }
 
 }  // namespace gs

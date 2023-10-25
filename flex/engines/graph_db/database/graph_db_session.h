@@ -1,21 +1,22 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* 	http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef GRAPHSCOPE_DATABASE_GRAPH_DB_SESSION_H_
 #define GRAPHSCOPE_DATABASE_GRAPH_DB_SESSION_H_
 
+#include "flex/engines/graph_db/app/app_base.h"
 #include "flex/engines/graph_db/database/insert_transaction.h"
 #include "flex/engines/graph_db/database/read_transaction.h"
 #include "flex/engines/graph_db/database/single_edge_insert_transaction.h"
@@ -23,18 +24,21 @@
 #include "flex/engines/graph_db/database/update_transaction.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/utils/property/column.h"
-#include "flex/engines/graph_db/app/app_base.h"
 
 namespace gs {
 
 class GraphDB;
 class WalWriter;
-class ArenaAllocator;
 
 class GraphDBSession {
  public:
-  GraphDBSession(GraphDB& db, ArenaAllocator& alloc, WalWriter& logger, int thread_id)
-    : db_(db), alloc_(alloc), logger_(logger), thread_id_(thread_id) {
+  GraphDBSession(GraphDB& db, MMapAllocator& alloc, WalWriter& logger,
+                 const std::string& work_dir, int thread_id)
+      : db_(db),
+        alloc_(alloc),
+        logger_(logger),
+        work_dir_(work_dir),
+        thread_id_(thread_id) {
     for (auto& app : apps_) {
       app = nullptr;
     }
@@ -59,9 +63,10 @@ class GraphDBSession {
   std::shared_ptr<ColumnBase> get_vertex_property_column(
       uint8_t label, const std::string& col_name) const;
 
-  std::vector<char> Eval(const std::string& input);
+  // Get vertex id column.
+  std::shared_ptr<RefColumnBase> get_vertex_id_column(uint8_t label) const;
 
-  void RegisterApp(const std::string& path, uint8_t index = 0);
+  std::vector<char> Eval(const std::string& input);
 
   void GetAppInfo(Encoder& result);
 
@@ -69,8 +74,9 @@ class GraphDBSession {
 
  private:
   GraphDB& db_;
-  ArenaAllocator& alloc_;
+  MMapAllocator& alloc_;
   WalWriter& logger_;
+  std::string work_dir_;
   int thread_id_;
 
   std::array<AppWrapper, 256> app_wrappers_;

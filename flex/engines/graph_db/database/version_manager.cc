@@ -1,17 +1,17 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* 	http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "flex/engines/graph_db/database/version_manager.h"
 
@@ -95,6 +95,15 @@ uint32_t VersionManager::acquire_update_timestamp() {
 void VersionManager::release_update_timestamp(uint32_t ts) {
   buf_.set_bit(ts & ring_index_mask);
   pending_reqs_.store(0);
+}
+
+bool VersionManager::revert_update_timestamp(uint32_t ts) {
+  uint32_t expected_ts = ts + 1;
+  if (write_ts_.compare_exchange_strong(expected_ts, ts)) {
+    pending_reqs_.store(0);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace gs

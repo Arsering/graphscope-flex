@@ -1,23 +1,23 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* 	http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-#include <string_view>
-#include <string>
-#include <vector>
 #include <filesystem>
 #include <iostream>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #include "flex/engines/graph_db/app/app_base.h"
 #include "flex/third_party/httplib.h"
@@ -41,6 +41,9 @@ int main(int argc, char** argv) {
     port = atoi(port_env);
   }
   httplib::Client cli(url, port);
+  cli.set_connection_timeout(0, 300000);
+  cli.set_read_timeout(60, 0);
+  cli.set_write_timeout(60, 0);
 
   std::string op = argv[1];
   if (op == "--version" || op == "-v") {
@@ -52,44 +55,17 @@ int main(int argc, char** argv) {
   for (auto& c : op) {
     c = toupper(c);
   }
-  
+
   std::vector<char> buf;
   gs::Encoder encoder(buf);
-  if (op == "ADD_STORED_PROCEDURE") {
-    if (argc < 3) {
-      std::cerr << "usage for add stored procedure: rt_admin add_stored_procedure <path-to-library> [index]"
-                << std::endl;
-      return -1;
-    }
-    std::string path = argv[2];
-    if (!std::filesystem::exists(path)) {
-      std::cerr << "library-[" << path << "] file not exist" << std::endl;
-      return -1;
-    }
-    path = std::filesystem::canonical(path);
-    uint8_t index = 0;
-    if (argc >= 4) {
-      index = static_cast<uint8_t>(atoi(argv[3]));
-    }
-    encoder.put_string(op);
-    encoder.put_string(path);
-    encoder.put_byte(index);
-    encoder.put_byte(0);
-  } else if (op == "REMOVE_STORED_PROCEDURE") {
-    if (argc < 3) {
-      std::cerr << "usage for remove stored procedure: rt_admin remove_stored_procedure <index>" << std::endl;
-      return -1;
-    }
-    uint8_t index = static_cast<uint8_t>(atoi(argv[2]));
-    encoder.put_string(op);
-    encoder.put_byte(index);
-    encoder.put_byte(0);
-  } else if (op == "SHOW_STORED_PROCEDURES") {
+  if (op == "SHOW_STORED_PROCEDURES") {
     encoder.put_string(op);
     encoder.put_byte(0);
   } else if (op == "QUERY_VERTEX") {
     if (argc < 4) {
-      std::cerr << "usage for vertex query: rt_admin query_vertex <vertex-label> <vertex-id>" << std::endl;
+      std::cerr << "usage for vertex query: rt_admin query_vertex "
+                   "<vertex-label> <vertex-id>"
+                << std::endl;
       return -1;
     }
     label_name = argv[2];
@@ -100,7 +76,9 @@ int main(int argc, char** argv) {
     encoder.put_byte(0);
   } else if (op == "QUERY_EDGE") {
     if (argc < 7) {
-      std::cerr << "usage for edge query: rt_admin query_edge <src-label> <src-id> <dst-label> <dst-id> <edge-label>" << std::endl;
+      std::cerr << "usage for edge query: rt_admin query_edge <src-label> "
+                   "<src-id> <dst-label> <dst-id> <edge-label>"
+                << std::endl;
       return -1;
     }
     src_label = argv[2];
@@ -149,13 +127,16 @@ int main(int argc, char** argv) {
   } else if (op == "QUERY_VERTEX") {
     gs::Decoder decoder(ret.data(), ret.size());
     if (decoder.empty()) {
-      std::cerr << "Query vertex - " << label_name << " - " << vertex_id << " failed..." << std::endl;
+      std::cerr << "Query vertex - " << label_name << " - " << vertex_id
+                << " failed..." << std::endl;
     }
     int exist = decoder.get_int();
     if (exist == 0) {
-      std::cout << "Vertex - " << label_name << " - " << vertex_id << " not found..." << std::endl;
+      std::cout << "Vertex - " << label_name << " - " << vertex_id
+                << " not found..." << std::endl;
     } else {
-      std::cout << "Vertex - " << label_name << " - " << vertex_id << " found, properties: " << std::endl;
+      std::cout << "Vertex - " << label_name << " - " << vertex_id
+                << " found, properties: " << std::endl;
       while (!decoder.empty()) {
         std::string_view cur = decoder.get_string();
         std::cout << "\t" << cur << std::endl;
@@ -175,13 +156,15 @@ int main(int argc, char** argv) {
         std::string_view dst_label = decoder.get_string();
         std::string_view edge_label = decoder.get_string();
 
-        std::cout << src_label << " - " << edge_label << " - " << dst_label << std::endl;
+        std::cout << src_label << " - " << edge_label << " - " << dst_label
+                  << std::endl;
         int num = decoder.get_int();
         for (int i = 0; i < num; ++i) {
           int64_t src_id = decoder.get_long();
           int64_t dst_id = decoder.get_long();
           std::string_view data = decoder.get_string();
-          std::cout << "\t" << src_id << " - " << dst_id << ": " << data << std::endl;
+          std::cout << "\t" << src_id << " - " << dst_id << ": " << data
+                    << std::endl;
         }
       }
     } else if (status == 2) {

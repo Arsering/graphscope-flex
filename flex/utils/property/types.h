@@ -38,15 +38,14 @@ enum class PropertyType {
   kString,
   kEmpty,
   kInt64,
+  kDouble,
 };
 
 struct Date {
   Date() = default;
   ~Date() = default;
   Date(int64_t x);
-  Date(const char* str);
 
-  void reset(const char* str);
   std::string to_string() const;
 
   int64_t milli_second;
@@ -60,6 +59,7 @@ union AnyValue {
   int64_t l;
   Date d;
   std::string_view s;
+  double db;
 };
 
 template <typename T>
@@ -98,6 +98,11 @@ struct Any {
     value.s = v;
   }
 
+  void set_double(double db) {
+    type = PropertyType::kDouble;
+    value.db = db;
+  }
+
   std::string to_string() const {
     if (type == PropertyType::kInt32) {
       return std::to_string(value.i);
@@ -110,6 +115,8 @@ struct Any {
       return value.d.to_string();
     } else if (type == PropertyType::kEmpty) {
       return "NULL";
+    } else if (type == PropertyType::kDouble) {
+      return std::to_string(value.db);
     } else {
       LOG(FATAL) << "Unexpected property type: " << static_cast<int>(type);
       return "";
@@ -124,6 +131,11 @@ struct Any {
   int64_t AsInt64() const {
     assert(type == PropertyType::kInt64);
     return value.l;
+  }
+
+  double AsDouble() const {
+    assert(type == PropertyType::kDouble);
+    return value.db;
   }
 
   const std::string_view& AsStringView() const {
@@ -191,6 +203,14 @@ struct ConvertAny<std::string> {
   }
 };
 
+template <>
+struct ConvertAny<double> {
+  static void to(const Any& value, double& out) {
+    CHECK(value.type == PropertyType::kDouble);
+    out = value.value.db;
+  }
+};
+
 template <typename T>
 struct AnyConverter {};
 
@@ -249,6 +269,12 @@ struct AnyConverter<Date> {
   static constexpr PropertyType type = PropertyType::kDate;
 
   static Any to_any(const Date& value) {
+    Any ret;
+    ret.set_date(value);
+    return ret;
+  }
+
+  static Any to_any(int64_t value) {
     Any ret;
     ret.set_date(value);
     return ret;
@@ -344,18 +370,31 @@ struct AnyConverter<grape::EmptyType> {
   }
 };
 
-void ParseRecord(const char* line, std::vector<Any>& rec);
+template <>
+struct AnyConverter<double> {
+  static constexpr PropertyType type = PropertyType::kDouble;
 
-void ParseRecord(const char* line, int64_t& id, std::vector<Any>& rec);
+  static Any to_any(const double& value) {
+    Any ret;
+    ret.set_double(value);
+    return ret;
+  }
 
-void ParseRecordX(const char* line, int64_t& src, int64_t& dst, int& prop);
+  static AnyValue to_any_value(const double& value) {
+    AnyValue ret;
+    ret.db = value;
+    return ret;
+  }
 
-void ParseRecordX(const char* line, int64_t& src, int64_t& dst, Date& prop);
+  static const double& from_any(const Any& value) {
+    CHECK(value.type == PropertyType::kDouble);
+    return value.value.db;
+  }
 
-void ParseRecordX(const char* line, int64_t& src, int64_t& dst,
-                  grape::EmptyType& prop);
-
-void ParseRecordX(const char* line, int64_t& src, int64_t& dst, int64_t& prop);
+  static const double& from_any_value(const AnyValue& value) {
+    return value.db;
+  }
+};
 
 grape::InArchive& operator<<(grape::InArchive& in_archive, const Any& value);
 grape::OutArchive& operator>>(grape::OutArchive& out_archive, Any& value);
@@ -371,6 +410,33 @@ namespace std {
 
 inline ostream& operator<<(ostream& os, const gs::Date& dt) {
   os << dt.to_string();
+  return os;
+}
+
+inline ostream& operator<<(ostream& os, gs::PropertyType pt) {
+  switch (pt) {
+  case gs::PropertyType::kInt32:
+    os << "int32";
+    break;
+  case gs::PropertyType::kInt64:
+    os << "int64";
+    break;
+  case gs::PropertyType::kDate:
+    os << "Date";
+    break;
+  case gs::PropertyType::kString:
+    os << "String";
+    break;
+  case gs::PropertyType::kEmpty:
+    os << "Empty";
+    break;
+  case gs::PropertyType::kDouble:
+    os << "double";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
   return os;
 }
 

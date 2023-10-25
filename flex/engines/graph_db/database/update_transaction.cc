@@ -1,33 +1,36 @@
 /** Copyright 2020 Alibaba Group Holding Limited.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* 	http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <filesystem>
 
 #include "grape/serialization/in_archive.h"
 #include "grape/serialization/out_archive.h"
 
-#include "flex/engines/graph_db/database/update_transaction.h"
 #include "flex/engines/graph_db/database/transaction_utils.h"
-#include "flex/engines/graph_db/database/wal.h"
+#include "flex/engines/graph_db/database/update_transaction.h"
 #include "flex/engines/graph_db/database/version_manager.h"
+#include "flex/engines/graph_db/database/wal.h"
+#include "flex/storages/rt_mutable_graph/file_names.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
 namespace gs {
 
 UpdateTransaction::UpdateTransaction(MutablePropertyFragment& graph,
-                                     ArenaAllocator& alloc,
-                                     WalWriter& logger,
-                                     VersionManager& vm,
+                                     MMapAllocator& alloc,
+                                     const std::string& work_dir,
+                                     WalWriter& logger, VersionManager& vm,
                                      timestamp_t timestamp)
     : graph_(graph),
       alloc_(alloc),
@@ -48,10 +51,15 @@ UpdateTransaction::UpdateTransaction(MutablePropertyFragment& graph,
   }
   vertex_offsets_.resize(vertex_label_num_);
   extra_vertex_properties_.resize(vertex_label_num_);
+  std::string txn_work_dir = update_txn_dir(work_dir, timestamp_);
+  std::filesystem::create_directories(txn_work_dir);
   for (size_t i = 0; i < vertex_label_num_; ++i) {
     const Table& table = graph_.get_vertex_table(i);
-    extra_vertex_properties_[i].init(table.column_names(), table.column_types(),
-                                     {}, 4096);
+    std::string v_label = graph_.schema().get_vertex_label_name(i);
+    std::string table_prefix = vertex_table_prefix(v_label);
+    extra_vertex_properties_[i].init(
+        table_prefix, work_dir, table.column_names(), table.column_types(), {});
+    extra_vertex_properties_[i].resize(4096);
   }
 
   size_t csr_num = 2 * vertex_label_num_ * vertex_label_num_ * edge_label_num_;
@@ -396,8 +404,9 @@ bool UpdateTransaction::GetUpdatedEdgeData(bool dir, label_t label, vid_t v,
 }
 
 void UpdateTransaction::IngestWal(MutablePropertyFragment& graph,
+                                  const std::string& work_dir,
                                   uint32_t timestamp, char* data, size_t length,
-                                  ArenaAllocator& alloc) {
+                                  MMapAllocator& alloc) {
   std::vector<IdIndexer<oid_t, vid_t>> added_vertices;
   std::vector<vid_t> added_vertices_base;
   std::vector<vid_t> vertex_nums;
@@ -419,10 +428,15 @@ void UpdateTransaction::IngestWal(MutablePropertyFragment& graph,
   }
   vertex_offsets.resize(vertex_label_num);
   extra_vertex_properties.resize(vertex_label_num);
+  std::string txn_work_dir = update_txn_dir(work_dir, timestamp);
+  std::filesystem::create_directories(txn_work_dir);
   for (size_t i = 0; i < vertex_label_num; ++i) {
     const Table& table = graph.get_vertex_table(i);
-    extra_vertex_properties[i].init(table.column_names(), table.column_types(),
-                                    {}, 4096);
+    std::string v_label = graph.schema().get_vertex_label_name(i);
+    std::string table_prefix = vertex_table_prefix(v_label);
+    extra_vertex_properties[i].init(
+        table_prefix, work_dir, table.column_names(), table.column_types(), {});
+    extra_vertex_properties[i].resize(4096);
   }
 
   size_t csr_num = 2 * vertex_label_num * vertex_label_num * edge_label_num;
