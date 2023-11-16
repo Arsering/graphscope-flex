@@ -47,7 +47,7 @@ class GraphDB {
   static GraphDB& get();
 
   void Init(const Schema& schema, const std::string& data_dir,
-            int thread_num = 1);
+            int thread_num = 1, bool warmup = false);
 
   void Checkpoint();
 

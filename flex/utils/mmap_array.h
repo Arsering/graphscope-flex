@@ -30,8 +30,29 @@
 #include <string_view>
 
 #include "glog/logging.h"
+#include "grape/util.h"
 
 namespace gs {
+
+inline void copy_file(const std::string& src, const std::string& dst) {
+  if (!std::filesystem::exists(src)) {
+    LOG(ERROR) << "file not exists: " << src;
+    return;
+  }
+  size_t len = std::filesystem::file_size(src);
+  int src_fd = open(src.c_str(), O_RDONLY);
+  int dst_fd = open(dst.c_str(), O_WRONLY | O_CREAT);
+
+  ssize_t ret;
+  do {
+    ret = copy_file_range(src_fd, NULL, dst_fd, NULL, len, 0);
+    if (ret == -1) {
+      perror("copy_file_range");
+      return;
+    }
+    len -= ret;
+  } while (len > 0 && ret > 0);
+}
 
 template <typename T>
 class mmap_array {
@@ -89,6 +110,7 @@ class mmap_array {
         assert(data_ != MAP_FAILED);
       }
     }
+    madvise(data_, size_ * sizeof(T), MADV_RANDOM | MADV_WILLNEED);
   }
 
   void dump(const std::string& filename) {
@@ -144,14 +166,10 @@ class mmap_array {
   bool read_only() const { return read_only_; }
 
   void touch(const std::string& filename) {
-    {
-      FILE* fout = fopen(filename.c_str(), "wb");
-      fwrite(data_, sizeof(T), size_, fout);
-      fflush(fout);
-      fclose(fout);
+    if (read_only_) {
+      copy_file(filename_, filename);
+      open(filename, false);
     }
-
-    open(filename, false);
   }
 
   T* data() { return data_; }
@@ -171,6 +189,7 @@ class mmap_array {
     std::swap(fd_, rhs.fd_);
     std::swap(data_, rhs.data_);
     std::swap(size_, rhs.size_);
+    std::swap(read_only_, rhs.read_only_);
   }
 
   const std::string& filename() const { return filename_; }

@@ -21,6 +21,7 @@ limitations under the License.
 #include <cmath>
 #include <memory>
 #include <string_view>
+#include <thread>
 #include <type_traits>
 #include <vector>
 
@@ -238,10 +239,16 @@ class LFIndexer {
 
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) {
-    keys_.open(snapshot_dir + "/" + name + ".keys", true);
-    keys_.touch(work_dir + "/" + name + ".keys");
-    indices_.open(snapshot_dir + "/" + name + ".indices", true);
-    indices_.touch(work_dir + "/" + name + ".indices");
+    if (!std::filesystem::exists(work_dir + "/" + name + ".keys")) {
+      copy_file(snapshot_dir + "/" + name + ".keys",
+                work_dir + "/" + name + ".keys");
+    }
+    if (!std::filesystem::exists(work_dir + "/" + name + ".indices")) {
+      copy_file(snapshot_dir + "/" + name + ".indices",
+                work_dir + "/" + name + ".indices");
+    }
+    keys_.open(work_dir + "/" + name + ".keys", false);
+    indices_.open(work_dir + "/" + name + ".indices", false);
     indices_size_ = indices_.size();
 
     for (size_t k = keys_.size() - 1; k >= 0; --k) {
@@ -284,6 +291,47 @@ class LFIndexer {
 
   // get keys
   const mmap_array<int64_t>& get_keys() const { return keys_; }
+
+  void warmup(int thread_num) const {
+    size_t keys_size = keys_.size();
+    size_t indices_size = indices_.size();
+    std::atomic<size_t> k_i(0), i_i(0);
+    std::atomic<size_t> output(0);
+    size_t chunk = 4096;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < thread_num; ++i) {
+      threads.emplace_back([&]() {
+        size_t ret = 0;
+        while (true) {
+          size_t begin = std::min(k_i.fetch_add(chunk), keys_size);
+          size_t end = std::min(begin + chunk, keys_size);
+          if (begin == end) {
+            break;
+          }
+          while (begin != end) {
+            ret += keys_.get(begin);
+            ++begin;
+          }
+        }
+        while (true) {
+          size_t begin = std::min(i_i.fetch_add(chunk), indices_size);
+          size_t end = std::min(begin + chunk, indices_size);
+          if (begin == end) {
+            break;
+          }
+          while (begin != end) {
+            ret += indices_.get(begin);
+            ++begin;
+          }
+        }
+        output.fetch_add(ret);
+      });
+    }
+    for (auto& thrd : threads) {
+      thrd.join();
+    }
+    (void) output.load();
+  }
 
  private:
   mmap_array<int64_t> keys_;

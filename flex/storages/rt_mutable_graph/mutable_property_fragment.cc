@@ -119,6 +119,22 @@ std::string get_latest_snapshot(const std::string& work_dir) {
   return snapshots_dir + "/" + std::to_string(version);
 }
 
+void copy_files_to_tmp(const std::string& snapshot_dir,
+                       const std::string& tmp_dir) {
+  std::vector<std::string> files_to_copy;
+  for (const auto& entry : std::filesystem::directory_iterator(snapshot_dir)) {
+    std::string filename = entry.path().filename().string();
+    if (filename.substr(0, 11) == "vertex_map_") {
+      files_to_copy.push_back(filename);
+    } else if (filename.substr(filename.size() - 5, 5) == ".snbr") {
+      files_to_copy.push_back(filename);
+    }
+  }
+  for (auto& filename : files_to_copy) {
+    copy_file(snapshot_dir + "/" + filename, tmp_dir + "/" + filename);
+  }
+}
+
 void MutablePropertyFragment::Open(const std::string& work_dir) {
   loadSchema(schema_path(work_dir));
   vertex_label_num_ = schema_.vertex_label_num();
@@ -129,6 +145,7 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   std::string snapshot_dir = get_latest_snapshot(work_dir);
   std::string tmp_dir_path = tmp_dir(work_dir);
   std::filesystem::create_directory(tmp_dir_path);
+  copy_files_to_tmp(snapshot_dir, tmp_dir_path);
   std::vector<size_t> vertex_capacities(vertex_label_num_, 0);
   for (size_t i = 0; i < vertex_label_num_; ++i) {
     std::string v_label_name = schema_.get_vertex_label_name(i);
@@ -181,6 +198,25 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
       }
     }
   }
+}
+
+void MutablePropertyFragment::Warmup(int thread_num) {
+  double t = -grape::GetCurrentTime();
+  for (auto ptr : ie_) {
+    if (ptr != NULL) {
+      ptr->warmup(thread_num);
+    }
+  }
+  for (auto ptr : oe_) {
+    if (ptr != NULL) {
+      ptr->warmup(thread_num);
+    }
+  }
+  for (auto& indexer : lf_indexers_) {
+    indexer.warmup(thread_num);
+  }
+  t += grape::GetCurrentTime();
+  LOG(INFO) << "Warmup takes: " << t << " s";
 }
 
 void MutablePropertyFragment::Dump(const std::string& work_dir,
