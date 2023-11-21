@@ -32,7 +32,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-
+#define OV false
 template <typename T>
 class mmap_array {
  public:
@@ -156,14 +156,20 @@ class mmap_array {
 
   T* data() { return data_; }
   const T* data() const { return data_; }
-
+#if OV
   void set(size_t idx, const T& val) { data_[idx] = val; }
-
   const T& get(size_t idx) const { return data_[idx]; }
+#else
+  void set(size_t idx, const T& val) {
+    memcpy((char*) (data_ + idx), &val, sizeof(T));
+  }
+  T& get(size_t idx) const { return data_[idx]; }
+#endif
 
   const T& operator[](size_t idx) const { return data_[idx]; }
+#if OV
   T& operator[](size_t idx) { return data_[idx]; }
-
+#endif
   size_t size() const { return size_; }
 
   void swap(mmap_array<T>& rhs) {

@@ -700,9 +700,15 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
 
   lf.indices_.open(filename + ".indices", false);
   lf.indices_.resize(input.indices_.size());
+#if OV
   for (size_t k = 0; k != input.indices_.size(); ++k) {
     lf.indices_[k] = std::numeric_limits<INDEX_T>::max();
   }
+#else
+  for (size_t k = 0; k != input.indices_.size(); ++k) {
+    lf.indices_.set(k, std::numeric_limits<INDEX_T>::max());
+  }
+#endif
   lf.indices_size_ = input.indices_.size();
 
   lf.hash_policy_.set_mod_function_by_index(
@@ -720,7 +726,11 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         if (index >= input.num_slots_minus_one_) {
           extra.emplace_back(oid, ret);
         } else {
+#if OV
           lf.indices_[index] = ret;
+#else
+          lf.indices_.set(index, ret);
+#endif
         }
         break;
       }
@@ -733,7 +743,11 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         input.hasher_(pair.first), input.num_slots_minus_one_);
     while (true) {
       if (lf.indices_[index] == sentinel) {
+#if OV
         lf.indices_[index] = pair.second;
+#else
+        lf.indices_.set(index, pair.second);
+#endif
         break;
       }
       index = (index + 1) % input.num_slots_minus_one_;
