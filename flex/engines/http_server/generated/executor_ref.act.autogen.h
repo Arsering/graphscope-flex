@@ -24,8 +24,6 @@ public:
 	~executor_ref() override = default;
 	/// actor methods
 	seastar::future<query_result> run_graph_db_query(server::query_param &&param);
-	seastar::future<query_result> run_hqps_adhoc_query(server::query_param &&param);
-	seastar::future<query_result> run_hqps_procedure_query(server::query_param &&param);
 };
 
 } // namespace server

@@ -21,8 +21,6 @@ namespace server {
 
 enum : uint8_t {
 	k_executor_run_graph_db_query = 0,
-	k_executor_run_hqps_adhoc_query = 1,
-	k_executor_run_hqps_procedure_query = 2,
 };
 
 executor_ref::executor_ref() : ::hiactor::reference_base() { actor_type = 0; }
@@ -30,16 +28,6 @@ executor_ref::executor_ref() : ::hiactor::reference_base() { actor_type = 0; }
 seastar::future<query_result> executor_ref::run_graph_db_query(server::query_param &&param) {
 	addr.set_method_actor_tid(0);
 	return hiactor::actor_client::request<server::query_result, server::query_param>(addr, k_executor_run_graph_db_query, std::forward<server::query_param>(param));
-}
-
-seastar::future<query_result> executor_ref::run_hqps_adhoc_query(server::query_param &&param) {
-	addr.set_method_actor_tid(0);
-	return hiactor::actor_client::request<server::query_result, server::query_param>(addr, k_executor_run_hqps_adhoc_query, std::forward<server::query_param>(param));
-}
-
-seastar::future<query_result> executor_ref::run_hqps_procedure_query(server::query_param &&param) {
-	addr.set_method_actor_tid(0);
-	return hiactor::actor_client::request<server::query_result, server::query_param>(addr, k_executor_run_hqps_procedure_query, std::forward<server::query_param>(param));
 }
 
 seastar::future<hiactor::stop_reaction> executor::do_work(hiactor::actor_message* msg) {
@@ -56,60 +44,6 @@ seastar::future<hiactor::stop_reaction> executor::do_work(hiactor::actor_message
 				}
 			};
 			return apply_run_graph_db_query(msg, this).then_wrapped([msg] (seastar::future<server::query_result> fut) {
-				if (__builtin_expect(fut.failed(), false)) {
-					auto* ex_msg = hiactor::make_response_message(
-						msg->hdr.src_shard_id,
-						hiactor::simple_string::from_exception(fut.get_exception()),
-						msg->hdr.pr_id,
-						hiactor::message_type::EXCEPTION_RESPONSE);
-					return hiactor::actor_engine().send(ex_msg);
-				}
-				auto* response_msg = hiactor::make_response_message(
-					msg->hdr.src_shard_id, fut.get0(), msg->hdr.pr_id, hiactor::message_type::RESPONSE);
-				return hiactor::actor_engine().send(response_msg);
-			}).then([] {
-				return seastar::make_ready_future<hiactor::stop_reaction>(hiactor::stop_reaction::no);
-			});
-		}
-		case k_executor_run_hqps_adhoc_query: {
-			static auto apply_run_hqps_adhoc_query = [] (hiactor::actor_message *a_msg, executor *self) {
-				if (!a_msg->hdr.from_network) {
-					return self->run_hqps_adhoc_query(std::move(reinterpret_cast<
-						hiactor::actor_message_with_payload<server::query_param>*>(a_msg)->data));
-				} else {
-					auto* ori_msg = reinterpret_cast<hiactor::actor_message_with_payload<
-						hiactor::serializable_queue>*>(a_msg);
-					return self->run_hqps_adhoc_query(server::query_param::load_from(ori_msg->data));
-				}
-			};
-			return apply_run_hqps_adhoc_query(msg, this).then_wrapped([msg] (seastar::future<server::query_result> fut) {
-				if (__builtin_expect(fut.failed(), false)) {
-					auto* ex_msg = hiactor::make_response_message(
-						msg->hdr.src_shard_id,
-						hiactor::simple_string::from_exception(fut.get_exception()),
-						msg->hdr.pr_id,
-						hiactor::message_type::EXCEPTION_RESPONSE);
-					return hiactor::actor_engine().send(ex_msg);
-				}
-				auto* response_msg = hiactor::make_response_message(
-					msg->hdr.src_shard_id, fut.get0(), msg->hdr.pr_id, hiactor::message_type::RESPONSE);
-				return hiactor::actor_engine().send(response_msg);
-			}).then([] {
-				return seastar::make_ready_future<hiactor::stop_reaction>(hiactor::stop_reaction::no);
-			});
-		}
-		case k_executor_run_hqps_procedure_query: {
-			static auto apply_run_hqps_procedure_query = [] (hiactor::actor_message *a_msg, executor *self) {
-				if (!a_msg->hdr.from_network) {
-					return self->run_hqps_procedure_query(std::move(reinterpret_cast<
-						hiactor::actor_message_with_payload<server::query_param>*>(a_msg)->data));
-				} else {
-					auto* ori_msg = reinterpret_cast<hiactor::actor_message_with_payload<
-						hiactor::serializable_queue>*>(a_msg);
-					return self->run_hqps_procedure_query(server::query_param::load_from(ori_msg->data));
-				}
-			};
-			return apply_run_hqps_procedure_query(msg, this).then_wrapped([msg] (seastar::future<server::query_result> fut) {
 				if (__builtin_expect(fut.failed(), false)) {
 					auto* ex_msg = hiactor::make_response_message(
 						msg->hdr.src_shard_id,

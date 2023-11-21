@@ -11,8 +11,8 @@ project (
 
 
 option(BUILD_HQPS "Whether to build HighQPS Engine" ON)
-option(BUILD_TEST "Whether to build test" ON)
-option(BUILD_DOC "Whether to build doc" ON)
+option(BUILD_TEST "Whether to build test" OFF)
+option(BUILD_DOC "Whether to build doc" OFF)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
