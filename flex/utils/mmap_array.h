@@ -153,7 +153,7 @@ class mmap_array {
 
     open(filename, false);
   }
-  T* data() { return data_; }
+  // T* data() { return data_; }
 #if OV
   T* data() { return data_; }
   const T* data() const { return data_; }
@@ -163,11 +163,19 @@ class mmap_array {
   void set(size_t idx, const T& val) { data_[idx] = val; }
   const T& get(size_t idx) const { return data_[idx]; }
 #else
-  void set(size_t idx, const T& val) {
-    memcpy((char*) (data_ + idx), &val, sizeof(T));
+  void set(size_t idx, const T& val, size_t len = 1) {
+    CHECK_LE(idx + len, size_);
+    memcpy((char*) (data_ + idx), &val, sizeof(T) * len);
   }
-  T& get(size_t idx) { return data_[idx]; }
-  const T& get(size_t idx) const { return data_[idx]; }
+
+  T& get(size_t idx) {
+    CHECK_LT(idx, size_);
+    return data_[idx];
+  }
+  const T& get(size_t idx) const {
+    CHECK_LT(idx, size_);
+    return data_[idx];
+  }
 #endif
 
   const T& operator[](size_t idx) const { return data_[idx]; }
@@ -234,11 +242,19 @@ class mmap_array<std::string_view> {
     items_.resize(size);
     data_.resize(data_size);
   }
-
+#if OV
   void set(size_t idx, size_t offset, const std::string_view& val) {
     items_.set(idx, {offset, static_cast<uint32_t>(val.size())});
     memcpy(data_.data() + offset, val.data(), val.size());
   }
+#else
+  void set(size_t idx, size_t offset, const std::string_view& val) {
+    items_.set(idx, {offset, static_cast<uint32_t>(val.size())});
+    data_.set(offset, *(val.data()), val.size());
+    // memcpy(data_.data() + offset, val.data(), val.size());
+  }
+#endif
+
 #if OV
   std::string_view get(size_t idx) const {
     const string_item& item = items_.get(idx);

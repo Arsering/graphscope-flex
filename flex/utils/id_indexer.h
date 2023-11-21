@@ -20,6 +20,7 @@ limitations under the License.
 #include <cassert>
 #include <cmath>
 #include <memory>
+#include <mutex>
 #include <string_view>
 #include <type_traits>
 #include <vector>
@@ -190,6 +191,7 @@ class LFIndexer {
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+#if OV
     while (true) {
       if (__sync_bool_compare_and_swap(&indices_.data()[index], sentinel,
                                        ind)) {
@@ -197,6 +199,18 @@ class LFIndexer {
       }
       index = (index + 1) % num_slots_minus_one_;
     }
+#else
+    while (true) {
+      if (indices_.get(index) == sentinel) {
+        std::lock_guard lock(indices_lock_);
+        if (indices_.get(index) == sentinel) {
+          indices_.set(index, ind);
+          break;
+        }
+      }
+      index = (index + 1) % num_slots_minus_one_;
+    }
+#endif
     return ind;
   }
 
@@ -289,7 +303,11 @@ class LFIndexer {
   mmap_array<int64_t> keys_;
   mmap_array<INDEX_T>
       indices_;  // size() == indices_size_ == num_slots_minus_one_ +
-                 // log(num_slots_minus_one_)
+// log(num_slots_minus_one_)
+#if !OV
+  std::mutex indices_lock_;
+#endif
+
   std::atomic<size_t> num_elements_;
   size_t num_slots_minus_one_;
   size_t indices_size_;
@@ -691,7 +709,16 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
 
   lf.keys_.open(filename + ".keys", false);
   lf.keys_.resize(lf_size);
+// FIXME: input.keys_是mmap分配的还是malloc分配的？？？
+#if OV
   memcpy(lf.keys_.data(), input.keys_.data(), sizeof(int64_t) * size);
+#else
+  for (size_t t = 0; t < size; t++) {
+    auto item = input.keys_[t];
+    lf.keys_.set(t, item);
+  }
+#endif
+
   for (size_t k = size; k != lf_size; ++k) {
     lf.keys_.set(k, std::numeric_limits<int64_t>::max());
   }
