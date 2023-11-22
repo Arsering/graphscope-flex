@@ -145,8 +145,11 @@ class ReadTransaction {
 
     oid_t GetId() const;
     vid_t GetIndex() const;
-
+#if OV
     Any GetField(int col_id) const;
+#else
+    gbp::BufferObject GetField(int col_id) const;
+#endif
     int FieldNum() const;
 
    private:
@@ -161,9 +164,11 @@ class ReadTransaction {
     edge_iterator(label_t neighbor_label, label_t edge_label,
                   std::shared_ptr<MutableCsrConstEdgeIterBase> iter);
     ~edge_iterator();
-
+#if OV
     Any GetData() const;
-
+#else
+    gbp::BufferObject GetData() const;
+#endif
     bool IsValid() const;
 
     void Next();

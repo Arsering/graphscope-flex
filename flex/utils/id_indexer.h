@@ -201,9 +201,11 @@ class LFIndexer {
     }
 #else
     while (true) {
-      if (indices_.get(index) == sentinel) {
+      auto item1 = indices_.get(index);
+      if (gbp::Decode<INDEX_T>(item1) == sentinel) {
         std::lock_guard lock(indices_lock_);
-        if (indices_.get(index) == sentinel) {
+        auto item2 = indices_.get(index);
+        if (gbp::Decode<INDEX_T>(item2) == sentinel) {
           indices_.set(index, ind);
           break;
         }
@@ -219,7 +221,13 @@ class LFIndexer {
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
+#if OV
       INDEX_T ind = indices_.get(index);
+#else
+      auto item = indices_.get(index);
+      INDEX_T ind = gbp::Decode<INDEX_T>(item);
+#endif
+#if OV
       if (ind == sentinel) {
         LOG(FATAL) << "cannot find " << oid << " in id_indexer";
       } else if (keys_.get(ind) == oid) {
@@ -227,6 +235,17 @@ class LFIndexer {
       } else {
         index = (index + 1) % num_slots_minus_one_;
       }
+#else
+      if (ind == sentinel) {
+        LOG(FATAL) << "cannot find " << oid << " in id_indexer";
+      } else {
+        auto item = keys_.get(ind);
+        if (gbp::Decode<int64_t>(item) == oid) {
+          return ind;
+        }
+      }
+      index = (index + 1) % num_slots_minus_one_;
+#endif
     }
   }
 
@@ -235,7 +254,9 @@ class LFIndexer {
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
-      INDEX_T ind = indices_.get(index);
+      auto item = indices_.get(index);
+      INDEX_T ind = gbp::Decode<INDEX_T>(item);
+#if OV
       if (ind == sentinel) {
         return false;
       } else if (keys_.get(ind) == oid) {
@@ -244,11 +265,26 @@ class LFIndexer {
       } else {
         index = (index + 1) % num_slots_minus_one_;
       }
+#else
+      if (ind == sentinel) {
+        return false;
+      } else {
+        auto item = keys_.get(ind);
+        if (gbp::Decode<int64_t>(item) == oid) {
+          ret = ind;
+          return true;
+        }
+      }
+      index = (index + 1) % num_slots_minus_one_;
+#endif
     }
     return false;
   }
 
-  int64_t get_key(const INDEX_T& index) const { return keys_.get(index); }
+  int64_t get_key(const INDEX_T& index) const {
+    auto item = keys_.get(index);
+    return gbp::Decode<int64_t>(item);
+  }
 
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) {
@@ -259,10 +295,18 @@ class LFIndexer {
     indices_size_ = indices_.size();
 
     for (size_t k = keys_.size() - 1; k >= 0; --k) {
+#if OV
       if (keys_.get(k) != std::numeric_limits<int64_t>::max()) {
         num_elements_.store(k + 1);
         break;
       }
+#else
+      auto item = keys_.get(k);
+      if (item.Obj<int64_t>() != std::numeric_limits<int64_t>::max()) {
+        num_elements_.store(k + 1);
+        break;
+      }
+#endif
     }
 
     load_meta(snapshot_dir + "/" + name + ".meta");
@@ -769,7 +813,8 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
     size_t index = input.hash_policy_.index_for_hash(
         input.hasher_(pair.first), input.num_slots_minus_one_);
     while (true) {
-      if (lf.indices_[index] == sentinel) {
+      auto item = lf.indices_.get(index);
+      if (gbp::Decode<INDEX_T>(item) == sentinel) {
 #if OV
         lf.indices_[index] = pair.second;
 #else

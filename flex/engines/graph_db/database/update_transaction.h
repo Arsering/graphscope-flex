@@ -64,9 +64,11 @@ class UpdateTransaction {
     oid_t GetId() const;
 
     vid_t GetIndex() const;
-
+#if OV
     Any GetField(int col_id) const;
-
+#else
+    gbp::BufferObject GetField(int col_id) const;
+#endif
     bool SetField(int col_id, const Any& value);
 
    private:
@@ -84,9 +86,11 @@ class UpdateTransaction {
                   std::shared_ptr<MutableCsrConstEdgeIterBase> init_iter,
                   UpdateTransaction* txn);
     ~edge_iterator();
-
+#if OV
     Any GetData() const;
-
+#else
+    gbp::BufferObject GetData() const;
+#endif
     void SetData(const Any& value);
 
     bool IsValid() const;
@@ -123,9 +127,11 @@ class UpdateTransaction {
 
   edge_iterator GetInEdgeIterator(label_t label, vid_t u,
                                   label_t neighnor_label, label_t edge_label);
-
+#if OV
   Any GetVertexField(label_t label, vid_t lid, int col_id) const;
-
+#else
+  gbp::BufferObject GetVertexField(label_t label, vid_t lid, int col_id) const;
+#endif
   bool SetVertexField(label_t label, vid_t lid, int col_id, const Any& value);
 
   void SetEdgeData(bool dir, label_t label, vid_t v, label_t neighbor_label,

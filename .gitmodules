@@ -1,0 +1,3 @@
+[submodule "flex_ldbc_snb"]
+	path = flex_ldbc_snb
+	url = https://github.com/GraphScope/flex_ldbc_snb.git

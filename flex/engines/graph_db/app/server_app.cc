@@ -103,7 +103,13 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
         output.put_int(1);
         int field_num = vit.FieldNum();
         for (int i = 0; i < field_num; ++i) {
+#if OV
           output.put_string(vit.GetField(i).to_string());
+#else
+          auto item = vit.GetField(i);
+          std::string_view val = {item.Data(), item.Size()};
+          output.put_string_view(val);
+#endif
         }
         return true;
       }

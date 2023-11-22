@@ -36,13 +36,20 @@ class TypedEmptyColumn : public ColumnBase {
   PropertyType type() const override { return AnyConverter<T>::type; }
 
   void set_value(size_t index, const T& val) {}
-
+#if OV
   void set_any(size_t index, const Any& value) override {}
 
   T get_view(size_t index) const { T{}; }
 
   Any get(size_t index) const override { return Any(); }
+#else
+  void set_any(size_t index, const Any& value) override {}
+  void set(size_t index, const gbp::BufferObject& value) {}
 
+  gbp::BufferObject get(size_t index) const override {
+    return gbp::BufferObject();
+  }
+#endif
   void ingest(uint32_t index, grape::OutArchive& arc) override {
     T val;
     arc >> val;

@@ -49,7 +49,7 @@ static void check_edge_invariant(
     }
   }
 }
-
+#if OV
 static void set_vertex_properties(gs::ColumnBase* col,
                                   std::shared_ptr<arrow::ChunkedArray> array,
                                   const std::vector<vid_t>& vids) {
@@ -157,7 +157,115 @@ static void set_vertex_properties(gs::ColumnBase* col,
     LOG(FATAL) << "Not support type: " << type->ToString();
   }
 }
-
+#else
+static void set_vertex_properties(gs::ColumnBase* col,
+                                  std::shared_ptr<arrow::ChunkedArray> array,
+                                  const std::vector<vid_t>& vids) {
+  auto type = array->type();
+  auto col_type = col->type();
+  size_t cur_ind = 0;
+  if (col_type == PropertyType::kInt64) {
+    CHECK(type == arrow::int64())
+        << "Inconsistent data type, expect int64, but got " << type->ToString();
+    for (auto j = 0; j < array->num_chunks(); ++j) {
+      auto casted =
+          std::static_pointer_cast<arrow::Int64Array>(array->chunk(j));
+      for (auto k = 0; k < casted->length(); ++k) {
+        col->set_any(
+            vids[cur_ind++],
+            std::move(AnyConverter<int64_t>::to_any(casted->Value(k))));
+      }
+    }
+  } else if (col_type == PropertyType::kInt32) {
+    CHECK(type == arrow::int32())
+        << "Inconsistent data type, expect int32, but got " << type->ToString();
+    for (auto j = 0; j < array->num_chunks(); ++j) {
+      auto casted =
+          std::static_pointer_cast<arrow::Int32Array>(array->chunk(j));
+      for (auto k = 0; k < casted->length(); ++k) {
+        col->set_any(
+            vids[cur_ind++],
+            std::move(AnyConverter<int32_t>::to_any(casted->Value(k))));
+      }
+    }
+  } else if (col_type == PropertyType::kDouble) {
+    CHECK(type == arrow::float64())
+        << "Inconsistent data type, expect double, but got "
+        << type->ToString();
+    for (auto j = 0; j < array->num_chunks(); ++j) {
+      auto casted =
+          std::static_pointer_cast<arrow::DoubleArray>(array->chunk(j));
+      for (auto k = 0; k < casted->length(); ++k) {
+        col->set_any(vids[cur_ind++],
+                     std::move(AnyConverter<double>::to_any(casted->Value(k))));
+      }
+    }
+  } else if (col_type == PropertyType::kString) {
+    CHECK(type == arrow::large_utf8() || type == arrow::utf8())
+        << "Inconsistent data type, expect string, but got "
+        << type->ToString();
+    if (type == arrow::large_utf8()) {
+      for (auto j = 0; j < array->num_chunks(); ++j) {
+        auto casted =
+            std::static_pointer_cast<arrow::LargeStringArray>(array->chunk(j));
+        for (auto k = 0; k < casted->length(); ++k) {
+          auto str = casted->GetView(k);
+          std::string_view str_view(str.data(), str.size());
+          col->set_any(
+              vids[cur_ind++],
+              std::move(AnyConverter<std::string_view>::to_any(str_view)));
+        }
+      }
+    } else {
+      for (auto j = 0; j < array->num_chunks(); ++j) {
+        auto casted =
+            std::static_pointer_cast<arrow::StringArray>(array->chunk(j));
+        for (auto k = 0; k < casted->length(); ++k) {
+          auto str = casted->GetView(k);
+          std::string_view str_view(str.data(), str.size());
+          col->set_any(
+              vids[cur_ind++],
+              std::move(AnyConverter<std::string_view>::to_any(str_view)));
+        }
+      }
+    }
+  } else if (col_type == PropertyType::kDate) {
+    if (type->Equals(arrow::int64())) {
+      for (auto j = 0; j < array->num_chunks(); ++j) {
+        auto casted =
+            std::static_pointer_cast<arrow::Int64Array>(array->chunk(j));
+        for (auto k = 0; k < casted->length(); ++k) {
+          col->set_any(vids[cur_ind++],
+                       std::move(AnyConverter<Date>::to_any(casted->Value(k))));
+        }
+      }
+    } else if (type->Equals(arrow::timestamp(arrow::TimeUnit::MILLI))) {
+      for (auto j = 0; j < array->num_chunks(); ++j) {
+        auto casted =
+            std::static_pointer_cast<arrow::TimestampArray>(array->chunk(j));
+        for (auto k = 0; k < casted->length(); ++k) {
+          col->set_any(vids[cur_ind++],
+                       std::move(AnyConverter<Date>::to_any(casted->Value(k))));
+        }
+      }
+    } else if (type->Equals(arrow::timestamp(arrow::TimeUnit::MICRO))) {
+      for (auto j = 0; j < array->num_chunks(); ++j) {
+        auto casted =
+            std::static_pointer_cast<arrow::TimestampArray>(array->chunk(j));
+        for (auto k = 0; k < casted->length(); ++k) {
+          col->set_any(vids[cur_ind++],
+                       std::move(AnyConverter<Date>::to_any(casted->Value(k))));
+        }
+      }
+    } else {
+      LOG(FATAL) << "Inconsistent data type, expect date, but got "
+                 << type->ToString();
+    }
+  } else {
+    LOG(FATAL) << "Not support type: " << type->ToString();
+  }
+}
+#endif
 template <typename EDATA_T>
 static void append_edges(
     std::shared_ptr<arrow::Int64Array> src_col,

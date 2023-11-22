@@ -39,6 +39,7 @@ enum class PropertyType {
   kEmpty,
   kInt64,
   kDouble,
+  kBufferObject,
 };
 
 struct Date {
@@ -102,6 +103,10 @@ struct Any {
     type = PropertyType::kDouble;
     value.db = db;
   }
+  // void set_BufferObject(gbp::BufferObject bo) {
+  //   type = PropertyType::kBufferObject;
+  //   buf_obj = bo;
+  // }
 
   std::string to_string() const {
     if (type == PropertyType::kInt32) {
@@ -147,6 +152,10 @@ struct Any {
     assert(type == PropertyType::kDate);
     return value.d;
   }
+  // gbp::BufferObject AsBufferObject() const {
+  //   assert(type == PropertyType::kBufferObject);
+  //   return buf_obj;
+  // }
 
   template <typename T>
   static Any From(const T& value) {
@@ -155,6 +164,7 @@ struct Any {
 
   PropertyType type;
   AnyValue value;
+  // gbp::BufferObject buf_obj;
 };
 
 template <typename T>
@@ -210,6 +220,13 @@ struct ConvertAny<double> {
     out = value.value.db;
   }
 };
+// template <>
+// struct ConvertAny<gbp::BufferObject> {
+//   static void to(const Any& value, gbp::BufferObject& out) {
+//     CHECK(value.type == PropertyType::kBufferObject);
+//     out = value.buf_obj;
+//   }
+// };
 
 template <typename T>
 struct AnyConverter {};
@@ -395,6 +412,29 @@ struct AnyConverter<double> {
     return value.db;
   }
 };
+
+// template <>
+// struct AnyConverter<gbp::BufferObject> {
+//   static constexpr PropertyType type = PropertyType::kBufferObject;
+
+//   static Any to_any(const gbp::BufferObject& value) {
+//     Any ret;
+//     ret.set_BufferObject(value);
+//     return ret;
+//   }
+
+//   static AnyValue to_any_value(const double& value) {
+//     LOG(FATAL) << "Function is unavailable!!";
+//   }
+
+//   static const double& from_any(const Any& value) {
+//     LOG(FATAL) << "Function is unavailable!!";
+//   }
+
+//   static const double& from_any_value(const AnyValue& value) {
+//     LOG(FATAL) << "Function is unavailable!!";
+//   }
+// };
 
 grape::InArchive& operator<<(grape::InArchive& in_archive, const Any& value);
 grape::OutArchive& operator>>(grape::OutArchive& out_archive, Any& value);

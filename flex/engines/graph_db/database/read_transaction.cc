@@ -46,9 +46,15 @@ oid_t ReadTransaction::vertex_iterator::GetId() const {
 }
 vid_t ReadTransaction::vertex_iterator::GetIndex() const { return cur_; }
 
+#if OV
 Any ReadTransaction::vertex_iterator::GetField(int col_id) const {
   return graph_.get_vertex_table(label_).get_column_by_id(col_id)->get(cur_);
 }
+#else
+gbp::BufferObject ReadTransaction::vertex_iterator::GetField(int col_id) const {
+  return graph_.get_vertex_table(label_).get_column_by_id(col_id)->get(cur_);
+}
+#endif
 
 int ReadTransaction::vertex_iterator::FieldNum() const {
   return graph_.get_vertex_table(label_).col_num();
@@ -62,9 +68,15 @@ ReadTransaction::edge_iterator::edge_iterator(
       iter_(std::move(iter)) {}
 ReadTransaction::edge_iterator::~edge_iterator() = default;
 
+#if OV
 Any ReadTransaction::edge_iterator::GetData() const {
   return iter_->get_data();
 }
+#else
+gbp::BufferObject ReadTransaction::edge_iterator::GetData() const {
+  return iter_->get_data();
+}
+#endif
 
 bool ReadTransaction::edge_iterator::IsValid() const {
   return iter_->is_valid();

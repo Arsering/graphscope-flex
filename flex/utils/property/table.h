@@ -60,9 +60,11 @@ class Table {
   std::shared_ptr<ColumnBase> get_column(const std::string& name);
 
   const std::shared_ptr<ColumnBase> get_column(const std::string& name) const;
-
+#if OV
   std::vector<Any> get_row(size_t row_id) const;
-
+#else
+  std::vector<gbp::BufferObject> get_row(size_t row_id) const;
+#endif
   std::shared_ptr<ColumnBase> get_column_by_id(size_t index);
 
   const std::shared_ptr<ColumnBase> get_column_by_id(size_t index) const;
@@ -74,18 +76,28 @@ class Table {
 
   void insert(size_t index, const std::vector<Any>& values);
 
-  // insert properties except for the primary key
-  // col_ind_mapping: the mapping from the column index in the raw file row to
-  // the column index in the schema
+// insert properties except for the primary key
+// col_ind_mapping: the mapping from the column index in the raw file row to
+// the column index in the schema
+#if OV
+  void insert(size_t index, const std::vector<Any>& values);
   void insert(size_t index, const std::vector<Any>& values,
               const std::vector<int32_t>& col_ind_mapping);
-
+#else
+  void insert(size_t index, const std::vector<gbp::BufferObject>& values);
+  void insert(size_t index, const std::vector<gbp::BufferObject>& values,
+              const std::vector<int32_t>& col_ind_mapping);
+#endif
   void resize(size_t row_num);
-
+#if OV
   Any at(size_t row_id, size_t col_id);
 
   Any at(size_t row_id, size_t col_id) const;
+#else
+  gbp::BufferObject at(size_t row_id, size_t col_id);
 
+  gbp::BufferObject at(size_t row_id, size_t col_id) const;
+#endif
   void ingest(uint32_t index, grape::OutArchive& arc);
 
  private:

@@ -151,7 +151,7 @@ const std::shared_ptr<ColumnBase> Table::get_column(
 
   return nullptr;
 }
-
+#if OV
 std::vector<Any> Table::get_row(size_t row_id) const {
   std::vector<Any> ret;
   for (auto ptr : columns_) {
@@ -159,7 +159,15 @@ std::vector<Any> Table::get_row(size_t row_id) const {
   }
   return ret;
 }
-
+#else
+std::vector<gbp::BufferObject> Table::get_row(size_t row_id) const {
+  std::vector<gbp::BufferObject> ret;
+  for (auto ptr : columns_) {
+    ret.push_back(ptr->get(row_id));
+  }
+  return ret;
+}
+#endif
 std::shared_ptr<ColumnBase> Table::get_column_by_id(size_t index) {
   if (index >= columns_.size()) {
     return nullptr;
@@ -187,6 +195,7 @@ std::vector<std::shared_ptr<ColumnBase>>& Table::columns() { return columns_; }
 // get column pointers
 std::vector<ColumnBase*>& Table::column_ptrs() { return column_ptrs_; }
 
+#if OV
 void Table::insert(size_t index, const std::vector<Any>& values) {
   assert(values.size() == columns_.size());
   CHECK_EQ(values.size(), columns_.size());
@@ -210,12 +219,37 @@ void Table::insert(size_t index, const std::vector<Any>& values,
   }
 }
 
+#else
+void Table::insert(size_t index, const std::vector<gbp::BufferObject>& values) {
+  assert(values.size() == columns_.size());
+  CHECK_EQ(values.size(), columns_.size());
+  size_t col_num = columns_.size();
+  for (size_t i = 0; i < col_num; ++i) {
+    columns_[i]->set(index, values[i]);
+  }
+}
+
+// column_id_mapping is the mapping from the column id in the input table to the
+// column id in the current table
+void Table::insert(size_t index, const std::vector<gbp::BufferObject>& values,
+                   const std::vector<int32_t>& col_ind_mapping) {
+  assert(values.size() == columns_.size() + 1);
+  CHECK_EQ(values.size(), columns_.size() + 1);
+  size_t col_num = columns_.size();
+  for (auto i = 0; i < values.size(); ++i) {
+    if (col_ind_mapping[i] != -1) {
+      columns_[col_ind_mapping[i]]->set(index, values[i]);
+    }
+  }
+}
+#endif
+
 void Table::resize(size_t row_num) {
   for (auto col : columns_) {
     col->resize(row_num);
   }
 }
-
+#if OV
 Any Table::at(size_t row_id, size_t col_id) {
   return columns_[col_id]->get(row_id);
 }
@@ -223,6 +257,15 @@ Any Table::at(size_t row_id, size_t col_id) {
 Any Table::at(size_t row_id, size_t col_id) const {
   return columns_[col_id]->get(row_id);
 }
+#else
+gbp::BufferObject Table::at(size_t row_id, size_t col_id) {
+  return columns_[col_id]->get(row_id);
+}
+
+gbp::BufferObject Table::at(size_t row_id, size_t col_id) const {
+  return columns_[col_id]->get(row_id);
+}
+#endif
 
 void Table::ingest(uint32_t index, grape::OutArchive& arc) {
   CHECK_GT(row_num(), index);

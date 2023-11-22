@@ -175,10 +175,16 @@ oid_t UpdateTransaction::vertex_iterator::GetId() const {
 }
 
 vid_t UpdateTransaction::vertex_iterator::GetIndex() const { return cur_; }
-
+#if OV
 Any UpdateTransaction::vertex_iterator::GetField(int col_id) const {
   return txn_->GetVertexField(label_, cur_, col_id);
 }
+#else
+gbp::BufferObject UpdateTransaction::vertex_iterator::GetField(
+    int col_id) const {
+  return txn_->GetVertexField(label_, cur_, col_id);
+}
+#endif
 
 bool UpdateTransaction::vertex_iterator::SetField(int col_id,
                                                   const Any& value) {
@@ -201,6 +207,7 @@ UpdateTransaction::edge_iterator::edge_iterator(
       txn_(txn) {}
 UpdateTransaction::edge_iterator::~edge_iterator() = default;
 
+#if OV
 Any UpdateTransaction::edge_iterator::GetData() const {
   if (init_iter_->is_valid()) {
     vid_t cur = init_iter_->get_neighbor();
@@ -219,6 +226,27 @@ Any UpdateTransaction::edge_iterator::GetData() const {
     return ret;
   }
 }
+#else
+gbp::BufferObject UpdateTransaction::edge_iterator::GetData() const {
+  if (init_iter_->is_valid()) {
+    vid_t cur = init_iter_->get_neighbor();
+    Any any_tmp;
+    if (txn_->GetUpdatedEdgeData(dir_, label_, v_, neighbor_label_, cur,
+                                 edge_label_, any_tmp)) {
+      return gbp::BufferObject(any_tmp);
+      // return ret;
+    } else {
+      return init_iter_->get_data();
+    }
+  } else {
+    vid_t cur = *added_edges_cur_;
+    Any any_tmp;
+    CHECK(txn_->GetUpdatedEdgeData(dir_, label_, v_, neighbor_label_, cur,
+                                   edge_label_, any_tmp));
+    return gbp::BufferObject(any_tmp);
+  }
+}
+#endif
 
 void UpdateTransaction::edge_iterator::SetData(const Any& value) {
   if (init_iter_->is_valid()) {
@@ -306,7 +334,7 @@ UpdateTransaction::edge_iterator UpdateTransaction::GetInEdgeIterator(
           graph_.get_incoming_edges(label, u, neighnor_label, edge_label),
           this};
 }
-
+#if OV
 Any UpdateTransaction::GetVertexField(label_t label, vid_t lid,
                                       int col_id) const {
   auto& vertex_offset = vertex_offsets_[label];
@@ -318,6 +346,19 @@ Any UpdateTransaction::GetVertexField(label_t label, vid_t lid,
         iter->second);
   }
 }
+#else
+gbp::BufferObject UpdateTransaction::GetVertexField(label_t label, vid_t lid,
+                                                    int col_id) const {
+  auto& vertex_offset = vertex_offsets_[label];
+  auto iter = vertex_offset.find(lid);
+  if (iter == vertex_offset.end()) {
+    return graph_.get_vertex_table(label).get_column_by_id(col_id)->get(lid);
+  } else {
+    return extra_vertex_properties_[label].get_column_by_id(col_id)->get(
+        iter->second);
+  }
+}
+#endif
 
 bool UpdateTransaction::SetVertexField(label_t label, vid_t lid, int col_id,
                                        const Any& value) {
@@ -344,8 +385,13 @@ bool UpdateTransaction::SetVertexField(label_t label, vid_t lid, int col_id,
     vertex_offset.emplace(lid, new_offset);
     size_t col_num = table.col_num();
     for (size_t i = 0; i < col_num; ++i) {
+#if OV
       extra_table.get_column_by_id(i)->set_any(
           new_offset, table.get_column_by_id(i)->get(lid));
+#else
+      extra_table.get_column_by_id(i)->set(new_offset,
+                                           table.get_column_by_id(i)->get(lid));
+#endif
     }
     extra_table.get_column_by_id(col_id)->set_any(new_offset, value);
   } else {

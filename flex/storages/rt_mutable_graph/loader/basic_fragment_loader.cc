@@ -94,6 +94,7 @@ void BasicFragmentLoader::LoadFragment() {
   set_snapshot_version(work_dir_, 0);
 }
 
+#if OV
 void BasicFragmentLoader::AddVertexBatch(
     label_t v_label, const std::vector<vid_t>& vids,
     const std::vector<std::vector<Any>>& props) {
@@ -113,7 +114,28 @@ void BasicFragmentLoader::AddVertexBatch(
     }
   }
 }
+#else
+void BasicFragmentLoader::AddVertexBatch(
+    label_t v_label, const std::vector<vid_t>& vids,
+    const std::vector<std::vector<gbp::BufferObject>>& props) {
+  auto& table = vertex_data_[v_label];
+  CHECK(props.size() == table.col_num());
+  for (auto i = 0; i < props.size(); ++i) {
+    CHECK(props[i].size() == vids.size())
+        << "vids size: " << vids.size() << ", props size: " << props.size()
+        << ", props[i] size: " << props[i].size();
+  }
+  auto dst_columns = table.column_ptrs();
+  for (auto j = 0; j < props.size(); ++j) {
+    auto& cur_vec = props[j];
+    for (auto i = 0; i < vids.size(); ++i) {
+      auto index = vids[i];
+      dst_columns[j]->set(index, cur_vec[i]);
+    }
+  }
+}
 
+#endif
 void BasicFragmentLoader::FinishAddingVertex(
     label_t v_label, const IdIndexer<oid_t, vid_t>& indexer) {
   CHECK(v_label < vertex_label_num_);

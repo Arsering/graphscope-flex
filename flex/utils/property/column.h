@@ -24,7 +24,6 @@
 #include "grape/serialization/out_archive.h"
 
 namespace gs {
-
 class ColumnBase {
  public:
   virtual ~ColumnBase() {}
@@ -43,9 +42,12 @@ class ColumnBase {
   virtual PropertyType type() const = 0;
 
   virtual void set_any(size_t index, const Any& value) = 0;
-
+#if OV
   virtual Any get(size_t index) const = 0;
-
+#else
+  virtual gbp::BufferObject get(size_t index) const = 0;
+  virtual void set(size_t index, const gbp::BufferObject& value) = 0;
+#endif
   virtual void ingest(uint32_t index, grape::OutArchive& arc) = 0;
 
   virtual StorageStrategy storage_strategy() const = 0;
@@ -75,13 +77,26 @@ class TypedColumn : public ColumnBase {
     mmap_array<T> tmp;
     tmp.open(filename, false);
     tmp.resize(basic_size_ + extra_size_);
+#if OV
     for (size_t k = 0; k < basic_size_; ++k) {
       tmp.set(k, basic_buffer_.get(k));
     }
     for (size_t k = 0; k < extra_size_; ++k) {
       tmp.set(k + basic_size_, extra_buffer_.get(k));
     }
-
+#else
+    for (size_t k = 0; k < basic_size_; ++k) {
+      auto item = basic_buffer_.get(k);
+      auto val = gbp::Decode<T>(item);
+      tmp.set(k, val);
+    }
+    for (size_t k = 0; k < extra_size_; ++k) {
+      auto item = extra_buffer_.get(k);
+      // auto val = item.Obj<T>();
+      auto val = gbp::Decode<T>(item);
+      tmp.set(k + basic_size_, val);
+    }
+#endif
     basic_size_ = 0;
     basic_buffer_.reset();
     extra_size_ = tmp.size();
@@ -125,7 +140,7 @@ class TypedColumn : public ColumnBase {
     assert(index >= basic_size_ && index < basic_size_ + extra_size_);
     extra_buffer_.set(index - basic_size_, val);
   }
-
+#if OV
   void set_any(size_t index, const Any& value) override {
     set_value(index, AnyConverter<T>::from_any(value));
   }
@@ -138,6 +153,20 @@ class TypedColumn : public ColumnBase {
   Any get(size_t index) const override {
     return AnyConverter<T>::to_any(get_view(index));
   }
+#else
+  void set_any(size_t index, const Any& value) override {
+    set_value(index, AnyConverter<T>::from_any(value));
+  }
+  void set(size_t index, const gbp::BufferObject& value) override {
+    auto val = gbp::Decode<T>(value);
+    set_value(index, val);
+  }
+
+  gbp::BufferObject get(size_t index) const override {
+    return index < basic_size_ ? basic_buffer_.get(index)
+                               : extra_buffer_.get(index - basic_size_);
+  }
+#endif
 
   void ingest(uint32_t index, grape::OutArchive& arc) override {
     T val;
@@ -183,7 +212,7 @@ class StringColumn : public ColumnBase {
     extra_size_ = extra_buffer_.size();
     pos_.store(extra_buffer_.data_size());
   }
-
+#if OV
   void touch(const std::string& filename) override {
     mmap_array<std::string_view> tmp;
     tmp.open(filename, false);
@@ -207,6 +236,33 @@ class StringColumn : public ColumnBase {
 
     pos_.store(offset);
   }
+#else
+  void touch(const std::string& filename) override {
+    mmap_array<std::string_view> tmp;
+    tmp.open(filename, false);
+    tmp.resize(basic_size_ + extra_size_, (basic_size_ + extra_size_) * width_);
+    size_t offset = 0;
+    for (size_t k = 0; k < basic_size_; ++k) {
+      auto item = basic_buffer_.get(k);
+      std::string_view val = {&item.Obj<char>(), item.Size()};
+      tmp.set(k, offset, val);
+      offset += val.size();
+    }
+    for (size_t k = 0; k < extra_size_; ++k) {
+      auto item = extra_buffer_.get(k);
+      std::string_view val = {&item.Obj<char>(), item.Size()};
+      tmp.set(k + basic_size_, offset, val);
+      offset += val.size();
+    }
+
+    basic_size_ = 0;
+    basic_buffer_.reset();
+    extra_size_ = tmp.size();
+    extra_buffer_.swap(tmp);
+
+    pos_.store(offset);
+  }
+#endif
 
   void dump(const std::string& filename) override {
     if (basic_size_ != 0 && extra_size_ == 0) {
@@ -220,6 +276,7 @@ class StringColumn : public ColumnBase {
       tmp.resize(basic_size_ + extra_size_,
                  (basic_size_ + extra_size_) * width_);
       size_t offset = 0;
+#if OV
       for (size_t k = 0; k < basic_size_; ++k) {
         std::string_view val = basic_buffer_.get(k);
         tmp.set(k, offset, val);
@@ -230,6 +287,20 @@ class StringColumn : public ColumnBase {
         tmp.set(k + basic_size_, offset, extra_buffer_.get(k));
         offset += val.size();
       }
+#else
+      for (size_t k = 0; k < basic_size_; ++k) {
+        auto item = basic_buffer_.get(k);
+        std::string_view val = {&item.Obj<char>(), item.Size()};
+        tmp.set(k, offset, val);
+        offset += val.size();
+      }
+      for (size_t k = 0; k < extra_size_; ++k) {
+        auto item = basic_buffer_.get(k);
+        std::string_view val = {&item.Obj<char>(), item.Size()};
+        tmp.set(k + basic_size_, offset, val);
+        offset += val.size();
+      }
+#endif
       tmp.resize(basic_size_ + extra_size_, offset);
     }
   }
@@ -261,15 +332,35 @@ class StringColumn : public ColumnBase {
     set_value(idx, AnyConverter<std::string_view>::from_any(value));
   }
 
-  std::string_view get_view(size_t idx) const {
-    return idx < basic_size_ ? basic_buffer_.get(idx)
-                             : extra_buffer_.get(idx - basic_size_);
-  }
-
+  // std::string_view get_view(size_t idx) const {
+  //   return idx < basic_size_ ? basic_buffer_.get(idx)
+  //                            : extra_buffer_.get(idx - basic_size_);
+  // }
+#if OV
   Any get(size_t idx) const override {
-    return AnyConverter<std::string_view>::to_any(get_view(idx));
+    if (idx < basic_size_) {
+      auto item = basic_buffer_.get(idx);
+      return AnyConverter<gbp::BufferObject>::to_any(item);
+    } else {
+      auto item = extra_buffer_.get(idx);
+      return AnyConverter<gbp::BufferObject>::to_any(item);
+    }
+  }
+#else
+  gbp::BufferObject get(size_t idx) const override {
+    if (idx < basic_size_) {
+      return basic_buffer_.get(idx);
+
+    } else {
+      return extra_buffer_.get(idx);
+    }
+  }
+  void set(size_t idx, const gbp::BufferObject& value) override {
+    std::string_view sv = {value.Data(), value.Size()};
+    set_value(idx, sv);
   }
 
+#endif
   void ingest(uint32_t index, grape::OutArchive& arc) override {
     std::string_view val;
     arc >> val;
