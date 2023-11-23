@@ -541,8 +541,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   vid_t get_neighbor() const {
     if (buffer_ == nullptr) {
-      auto item = mmap_array_->get(cur_idx_);
-      return gbp::Decode<nbr_t>(item).neighbor;
+      return gbp::Decode<nbr_t>(cur_obj_).neighbor;
     } else {
       return buffer_[cur_idx_].neighbor;
     }
@@ -551,8 +550,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   gbp::BufferObject get_data() const {
     gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
-      auto item = mmap_array_->get(cur_idx_);
-      memcpy(buf.Data(), &(gbp::Decode<nbr_t>(item).data), sizeof(EDATA_T));
+      memcpy(buf.Data(), &(gbp::Decode<nbr_t>(cur_obj_).data), sizeof(EDATA_T));
     } else {
       memcpy(buf.Data(), &(buffer_[cur_idx_].data), sizeof(EDATA_T));
     }
@@ -561,14 +559,18 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   timestamp_t get_timestamp() const {
     if (buffer_ == nullptr) {
-      auto item = mmap_array_->get(cur_idx_);
-      return gbp::Decode<nbr_t>(item).timestamp.load();
+      return gbp::Decode<nbr_t>(cur_obj_).timestamp.load();
     } else {
       return buffer_[cur_idx_].timestamp.load();
     }
   }
 
-  void next() { ++cur_idx_; }
+  void next() {
+    ++cur_idx_;
+    cur_obj_ =
+        buffer_ == nullptr ? mmap_array_->get(cur_idx_) : gbp::BufferObject();
+  }
+
   bool is_valid() const { return cur_idx_ < start_idx_ + size_; }
   size_t size() const { return size_; }
 
@@ -583,6 +585,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   const nbr_t* buffer_;
   size_t start_idx_;
   size_t cur_idx_;
+  gbp::BufferObject cur_obj_;
   size_t size_;
 };
 
