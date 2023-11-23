@@ -130,6 +130,8 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   std::string tmp_dir_path = tmp_dir(work_dir);
   std::filesystem::create_directory(tmp_dir_path);
   std::vector<size_t> vertex_capacities(vertex_label_num_, 0);
+  // auto end = std::chrono::system_clock::now();
+  // auto begin = std::chrono::system_clock::now();
   for (size_t i = 0; i < vertex_label_num_; ++i) {
     std::string v_label_name = schema_.get_vertex_label_name(i);
     lf_indexers_[i].open(vertex_map_prefix(v_label_name), snapshot_dir,

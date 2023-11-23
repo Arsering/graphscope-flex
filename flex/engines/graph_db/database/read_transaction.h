@@ -28,6 +28,7 @@ namespace gs {
 class MutablePropertyFragment;
 class VersionManager;
 
+#if OV
 template <typename EDATA_T>
 class AdjListView {
   class nbr_iterator {
@@ -86,6 +87,37 @@ class AdjListView {
   slice_t edges_;
   timestamp_t timestamp_;
 };
+#else
+template <typename EDATA_T>
+class AdjListView {
+ public:
+  using slice_t = MutableNbrSlice<EDATA_T>;
+  using sliceiter_t = TypedMutableCsrConstEdgeIter<EDATA_T>;
+
+  AdjListView(const slice_t& slice, timestamp_t timestamp)
+      : edges_(TypedMutableCsrConstEdgeIter(slice)), timestamp_(timestamp) {}
+
+  vid_t get_neighbor() const { return edges_.get_neighbor(); }
+
+  gbp::BufferObject get_data() const { return edges_.get_data(); }
+
+  timestamp_t get_timestamp() const { return edges_.get_timestamp(); }
+
+  void next() {
+    edges_.next();
+    while (edges_.is_valid() && edges_.get_timestamp() > timestamp_) {
+      edges_.next();
+    }
+  }
+
+  bool is_valid() { return edges_.is_valid(); }
+  int estimated_degree() const { return edges_.size(); }
+
+ private:
+  sliceiter_t edges_;
+  timestamp_t timestamp_;
+};
+#endif
 
 template <typename EDATA_T>
 class GraphView {
