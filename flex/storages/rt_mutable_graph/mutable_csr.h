@@ -326,6 +326,7 @@ class MutableAdjlist {
     ret.set_buffer(buffer_);
     ret.set_start_idx(start_idx_);
     ret.set_size(size_.load(std::memory_order_acquire));
+
     return ret;
   }
 
@@ -522,14 +523,20 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
         buffer_(slice.get_buffer()),
         start_idx_(slice.get_start_idx()),
         cur_idx_(start_idx_),
-        size_(slice.size()) {}
+        size_(slice.size()) {
+    cur_idx_--;
+    next();
+  }
   explicit TypedMutableCsrConstEdgeIter(const mmap_array<nbr_t>* ma,
                                         size_t start_idx, size_t size)
       : mmap_array_(ma),
         buffer_(nullptr),
         start_idx_(start_idx),
         cur_idx_(start_idx_),
-        size_(size) {}
+        size_(size) {
+    cur_idx_--;
+    next();
+  }
   explicit TypedMutableCsrConstEdgeIter(const nbr_t* buffer, size_t start_idx,
                                         size_t size)
       : mmap_array_(nullptr),
