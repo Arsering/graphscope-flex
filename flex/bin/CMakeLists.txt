@@ -10,6 +10,16 @@ if(Hiactor_FOUND)
                 LIBRARY DESTINATION lib)
 endif()
 
+if(Hiactor_FOUND)
+        add_executable(rt_test rt_test.cc)
+        target_link_libraries(rt_test flex_utils flex_rt_mutable_graph flex_graph_db flex_server)
+
+        install(TARGETS rt_test
+                RUNTIME DESTINATION bin
+                ARCHIVE DESTINATION lib
+                LIBRARY DESTINATION lib)
+endif()
+
 add_executable(rt_admin rt_admin.cc)
 target_link_libraries(rt_admin flex_utils flex_rt_mutable_graph flex_graph_db)
 
