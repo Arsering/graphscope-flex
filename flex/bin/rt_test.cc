@@ -37,14 +37,15 @@ class CSVReader {
  public:
   CSVReader(const std::string& file_name) {
     csv_data_.open(file_name, std::ios::in);
+    LOG(INFO) << file_name;
     std::string line;
-    std::getline(csv_data_, line);
+    std::getline(csv_data_, line);  // ignore the first line of file
   }
   ~CSVReader() = default;
   std::vector<std::string>& GetNextLine() {
     words_.clear();
     std::string line, word;
-    if (std::getline(csv_data_, line))
+    if (!std::getline(csv_data_, line))
       return words_;
 
     std::istringstream sin;
@@ -53,7 +54,6 @@ class CSVReader {
 
     while (std::getline(sin, word, '|')) {
       words_.push_back(word);
-      std::cout << word << std::endl;
     }
     return words_;
   }
@@ -72,25 +72,26 @@ int test_vertex(gs::GraphDB& db, const std::string& csv_data_path) {
           graph_session.get_vertex_property_column(person_label_id, "email")));
 
   CSVReader csv_reader(csv_data_path);
-  auto& words = csv_reader.GetNextLine();
-  LOG(INFO) << words.size();
+
+  size_t test_count = 100;
   gs::oid_t req = 933;
   gs::vid_t root{};
   auto txn = graph_session.GetReadTransaction();
-  // while (true) {
-  //   auto& words = csv_reader.GetNextLine();
-  //   req = stol(words[0]);
-  //   txn.GetVertexIndex(person_label_id, req, root);
-  //   const auto email = person_email_col.get(root);
-  //   const auto firstname = person_firstName_col.get(root);
-  //   std::string str1{firstname.Data(), firstname.Size()};
-  //   std::string str2{email.Data(), email.Size()};
-  //   if (!(str1.compare(words[1]) == 0 && str2.compare(words[9]) == 0)) {
-  //     LOG(INFO) << str1 << " | " << str2;
-  //     break;
-  //   }
-  //   break;
-  // }
+  while (test_count > 0) {
+    auto& words = csv_reader.GetNextLine();
+    req = stol(words[0]);
+    txn.GetVertexIndex(person_label_id, req, root);
+    const auto email = person_email_col.get(root);
+    const auto firstname = person_firstName_col.get(root);
+    std::string str1{firstname.Data(), firstname.Size()};
+    std::string str2{email.Data(), email.Size()};
+    if (!(str1.compare(words[1]) == 0 && str2.compare(words[9]) == 0)) {
+      LOG(INFO) << str1 << " | " << str2;
+      LOG(FATAL) << "test_vertex: failed!!";
+    }
+    test_count--;
+  }
+  LOG(INFO) << "test_vertex: success!!";
   return 0;
 }
 
@@ -102,14 +103,6 @@ int test_edge(gs::GraphDB& db, const std::string& csv_data_path) {
   gs::label_t knows_label_id =
       graph_session.schema().get_edge_label_id("KNOWS");
 
-  gs::StringColumn& person_firstName_col =
-      *(std::dynamic_pointer_cast<gs::StringColumn>(
-          graph_session.get_vertex_property_column(person_label_id,
-                                                   "firstName")));
-  gs::StringColumn& person_email_col =
-      *(std::dynamic_pointer_cast<gs::StringColumn>(
-          graph_session.get_vertex_property_column(person_label_id, "email")));
-
   CSVReader csv_reader(csv_data_path);
   gs::oid_t req = 933;
   gs::vid_t root{};
@@ -120,16 +113,17 @@ int test_edge(gs::GraphDB& db, const std::string& csv_data_path) {
   }
   auto oe = txn.GetOutgoingEdges<gs::Date>(person_label_id, root,
                                            person_label_id, knows_label_id);
-  std::vector<std::string> vec;
+  std::vector<std::string> vec_date;
   // for (auto& e : oe) {
   //   vec.emplace_back(e.data.milli_second);
   // }
-
-  for (; oe.is_valid(); oe.next()) {
-    auto item = oe.get_data();
-    vec.emplace_back(gs::gbp::Decode<gs::Date>(item).to_string());
-  }
-
+  LOG(FATAL) << "oe.size = " << oe.estimated_degree();
+  // for (; oe.is_valid(); oe.next()) {
+  //   auto item = oe.get_data();
+  //   // vec_date.emplace_back(gs::gbp::Decode<gs::Date>(item).to_string());
+  //   LOG(INFO) << vec_date[vec_date.size() - 1];
+  // }
+  LOG(INFO) << "test_edge: success!!";
   return 0;
 }
 
@@ -197,4 +191,5 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
 
   test_vertex(db, csv_data_path);
+  test_edge(db, csv_data_path);
 }

@@ -592,16 +592,22 @@ class BufferObject {
 
 template <typename T>
 T& Decode(BufferObject& obj) {
-  if (sizeof(T) != obj.Size())
+  if (sizeof(T) != obj.Size()) {
+    LOG(INFO) << "sizeof T = " << sizeof(T);
+    LOG(INFO) << "sizeof obj = " << obj.Size();
     LOG(FATAL) << "Decode size mismatch!!!";
+  }
 
   return *reinterpret_cast<T*>(obj.Data());
 }
 
 template <typename T>
 const T& Decode(const BufferObject& obj) {
-  if (sizeof(T) != obj.Size())
+  if (sizeof(T) != obj.Size()) {
+    LOG(INFO) << "sizeof T = " << sizeof(T);
+    LOG(INFO) << "sizeof obj = " << obj.Size();
     LOG(FATAL) << "Decode size mismatch!!!";
+  }
 
   return *reinterpret_cast<const T*>(obj.Data());
 }
