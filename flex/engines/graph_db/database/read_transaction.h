@@ -16,9 +16,11 @@
 #ifndef GRAPHSCOPE_DATABASE_READ_TRANSACTION_H_
 #define GRAPHSCOPE_DATABASE_READ_TRANSACTION_H_
 
+#include <cstddef>
 #include <limits>
 #include <utility>
 
+#include "flex/engines/graph_db/database/access_logger.h"
 #include "flex/storages/rt_mutable_graph/mutable_csr.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/storages/rt_mutable_graph/types.h"
@@ -34,21 +36,27 @@ class AdjListView {
     using nbr_t = MutableNbr<EDATA_T>;
 
    public:
-    nbr_iterator(const nbr_t* ptr, const nbr_t* end, timestamp_t timestamp)
-        : ptr_(ptr), end_(end), timestamp_(timestamp) {
+    nbr_iterator(const nbr_t* ptr, const nbr_t* end, timestamp_t timestamp, ThreadLog& access_logger)
+        : ptr_(ptr), end_(end), timestamp_(timestamp), access_logger(access_logger) {
+      access_logger.log_append((std::size_t)ptr_,sizeof(nbr_t), timestamp_);
       while (ptr_ != end && ptr_->timestamp > timestamp_) {
         ++ptr_;
+        access_logger.log_append((std::size_t)ptr_,sizeof(nbr_t), timestamp_);
       }
     }
 
-    const nbr_t& operator*() const { return *ptr_; }
+    const nbr_t& operator*() const {
+      return *ptr_; 
+    }
 
     const nbr_t* operator->() const { return ptr_; }
 
     nbr_iterator& operator++() {
       ++ptr_;
-      while (ptr_ != end_ && ptr_->timestamp > timestamp_) {
+      access_logger.log_append((std::size_t)ptr_,sizeof(nbr_t), timestamp_);
+      while (ptr_ != end_ && ptr_->timestamp > timestamp_) {//这里应该是要去掉所有timestamp不有效的数据
         ++ptr_;
+        access_logger.log_append((std::size_t)ptr_,sizeof(nbr_t), timestamp_);
       }
       return *this;
     }
@@ -65,6 +73,7 @@ class AdjListView {
     const nbr_t* ptr_;
     const nbr_t* end_;
     timestamp_t timestamp_;
+    ThreadLog& access_logger;
   };
 
  public:
@@ -85,10 +94,11 @@ class AdjListView {
  private:
   slice_t edges_;
   timestamp_t timestamp_;
+  ThreadLog& access_logger;
 };
 
 template <typename EDATA_T>
-class GraphView {
+class GraphView {//这个的get_edges是都会被访问到的
  public:
   GraphView(const MutableCsr<EDATA_T>& csr, timestamp_t timestamp)
       : csr_(csr), timestamp_(timestamp) {}
@@ -105,26 +115,35 @@ class GraphView {
 template <typename EDATA_T>
 class SingleGraphView {
  public:
-  SingleGraphView(const SingleMutableCsr<EDATA_T>& csr, timestamp_t timestamp)
-      : csr_(csr), timestamp_(timestamp) {}
+  SingleGraphView(const SingleMutableCsr<EDATA_T>& csr, timestamp_t timestamp, ThreadLog& access_logger)
+      : csr_(csr), timestamp_(timestamp), access_logger(access_logger) {}
 
   bool exist(vid_t v) const {
-    return (csr_.get_edge(v).timestamp.load() <= timestamp_);
+    std::size_t addr;
+    //return (csr_.get_edge(addr,v).timestamp.load() <= timestamp_);
+    bool ret = (csr_.get_edge(addr,v).timestamp.load() <= timestamp_);
+    access_logger.log_append(addr, sizeof(MutableNbr<EDATA_T>), timestamp_);
+    return ret;
   }
 
   const MutableNbr<EDATA_T>& get_edge(vid_t v) const {
-    return csr_.get_edge(v);
+    std::size_t addr;
+    //return csr_.get_edge(addr,v);
+    auto ret = csr_.get_edge(addr,v);
+    access_logger.log_append(addr, sizeof(ret), timestamp_);
+    return ret;
   }
 
  private:
   const SingleMutableCsr<EDATA_T>& csr_;
   timestamp_t timestamp_;
+  ThreadLog& access_logger;
 };
 
 class ReadTransaction {
  public:
   ReadTransaction(const MutablePropertyFragment& graph, VersionManager& vm,
-                  timestamp_t timestamp);
+                  timestamp_t timestamp, ThreadLog& access_logger);
   ~ReadTransaction();
 
   timestamp_t timestamp() const;
@@ -136,7 +155,7 @@ class ReadTransaction {
   class vertex_iterator {
    public:
     vertex_iterator(label_t label, vid_t cur, vid_t num,
-                    const MutablePropertyFragment& graph);
+                    const MutablePropertyFragment& graph, ThreadLog& access_logger, timestamp_t timestamp_);
     ~vertex_iterator();
 
     bool IsValid() const;
@@ -154,12 +173,14 @@ class ReadTransaction {
     vid_t cur_;
     vid_t num_;
     const MutablePropertyFragment& graph_;
+    ThreadLog& access_logger;
+    timestamp_t timestamp_;
   };
 
   class edge_iterator {
    public:
     edge_iterator(label_t neighbor_label, label_t edge_label,
-                  std::shared_ptr<MutableCsrConstEdgeIterBase> iter);
+                  std::shared_ptr<MutableCsrConstEdgeIterBase> iter, ThreadLog& access_logger, timestamp_t timestamp_);
     ~edge_iterator();
 
     Any GetData() const;
@@ -179,6 +200,8 @@ class ReadTransaction {
     label_t edge_label_;
 
     std::shared_ptr<MutableCsrConstEdgeIterBase> iter_;
+    ThreadLog& access_logger;
+    timestamp_t timestamp_;
   };
 
   vertex_iterator GetVertexIterator(label_t label) const;
@@ -258,6 +281,7 @@ class ReadTransaction {
 
   const MutablePropertyFragment& graph_;
   VersionManager& vm_;
+  ThreadLog& access_logger;
   timestamp_t timestamp_;
 };
 

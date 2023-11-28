@@ -14,6 +14,7 @@
  */
 
 #include "flex/engines/graph_db/database/graph_db.h"
+#include "flex/engines/graph_db/database/access_logger.h"
 #include "flex/engines/graph_db/database/graph_db_session.h"
 
 #include "flex/engines/graph_db/app/server_app.h"
@@ -24,11 +25,12 @@ namespace gs {
 struct SessionLocalContext {
   SessionLocalContext(GraphDB& db, const std::string& work_dir, int thread_id)
       : allocator(thread_local_allocator_prefix(work_dir, thread_id)),
-        session(db, allocator, logger, work_dir, thread_id) {}
+        session(db, allocator,access_logger, logger, work_dir, thread_id) {}
   ~SessionLocalContext() { logger.close(); }
 
   MMapAllocator allocator;
   char _padding0[128 - sizeof(MMapAllocator) % 128];
+  ThreadLog access_logger;
   WalWriter logger;
   char _padding1[4096 - sizeof(WalWriter) - sizeof(MMapAllocator) -
                  sizeof(_padding0)];
@@ -83,7 +85,8 @@ void GraphDB::Init(const Schema& schema, const std::string& data_dir,
   ingestWals(wal_files, data_dir, thread_num_);
 
   for (int i = 0; i < thread_num_; ++i) {
-    contexts_[i].logger.open(wal_dir_path, i);
+    contexts_[i].access_logger.open(i);
+    contexts_[i].logger.open(wal_dir_path, i);//这里相当于给WAL的logger进行初始化
   }
 
   initApps(schema.GetPluginsList());
@@ -110,9 +113,10 @@ void GraphDB::CheckpointAndRestart() {
   Init(graph_.schema(), work_dir_, thread_num_);
 }
 
-ReadTransaction GraphDB::GetReadTransaction() {
-  uint32_t ts = version_manager_.acquire_read_timestamp();
-  return {graph_, version_manager_, ts};
+ReadTransaction GraphDB::GetReadTransaction(int thread_id) {
+  // uint32_t ts = version_manager_.acquire_read_timestamp();
+  // return {graph_, version_manager_, ts};
+  return contexts_[thread_id].session.GetReadTransaction();
 }
 
 InsertTransaction GraphDB::GetInsertTransaction(int thread_id) {
