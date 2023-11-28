@@ -25,6 +25,7 @@
 #include <unistd.h>
 
 #include <atomic>
+#include <cstddef>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -173,6 +174,18 @@ class mmap_array {
     std::swap(size_, rhs.size_);
   }
 
+  size_t get_addr() const {
+    return (std::size_t)data_;
+  }
+
+  std::size_t get_offset(size_t idx) const {
+    return idx*sizeof(T);
+  }
+
+  std::size_t get_length(size_t idx) const {
+    return sizeof(T);
+  }
+
   const std::string& filename() const { return filename_; }
 
  private:
@@ -240,6 +253,18 @@ class mmap_array<std::string_view> {
   void swap(mmap_array& rhs) {
     items_.swap(rhs.items_);
     data_.swap(rhs.data_);
+  }
+
+  size_t get_addr() const {
+    return (std::size_t)data_.data();
+  }
+
+  std::size_t get_offset(size_t idx) const {
+    return items_[idx].offset;
+  }
+
+  std::size_t get_length(size_t idx) const {
+    return items_[idx].length;
   }
 
  private:

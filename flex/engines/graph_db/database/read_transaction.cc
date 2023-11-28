@@ -20,6 +20,7 @@
 #include "flex/engines/graph_db/database/version_manager.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/storages/rt_mutable_graph/types.h"
+#include "flex/utils/property/column.h"
 
 namespace gs {
 
@@ -27,6 +28,7 @@ ReadTransaction::ReadTransaction(const MutablePropertyFragment& graph,
                                  VersionManager& vm, timestamp_t timestamp, ThreadLog& access_logger)
     : graph_(graph), vm_(vm), timestamp_(timestamp), access_logger(access_logger) {
       std::string info = "get read transaction";
+      if(!logger_init){col_logger.open(100+access_logger.get_tid());}
       access_logger.log_info(info);
     }
 ReadTransaction::~ReadTransaction() { release(); }
