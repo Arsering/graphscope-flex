@@ -2,6 +2,7 @@
     "files.associations": {
         "*.excalidraw": "json",
         "*.excalidrawlib": "json",
+        "random": "cpp",
         "cctype": "cpp",
         "clocale": "cpp",
         "cmath": "cpp",
@@ -45,7 +46,6 @@
         "memory_resource": "cpp",
         "numeric": "cpp",
         "optional": "cpp",
-        "random": "cpp",
         "ratio": "cpp",
         "regex": "cpp",
         "source_location": "cpp",

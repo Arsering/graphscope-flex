@@ -48,6 +48,7 @@ class ColumnBase {
   virtual gbp::BufferObject get(size_t index) const = 0;
   virtual void set(size_t index, const gbp::BufferObject& value) = 0;
 #endif
+  virtual size_t get_size_in_byte() const = 0;
   virtual void ingest(uint32_t index, grape::OutArchive& arc) = 0;
 
   virtual StorageStrategy storage_strategy() const = 0;
@@ -166,8 +167,11 @@ class TypedColumn : public ColumnBase {
     return index < basic_size_ ? basic_buffer_.get(index)
                                : extra_buffer_.get(index - basic_size_);
   }
-#endif
 
+#endif
+  size_t get_size_in_byte() const override {
+    return basic_buffer_.get_size_in_byte() + extra_buffer_.get_size_in_byte();
+  }
   void ingest(uint32_t index, grape::OutArchive& arc) override {
     T val;
     arc >> val;
@@ -295,7 +299,7 @@ class StringColumn : public ColumnBase {
         offset += val.size();
       }
       for (size_t k = 0; k < extra_size_; ++k) {
-        auto item = basic_buffer_.get(k);
+        auto item = extra_buffer_.get(k);
         std::string_view val = {&item.Obj<char>(), item.Size()};
         tmp.set(k + basic_size_, offset, val);
         offset += val.size();
@@ -332,19 +336,14 @@ class StringColumn : public ColumnBase {
     set_value(idx, AnyConverter<std::string_view>::from_any(value));
   }
 
-  // std::string_view get_view(size_t idx) const {
-  //   return idx < basic_size_ ? basic_buffer_.get(idx)
-  //                            : extra_buffer_.get(idx - basic_size_);
-  // }
 #if OV
+  std::string_view get_view(size_t idx) const {
+    return idx < basic_size_ ? basic_buffer_.get(idx)
+                             : extra_buffer_.get(idx - basic_size_);
+  }
+
   Any get(size_t idx) const override {
-    if (idx < basic_size_) {
-      auto item = basic_buffer_.get(idx);
-      return AnyConverter<gbp::BufferObject>::to_any(item);
-    } else {
-      auto item = extra_buffer_.get(idx);
-      return AnyConverter<gbp::BufferObject>::to_any(item);
-    }
+    return AnyConverter<std::string_view>::to_any(get_view(idx));
   }
 #else
   gbp::BufferObject get(size_t idx) const override {
@@ -361,6 +360,10 @@ class StringColumn : public ColumnBase {
   }
 
 #endif
+  size_t get_size_in_byte() const override {
+    return basic_buffer_.get_size_in_byte() + extra_buffer_.get_size_in_byte();
+  }
+
   void ingest(uint32_t index, grape::OutArchive& arc) override {
     std::string_view val;
     arc >> val;

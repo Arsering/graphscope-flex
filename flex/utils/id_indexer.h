@@ -249,14 +249,13 @@ class LFIndexer {
     }
   }
 
+#if OV
   bool get_index(int64_t oid, INDEX_T& ret) const {
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
-      auto item = indices_.get(index);
-      INDEX_T ind = gbp::Decode<INDEX_T>(item);
-#if OV
+      INDEX_T ind = indices_.get(index);
       if (ind == sentinel) {
         return false;
       } else if (keys_.get(ind) == oid) {
@@ -265,7 +264,18 @@ class LFIndexer {
       } else {
         index = (index + 1) % num_slots_minus_one_;
       }
+    }
+    return false;
+  }
+  int64_t get_key(const INDEX_T& index) const { return keys_.get(index); }
 #else
+  bool get_index(int64_t oid, INDEX_T& ret) const {
+    size_t index =
+        hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
+    static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+    while (true) {
+      auto item = indices_.get(index);
+      INDEX_T ind = gbp::Decode<INDEX_T>(item);
       if (ind == sentinel) {
         return false;
       } else {
@@ -276,7 +286,6 @@ class LFIndexer {
         }
       }
       index = (index + 1) % num_slots_minus_one_;
-#endif
     }
     return false;
   }
@@ -285,6 +294,7 @@ class LFIndexer {
     auto item = keys_.get(index);
     return gbp::Decode<int64_t>(item);
   }
+#endif
 
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) {
@@ -310,6 +320,9 @@ class LFIndexer {
     }
 
     load_meta(snapshot_dir + "/" + name + ".meta");
+  }
+  size_t get_size_in_byte() {
+    return keys_.get_size_in_byte() + indices_.get_size_in_byte();
   }
 
   void dump(const std::string& name, const std::string& snapshot_dir) {
@@ -739,6 +752,7 @@ class IdIndexer {
                                LFIndexer<_INDEX_T>& output, double rate);
 };
 
+#if OV
 template <class INDEX_T>
 void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
                       const std::string& filename, LFIndexer<INDEX_T>& lf,
@@ -753,16 +767,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
 
   lf.keys_.open(filename + ".keys", false);
   lf.keys_.resize(lf_size);
-// FIXME: input.keys_是mmap分配的还是malloc分配的？？？
-#if OV
   memcpy(lf.keys_.data(), input.keys_.data(), sizeof(int64_t) * size);
-#else
-  for (size_t t = 0; t < size; t++) {
-    auto item = input.keys_[t];
-    lf.keys_.set(t, item);
-  }
-#endif
-
   for (size_t k = size; k != lf_size; ++k) {
     lf.keys_.set(k, std::numeric_limits<int64_t>::max());
   }
@@ -771,15 +776,9 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
 
   lf.indices_.open(filename + ".indices", false);
   lf.indices_.resize(input.indices_.size());
-#if OV
   for (size_t k = 0; k != input.indices_.size(); ++k) {
     lf.indices_[k] = std::numeric_limits<INDEX_T>::max();
   }
-#else
-  for (size_t k = 0; k != input.indices_.size(); ++k) {
-    lf.indices_.set(k, std::numeric_limits<INDEX_T>::max());
-  }
-#endif
   lf.indices_size_ = input.indices_.size();
 
   lf.hash_policy_.set_mod_function_by_index(
@@ -797,11 +796,80 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         if (index >= input.num_slots_minus_one_) {
           extra.emplace_back(oid, ret);
         } else {
-#if OV
           lf.indices_[index] = ret;
+        }
+        break;
+      }
+    }
+  }
+
+  static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+  for (auto& pair : extra) {
+    size_t index = input.hash_policy_.index_for_hash(
+        input.hasher_(pair.first), input.num_slots_minus_one_);
+    while (true) {
+      if (lf.indices_[index] == sentinel) {
+        lf.indices_[index] = pair.second;
+        break;
+      }
+      index = (index + 1) % input.num_slots_minus_one_;
+    }
+  }
+
+  lf.dump_meta(filename + ".meta");
+}
 #else
+template <class INDEX_T>
+void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
+                      const std::string& filename, LFIndexer<INDEX_T>& lf,
+                      double rate) {
+  double indices_rate = static_cast<double>(input.keys_.size()) /
+                        static_cast<double>(input.indices_.size());
+  CHECK_LT(indices_rate, rate);
+
+  size_t size = input.keys_.size();
+  size_t lf_size = static_cast<double>(size) / rate + 1;
+  lf_size = std::max(lf_size, static_cast<size_t>(1024));
+
+  lf.keys_.open(filename + ".keys", false);
+  lf.keys_.resize(lf_size);
+  // FIXME: input.keys_是mmap分配的还是malloc分配的？？？
+
+  for (size_t t = 0; t < size; t++) {
+    auto item = input.keys_[t];
+    lf.keys_.set(t, item);
+  }
+
+  for (size_t k = size; k != lf_size; ++k) {
+    lf.keys_.set(k, std::numeric_limits<int64_t>::max());
+  }
+
+  lf.num_elements_.store(size);
+
+  lf.indices_.open(filename + ".indices", false);
+  lf.indices_.resize(input.indices_.size());
+
+  for (size_t k = 0; k != input.indices_.size(); ++k) {
+    lf.indices_.set(k, std::numeric_limits<INDEX_T>::max());
+  }
+  lf.indices_size_ = input.indices_.size();
+
+  lf.hash_policy_.set_mod_function_by_index(
+      input.hash_policy_.get_mod_function_index());
+  lf.num_slots_minus_one_ = input.num_slots_minus_one_;
+  std::vector<std::pair<int64_t, INDEX_T>> extra;
+
+  for (auto oid : input.keys_) {
+    size_t index = input.hash_policy_.index_for_hash(
+        input.hasher_(oid), input.num_slots_minus_one_);
+    for (int8_t distance = 0; input.distances_[index] >= distance;
+         ++distance, ++index) {
+      INDEX_T ret = input.indices_[index];
+      if (input.keys_[ret] == oid) {
+        if (index >= input.num_slots_minus_one_) {
+          extra.emplace_back(oid, ret);
+        } else {
           lf.indices_.set(index, ret);
-#endif
         }
         break;
       }
@@ -815,11 +883,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
     while (true) {
       auto item = lf.indices_.get(index);
       if (gbp::Decode<INDEX_T>(item) == sentinel) {
-#if OV
-        lf.indices_[index] = pair.second;
-#else
         lf.indices_.set(index, pair.second);
-#endif
         break;
       }
       index = (index + 1) % input.num_slots_minus_one_;
@@ -828,7 +892,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
 
   lf.dump_meta(filename + ".meta");
 }
-
+#endif
 }  // namespace gs
 
 #endif  // GRAPHSCOPE_GRAPH_ID_INDEXER_H_

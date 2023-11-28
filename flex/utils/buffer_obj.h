@@ -14,27 +14,70 @@
 
 #pragma once
 
+#include <cstdio>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 #include "flex/utils/property/types.h"
 #include "glog/logging.h"
 
 namespace gs {
+#define OV false
+#define PAGE_SIZE_BUFFER_POOL 4096
+
+static bool mark_g = false;
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+
+static int log_file_global = -1;
+static std::string str_g = "no";
+static std::mutex lock_log_file_global;
+
+static void init_log_file_global(const std::string& log_data_path) {
+  std::string file_name = log_data_path + "/output_g.log";
+  log_file_global = open(file_name.c_str(), O_WRONLY | O_CREAT);
+
+  if (log_file_global == -1) {
+    LOG(FATAL) << "file open fail";
+  }
+  LOG(INFO) << "file open success" << log_file_global;
+  std::string buf = "starting...";
+  write(log_file_global, buf.data(), buf.size());
+  // fsync(log_file_global);
+}
+
+static void write_to_log_file_global(std::string_view log) {
+  std::string mark = "eor#";
+  std::lock_guard lock(lock_log_file_global);
+  write(log_file_global, log.data(), log.size());
+  write(log_file_global, mark.data(), mark.size());
+  fsync(log_file_global);
+  // if (log_file_global.is_open()) {
+  //   log_file_global << log;
+  //   log_file_global << "eor#";
+  //   log_file_global.flush();
+  // } else {
+  //   LOG(FATAL) << "file open fail";
+  // }
+}
+}  // namespace gs
 
 namespace gbp {
+#if !OV
 #define LBMalloc(size) malloc(size)
 #define LBFree(p) free(p)
 #define LBRealloc(p, size) realloc((p), (size))
 /**
- * Representation for a memory block. It can be used to store a const reference
- * to a memory block, or a memory block malloced, and thus owned by the
- * BufferObject object. A const reference is valid only when the memory block it
- * refers to is valid. It does not free the memory block when the BufferObject
- * object is destructed. A BufferObject owning a memory block will free its
- * memory when the BufferObject object is destructed.
+ * Representation for a memory block. It can be used to store a const
+ * reference to a memory block, or a memory block malloced, and thus owned by
+ * the BufferObject object. A const reference is valid only when the memory
+ * block it refers to is valid. It does not free the memory block when the
+ * BufferObject object is destructed. A BufferObject owning a memory block
+ * will free its memory when the BufferObject object is destructed.
  *
  * \note  The implementation uses small-object optimization. When the memory
  * block is smaller or equal to 64 bytes, it just uses stack memory.
@@ -299,8 +342,8 @@ class BufferObjectImp {
    * @brief 用 rhs 的属性值覆盖当前 BufferObjectImp 对象的属性值
    *
    *
-   * Make a copy of the memory referred to by rhs. The new memory block is owned
-   * by *this.
+   * Make a copy of the memory referred to by rhs. The new memory block is
+   * owned by *this.
    *
    * \param   rhs The right hand side.
    */
@@ -366,8 +409,8 @@ class BufferObjectImp {
   // }
 
   /**
-   * Resizes the memory block. If *this is a const reference, a new memory block
-   * is created so *this will own the memory.
+   * Resizes the memory block. If *this is a const reference, a new memory
+   * block is created so *this will own the memory.
    *
    * \param   s       Size of the new memory block.
    * \param   reserve (Optional) Size of the memory block to reserve. Although
@@ -540,25 +583,25 @@ class BufferObject {
     return ret;
   }
 
-  BufferObject(const Any& value) {
+  BufferObject(const gs::Any& value) {
     type_ = ObjectType::gbpAny;
-    if (value.type == PropertyType::kInt32) {
+    if (value.type == gs::PropertyType::kInt32) {
       inner_ = std::make_shared<BufferObjectImp>(sizeof(int32_t));
       type_ = ObjectType::gbpAny;
       memcpy(inner_->Data(), &value.value.i, sizeof(int32_t));
-    } else if (value.type == PropertyType::kInt64) {
+    } else if (value.type == gs::PropertyType::kInt64) {
       inner_ = std::make_shared<BufferObjectImp>(sizeof(int64_t));
       memcpy(inner_->Data(), &value.value.l, sizeof(int64_t));
-    } else if (value.type == PropertyType::kString) {
+    } else if (value.type == gs::PropertyType::kString) {
       inner_ = std::make_shared<BufferObjectImp>(sizeof(std::string_view));
       memcpy(inner_->Data(), &value.value.s, sizeof(std::string_view));
       //      return value.s.to_string();
-    } else if (value.type == PropertyType::kDate) {
-      inner_ = std::make_shared<BufferObjectImp>(sizeof(Date));
-      memcpy(inner_->Data(), &value.value.d, sizeof(Date));
-    } else if (value.type == PropertyType::kEmpty) {
+    } else if (value.type == gs::PropertyType::kDate) {
+      inner_ = std::make_shared<BufferObjectImp>(sizeof(gs::Date));
+      memcpy(inner_->Data(), &value.value.d, sizeof(gs::Date));
+    } else if (value.type == gs::PropertyType::kEmpty) {
       inner_ = std::make_shared<BufferObjectImp>();
-    } else if (value.type == PropertyType::kDouble) {
+    } else if (value.type == gs::PropertyType::kDouble) {
       inner_ = std::make_shared<BufferObjectImp>(sizeof(double));
       memcpy(inner_->Data(), &value.value.db, sizeof(double));
     } else {
@@ -573,10 +616,6 @@ class BufferObject {
   char* Data() { return inner_->Data(); }
   size_t Size() const { return inner_->Size(); }
 
-  // template <typename T>
-  // T& Obj() {
-  //   return inner_->Obj<T>();
-  // }
   template <typename T>
   const T& Obj() const {
     return inner_->Obj<T>();
@@ -585,7 +624,7 @@ class BufferObject {
   std::string to_string() const {
     if (type_ != ObjectType::gbpAny)
       LOG(FATAL) << "Can't convert current type to std::string!!";
-    auto value = reinterpret_cast<const Any*>(Data());
+    auto value = reinterpret_cast<const gs::Any*>(Data());
     return value->to_string();
   }
 };
@@ -597,7 +636,6 @@ T& Decode(BufferObject& obj) {
     LOG(INFO) << "sizeof obj = " << obj.Size();
     LOG(FATAL) << "Decode size mismatch!!!";
   }
-
   return *reinterpret_cast<T*>(obj.Data());
 }
 
@@ -611,6 +649,6 @@ const T& Decode(const BufferObject& obj) {
 
   return *reinterpret_cast<const T*>(obj.Data());
 }
+#endif
 
 }  // namespace gbp
-}  // namespace gs
