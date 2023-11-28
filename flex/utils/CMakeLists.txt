@@ -1,6 +1,7 @@
 
 file(GLOB_RECURSE UTILS_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cc")
 add_library(flex_utils SHARED ${UTILS_SRC_FILES})
+target_link_libraries(flex_utils bufferpool)
 
 install(TARGETS flex_utils
         RUNTIME DESTINATION bin
@@ -8,7 +9,7 @@ install(TARGETS flex_utils
         LIBRARY DESTINATION lib)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        DESTINATION include/flex/
+        DESTINATION include/flex
         FILES_MATCHING
         PATTERN "*.h"
 )

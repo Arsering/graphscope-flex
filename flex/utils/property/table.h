@@ -65,6 +65,13 @@ class Table {
 #else
   std::vector<gbp::BufferObject> get_row(size_t row_id) const;
 #endif
+  size_t get_size_in_byte() const {
+    size_t size_in_byte = 0;
+    for (auto column : columns_) {
+      size_in_byte += column->get_size_in_byte();
+    }
+    return size_in_byte;
+  }
   std::shared_ptr<ColumnBase> get_column_by_id(size_t index);
 
   const std::shared_ptr<ColumnBase> get_column_by_id(size_t index) const;
@@ -73,8 +80,6 @@ class Table {
   size_t row_num() const;
   std::vector<std::shared_ptr<ColumnBase>>& columns();
   std::vector<ColumnBase*>& column_ptrs();
-
-  void insert(size_t index, const std::vector<Any>& values);
 
 // insert properties except for the primary key
 // col_ind_mapping: the mapping from the column index in the raw file row to

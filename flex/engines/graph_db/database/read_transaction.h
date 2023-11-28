@@ -95,7 +95,9 @@ class AdjListView {
   using sliceiter_t = TypedMutableCsrConstEdgeIter<EDATA_T>;
 
   AdjListView(const slice_t& slice, timestamp_t timestamp)
-      : edges_(TypedMutableCsrConstEdgeIter(slice)), timestamp_(timestamp) {}
+      : edges_(sliceiter_t(slice)), timestamp_(timestamp) {
+    LOG(INFO) << "check point 11";
+  }
 
   vid_t get_neighbor() const { return edges_.get_neighbor(); }
 
@@ -118,7 +120,6 @@ class AdjListView {
   timestamp_t timestamp_;
 };
 #endif
-
 template <typename EDATA_T>
 class GraphView {
  public:
@@ -136,10 +137,12 @@ class GraphView {
 
 template <typename EDATA_T>
 class SingleGraphView {
+  using nbr_t = MutableNbr<EDATA_T>;
+
  public:
   SingleGraphView(const SingleMutableCsr<EDATA_T>& csr, timestamp_t timestamp)
       : csr_(csr), timestamp_(timestamp) {}
-
+#if OV
   bool exist(vid_t v) const {
     return (csr_.get_edge(v).timestamp.load() <= timestamp_);
   }
@@ -147,7 +150,14 @@ class SingleGraphView {
   const MutableNbr<EDATA_T>& get_edge(vid_t v) const {
     return csr_.get_edge(v);
   }
+#else
+  bool exist(vid_t v) const {
+    auto item = csr_.get_edge(v);
+    return (gbp::Decode<nbr_t>(item).timestamp.load() <= timestamp_);
+  }
 
+  const gbp::BufferObject get_edge(vid_t v) const { return csr_.get_edge(v); }
+#endif
  private:
   const SingleMutableCsr<EDATA_T>& csr_;
   timestamp_t timestamp_;

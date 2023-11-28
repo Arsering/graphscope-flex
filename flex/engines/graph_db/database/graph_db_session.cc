@@ -72,6 +72,11 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
 #define likely(x) __builtin_expect(!!(x), 1)
 
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
+#if OV
+  write_to_log_file_global(input);
+  // LOG(INFO) << str_g;
+#endif
+
   uint8_t type = input.back();
   const char* str_data = input.data();
   size_t str_len = input.size() - 1;

@@ -29,19 +29,24 @@
 #include <string>
 #include <string_view>
 
-#include "flex/utils/value.h"
+#include "flex/graphscope_bufferpool/include/buffer_pool_manager.h"
+#include "flex/utils/buffer_obj.h"
 #include "glog/logging.h"
 
 namespace gs {
-#define OV false
-#define PAGE_SIZE_BUFFER_POOL 4096
 
 template <typename T>
 class mmap_array {
  public:
   mmap_array()
-      : filename_(""), fd_(-1), data_(NULL), size_(0), read_only_(true) {}
+      : filename_(""), fd_(-1), data_(NULL), size_(0), read_only_(true) {
+#if !OV
+    buffer_pool_manager_ = &gbp::BufferPoolManager::GetGlobalInstance();
+    fd_inner_ = -1;
+#endif
+  }
   mmap_array(mmap_array&& rhs) : mmap_array() { swap(rhs); }
+
   ~mmap_array() {}
 
   void reset() {
@@ -92,6 +97,9 @@ class mmap_array {
         assert(data_ != MAP_FAILED);
       }
     }
+#if !OV
+    fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
+#endif
   }
 
   void dump(const std::string& filename) {
@@ -156,7 +164,7 @@ class mmap_array {
 
     open(filename, false);
   }
-  // T* data() { return data_; }
+
 #if OV
   T* data() { return data_; }
   const T* data() const { return data_; }
@@ -168,7 +176,32 @@ class mmap_array {
 #else
   void set(size_t idx, const T& val, size_t len = 1) {
     CHECK_LE(idx + len, size_);
-    memcpy((char*) (data_ + idx), &val, sizeof(T) * len);
+    // memcpy((char*) (data_ + idx), &val, sizeof(T) * len);
+
+    size_t object_size = sizeof(T) * len;
+    const char* value = reinterpret_cast<const char*>(&val);
+
+    size_t file_offset = idx * sizeof(T);
+    size_t page_id = file_offset / PAGE_SIZE_BUFFER_POOL;
+    size_t page_offset = file_offset % PAGE_SIZE_BUFFER_POOL;
+    while (object_size > 0) {
+      // size_t object_size_t = (page_offset + object_size) >
+      // PAGE_SIZE_BUFFER_POOL
+      //                            ? (PAGE_SIZE_BUFFER_POOL - page_offset)
+      //                            : object_size;
+
+      // memcpy(value,
+      //        (char*) data_ + page_id * PAGE_SIZE_BUFFER_POOL + page_offset,
+      //        object_size_t);
+      // std::cerr << "page_id = " << page_id << std::endl;
+      auto pd = buffer_pool_manager_->FetchPage(page_id, fd_inner_);
+      size_t object_size_t = pd->SetObject(value, page_offset, object_size);
+
+      object_size -= object_size_t;
+      value += object_size_t;
+      page_id++;
+      page_offset = 0;
+    }
   }
 
   void set(size_t idx, const gbp::BufferObject& val, size_t len = 1) {
@@ -186,6 +219,7 @@ class mmap_array {
   //   CHECK_LT(idx, size_);
   //   return data_[idx];
   // }
+  size_t get_size_in_byte() const { return size_ * sizeof(T); }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
     CHECK_LE(idx + len, size_);
@@ -196,22 +230,29 @@ class mmap_array {
     size_t file_offset = idx * sizeof(T);
     size_t page_id = file_offset / PAGE_SIZE_BUFFER_POOL;
     size_t page_offset = file_offset % PAGE_SIZE_BUFFER_POOL;
-    while (object_size > 0) {
-      size_t object_size_t = (page_offset + object_size) > PAGE_SIZE_BUFFER_POOL
-                                 ? (PAGE_SIZE_BUFFER_POOL - page_offset)
-                                 : object_size;
 
-      memcpy(value,
-             (char*) data_ + page_id * PAGE_SIZE_BUFFER_POOL + page_offset,
-             object_size_t);
+    while (object_size > 0) {
+      // size_t object_size_t = (page_offset + object_size) >
+      // PAGE_SIZE_BUFFER_POOL
+      //                            ? (PAGE_SIZE_BUFFER_POOL - page_offset)
+      //                            : object_size;
+
+      // memcpy(value,
+      //        (char*) data_ + page_id * PAGE_SIZE_BUFFER_POOL + page_offset,
+      //        object_size_t);
+      // std::cerr << "page_id = " << page_id << std::endl;
+      auto pd = buffer_pool_manager_->FetchPage(page_id, fd_inner_);
+      size_t object_size_t = pd->GetObject(value, page_offset, object_size);
 
       object_size -= object_size_t;
       value += object_size_t;
       page_id++;
       page_offset = 0;
     }
+
     return ret;
   }
+
 #endif
 
   // const T& operator[](size_t idx) const { return data_[idx]; }
@@ -236,7 +277,10 @@ class mmap_array {
   int fd_;
   T* data_;
   size_t size_;
-
+#if !OV
+  gbp::BufferPoolManager* buffer_pool_manager_;
+  int fd_inner_ = -1;
+#endif
   bool read_only_;
 };
 
@@ -301,6 +345,9 @@ class mmap_array<std::string_view> {
   //   const string_item& item = items_.get(idx);
   //   return std::string_view(&data_.get(item.offset), item.length);
   // }
+  size_t get_size_in_byte() const {
+    return items_.size() * sizeof(string_item) + data_.size() * sizeof(char);
+  }
   gbp::BufferObject get(size_t idx) const {
     auto value = items_.get(idx);
     auto item = value.Obj<string_item>();

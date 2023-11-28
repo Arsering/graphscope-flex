@@ -43,13 +43,13 @@ install(TARGETS hqps_plan_proto
         LIBRARY DESTINATION lib)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        DESTINATION include/flex/
+        DESTINATION include/flex
         FILES_MATCHING
         PATTERN "*.h"
 )
 #install proto_generated_files
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto_generated_gie/
-        DESTINATION include/flex/
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto_generated_gie
+        DESTINATION include/flex
         FILES_MATCHING
         PATTERN "*.h"
 )

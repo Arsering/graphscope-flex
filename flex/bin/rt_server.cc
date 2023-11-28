@@ -36,7 +36,8 @@ int main(int argc, char** argv) {
       "http-port,p", bpo::value<uint16_t>()->default_value(10000),
       "http port of query handler")("graph-config,g", bpo::value<std::string>(),
                                     "graph schema config file")(
-      "data-path,d", bpo::value<std::string>(), "data directory path");
+      "data-path,d", bpo::value<std::string>(), "data directory path")(
+      "log-data-path,l", bpo::value<std::string>(), "log data directory path");
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
 
@@ -83,10 +84,14 @@ int main(int argc, char** argv) {
   t0 += grape::GetCurrentTime();
 
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
-
+  gs::str_g = "yes";
   // start service
   LOG(INFO) << "GraphScope http server start to listen on port " << http_port;
   server::GraphDBService::get().init(shard_num, http_port, enable_dpdk);
+  // #if OV
+  //   std::string log_data_path = vm["log-data-path"].as<std::string>();
+  //   gs::init_log_file_global(log_data_path);
+  // #endif
   server::GraphDBService::get().run_and_wait_for_exit();
 
   return 0;

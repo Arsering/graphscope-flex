@@ -25,7 +25,7 @@
 #include <seastar/core/alien.hh>
 
 #include "flex/engines/graph_db/database/graph_db_session.h"
-#include "flex/utils/value.h"
+#include "flex/utils/buffer_obj.h"
 
 namespace bpo = boost::program_options;
 using namespace std::chrono_literals;
@@ -37,7 +37,7 @@ class CSVReader {
  public:
   CSVReader(const std::string& file_name) {
     csv_data_.open(file_name, std::ios::in);
-    LOG(INFO) << file_name;
+    LOG(INFO) << "file_name=" << file_name;
     std::string line;
     std::getline(csv_data_, line);  // ignore the first line of file
   }
@@ -70,13 +70,14 @@ int test_vertex(gs::GraphDB& db, const std::string& csv_data_path) {
   gs::StringColumn& person_email_col =
       *(std::dynamic_pointer_cast<gs::StringColumn>(
           graph_session.get_vertex_property_column(person_label_id, "email")));
-
-  CSVReader csv_reader(csv_data_path);
+  LOG(INFO) << "csv_data_path=" << csv_data_path;
+  CSVReader csv_reader(csv_data_path + "/dynamic/person_0_0.csv");
 
   size_t test_count = 100;
   gs::oid_t req = 933;
   gs::vid_t root{};
   auto txn = graph_session.GetReadTransaction();
+#if !OV
   while (test_count > 0) {
     auto& words = csv_reader.GetNextLine();
     req = stol(words[0]);
@@ -91,11 +92,13 @@ int test_vertex(gs::GraphDB& db, const std::string& csv_data_path) {
     }
     test_count--;
   }
+#endif
   LOG(INFO) << "test_vertex: success!!";
   return 0;
 }
 
-int test_edge(gs::GraphDB& db, const std::string& csv_data_path) {
+int test_edge(gs::GraphDB& db, const std::string& csv_data_path,
+              const std::string& log_data_path) {
   gs::GraphDBSession& graph_session = db.GetSession(0);
 
   gs::label_t person_label_id =
@@ -103,7 +106,7 @@ int test_edge(gs::GraphDB& db, const std::string& csv_data_path) {
   gs::label_t knows_label_id =
       graph_session.schema().get_edge_label_id("KNOWS");
 
-  CSVReader csv_reader(csv_data_path);
+  CSVReader csv_reader(csv_data_path + "/dynamic/person_knows_person_0_0.csv");
   gs::oid_t req = 933;
   gs::vid_t root{};
   auto txn = graph_session.GetReadTransaction();
@@ -111,18 +114,32 @@ int test_edge(gs::GraphDB& db, const std::string& csv_data_path) {
   if (!txn.GetVertexIndex(person_label_id, req, root)) {
     return false;
   }
+  LOG(INFO) << "root = " << root;
+
   auto oe = txn.GetOutgoingEdges<gs::Date>(person_label_id, root,
                                            person_label_id, knows_label_id);
+
+  LOG(INFO) << "oe.size = " << oe.estimated_degree();
+
+  std::ofstream log_file;
   std::vector<std::string> vec_date;
-  // for (auto& e : oe) {
-  //   vec.emplace_back(e.data.milli_second);
-  // }
-  LOG(FATAL) << "oe.size = " << oe.estimated_degree();
-  // for (; oe.is_valid(); oe.next()) {
-  //   auto item = oe.get_data();
-  //   // vec_date.emplace_back(gs::gbp::Decode<gs::Date>(item).to_string());
-  //   LOG(INFO) << vec_date[vec_date.size() - 1];
-  // }
+#if OV
+  log_file.open(log_data_path + "/o_output.log", std::ios::out);
+  for (auto& e : oe) {
+    vec_date.emplace_back(e.data.to_string());
+    LOG(INFO) << vec_date[vec_date.size() - 1];
+    // log_file << vec_date[vec_date.size() - 1] << std::endl;
+  }
+#else
+  log_file.open(log_data_path + "/n_output.log", std::ios::out);
+  for (; oe.is_valid(); oe.next()) {
+    auto item = oe.get_data();
+    vec_date.emplace_back(gbp::Decode<gs::Date>(item).to_string());
+    LOG(INFO) << vec_date[vec_date.size() - 1];
+    log_file << vec_date[vec_date.size() - 1] << std::endl;
+  }
+#endif
+
   LOG(INFO) << "test_edge: success!!";
   return 0;
 }
@@ -137,7 +154,8 @@ int main(int argc, char** argv) {
       "http port of query handler")("graph-config,g", bpo::value<std::string>(),
                                     "graph schema config file")(
       "data-path,d", bpo::value<std::string>(), "data directory path")(
-      "csv-data-path,c", bpo::value<std::string>(), "csv data directory path");
+      "csv-data-path,c", bpo::value<std::string>(), "csv data directory path")(
+      "log-data-path,l", bpo::value<std::string>(), "log data directory path");
 
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
@@ -162,6 +180,7 @@ int main(int argc, char** argv) {
   std::string graph_schema_path = "";
   std::string data_path = "";
   std::string csv_data_path = "";
+  std::string log_data_path = "";
 
   if (!vm.count("graph-config")) {
     LOG(ERROR) << "graph-config is required";
@@ -178,9 +197,18 @@ int main(int argc, char** argv) {
     return -1;
   }
   csv_data_path = vm["csv-data-path"].as<std::string>();
+  if (!vm.count("log-data-path")) {
+    LOG(ERROR) << "log-data-path is required";
+    return -1;
+  }
+  log_data_path = vm["log-data-path"].as<std::string>();
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
+
+  size_t pool_size = 1024 * 1024 * 16;
+  auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
+  bpm->init(pool_size);
 
   double t0 = -grape::GetCurrentTime();
   auto& db = gs::GraphDB::get();
@@ -189,7 +217,7 @@ int main(int argc, char** argv) {
   db.Init(schema, data_path, shard_num);
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
-
-  test_vertex(db, csv_data_path);
-  test_edge(db, csv_data_path);
+  gs::mark_g = true;
+  // test_vertex(db, csv_data_path);
+  test_edge(db, csv_data_path, log_data_path);
 }
