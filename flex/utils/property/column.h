@@ -138,13 +138,13 @@ class TypedColumn : public ColumnBase {
     if (index < basic_size_) {
       addr = (std::size_t) basic_buffer_.data();
       auto ret = basic_buffer_.get(index);
-      access_logger_g->log_append(addr + index * sizeof(ret), sizeof(ret));
+      get_thread_logger()->log_append(addr + index * sizeof(ret), sizeof(ret));
       return ret;
     } else {
       addr = (std::size_t) extra_buffer_.data();
       auto ret = extra_buffer_.get(index - basic_size_);
-      access_logger_g->log_append(addr + (index - basic_size_) * sizeof(ret),
-                                  sizeof(ret));
+      get_thread_logger()->log_append(
+          addr + (index - basic_size_) * sizeof(ret), sizeof(ret));
       return ret;
     }
 #else
@@ -287,14 +287,14 @@ class StringColumn : public ColumnBase {
       offset = basic_buffer_.get_offset(idx);
       length = basic_buffer_.get_length(idx);
       auto ret = basic_buffer_.get(idx);
-      access_logger_g->log_append(addr + offset, length);
+      get_thread_logger()->log_append(addr + offset, length);
       return ret;
     } else {
       addr = extra_buffer_.get_addr();
       offset = extra_buffer_.get_offset(idx);
       length = extra_buffer_.get_length(idx);
       auto ret = extra_buffer_.get(idx - basic_size_);
-      access_logger_g->log_append(addr + offset, length);
+      get_thread_logger()->log_append(addr + offset, length);
       return ret;
     }
 #else
@@ -364,14 +364,14 @@ class TypedRefColumn : public RefColumnBase {
       offset = basic_buffer.get_offset(index);
       length = basic_buffer.get_length(index);
       auto ret = basic_buffer.get(index);
-      access_logger_g->log_append(addr + offset, length);
+      get_thread_logger()->log_append(addr + offset, length);
       return ret;
     } else {
       addr = extra_buffer.get_addr();
       offset = extra_buffer.get_offset(index);
       length = extra_buffer.get_length(index);
       auto ret = extra_buffer.get(index);
-      access_logger_g->log_append(addr + offset, length);
+      get_thread_logger()->log_append(addr + offset, length);
       return ret;
     }
 #else

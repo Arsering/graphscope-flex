@@ -3,7 +3,8 @@
         "*.excalidraw": "json",
         "*.excalidrawlib": "json",
         "iostream": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "fstream": "cpp"
     },
     "cmake.sourceDirectory": "/workspaces/graphscope-flex/flex"
 }

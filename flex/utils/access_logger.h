@@ -85,7 +85,7 @@ class ThreadLog {
     l_data.offset = offset;
     l_data.timestamp = GetSystemTime();
     log_data_list_.push_back(l_data);
-    if (log_data_list_.size() >= 64) {
+    if (log_data_list_.size() >= 128) {
       log_sync();
     }
   }
@@ -106,17 +106,20 @@ class ThreadLog {
     log_file_.write(buf, buf_size);
     free(buf);
     log_data_list_.clear();
+    log_file_.flush();
   }
 
   void log_info(std::string info) {
-    log_file_ << "thread_" << thread_id_ << ": " << info << std::endl;
+    log_file_ << GetSystemTime() << ": " << info;
   }
+
   bool is_initalized() { return log_file_.is_open(); }
+
   int get_tid() { return thread_id_; }
 };
 
-static thread_local ThreadLog* access_logger_g = nullptr;
-static thread_local bool access_logger_initialized = false;
+void set_thread_logger(ThreadLog* access_logger);
+ThreadLog* get_thread_logger();
 
 }  // namespace gs
 #endif

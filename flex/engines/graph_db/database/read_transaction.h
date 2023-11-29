@@ -37,10 +37,10 @@ class AdjListView {
    public:
     nbr_iterator(const nbr_t* ptr, const nbr_t* end, timestamp_t timestamp)
         : ptr_(ptr), end_(end), timestamp_(timestamp) {
-      access_logger_g->log_append((std::size_t) ptr_, sizeof(nbr_t));
+      get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
       while (ptr_ != end && ptr_->timestamp > timestamp_) {
         ++ptr_;
-        access_logger_g->log_append((std::size_t) ptr_, sizeof(nbr_t));
+        get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
       }
     }
 
@@ -50,12 +50,12 @@ class AdjListView {
 
     nbr_iterator& operator++() {
       ++ptr_;
-      access_logger_g->log_append((std::size_t) ptr_, sizeof(nbr_t));
+      get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
       while (ptr_ != end_ &&
              ptr_->timestamp >
                  timestamp_) {  // 这里应该是要去掉所有timestamp不有效的数据
         ++ptr_;
-        access_logger_g->log_append((std::size_t) ptr_, sizeof(nbr_t));
+        get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
       }
       return *this;
     }
@@ -119,7 +119,7 @@ class SingleGraphView {
     std::size_t addr;
     // return (csr_.get_edge(addr,v).timestamp.load() <= timestamp_);
     bool ret = (csr_.get_edge(addr, v).timestamp.load() <= timestamp_);
-    access_logger_g->log_append(addr, sizeof(MutableNbr<EDATA_T>));
+    get_thread_logger()->log_append(addr, sizeof(MutableNbr<EDATA_T>));
     return ret;
   }
 
@@ -127,7 +127,7 @@ class SingleGraphView {
     std::size_t addr;
     // return csr_.get_edge(addr,v);
     auto ret = csr_.get_edge(addr, v);
-    access_logger_g->log_append(addr, sizeof(ret));
+    get_thread_logger()->log_append(addr, sizeof(ret));
     return ret;
   }
 

@@ -16,7 +16,7 @@
 #include "flex/engines/graph_db/database/read_transaction.h"
 #include <cstddef>
 #include <string>
-// #include "flex/engines/graph_db/database/access_logger.h"
+
 #include "flex/engines/graph_db/database/version_manager.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/storages/rt_mutable_graph/types.h"
@@ -27,14 +27,16 @@ namespace gs {
 ReadTransaction::ReadTransaction(const MutablePropertyFragment& graph,
                                  VersionManager& vm, timestamp_t timestamp)
     : graph_(graph), vm_(vm), timestamp_(timestamp) {
-  if (!access_logger_initialized) {
-    LOG(FATAL) << "no access logger";
+  if (get_thread_logger() == nullptr) {
+    LOG(FATAL) << "no thread logger";
   }
+  get_thread_logger()->log_info("read transaction");
 }
 
 ReadTransaction::~ReadTransaction() {
   release();
-  access_logger_g = nullptr;
+  get_thread_logger()->log_sync();
+  set_thread_logger(nullptr);
 }
 
 timestamp_t ReadTransaction::timestamp() const { return timestamp_; }
@@ -71,7 +73,7 @@ Any ReadTransaction::vertex_iterator::GetField(
   gs::ColumnBase* CBaddr = column_ptr.get();
   std::size_t addr = (std::size_t) CBaddr;
   auto ret = column_ptr->get(cur_);
-  access_logger_g->log_append(addr + cur_ * sizeof(ret), sizeof(ret));
+  get_thread_logger()->log_append(addr + cur_ * sizeof(ret), sizeof(ret));
   return ret;
 }
 
@@ -89,7 +91,7 @@ ReadTransaction::edge_iterator::edge_iterator(
   // FIXME: 这里为什么需要记录？？？
   auto addr = iter_->get_cur_addr();
   auto size = iter_->size();
-  access_logger_g->log_append(addr, size);
+  get_thread_logger()->log_append(addr, size);
 }
 ReadTransaction::edge_iterator::~edge_iterator() = default;
 
