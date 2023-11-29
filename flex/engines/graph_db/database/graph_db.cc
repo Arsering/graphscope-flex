@@ -14,7 +14,7 @@
  */
 
 #include "flex/engines/graph_db/database/graph_db.h"
-#include "flex/engines/graph_db/database/access_logger.h"
+// #include "flex/engines/graph_db/database/access_logger.h"
 #include "flex/engines/graph_db/database/graph_db_session.h"
 
 #include "flex/engines/graph_db/app/server_app.h"
@@ -25,7 +25,7 @@ namespace gs {
 struct SessionLocalContext {
   SessionLocalContext(GraphDB& db, const std::string& work_dir, int thread_id)
       : allocator(thread_local_allocator_prefix(work_dir, thread_id)),
-        session(db, allocator,access_logger, logger, work_dir, thread_id) {}
+        session(db, allocator, access_logger, logger, work_dir, thread_id) {}
   ~SessionLocalContext() { logger.close(); }
 
   MMapAllocator allocator;
@@ -85,8 +85,8 @@ void GraphDB::Init(const Schema& schema, const std::string& data_dir,
   ingestWals(wal_files, data_dir, thread_num_);
 
   for (int i = 0; i < thread_num_; ++i) {
-    contexts_[i].access_logger.open(i);
-    contexts_[i].logger.open(wal_dir_path, i);//这里相当于给WAL的logger进行初始化
+    contexts_[i].logger.open(wal_dir_path, i);
+    contexts_[i].access_logger.open_log_file(i);
   }
 
   initApps(schema.GetPluginsList());

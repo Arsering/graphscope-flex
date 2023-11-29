@@ -20,15 +20,12 @@
 #include <string>
 #include <string_view>
 
-#include "flex/engines/graph_db/database/access_logger.h"
+#include "flex/utils/access_logger.h"
 #include "flex/utils/mmap_array.h"
 #include "flex/utils/property/types.h"
 #include "grape/serialization/out_archive.h"
 
 namespace gs {
-
-static thread_local ThreadLog col_logger;
-static thread_local bool logger_init=false;
 
 class ColumnBase {
  public:
@@ -136,21 +133,24 @@ class TypedColumn : public ColumnBase {
   }
 
   T get_view(size_t index) const {
-    //col_logger.log_info("get view thread: "+std::to_string(col_logger.get_tid()));
+#if EL
     std::size_t addr;
-    if(index<basic_size_){
-      addr=(std::size_t)basic_buffer_.data();
+    if (index < basic_size_) {
+      addr = (std::size_t) basic_buffer_.data();
       auto ret = basic_buffer_.get(index);
-      col_logger.log_append(addr + index*sizeof(ret),sizeof(ret) ,0);
+      access_logger_g->log_append(addr + index * sizeof(ret), sizeof(ret));
       return ret;
-    }else{
-      addr=(std::size_t)extra_buffer_.data();
-      auto ret = extra_buffer_.get(index-basic_size_);
-      col_logger.log_append(addr + (index-basic_size_)*sizeof(ret),sizeof(ret) ,0);
+    } else {
+      addr = (std::size_t) extra_buffer_.data();
+      auto ret = extra_buffer_.get(index - basic_size_);
+      access_logger_g->log_append(addr + (index - basic_size_) * sizeof(ret),
+                                  sizeof(ret));
       return ret;
     }
-    // return index < basic_size_ ? basic_buffer_.get(index)
-    //                            : extra_buffer_.get(index - basic_size_);
+#else
+    return index < basic_size_ ? basic_buffer_.get(index)
+                               : extra_buffer_.get(index - basic_size_);
+#endif
   }
 
   Any get(size_t index) const override {
@@ -280,24 +280,27 @@ class StringColumn : public ColumnBase {
   }
 
   std::string_view get_view(size_t idx) const {
-    std::size_t addr,offset,length;
-    if(idx<basic_size_){
-      addr=basic_buffer_.get_addr();
-      offset=basic_buffer_.get_offset(idx);
-      length=basic_buffer_.get_length(idx);
+#if EL
+    std::size_t addr, offset, length;
+    if (idx < basic_size_) {
+      addr = basic_buffer_.get_addr();
+      offset = basic_buffer_.get_offset(idx);
+      length = basic_buffer_.get_length(idx);
       auto ret = basic_buffer_.get(idx);
-       col_logger.log_append(addr + offset,length ,0);
+      access_logger_g->log_append(addr + offset, length);
       return ret;
-    }else{
-      addr=extra_buffer_.get_addr();
-      offset=extra_buffer_.get_offset(idx);
-      length=extra_buffer_.get_length(idx);
-      auto ret = extra_buffer_.get(idx-basic_size_);
-      col_logger.log_append(addr + offset,length ,0);
+    } else {
+      addr = extra_buffer_.get_addr();
+      offset = extra_buffer_.get_offset(idx);
+      length = extra_buffer_.get_length(idx);
+      auto ret = extra_buffer_.get(idx - basic_size_);
+      access_logger_g->log_append(addr + offset, length);
       return ret;
     }
-    // return idx < basic_size_ ? basic_buffer_.get(idx)
-    //                          : extra_buffer_.get(idx - basic_size_);
+#else
+    return idx < basic_size_ ? basic_buffer_.get(idx)
+                             : extra_buffer_.get(idx - basic_size_);
+#endif
   }
 
   Any get(size_t idx) const override {
@@ -354,24 +357,27 @@ class TypedRefColumn : public RefColumnBase {
   ~TypedRefColumn() {}
 
   inline T get_view(size_t index) const {
-    std::size_t addr,offset,length;
-    if(index<basic_size){
-      addr=basic_buffer.get_addr();
-      offset=basic_buffer.get_offset(index);
-      length=basic_buffer.get_length(index);
+#if EL
+    size_t addr, offset, length;
+    if (index < basic_size) {
+      addr = basic_buffer.get_addr();
+      offset = basic_buffer.get_offset(index);
+      length = basic_buffer.get_length(index);
       auto ret = basic_buffer.get(index);
-      col_logger.log_append(addr + offset,length ,0);
+      access_logger_g->log_append(addr + offset, length);
       return ret;
-    }else{
-      addr=extra_buffer.get_addr();
-      offset=extra_buffer.get_offset(index);
-      length=extra_buffer.get_length(index);
+    } else {
+      addr = extra_buffer.get_addr();
+      offset = extra_buffer.get_offset(index);
+      length = extra_buffer.get_length(index);
       auto ret = extra_buffer.get(index);
-      col_logger.log_append(addr + offset,length ,0);
+      access_logger_g->log_append(addr + offset, length);
       return ret;
     }
-    // return index < basic_size ? basic_buffer.get(index)
-    //                           : extra_buffer.get(index - basic_size);
+#else
+    return index < basic_size ? basic_buffer.get(index)
+                              : extra_buffer.get(index - basic_size);
+#endif
   }
 
  private:

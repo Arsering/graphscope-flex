@@ -30,9 +30,11 @@
 #include <string>
 #include <string_view>
 
+#include "flex/utils/access_logger.h"
 #include "glog/logging.h"
 
 namespace gs {
+#define EL true
 
 template <typename T>
 class mmap_array {
@@ -174,17 +176,11 @@ class mmap_array {
     std::swap(size_, rhs.size_);
   }
 
-  size_t get_addr() const {
-    return (std::size_t)data_;
-  }
+  size_t get_addr() const { return (std::size_t) data_; }
 
-  std::size_t get_offset(size_t idx) const {
-    return idx*sizeof(T);
-  }
+  std::size_t get_offset(size_t idx) const { return idx * sizeof(T); }
 
-  std::size_t get_length(size_t idx) const {
-    return sizeof(T);
-  }
+  std::size_t get_length(size_t idx) const { return sizeof(T); }
 
   const std::string& filename() const { return filename_; }
 
@@ -255,17 +251,11 @@ class mmap_array<std::string_view> {
     data_.swap(rhs.data_);
   }
 
-  size_t get_addr() const {
-    return (std::size_t)data_.data();
-  }
+  size_t get_addr() const { return (std::size_t) data_.data(); }
 
-  std::size_t get_offset(size_t idx) const {
-    return items_[idx].offset;
-  }
+  std::size_t get_offset(size_t idx) const { return items_[idx].offset; }
 
-  std::size_t get_length(size_t idx) const {
-    return items_[idx].length;
-  }
+  std::size_t get_length(size_t idx) const { return items_[idx].length; }
 
  private:
   mmap_array<string_item> items_;
