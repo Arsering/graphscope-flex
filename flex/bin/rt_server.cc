@@ -36,8 +36,7 @@ int main(int argc, char** argv) {
       "http-port,p", bpo::value<uint16_t>()->default_value(10000),
       "http port of query handler")("graph-config,g", bpo::value<std::string>(),
                                     "graph schema config file")(
-      "data-path,d", bpo::value<std::string>(), "data directory path")(
-      "log-data-path,l", bpo::value<std::string>(), "log data directory path");
+      "data-path,d", bpo::value<std::string>(), "data directory path");
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
 
@@ -79,6 +78,13 @@ int main(int argc, char** argv) {
   auto& db = gs::GraphDB::get();
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
+
+#if !OV
+  size_t pool_size = 1024 * 1024 * 6;
+  auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
+  bpm->init(pool_size);
+#endif
+
   db.Init(schema, data_path, shard_num);
 
   t0 += grape::GetCurrentTime();
@@ -88,10 +94,7 @@ int main(int argc, char** argv) {
   // start service
   LOG(INFO) << "GraphScope http server start to listen on port " << http_port;
   server::GraphDBService::get().init(shard_num, http_port, enable_dpdk);
-  // #if OV
-  //   std::string log_data_path = vm["log-data-path"].as<std::string>();
-  //   gs::init_log_file_global(log_data_path);
-  // #endif
+
   server::GraphDBService::get().run_and_wait_for_exit();
 
   return 0;
