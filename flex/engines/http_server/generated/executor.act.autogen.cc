@@ -25,9 +25,9 @@ enum : uint8_t {
 
 executor_ref::executor_ref() : ::hiactor::reference_base() { actor_type = 0; }
 
-seastar::future<query_result> executor_ref::run_graph_db_query(server::query_param &&param) {
+seastar::future<query_result> executor_ref::run_graph_db_query(query_param &&param) {
 	addr.set_method_actor_tid(0);
-	return hiactor::actor_client::request<server::query_result, server::query_param>(addr, k_executor_run_graph_db_query, std::forward<server::query_param>(param));
+	return hiactor::actor_client::request<query_result, server::query_param>(addr, k_executor_run_graph_db_query, std::forward<server::query_param>(param));
 }
 
 seastar::future<hiactor::stop_reaction> executor::do_work(hiactor::actor_message* msg) {
@@ -43,7 +43,7 @@ seastar::future<hiactor::stop_reaction> executor::do_work(hiactor::actor_message
 					return self->run_graph_db_query(server::query_param::load_from(ori_msg->data));
 				}
 			};
-			return apply_run_graph_db_query(msg, this).then_wrapped([msg] (seastar::future<server::query_result> fut) {
+			return apply_run_graph_db_query(msg, this).then_wrapped([msg] (seastar::future<query_result> fut) {
 				if (__builtin_expect(fut.failed(), false)) {
 					auto* ex_msg = hiactor::make_response_message(
 						msg->hdr.src_shard_id,

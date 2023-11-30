@@ -1,0 +1,404 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "engines/hqps_db/libhqps_plan_proto.so"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"install",
+			"add_compile_definitions",
+			"include_directories",
+			"target_include_directories"
+		],
+		"files" : 
+		[
+			"engines/hqps_db/CMakeLists.txt",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 34,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 40,
+				"parent" : 0
+			},
+			{
+				"file" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 30,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 22,
+				"parent" : 3
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 35,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 39,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 43,
+				"parent" : 3
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++17 -fPIC -fopenmp -Werror -Wl,-rpath,$ORIGIN -g3 -O0 -fPIC  "
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 4,
+					"define" : "FLEX_VERSION=\"0.23.0\""
+				},
+				{
+					"define" : "hqps_plan_proto_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 5,
+					"path" : "/workspaces/graphscope-flex/flex/.."
+				},
+				{
+					"backtrace" : 6,
+					"path" : "/workspaces/graphscope-flex/flex/engines/hqps_db"
+				},
+				{
+					"backtrace" : 6,
+					"path" : "/workspaces/graphscope-flex/build/engines/hqps_db"
+				},
+				{
+					"backtrace" : 7,
+					"isSystem" : true,
+					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
+				},
+				{
+					"backtrace" : 7,
+					"isSystem" : true,
+					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
+				},
+				{
+					"backtrace" : 8,
+					"isSystem" : true,
+					"path" : "/usr/local/lib/cmake/libgrapelite/../../../include/grape/analytical_apps"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				1,
+				3,
+				5,
+				7,
+				9,
+				11,
+				13,
+				15,
+				17
+			]
+		}
+	],
+	"id" : "hqps_plan_proto::@7c5b726da48e97a81a11",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "lib"
+			},
+			{
+				"backtrace" : 2,
+				"path" : "lib"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/usr/local"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libprotobuf.so",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "hqps_plan_proto",
+	"nameOnDisk" : "libhqps_plan_proto.so",
+	"paths" : 
+	{
+		"build" : "engines/hqps_db",
+		"source" : "engines/hqps_db"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				0,
+				2,
+				4,
+				6,
+				8,
+				10,
+				12,
+				14,
+				16
+			]
+		},
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				1,
+				3,
+				5,
+				7,
+				9,
+				11,
+				13,
+				15,
+				17
+			]
+		},
+		{
+			"name" : "CMake Rules",
+			"sourceIndexes" : 
+			[
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/algebra.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/algebra.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/common.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/common.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/expr.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/expr.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/physical.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/physical.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/results.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/results.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/schema.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/schema.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/type.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/type.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/stored_procedure.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/stored_procedure.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/job_service.pb.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/job_service.pb.cc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/algebra.pb.h.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/common.pb.h.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/expr.pb.h.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/physical.pb.h.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/results.pb.h.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/schema.pb.h.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/type.pb.h.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/stored_procedure.pb.h.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspaces/graphscope-flex/build/engines/hqps_db/proto_generated_gie/job_service.pb.h.rule",
+			"sourceGroupIndex" : 2
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}
