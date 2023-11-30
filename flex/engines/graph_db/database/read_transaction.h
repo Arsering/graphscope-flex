@@ -37,10 +37,14 @@ class AdjListView {
    public:
     nbr_iterator(const nbr_t* ptr, const nbr_t* end, timestamp_t timestamp)
         : ptr_(ptr), end_(end), timestamp_(timestamp) {
+#if !DL
       get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
+#endif
       while (ptr_ != end && ptr_->timestamp > timestamp_) {
         ++ptr_;
+#if !DL
         get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
+#endif
       }
     }
 
@@ -50,12 +54,14 @@ class AdjListView {
 
     nbr_iterator& operator++() {
       ++ptr_;
+#if !DL
       get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
-      while (ptr_ != end_ &&
-             ptr_->timestamp >
-                 timestamp_) {  // 这里应该是要去掉所有timestamp不有效的数据
+#endif
+      while (ptr_ != end_ && ptr_->timestamp > timestamp_) {
         ++ptr_;
+#if !DL
         get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
+#endif
       }
       return *this;
     }
@@ -95,7 +101,7 @@ class AdjListView {
 };
 
 template <typename EDATA_T>
-class GraphView {  // 这个的get_edges是都会被访问到的
+class GraphView {
  public:
   GraphView(const MutableCsr<EDATA_T>& csr, timestamp_t timestamp)
       : csr_(csr), timestamp_(timestamp) {}
@@ -114,22 +120,28 @@ class SingleGraphView {
  public:
   SingleGraphView(const SingleMutableCsr<EDATA_T>& csr, timestamp_t timestamp)
       : csr_(csr), timestamp_(timestamp) {}
-
+#if DL
+  bool exist(vid_t v) const {
+    return (csr_.get_edge(v).timestamp.load() <= timestamp_);
+  }
+  const MutableNbr<EDATA_T>& get_edge(vid_t v) const {
+    return csr_.get_edge(v);
+  }
+#else
   bool exist(vid_t v) const {
     std::size_t addr;
-    // return (csr_.get_edge(addr,v).timestamp.load() <= timestamp_);
-    bool ret = (csr_.get_edge(addr, v).timestamp.load() <= timestamp_);
+    bool ret = (csr_.get_edge(v).timestamp.load() <= timestamp_);
+    // FIXME: 此处需要进一步考虑
     get_thread_logger()->log_append(addr, sizeof(MutableNbr<EDATA_T>));
     return ret;
   }
-
   const MutableNbr<EDATA_T>& get_edge(vid_t v) const {
     std::size_t addr;
-    // return csr_.get_edge(addr,v);
-    auto ret = csr_.get_edge(addr, v);
+    auto ret = csr_.get_edge(v);
     get_thread_logger()->log_append(addr, sizeof(ret));
     return ret;
   }
+#endif
 
  private:
   const SingleMutableCsr<EDATA_T>& csr_;
@@ -151,8 +163,7 @@ class ReadTransaction {
   class vertex_iterator {
    public:
     vertex_iterator(label_t label, vid_t cur, vid_t num,
-                    const MutablePropertyFragment& graph,
-                    timestamp_t timestamp_);
+                    const MutablePropertyFragment& graph);
     ~vertex_iterator();
 
     bool IsValid() const;
@@ -170,14 +181,12 @@ class ReadTransaction {
     vid_t cur_;
     vid_t num_;
     const MutablePropertyFragment& graph_;
-    timestamp_t timestamp_;
   };
 
   class edge_iterator {
    public:
     edge_iterator(label_t neighbor_label, label_t edge_label,
-                  std::shared_ptr<MutableCsrConstEdgeIterBase> iter,
-                  timestamp_t timestamp_);
+                  std::shared_ptr<MutableCsrConstEdgeIterBase> iter);
     ~edge_iterator();
 
     Any GetData() const;
@@ -197,7 +206,6 @@ class ReadTransaction {
     label_t edge_label_;
 
     std::shared_ptr<MutableCsrConstEdgeIterBase> iter_;
-    timestamp_t timestamp_;
   };
 
   vertex_iterator GetVertexIterator(label_t label) const;

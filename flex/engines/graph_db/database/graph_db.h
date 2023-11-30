@@ -57,9 +57,11 @@ class GraphDB {
    *
    * @return graph_dir The directory of graph data.
    */
-   //ReadTransaction GetReadTransaction();
+#if DL
+  ReadTransaction GetReadTransaction();
+#else
   ReadTransaction GetReadTransaction(int thread_id = 0);
-
+#endif
   /** @brief Create a transaction to insert vertices and edges with a default
    * allocator.
    *

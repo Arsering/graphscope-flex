@@ -20,7 +20,6 @@
 #include <string>
 #include <string_view>
 
-#include "flex/utils/access_logger.h"
 #include "flex/utils/mmap_array.h"
 #include "flex/utils/property/types.h"
 #include "grape/serialization/out_archive.h"
@@ -133,7 +132,10 @@ class TypedColumn : public ColumnBase {
   }
 
   T get_view(size_t index) const {
-#if EL
+#if DL
+    return index < basic_size_ ? basic_buffer_.get(index)
+                               : extra_buffer_.get(index - basic_size_);
+#else
     std::size_t addr;
     if (index < basic_size_) {
       addr = (std::size_t) basic_buffer_.data();
@@ -147,9 +149,6 @@ class TypedColumn : public ColumnBase {
           addr + (index - basic_size_) * sizeof(ret), sizeof(ret));
       return ret;
     }
-#else
-    return index < basic_size_ ? basic_buffer_.get(index)
-                               : extra_buffer_.get(index - basic_size_);
 #endif
   }
 
@@ -280,7 +279,10 @@ class StringColumn : public ColumnBase {
   }
 
   std::string_view get_view(size_t idx) const {
-#if EL
+#if DL
+    return idx < basic_size_ ? basic_buffer_.get(idx)
+                             : extra_buffer_.get(idx - basic_size_);
+#else
     std::size_t addr, offset, length;
     if (idx < basic_size_) {
       addr = basic_buffer_.get_addr();
@@ -297,9 +299,6 @@ class StringColumn : public ColumnBase {
       get_thread_logger()->log_append(addr + offset, length);
       return ret;
     }
-#else
-    return idx < basic_size_ ? basic_buffer_.get(idx)
-                             : extra_buffer_.get(idx - basic_size_);
 #endif
   }
 
@@ -357,7 +356,10 @@ class TypedRefColumn : public RefColumnBase {
   ~TypedRefColumn() {}
 
   inline T get_view(size_t index) const {
-#if EL
+#if DL
+    return index < basic_size ? basic_buffer.get(index)
+                              : extra_buffer.get(index - basic_size);
+#else
     size_t addr, offset, length;
     if (index < basic_size) {
       addr = basic_buffer.get_addr();
@@ -374,9 +376,6 @@ class TypedRefColumn : public RefColumnBase {
       get_thread_logger()->log_append(addr + offset, length);
       return ret;
     }
-#else
-    return index < basic_size ? basic_buffer.get(index)
-                              : extra_buffer.get(index - basic_size);
 #endif
   }
 

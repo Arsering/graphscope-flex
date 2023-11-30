@@ -22,10 +22,12 @@ namespace gs {
 
 ReadTransaction GraphDBSession::GetReadTransaction() {
   uint32_t ts = db_.version_manager_.acquire_read_timestamp();
+#if !DL
   if (get_thread_logger() == nullptr) {
     LOG(INFO) << "init access logger";
     set_thread_logger(&access_logger_);
   }
+#endif
   return ReadTransaction(db_.graph_, db_.version_manager_, ts);
 }
 

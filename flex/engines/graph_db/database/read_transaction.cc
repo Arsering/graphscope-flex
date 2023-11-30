@@ -14,31 +14,35 @@
  */
 
 #include "flex/engines/graph_db/database/read_transaction.h"
-#include <cstddef>
-#include <string>
+// #include <cstddef>
+// #include <string>
 
 #include "flex/engines/graph_db/database/version_manager.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
-#include "flex/storages/rt_mutable_graph/types.h"
-#include "flex/utils/property/column.h"
+// #include "flex/storages/rt_mutable_graph/types.h"
+// #include "flex/utils/property/column.h"
 
 namespace gs {
 
 ReadTransaction::ReadTransaction(const MutablePropertyFragment& graph,
                                  VersionManager& vm, timestamp_t timestamp)
     : graph_(graph), vm_(vm), timestamp_(timestamp) {
+#if !DL
   if (get_thread_logger() == nullptr) {
     LOG(FATAL) << "no thread logger";
   }
   get_thread_logger()->log_info("read transaction");
+#endif
 }
-
+#if DL
+ReadTransaction::~ReadTransaction() { release(); }
+#else
 ReadTransaction::~ReadTransaction() {
   release();
   get_thread_logger()->log_sync();
   set_thread_logger(nullptr);
 }
-
+#endif
 timestamp_t ReadTransaction::timestamp() const { return timestamp_; }
 
 void ReadTransaction::Commit() { release(); }
@@ -46,13 +50,8 @@ void ReadTransaction::Commit() { release(); }
 void ReadTransaction::Abort() { release(); }
 
 ReadTransaction::vertex_iterator::vertex_iterator(
-    label_t label, vid_t cur, vid_t num, const MutablePropertyFragment& graph,
-    timestamp_t timestamp_)
-    : label_(label),
-      cur_(cur),
-      num_(num),
-      graph_(graph),
-      timestamp_(timestamp_) {}
+    label_t label, vid_t cur, vid_t num, const MutablePropertyFragment& graph)
+    : label_(label), cur_(cur), num_(num), graph_(graph) {}
 ReadTransaction::vertex_iterator::~vertex_iterator() = default;
 
 bool ReadTransaction::vertex_iterator::IsValid() const { return cur_ < num_; }
@@ -66,6 +65,11 @@ oid_t ReadTransaction::vertex_iterator::GetId() const {
 }
 vid_t ReadTransaction::vertex_iterator::GetIndex() const { return cur_; }
 
+#if DL
+Any ReadTransaction::vertex_iterator::GetField(int col_id) const {
+  return graph_.get_vertex_table(label_).get_column_by_id(col_id)->get(cur_);
+}
+#else
 Any ReadTransaction::vertex_iterator::GetField(
     int col_id) const {  // 这里可能要考虑一下要怎么处理
   // return graph_.get_vertex_table(label_).get_column_by_id(col_id)->get(cur_);
@@ -76,23 +80,17 @@ Any ReadTransaction::vertex_iterator::GetField(
   get_thread_logger()->log_append(addr + cur_ * sizeof(ret), sizeof(ret));
   return ret;
 }
-
-int ReadTransaction::vertex_iterator::FieldNum() const {  // 这里也是
+#endif
+int ReadTransaction::vertex_iterator::FieldNum() const {
   return graph_.get_vertex_table(label_).col_num();
 }
 
 ReadTransaction::edge_iterator::edge_iterator(
     label_t neighbor_label, label_t edge_label,
-    std::shared_ptr<MutableCsrConstEdgeIterBase> iter, timestamp_t timestamp_)
+    std::shared_ptr<MutableCsrConstEdgeIterBase> iter)
     : neighbor_label_(neighbor_label),
       edge_label_(edge_label),
-      iter_(std::move(iter)),
-      timestamp_(timestamp_) {
-  // FIXME: 这里为什么需要记录？？？
-  auto addr = iter_->get_cur_addr();
-  auto size = iter_->size();
-  get_thread_logger()->log_append(addr, size);
-}
+      iter_(std::move(iter)) {}
 ReadTransaction::edge_iterator::~edge_iterator() = default;
 
 Any ReadTransaction::edge_iterator::GetData() const {
@@ -119,17 +117,16 @@ label_t ReadTransaction::edge_iterator::GetEdgeLabel() const {
 
 ReadTransaction::vertex_iterator ReadTransaction::GetVertexIterator(
     label_t label) const {
-  return {label, 0, graph_.vertex_num(label), graph_, timestamp_};
+  return {label, 0, graph_.vertex_num(label), graph_};
 }
 
 ReadTransaction::vertex_iterator ReadTransaction::FindVertex(label_t label,
                                                              oid_t id) const {
   vid_t lid;
   if (graph_.get_lid(label, id, lid)) {
-    return {label, lid, graph_.vertex_num(label), graph_, timestamp_};
+    return {label, lid, graph_.vertex_num(label), graph_};
   } else {
-    return {label, graph_.vertex_num(label), graph_.vertex_num(label), graph_,
-            timestamp_};
+    return {label, graph_.vertex_num(label), graph_.vertex_num(label), graph_};
   }
 }
 
@@ -149,15 +146,13 @@ oid_t ReadTransaction::GetVertexId(label_t label, vid_t index) const {
 ReadTransaction::edge_iterator ReadTransaction::GetOutEdgeIterator(
     label_t label, vid_t u, label_t neighnor_label, label_t edge_label) const {
   return {neighnor_label, edge_label,
-          graph_.get_outgoing_edges(label, u, neighnor_label, edge_label),
-          timestamp_};
+          graph_.get_outgoing_edges(label, u, neighnor_label, edge_label)};
 }
 
 ReadTransaction::edge_iterator ReadTransaction::GetInEdgeIterator(
     label_t label, vid_t u, label_t neighnor_label, label_t edge_label) const {
   return {neighnor_label, edge_label,
-          graph_.get_incoming_edges(label, u, neighnor_label, edge_label),
-          timestamp_};
+          graph_.get_incoming_edges(label, u, neighnor_label, edge_label)};
 }
 
 const Schema& ReadTransaction::schema() const { return graph_.schema(); }

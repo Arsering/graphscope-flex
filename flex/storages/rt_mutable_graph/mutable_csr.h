@@ -22,7 +22,6 @@
 #include <type_traits>
 #include <vector>
 
-// #include "flex/engines/graph_db/database/access_logger.h"
 #include "flex/storages/rt_mutable_graph/types.h"
 #include "flex/utils/allocators.h"
 #include "flex/utils/mmap_array.h"
@@ -200,7 +199,9 @@ class MutableCsrConstEdgeIterBase {
 
   virtual void next() = 0;
   virtual bool is_valid() const = 0;
+#if !DL
   virtual std::size_t get_cur_addr() const = 0;
+#endif
 };
 
 class MutableCsrEdgeIterBase {
@@ -573,11 +574,15 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
     return ret;
   }
 
+#if DL
+  const nbr_t& get_edge(vid_t i) const { return nbr_list_[i]; }
+#else
   const nbr_t& get_edge(std::size_t& addr, vid_t i) const {
     const nbr_t* nbr_addr = (nbr_list_.data());
     addr = (size_t) nbr_addr + i * sizeof(nbr_t);
     return nbr_list_[i];
   }
+#endif
 
   void ingest_edge(vid_t src, vid_t dst, grape::OutArchive& arc, timestamp_t ts,
                    MMapAllocator& alloc) override {

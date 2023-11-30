@@ -14,7 +14,6 @@
  */
 
 #include "flex/engines/graph_db/database/graph_db.h"
-// #include "flex/engines/graph_db/database/access_logger.h"
 #include "flex/engines/graph_db/database/graph_db_session.h"
 
 #include "flex/engines/graph_db/app/server_app.h"
@@ -113,11 +112,16 @@ void GraphDB::CheckpointAndRestart() {
   Init(graph_.schema(), work_dir_, thread_num_);
 }
 
+#if DL
+ReadTransaction GraphDB::GetReadTransaction() {
+  uint32_t ts = version_manager_.acquire_read_timestamp();
+  return {graph_, version_manager_, ts};
+}
+#else
 ReadTransaction GraphDB::GetReadTransaction(int thread_id) {
-  // uint32_t ts = version_manager_.acquire_read_timestamp();
-  // return {graph_, version_manager_, ts};
   return contexts_[thread_id].session.GetReadTransaction();
 }
+#endif
 
 InsertTransaction GraphDB::GetInsertTransaction(int thread_id) {
   return contexts_[thread_id].session.GetInsertTransaction();

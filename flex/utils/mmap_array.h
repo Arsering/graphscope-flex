@@ -25,7 +25,6 @@
 #include <unistd.h>
 
 #include <atomic>
-#include <cstddef>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -34,7 +33,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define EL true
+#define DL false
 
 template <typename T>
 class mmap_array {
@@ -175,13 +174,11 @@ class mmap_array {
     std::swap(data_, rhs.data_);
     std::swap(size_, rhs.size_);
   }
-
+#if !DL
   size_t get_addr() const { return (std::size_t) data_; }
-
   std::size_t get_offset(size_t idx) const { return idx * sizeof(T); }
-
   std::size_t get_length(size_t idx) const { return sizeof(T); }
-
+#endif
   const std::string& filename() const { return filename_; }
 
  private:
@@ -250,13 +247,11 @@ class mmap_array<std::string_view> {
     items_.swap(rhs.items_);
     data_.swap(rhs.data_);
   }
-
+#if !DL
   size_t get_addr() const { return (std::size_t) data_.data(); }
-
   std::size_t get_offset(size_t idx) const { return items_[idx].offset; }
-
   std::size_t get_length(size_t idx) const { return items_[idx].length; }
-
+#endif
  private:
   mmap_array<string_item> items_;
   mmap_array<char> data_;

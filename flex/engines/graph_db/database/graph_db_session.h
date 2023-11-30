@@ -16,7 +16,6 @@
 #ifndef GRAPHSCOPE_DATABASE_GRAPH_DB_SESSION_H_
 #define GRAPHSCOPE_DATABASE_GRAPH_DB_SESSION_H_
 
-// #include "access_logger.h"
 #include "flex/engines/graph_db/app/app_base.h"
 #include "flex/engines/graph_db/database/insert_transaction.h"
 #include "flex/engines/graph_db/database/read_transaction.h"
@@ -33,6 +32,19 @@ class WalWriter;
 
 class GraphDBSession {
  public:
+#if DL
+  GraphDBSession(GraphDB& db, MMapAllocator& alloc, WalWriter& logger,
+                 const std::string& work_dir, int thread_id)
+      : db_(db),
+        alloc_(alloc),
+        logger_(logger),
+        work_dir_(work_dir),
+        thread_id_(thread_id) {
+    for (auto& app : apps_) {
+      app = nullptr;
+    }
+  }
+#else
   GraphDBSession(GraphDB& db, MMapAllocator& alloc, ThreadLog& access_logger,
                  WalWriter& logger, const std::string& work_dir, int thread_id)
       : db_(db),
@@ -45,6 +57,7 @@ class GraphDBSession {
       app = nullptr;
     }
   }
+#endif
   ~GraphDBSession() {}
 
   ReadTransaction GetReadTransaction();
@@ -78,7 +91,9 @@ class GraphDBSession {
   GraphDB& db_;
   MMapAllocator& alloc_;
   WalWriter& logger_;
+#if !DL
   ThreadLog& access_logger_;
+#endif
   std::string work_dir_;
   int thread_id_;
 
