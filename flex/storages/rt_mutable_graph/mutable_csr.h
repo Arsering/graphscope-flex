@@ -43,7 +43,7 @@ struct MutableNbr {
   vid_t neighbor;
   std::atomic<timestamp_t> timestamp;
   EDATA_T data;
-};
+};  // namespace gstemplate<typenameEDATA_T>struct MutableNbr
 
 template <>
 struct MutableNbr<grape::EmptyType> {
@@ -399,9 +399,9 @@ class MutableCsrConstEdgeIterBase {
   MutableCsrConstEdgeIterBase() = default;
   virtual ~MutableCsrConstEdgeIterBase() = default;
 
-  virtual vid_t get_neighbor() const = 0;
-  virtual gbp::BufferObject get_data() const = 0;
-  virtual timestamp_t get_timestamp() const = 0;
+  virtual vid_t get_neighbor() = 0;
+  virtual gbp::BufferObject get_data() = 0;
+  virtual timestamp_t get_timestamp() = 0;
   virtual size_t size() const = 0;
 
   virtual void next() = 0;
@@ -413,9 +413,9 @@ class MutableCsrEdgeIterBase {
   MutableCsrEdgeIterBase() = default;
   virtual ~MutableCsrEdgeIterBase() = default;
 
-  virtual vid_t get_neighbor() const = 0;
-  virtual gbp::BufferObject get_data() const = 0;
-  virtual timestamp_t get_timestamp() const = 0;
+  virtual vid_t get_neighbor() = 0;
+  virtual gbp::BufferObject get_data() = 0;
+  virtual timestamp_t get_timestamp() = 0;
   // virtual void set_data(const gbp::BufferObject& value, timestamp_t ts) = 0;
   virtual void set_data(const Any& value, timestamp_t ts) = 0;
 
@@ -549,17 +549,25 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
         size_(size) {}
   ~TypedMutableCsrConstEdgeIter() = default;
 
-  vid_t get_neighbor() const {
+  vid_t get_neighbor() {
     if (buffer_ == nullptr) {
+      if (unlikely(is_valid() && !fresh_)) {
+        cur_obj_ = mmap_array_->get(cur_idx_);
+        fresh_ = true;
+      }
       return gbp::Decode<nbr_t>(cur_obj_).neighbor;
     } else {
       return buffer_[cur_idx_].neighbor;
     }
   }
 
-  gbp::BufferObject get_data() const {
+  gbp::BufferObject get_data() {
     gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
+      if (unlikely(is_valid() && !fresh_)) {
+        cur_obj_ = mmap_array_->get(cur_idx_);
+        fresh_ = true;
+      }
       memcpy(buf.Data(), &(gbp::Decode<nbr_t>(cur_obj_).data), sizeof(EDATA_T));
     } else {
       memcpy(buf.Data(), &(buffer_[cur_idx_].data), sizeof(EDATA_T));
@@ -567,8 +575,12 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
     return buf;
   }
 
-  timestamp_t get_timestamp() const {
+  timestamp_t get_timestamp() {
     if (buffer_ == nullptr) {
+      if (likely(is_valid() && !fresh_)) {
+        cur_obj_ = mmap_array_->get(cur_idx_);
+        fresh_ = true;
+      }
       return gbp::Decode<nbr_t>(cur_obj_).timestamp.load();
     } else {
       return buffer_[cur_idx_].timestamp.load();
@@ -577,13 +589,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   void next() {
     ++cur_idx_;
-    if (buffer_ == nullptr) {
-      cur_obj_ = mmap_array_->get(cur_idx_);
-    } else {
-      cur_obj_ = gbp::BufferObject();
-    }
-    // cur_obj_ = buffer_ == nullptr ? mmap_array_->get(cur_idx_) :
-    // gbp::BufferObject();
+    fresh_ = false;
   }
 
   bool is_valid() const { return cur_idx_ < start_idx_ + size_; }
@@ -601,6 +607,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   size_t start_idx_;
   size_t cur_idx_;
   gbp::BufferObject cur_obj_;
+  bool fresh_ = false;
   size_t size_;
 };
 
@@ -636,17 +643,25 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
         size_(size) {}
   ~TypedMutableCsrEdgeIter() = default;
 
-  vid_t get_neighbor() const {
+  vid_t get_neighbor() {
     if (buffer_ == nullptr) {
+      if (unlikely(is_valid() && !fresh_)) {
+        cur_obj_ = mmap_array_->get(cur_idx_);
+        fresh_ = true;
+      }
       return gbp::Decode<nbr_t>(cur_obj_).neighbor;
     } else {
       return buffer_[cur_idx_].neighbor;
     }
   }
 
-  gbp::BufferObject get_data() const {
+  gbp::BufferObject get_data() {
     gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
+      if (unlikely(is_valid() && !fresh_)) {
+        cur_obj_ = mmap_array_->get(cur_idx_);
+        fresh_ = true;
+      }
       memcpy(buf.Data(), &(gbp::Decode<nbr_t>(cur_obj_).data), sizeof(EDATA_T));
     } else {
       memcpy(buf.Data(), &(buffer_[cur_idx_].data), sizeof(EDATA_T));
@@ -654,8 +669,12 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
     return buf;
   }
 
-  timestamp_t get_timestamp() const {
+  timestamp_t get_timestamp() {
     if (buffer_ == nullptr) {
+      if (likely(is_valid() && !fresh_)) {
+        cur_obj_ = mmap_array_->get(cur_idx_);
+        fresh_ = true;
+      }
       return gbp::Decode<nbr_t>(cur_obj_).timestamp.load();
     } else {
       return buffer_[cur_idx_].timestamp.load();
@@ -678,8 +697,7 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
 
   void next() {
     ++cur_idx_;
-    cur_obj_ =
-        buffer_ == nullptr ? mmap_array_->get(cur_idx_) : gbp::BufferObject();
+    fresh_ = false;
   }
   void set_cur(size_t idx) {
     CHECK_LT(idx, start_idx_ + size_);
@@ -694,6 +712,7 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
   size_t start_idx_;
   size_t cur_idx_;
   gbp::BufferObject cur_obj_;
+  bool fresh_ = false;
   size_t size_;
 };
 #endif
@@ -1242,5 +1261,4 @@ class EmptyCsr : public TypedMutableCsrBase<EDATA_T> {
   size_t get_data_size_in_byte() const override { return 0; }
 };
 }  // namespace gs
-
 #endif  // GRAPHSCOPE_GRAPH_MUTABLE_CSR_H_

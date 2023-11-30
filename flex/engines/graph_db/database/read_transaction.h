@@ -95,15 +95,13 @@ class AdjListView {
   using sliceiter_t = TypedMutableCsrConstEdgeIter<EDATA_T>;
 
   AdjListView(const slice_t& slice, timestamp_t timestamp)
-      : edges_(sliceiter_t(slice)), timestamp_(timestamp) {
-    LOG(INFO) << "check point 11";
-  }
+      : edges_(sliceiter_t(slice)), timestamp_(timestamp) {}
 
-  vid_t get_neighbor() const { return edges_.get_neighbor(); }
+  vid_t get_neighbor() { return edges_.get_neighbor(); }
 
-  gbp::BufferObject get_data() const { return edges_.get_data(); }
+  gbp::BufferObject get_data() { return edges_.get_data(); }
 
-  timestamp_t get_timestamp() const { return edges_.get_timestamp(); }
+  timestamp_t get_timestamp() { return edges_.get_timestamp(); }
 
   void next() {
     edges_.next();

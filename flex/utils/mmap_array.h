@@ -210,15 +210,6 @@ class mmap_array {
     set(idx, val_obj, len);
   }
 
-  // T& get(size_t idx) {
-  //   CHECK_LT(idx, size_);
-  //   return data_[idx];
-  // }
-
-  // const T& get(size_t idx) const {
-  //   CHECK_LT(idx, size_);
-  //   return data_[idx];
-  // }
   size_t get_size_in_byte() const { return size_ * sizeof(T); }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {

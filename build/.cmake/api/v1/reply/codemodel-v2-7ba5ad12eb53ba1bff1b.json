@@ -1,0 +1,443 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						6,
+						11,
+						12
+					],
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "utils",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "utils",
+					"targetIndexes" : 
+					[
+						9
+					]
+				},
+				{
+					"build" : "codegen",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "codegen",
+					"targetIndexes" : 
+					[
+						10
+					]
+				},
+				{
+					"build" : "storages",
+					"childIndexes" : 
+					[
+						4,
+						5
+					],
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "storages"
+				},
+				{
+					"build" : "storages/rt_mutable_graph",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "storages/rt_mutable_graph",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "storages/immutable_graph",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "storages/immutable_graph",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "engines",
+					"childIndexes" : 
+					[
+						7,
+						8,
+						9,
+						10
+					],
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "engines"
+				},
+				{
+					"build" : "engines/graph_db",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 6,
+					"projectIndex" : 0,
+					"source" : "engines/graph_db",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "engines/bsp",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 6,
+					"projectIndex" : 0,
+					"source" : "engines/bsp",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "engines/http_server",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 6,
+					"projectIndex" : 0,
+					"source" : "engines/http_server",
+					"targetIndexes" : 
+					[
+						8,
+						12,
+						17
+					]
+				},
+				{
+					"build" : "engines/hqps_db",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 6,
+					"projectIndex" : 0,
+					"source" : "engines/hqps_db",
+					"targetIndexes" : 
+					[
+						11
+					]
+				},
+				{
+					"build" : "bin",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "bin",
+					"targetIndexes" : 
+					[
+						0,
+						2,
+						15,
+						16,
+						18
+					]
+				},
+				{
+					"build" : "tests",
+					"childIndexes" : 
+					[
+						13,
+						14
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "tests"
+				},
+				{
+					"build" : "tests/hqps",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 12,
+					"projectIndex" : 0,
+					"source" : "tests/hqps",
+					"targetIndexes" : 
+					[
+						1,
+						13,
+						14
+					]
+				},
+				{
+					"build" : "tests/rt_mutable_graph",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 12,
+					"projectIndex" : 0,
+					"source" : "tests/rt_mutable_graph"
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14
+					],
+					"name" : "Flex",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 11,
+					"id" : "bulk_loader::@90a2315b7a9c97cd24d2",
+					"jsonFile" : "target-bulk_loader-Debug-d09f847fef3b6f021ee7.json",
+					"name" : "bulk_loader",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 13,
+					"id" : "dedup_test::@170e3bb025151eb5e01d",
+					"jsonFile" : "target-dedup_test-Debug-fac81537ea705e23799a.json",
+					"name" : "dedup_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 11,
+					"id" : "flex_analytical_engine::@90a2315b7a9c97cd24d2",
+					"jsonFile" : "target-flex_analytical_engine-Debug-6400476c030b1ebed2b2.json",
+					"name" : "flex_analytical_engine",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "flex_bsp::@4b2c2915a399aab7726b",
+					"jsonFile" : "target-flex_bsp-Debug-bb70791e53662e43edb8.json",
+					"name" : "flex_bsp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "flex_clformat::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-flex_clformat-Debug-888777b17ce24a14b564.json",
+					"name" : "flex_clformat",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "flex_graph_db::@63b943107040c0402a0e",
+					"jsonFile" : "target-flex_graph_db-Debug-0a06b1b05a31d060b6ed.json",
+					"name" : "flex_graph_db",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "flex_immutable_graph::@c9803921586056cc3175",
+					"jsonFile" : "target-flex_immutable_graph-Debug-dbb968f76d952281d6db.json",
+					"name" : "flex_immutable_graph",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "flex_rt_mutable_graph::@c8d2d25a8c2c6cfed210",
+					"jsonFile" : "target-flex_rt_mutable_graph-Debug-6600d6aa3b533b9df89b.json",
+					"name" : "flex_rt_mutable_graph",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "flex_server::@7d63d401895c7ad97450",
+					"jsonFile" : "target-flex_server-Debug-73fef8e84cfa3652da38.json",
+					"name" : "flex_server",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "flex_utils::@c810615cce0f7acb82dc",
+					"jsonFile" : "target-flex_utils-Debug-78dd521a40f5018914c8.json",
+					"name" : "flex_utils",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "gen_code_from_plan::@2146c942ebc480808f87",
+					"jsonFile" : "target-gen_code_from_plan-Debug-7450c2329b20b6f3e143.json",
+					"name" : "gen_code_from_plan",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 10,
+					"id" : "hqps_plan_proto::@7c5b726da48e97a81a11",
+					"jsonFile" : "target-hqps_plan_proto-Debug-0c18cd5202edd8933ca7.json",
+					"name" : "hqps_plan_proto",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "installed_libclang::@7d63d401895c7ad97450",
+					"jsonFile" : "target-installed_libclang-Debug-3802c634c609cabe630a.json",
+					"name" : "installed_libclang",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 13,
+					"id" : "path_set_test::@170e3bb025151eb5e01d",
+					"jsonFile" : "target-path_set_test-Debug-68462ffd10509d0d91e9.json",
+					"name" : "path_set_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 13,
+					"id" : "query_test::@170e3bb025151eb5e01d",
+					"jsonFile" : "target-query_test-Debug-2db9c76e0ba9e8a1f89e.json",
+					"name" : "query_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 11,
+					"id" : "rt_admin::@90a2315b7a9c97cd24d2",
+					"jsonFile" : "target-rt_admin-Debug-705111f09728e67d8994.json",
+					"name" : "rt_admin",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 11,
+					"id" : "rt_server::@90a2315b7a9c97cd24d2",
+					"jsonFile" : "target-rt_server-Debug-caa7dadc9a28c5e23ecb.json",
+					"name" : "rt_server",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "server_actor_autogen::@7d63d401895c7ad97450",
+					"jsonFile" : "target-server_actor_autogen-Debug-654219db80b505fec2a7.json",
+					"name" : "server_actor_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 11,
+					"id" : "sync_server::@90a2315b7a9c97cd24d2",
+					"jsonFile" : "target-sync_server-Debug-b190751dbbc4330761d1.json",
+					"name" : "sync_server",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/workspaces/graphscope-flex/build",
+		"source" : "/workspaces/graphscope-flex/flex"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}
