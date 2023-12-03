@@ -31,7 +31,8 @@ ReadTransaction::ReadTransaction(const MutablePropertyFragment& graph,
   if (get_thread_logger() == nullptr) {
     LOG(FATAL) << "no thread logger";
   }
-  get_thread_logger()->log_info("read transaction");
+  std::string log_data = "rt_1";
+  get_thread_logger()->log_info(log_data);
 #endif
 }
 #if DL
@@ -39,7 +40,8 @@ ReadTransaction::~ReadTransaction() { release(); }
 #else
 ReadTransaction::~ReadTransaction() {
   release();
-  get_thread_logger()->log_sync();
+  std::string log_data = "rt_0";
+  get_thread_logger()->log_info(log_data);
   set_thread_logger(nullptr);
 }
 #endif
@@ -77,7 +79,9 @@ Any ReadTransaction::vertex_iterator::GetField(
   gs::ColumnBase* CBaddr = column_ptr.get();
   std::size_t addr = (std::size_t) CBaddr;
   auto ret = column_ptr->get(cur_);
-  get_thread_logger()->log_append(addr + cur_ * sizeof(ret), sizeof(ret));
+  get_thread_logger()->log_append(addr + cur_ * sizeof(ret), sizeof(ret),
+                                  gs::MmapArrayType::nbr,
+                                  gs::OperationType::read);
   return ret;
 }
 #endif

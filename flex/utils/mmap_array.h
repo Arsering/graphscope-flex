@@ -33,7 +33,6 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define DL false
 
 template <typename T>
 class mmap_array {

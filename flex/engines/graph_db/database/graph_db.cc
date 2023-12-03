@@ -24,7 +24,13 @@ namespace gs {
 struct SessionLocalContext {
   SessionLocalContext(GraphDB& db, const std::string& work_dir, int thread_id)
       : allocator(thread_local_allocator_prefix(work_dir, thread_id)),
-        session(db, allocator, access_logger, logger, work_dir, thread_id) {}
+#if DL
+        session(db, allocator, logger, work_dir, thread_id)
+#else
+        session(db, allocator, access_logger, logger, work_dir, thread_id)
+#endif
+  {
+  }
   ~SessionLocalContext() { logger.close(); }
 
   MMapAllocator allocator;

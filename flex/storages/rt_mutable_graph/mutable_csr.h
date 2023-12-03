@@ -341,9 +341,20 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     nbr_list_.resize(edge_num);
 
     nbr_t* ptr = nbr_list_.data();
+#if !DL
+    size_t addr, offset, length;
+    addr = adj_lists_.get_addr();
+    length = adj_lists_.get_length(0);
+#endif
     for (vid_t i = 0; i < vnum; ++i) {
       int deg = degree[i];
       adj_lists_[i].init(ptr, deg, 0);
+#if !DL
+      offset = adj_lists_.get_offset(i);
+      get_thread_logger()->log_append(addr + offset, length,
+                                      gs::MmapArrayType::adj_list,
+                                      gs::OperationType::read);
+#endif
       ptr += deg;
     }
   }
@@ -359,9 +370,20 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     locks_ = new grape::SpinLock[degree_list.size()];
 
     nbr_t* ptr = nbr_list_.data();
+#if !DL
+    size_t addr, offset, length;
+    addr = adj_lists_.get_addr();
+    length = adj_lists_.get_length(0);
+#endif
     for (size_t i = 0; i < degree_list.size(); ++i) {
       int degree = degree_list[i];
       adj_lists_[i].init(ptr, degree, degree);
+#if !DL
+      offset = adj_lists_.get_offset(i);
+      get_thread_logger()->log_append(addr + offset, length,
+                                      gs::MmapArrayType::adj_list,
+                                      gs::OperationType::read);
+#endif
       ptr += degree;
     }
   }
@@ -374,7 +396,18 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     degree_list.open(new_spanshot_dir + "/" + name + ".deg", false);
     degree_list.resize(vnum);
     size_t offset = 0;
+#if !DL
+    size_t addr, offset1, length;
+    addr = adj_lists_.get_addr();
+    length = adj_lists_.get_length(0);
+#endif
     for (size_t i = 0; i < vnum; ++i) {
+#if !DL
+      offset1 = adj_lists_.get_offset(i);
+      get_thread_logger()->log_append(addr + offset1, length,
+                                      gs::MmapArrayType::adj_list,
+                                      gs::OperationType::read);
+#endif
       if (adj_lists_[i].size() != 0) {
         if (!(adj_lists_[i].data() == nbr_list_.data() + offset &&
               offset < nbr_list_.size())) {
@@ -392,7 +425,18 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     } else {
       FILE* fout =
           fopen((new_spanshot_dir + "/" + name + ".nbr").c_str(), "wb");
+#if !DL
+      size_t addr, offset, length;
+      addr = adj_lists_.get_addr();
+      length = adj_lists_.get_length(0);
+#endif
       for (size_t i = 0; i < vnum; ++i) {
+#if !DL
+        offset = adj_lists_.get_offset(i);
+        get_thread_logger()->log_append(addr + offset, length,
+                                        gs::MmapArrayType::adj_list,
+                                        gs::OperationType::read);
+#endif
         fwrite(adj_lists_[i].data(), sizeof(nbr_t), adj_lists_[i].size(), fout);
       }
       fflush(fout);
@@ -404,8 +448,19 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     if (vnum > adj_lists_.size()) {
       size_t old_size = adj_lists_.size();
       adj_lists_.resize(vnum);
+#if !DL
+      size_t addr, offset, length;
+      addr = adj_lists_.get_addr();
+      length = adj_lists_.get_length(0);
+#endif
       for (size_t k = old_size; k != vnum; ++k) {
         adj_lists_[k].init(NULL, 0, 0);
+#if !DL
+        offset = adj_lists_.get_offset(k);
+        get_thread_logger()->log_append(addr + offset, length,
+                                        gs::MmapArrayType::adj_list,
+                                        gs::OperationType::read);
+#endif
       }
       delete[] locks_;
       locks_ = new grape::SpinLock[vnum];
@@ -419,6 +474,15 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
   void batch_put_edge(vid_t src, vid_t dst, const EDATA_T& data,
                       timestamp_t ts = 0) override {
     adj_lists_[src].batch_put_edge(dst, data, ts);
+#if !DL
+    size_t addr, offset, length;
+    addr = adj_lists_.get_addr();
+    length = adj_lists_.get_length(src);
+    offset = adj_lists_.get_offset(src);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::adj_list,
+                                    gs::OperationType::read);
+#endif
   }
 
   void put_generic_edge(vid_t src, vid_t dst, const Any& data, timestamp_t ts,
@@ -433,15 +497,55 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     CHECK_LT(src, adj_lists_.size());
     locks_[src].lock();
     adj_lists_[src].put_edge(dst, data, ts, alloc);
+#if !DL
+    size_t addr, offset, length;
+    addr = adj_lists_.get_addr();
+    length = adj_lists_.get_length(0);
+    offset = adj_lists_.get_offset(src);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::adj_list,
+                                    gs::OperationType::read);
+#endif
     locks_[src].unlock();
   }
 
-  int degree(vid_t i) const { return adj_lists_[i].size(); }
+  int degree(vid_t i) const {
+#if !DL
+    size_t addr, offset, length;
+    addr = adj_lists_.get_addr();
+    length = adj_lists_.get_length(0);
+    offset = adj_lists_.get_offset(i);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::adj_list,
+                                    gs::OperationType::read);
+#endif
+    return adj_lists_[i].size();
+  }
 
   slice_t get_edges(vid_t i) const override {
+#if !DL
+    size_t addr, offset, length;
+    addr = adj_lists_.get_addr();
+    length = adj_lists_.get_length(0);
+    offset = adj_lists_.get_offset(i);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::adj_list,
+                                    gs::OperationType::read);
+#endif
     return adj_lists_[i].get_edges();
   }
-  mut_slice_t get_edges_mut(vid_t i) { return adj_lists_[i].get_edges_mut(); }
+  mut_slice_t get_edges_mut(vid_t i) {
+#if !DL
+    size_t addr, offset, length;
+    addr = adj_lists_.get_addr();
+    length = adj_lists_.get_length(0);
+    offset = adj_lists_.get_offset(i);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::adj_list,
+                                    gs::OperationType::read);
+#endif
+    return adj_lists_[i].get_edges_mut();
+  }
 
   void ingest_edge(vid_t src, vid_t dst, grape::OutArchive& arc, timestamp_t ts,
                    MMapAllocator& alloc) override {
@@ -574,12 +678,13 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
     return ret;
   }
 
-#if DL
   const nbr_t& get_edge(vid_t i) const { return nbr_list_[i]; }
-#else
-  const nbr_t& get_edge(std::size_t& addr, vid_t i) const {
+#if !DL
+  const nbr_t& get_edge(vid_t i, std::size_t& addr) const {
     const nbr_t* nbr_addr = (nbr_list_.data());
     addr = (size_t) nbr_addr + i * sizeof(nbr_t);
+    get_thread_logger()->log_append(addr, sizeof(nbr_t), gs::MmapArrayType::nbr,
+                                    gs::OperationType::read);
     return nbr_list_[i];
   }
 #endif

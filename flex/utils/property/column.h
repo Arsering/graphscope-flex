@@ -125,6 +125,14 @@ class TypedColumn : public ColumnBase {
   void set_value(size_t index, const T& val) {
     assert(index >= basic_size_ && index < basic_size_ + extra_size_);
     extra_buffer_.set(index - basic_size_, val);
+#if !DL
+    auto addr = extra_buffer_.get_addr();
+    auto offset = extra_buffer_.get_offset(index - basic_size_);
+    auto length = extra_buffer_.get_length(index - basic_size_);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::column_num_or_date,
+                                    gs::OperationType::write);
+#endif
   }
 
   void set_any(size_t index, const Any& value) override {
@@ -136,19 +144,21 @@ class TypedColumn : public ColumnBase {
     return index < basic_size_ ? basic_buffer_.get(index)
                                : extra_buffer_.get(index - basic_size_);
 #else
-    std::size_t addr;
+    std::size_t addr, offset, length;
     if (index < basic_size_) {
-      addr = (std::size_t) basic_buffer_.data();
-      auto ret = basic_buffer_.get(index);
-      get_thread_logger()->log_append(addr + index * sizeof(ret), sizeof(ret));
-      return ret;
+      addr = basic_buffer_.get_addr();
+      offset = basic_buffer_.get_offset(index);
+      length = basic_buffer_.get_length(index);
     } else {
-      addr = (std::size_t) extra_buffer_.data();
-      auto ret = extra_buffer_.get(index - basic_size_);
-      get_thread_logger()->log_append(
-          addr + (index - basic_size_) * sizeof(ret), sizeof(ret));
-      return ret;
+      addr = extra_buffer_.get_addr();
+      offset = extra_buffer_.get_offset(index - basic_size_);
+      length = extra_buffer_.get_length(index - basic_size_);
     }
+    get_thread_logger()->log_append((size_t) addr + offset, length,
+                                    gs::MmapArrayType::column_num_or_date,
+                                    gs::OperationType::read);
+    return index < basic_size_ ? basic_buffer_.get(index)
+                               : extra_buffer_.get(index - basic_size_);
 #endif
   }
 
@@ -272,6 +282,18 @@ class StringColumn : public ColumnBase {
     assert(idx >= basic_size_ && idx < basic_size_ + extra_size_);
     size_t offset = pos_.fetch_add(val.size());
     extra_buffer_.set(idx - basic_size_, offset, val);
+#if !DL
+    auto addr = extra_buffer_.get_addr();
+    offset = extra_buffer_.get_offset(idx - basic_size_);
+    auto length = extra_buffer_.get_length(idx - basic_size_);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::column_string_view,
+                                    gs::OperationType::write);
+
+    get_thread_logger()->log_append(offset, val.size(),
+                                    gs::MmapArrayType::column_string,
+                                    gs::OperationType::read);
+#endif
   }
 
   void set_any(size_t idx, const Any& value) override {
@@ -284,21 +306,25 @@ class StringColumn : public ColumnBase {
                              : extra_buffer_.get(idx - basic_size_);
 #else
     std::size_t addr, offset, length;
+    std::string_view ret;
     if (idx < basic_size_) {
       addr = basic_buffer_.get_addr();
       offset = basic_buffer_.get_offset(idx);
       length = basic_buffer_.get_length(idx);
-      auto ret = basic_buffer_.get(idx);
-      get_thread_logger()->log_append(addr + offset, length);
-      return ret;
+      ret = basic_buffer_.get(idx);
     } else {
       addr = extra_buffer_.get_addr();
-      offset = extra_buffer_.get_offset(idx);
-      length = extra_buffer_.get_length(idx);
-      auto ret = extra_buffer_.get(idx - basic_size_);
-      get_thread_logger()->log_append(addr + offset, length);
-      return ret;
+      offset = extra_buffer_.get_offset(idx - basic_size_);
+      length = extra_buffer_.get_length(idx - basic_size_);
+      ret = extra_buffer_.get(idx - basic_size_);
     }
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::column_string_view,
+                                    gs::OperationType::read);
+    get_thread_logger()->log_append((size_t) ret.data(), ret.size(),
+                                    gs::MmapArrayType::column_string,
+                                    gs::OperationType::read);
+    return std::move(ret);
 #endif
   }
 
@@ -360,23 +386,22 @@ class TypedRefColumn : public RefColumnBase {
     return index < basic_size ? basic_buffer.get(index)
                               : extra_buffer.get(index - basic_size);
 #else
-    size_t addr, offset, length;
+    std::size_t addr, offset, length;
     if (index < basic_size) {
       addr = basic_buffer.get_addr();
       offset = basic_buffer.get_offset(index);
       length = basic_buffer.get_length(index);
-      auto ret = basic_buffer.get(index);
-      get_thread_logger()->log_append(addr + offset, length);
-      return ret;
     } else {
       addr = extra_buffer.get_addr();
-      offset = extra_buffer.get_offset(index);
-      length = extra_buffer.get_length(index);
-      auto ret = extra_buffer.get(index);
-      get_thread_logger()->log_append(addr + offset, length);
-      return ret;
+      offset = extra_buffer.get_offset(index - basic_size);
+      length = extra_buffer.get_length(index - basic_size);
     }
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::column_num_or_date,
+                                    gs::OperationType::read);
 #endif
+    return index < basic_size ? basic_buffer.get(index)
+                              : extra_buffer.get(index - basic_size);
   }
 
  private:

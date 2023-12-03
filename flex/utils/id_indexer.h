@@ -187,12 +187,39 @@ class LFIndexer {
   INDEX_T insert(int64_t oid) {
     INDEX_T ind = static_cast<INDEX_T>(num_elements_.fetch_add(1));
     keys_.set(ind, oid);
+#if !DL
+    size_t addr, offset, length;
+    addr = keys_.get_addr();
+    length = keys_.get_length(ind);
+    offset = keys_.get_offset(ind);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::lf_index,
+                                    gs::OperationType::write);
+#endif
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
+#if !DL
+      size_t addr, offset, length;
+      addr = indices_.get_addr();
+      length = indices_.get_length(index);
+      offset = indices_.get_offset(index);
+      get_thread_logger()->log_append(addr + offset, length,
+                                      gs::MmapArrayType::lf_index,
+                                      gs::OperationType::read);
+#endif
       if (__sync_bool_compare_and_swap(&indices_.data()[index], sentinel,
                                        ind)) {
+#if !DL
+        size_t addr, offset, length;
+        addr = indices_.get_addr();
+        length = indices_.get_length(index);
+        offset = indices_.get_offset(index);
+        get_thread_logger()->log_append(addr + offset, length,
+                                        gs::MmapArrayType::lf_index,
+                                        gs::OperationType::write);
+#endif
         break;
       }
       index = (index + 1) % num_slots_minus_one_;
@@ -206,6 +233,26 @@ class LFIndexer {
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
       INDEX_T ind = indices_.get(index);
+#if !DL
+      {
+        size_t addr, offset, length;
+        addr = indices_.get_addr();
+        length = indices_.get_length(index);
+        offset = indices_.get_offset(index);
+        get_thread_logger()->log_append(addr + offset, length,
+                                        gs::MmapArrayType::lf_index,
+                                        gs::OperationType::read);
+      }
+#endif
+#if !DL
+      size_t addr, offset, length;
+      addr = keys_.get_addr();
+      length = keys_.get_length(ind);
+      offset = keys_.get_offset(ind);
+      get_thread_logger()->log_append(addr + offset, length,
+                                      gs::MmapArrayType::lf_index,
+                                      gs::OperationType::read);
+#endif
       if (ind == sentinel) {
         LOG(FATAL) << "cannot find " << oid << " in id_indexer";
       } else if (keys_.get(ind) == oid) {
@@ -222,6 +269,26 @@ class LFIndexer {
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
       INDEX_T ind = indices_.get(index);
+#if !DL
+      {
+        size_t addr, offset, length;
+        addr = indices_.get_addr();
+        length = indices_.get_length(index);
+        offset = indices_.get_offset(index);
+        get_thread_logger()->log_append(addr + offset, length,
+                                        gs::MmapArrayType::lf_index,
+                                        gs::OperationType::read);
+      }
+#endif
+#if !DL
+      size_t addr, offset, length;
+      addr = keys_.get_addr();
+      length = keys_.get_length(ind);
+      offset = keys_.get_offset(ind);
+      get_thread_logger()->log_append(addr + offset, length,
+                                      gs::MmapArrayType::lf_index,
+                                      gs::OperationType::read);
+#endif
       if (ind == sentinel) {
         return false;
       } else if (keys_.get(ind) == oid) {
@@ -234,7 +301,18 @@ class LFIndexer {
     return false;
   }
 
-  int64_t get_key(const INDEX_T& index) const { return keys_.get(index); }
+  int64_t get_key(const INDEX_T& index) const {
+#if !DL
+    size_t addr, offset, length;
+    addr = keys_.get_addr();
+    length = keys_.get_length(index);
+    offset = keys_.get_offset(index);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::lf_index,
+                                    gs::OperationType::read);
+#endif
+    return keys_.get(index);
+  }
 
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) {
@@ -245,6 +323,15 @@ class LFIndexer {
     indices_size_ = indices_.size();
 
     for (size_t k = keys_.size() - 1; k >= 0; --k) {
+#if !DL
+      size_t addr, offset, length;
+      addr = keys_.get_addr();
+      length = keys_.get_length(k);
+      offset = keys_.get_offset(k);
+      get_thread_logger()->log_append(addr + offset, length,
+                                      gs::MmapArrayType::lf_index,
+                                      gs::OperationType::read);
+#endif
       if (keys_.get(k) != std::numeric_limits<int64_t>::max()) {
         num_elements_.store(k + 1);
         break;
@@ -702,6 +789,15 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
   lf.indices_.resize(input.indices_.size());
   for (size_t k = 0; k != input.indices_.size(); ++k) {
     lf.indices_[k] = std::numeric_limits<INDEX_T>::max();
+#if !DL
+    size_t addr, offset, length;
+    addr = lf.indices_.get_addr();
+    length = lf.indices_.get_length(k);
+    offset = lf.indices_.get_offset(k);
+    get_thread_logger()->log_append(addr + offset, length,
+                                    gs::MmapArrayType::lf_index,
+                                    gs::OperationType::write);
+#endif
   }
   lf.indices_size_ = input.indices_.size();
 
@@ -721,6 +817,15 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
           extra.emplace_back(oid, ret);
         } else {
           lf.indices_[index] = ret;
+#if !DL
+          size_t addr, offset, length;
+          addr = lf.indices_.get_addr();
+          length = lf.indices_.get_length(index);
+          offset = lf.indices_.get_offset(index);
+          get_thread_logger()->log_append(addr + offset, length,
+                                          gs::MmapArrayType::lf_index,
+                                          gs::OperationType::write);
+#endif
         }
         break;
       }
@@ -732,7 +837,25 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
     size_t index = input.hash_policy_.index_for_hash(
         input.hasher_(pair.first), input.num_slots_minus_one_);
     while (true) {
+#if !DL
+      size_t addr, offset, length;
+      addr = lf.indices_.get_addr();
+      length = lf.indices_.get_length(index);
+      offset = lf.indices_.get_offset(index);
+      get_thread_logger()->log_append(addr + offset, length,
+                                      gs::MmapArrayType::lf_index,
+                                      gs::OperationType::read);
+#endif
       if (lf.indices_[index] == sentinel) {
+#if !DL
+        size_t addr, offset, length;
+        addr = lf.indices_.get_addr();
+        length = lf.indices_.get_length(index);
+        offset = lf.indices_.get_offset(index);
+        get_thread_logger()->log_append(addr + offset, length,
+                                        gs::MmapArrayType::lf_index,
+                                        gs::OperationType::write);
+#endif
         lf.indices_[index] = pair.second;
         break;
       }

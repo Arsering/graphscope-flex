@@ -38,12 +38,16 @@ class AdjListView {
     nbr_iterator(const nbr_t* ptr, const nbr_t* end, timestamp_t timestamp)
         : ptr_(ptr), end_(end), timestamp_(timestamp) {
 #if !DL
-      get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
+      get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t),
+                                      gs::MmapArrayType::nbr,
+                                      gs::OperationType::read);
 #endif
       while (ptr_ != end && ptr_->timestamp > timestamp_) {
         ++ptr_;
 #if !DL
-        get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
+        get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t),
+                                        gs::MmapArrayType::nbr,
+                                        gs::OperationType::read);
 #endif
       }
     }
@@ -55,12 +59,17 @@ class AdjListView {
     nbr_iterator& operator++() {
       ++ptr_;
 #if !DL
-      get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
+      get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t),
+                                      gs::MmapArrayType::nbr,
+                                      gs::OperationType::read);
 #endif
       while (ptr_ != end_ && ptr_->timestamp > timestamp_) {
         ++ptr_;
 #if !DL
-        get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t));
+        LOG(INFO) << "check point";
+        get_thread_logger()->log_append((std::size_t) ptr_, sizeof(nbr_t),
+                                        gs::MmapArrayType::nbr,
+                                        gs::OperationType::read);
 #endif
       }
       return *this;
@@ -130,15 +139,19 @@ class SingleGraphView {
 #else
   bool exist(vid_t v) const {
     std::size_t addr;
-    bool ret = (csr_.get_edge(v).timestamp.load() <= timestamp_);
+    bool ret = (csr_.get_edge(v, addr).timestamp.load() <= timestamp_);
     // FIXME: 此处需要进一步考虑
-    get_thread_logger()->log_append(addr, sizeof(MutableNbr<EDATA_T>));
+    get_thread_logger()->log_append(addr, sizeof(MutableNbr<EDATA_T>),
+                                    gs::MmapArrayType::nbr,
+                                    gs::OperationType::read);
     return ret;
   }
   const MutableNbr<EDATA_T>& get_edge(vid_t v) const {
     std::size_t addr;
-    auto ret = csr_.get_edge(v);
-    get_thread_logger()->log_append(addr, sizeof(ret));
+    auto& ret = csr_.get_edge(v, addr);
+    get_thread_logger()->log_append(addr, sizeof(MutableNbr<EDATA_T>),
+                                    gs::MmapArrayType::nbr,
+                                    gs::OperationType::read);
     return ret;
   }
 #endif

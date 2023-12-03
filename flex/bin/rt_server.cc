@@ -36,7 +36,8 @@ int main(int argc, char** argv) {
       "http-port,p", bpo::value<uint16_t>()->default_value(10000),
       "http port of query handler")("graph-config,g", bpo::value<std::string>(),
                                     "graph schema config file")(
-      "data-path,d", bpo::value<std::string>(), "data directory path");
+      "data-path,d", bpo::value<std::string>(), "data directory path")(
+      "log-data-path,l", bpo::value<std::string>(), "log data directory path");
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
 
@@ -78,7 +79,13 @@ int main(int argc, char** argv) {
   auto& db = gs::GraphDB::get();
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
+
+  gs::set_log_directory(vm["log-data-path"].as<std::string>());
+  gs::ThreadLog logger;
+  gs::set_thread_logger(&logger);
+  LOG(INFO) << "Start loading graph";
   db.Init(schema, data_path, shard_num);
+  logger.log_sync();
 
   t0 += grape::GetCurrentTime();
 
