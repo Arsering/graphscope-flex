@@ -32,6 +32,7 @@
 
 #include "flex/graphscope_bufferpool/include/buffer_pool_manager.h"
 #include "flex/utils/buffer_obj.h"
+#include "flex/utils/logger.h"
 #include "glog/logging.h"
 
 namespace gs {
@@ -61,18 +62,17 @@ inline void copy_file(const std::string& src, const std::string& dst) {
 template <typename T>
 class mmap_array {
  public:
-#if OV
   mmap_array()
-      : filename_(""), fd_(-1), data_(NULL), size_(0), read_only_(true) {}
-#else
-  mmap_array()
-      : filename_(""), fd_(-1), size_(0), read_only_(true), fd_inner_(-1) {
+      : filename_(""), fd_(-1), data_(NULL), size_(0), read_only_(true) {
+#if !OV
     buffer_pool_manager_ = &gbp::BufferPoolManager::GetGlobalInstance();
-  }
+    fd_inner_ = -1;
 #endif
+  }
   mmap_array(mmap_array&& rhs) : mmap_array() { swap(rhs); }
 
   ~mmap_array() {}
+
 #if OV
   void reset() {
     filename_ = "";
@@ -88,17 +88,20 @@ class mmap_array {
   }
 #else
   void reset() {
+    LOG(INFO) << "check point";
     filename_ = "";
-
+    if (data_ != NULL) {
+      data_ = NULL;
+    }
     if (fd_ != -1) {
       close(fd_);
       fd_ = -1;
       fd_inner_ = -1;
     }
     read_only_ = true;
+    LOG(INFO) << "check point";
   }
 #endif
-
 #if OV
   void open(const std::string& filename, bool read_only) {
     reset();
@@ -138,6 +141,7 @@ class mmap_array {
   }
 #else
   void open(const std::string& filename, bool read_only) {
+    LOG(INFO) << "check point";
     reset();
     filename_ = filename;
     read_only_ = read_only;
@@ -146,6 +150,7 @@ class mmap_array {
         LOG(ERROR) << "file not exists: " << filename;
         fd_ = 1;
         size_ = 0;
+        data_ = NULL;
       } else {
         fd_ = ::open(filename.c_str(), O_RDONLY);
         size_t file_size = std::filesystem::file_size(filename);
@@ -158,6 +163,7 @@ class mmap_array {
       size_ = file_size / sizeof(T);
       fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
     }
+    LOG(INFO) << "check point";
   }
 #endif
 
@@ -176,6 +182,7 @@ class mmap_array {
 #else
   void dump(const std::string& filename) {
     assert(!filename_.empty());
+    LOG(INFO) << "check point";
     assert(std::filesystem::exists(filename_));
     std::string old_filename = filename_;
     reset();
@@ -184,6 +191,7 @@ class mmap_array {
     } else {
       std::filesystem::rename(old_filename, filename);
     }
+    LOG(INFO) << "check point";
   }
 #endif
 
@@ -227,6 +235,7 @@ class mmap_array {
   }
 #else
   void resize(size_t size) {
+    LOG(INFO) << "check point";
     assert(fd_ != -1);
     if (size == size_) {
       return;
@@ -245,10 +254,11 @@ class mmap_array {
       ftruncate(fd_, size * sizeof(T));
       size_ = size;
     }
+    LOG(INFO) << "check point";
   }
 #endif
-  bool read_only() const { return read_only_; }
 
+  bool read_only() const { return read_only_; }
 #if OV
   void touch(const std::string& filename) {
     {
@@ -262,8 +272,16 @@ class mmap_array {
   }
 #else
   void touch(const std::string& filename) {
+    LOG(INFO) << "check point";
+    {
+      FILE* fout = fopen(filename.c_str(), "wb");
+      fwrite(data_, sizeof(T), size_, fout);
+      fflush(fout);
+      fclose(fout);
+    }
     copy_file(filename_, filename);
     open(filename, false);
+    LOG(INFO) << "check point";
   }
 #endif
 
@@ -332,19 +350,15 @@ class mmap_array {
       //        (char*) data_ + page_id * PAGE_SIZE_BUFFER_POOL + page_offset,
       //        object_size_t);
       // std::cerr << "page_id = " << page_id << std::endl;
-      gbp::get_time_duration_g(0) -= gbp::GetSystemTime();
       auto pd = buffer_pool_manager_->FetchPage(page_id, fd_inner_);
-      gbp::get_time_duration_g(0) += gbp::GetSystemTime();
-
-      gbp::get_time_duration_g(1) -= gbp::GetSystemTime();
       size_t object_size_t = pd->GetObject(value, page_offset, object_size);
-      gbp::get_time_duration_g(1) += gbp::GetSystemTime();
 
       object_size -= object_size_t;
       value += object_size_t;
       page_id++;
       page_offset = 0;
     }
+
     return ret;
   }
 
@@ -358,7 +372,6 @@ class mmap_array {
 #endif
 
   size_t size() const { return size_; }
-
 #if OV
   void swap(mmap_array<T>& rhs) {
     std::swap(filename_, rhs.filename_);
@@ -375,24 +388,18 @@ class mmap_array {
     std::swap(buffer_pool_manager_, rhs.buffer_pool_manager_);
   }
 #endif
-
   const std::string& filename() const { return filename_; }
 
  private:
-#if OV
   std::string filename_;
   int fd_;
   T* data_;
   size_t size_;
-  bool read_only_;
-#else
+#if !OV
   gbp::BufferPoolManager* buffer_pool_manager_;
   int fd_inner_ = -1;
-  std::string filename_;
-  int fd_;
-  size_t size_;
-  bool read_only_;
 #endif
+  bool read_only_;
 };
 
 struct string_item {

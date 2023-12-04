@@ -107,7 +107,7 @@ int test_edge(gs::GraphDB& db, const std::string& csv_data_path,
       graph_session.schema().get_edge_label_id("KNOWS");
 
   CSVReader csv_reader(csv_data_path + "/dynamic/person_knows_person_0_0.csv");
-  gs::oid_t req = 933;
+  gs::oid_t req = 17592186045360;
   gs::vid_t root{};
   auto txn = graph_session.GetReadTransaction();
 
@@ -214,6 +214,7 @@ int main(int argc, char** argv) {
   auto& db = gs::GraphDB::get();
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
+  LOG(INFO) << "Start loading graph";
   db.Init(schema, data_path, shard_num);
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
