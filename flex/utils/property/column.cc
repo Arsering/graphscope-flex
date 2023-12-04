@@ -43,7 +43,6 @@ class TypedEmptyColumn : public ColumnBase {
 
   Any get(size_t index) const override { return Any(); }
 #else
-  size_t get_size_in_byte() const override { return 0; }
   void set_any(size_t index, const Any& value) override {}
   void set(size_t index, const gbp::BufferObject& value) {}
 
@@ -51,6 +50,8 @@ class TypedEmptyColumn : public ColumnBase {
     return gbp::BufferObject();
   }
 #endif
+  size_t get_size_in_byte() const override { return 0; }
+
   void ingest(uint32_t index, grape::OutArchive& arc) override {
     T val;
     arc >> val;

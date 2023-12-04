@@ -26,7 +26,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV false
+#define OV true
 #define PAGE_SIZE_BUFFER_POOL 4096
 
 static bool mark_g = false;
