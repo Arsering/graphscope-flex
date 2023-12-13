@@ -393,6 +393,7 @@ static bool parse_edges_files_schema(
       return false;
     }
   }
+  LOG(INFO) << "Finish parsing " << num << " edge configuration";
   return true;
 }
 

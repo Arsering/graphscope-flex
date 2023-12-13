@@ -35,6 +35,7 @@
 #include "glog/logging.h"
 
 namespace gs {
+#define s_size_t signed long int
 
 inline void copy_file(const std::string& src, const std::string& dst) {
   if (!std::filesystem::exists(src)) {
@@ -119,6 +120,8 @@ class mmap_array {
         } else {
           data_ = reinterpret_cast<T*>(
               mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
+          madvise(data_, size_ * sizeof(T),
+                  MMAP_ADVICE_l);  // Turn off readahead
           assert(data_ != MAP_FAILED);
         }
       }
@@ -132,6 +135,9 @@ class mmap_array {
         data_ = reinterpret_cast<T*>(mmap(NULL, size_ * sizeof(T),
                                           PROT_READ | PROT_WRITE, MAP_SHARED,
                                           fd_, 0));
+        madvise(data_, size_ * sizeof(T),
+                MMAP_ADVICE_l);  // Turn off readahead
+
         assert(data_ != MAP_FAILED);
       }
     }
@@ -147,13 +153,13 @@ class mmap_array {
         fd_ = 1;
         size_ = 0;
       } else {
-        fd_ = ::open(filename.c_str(), O_RDONLY);
+        fd_ = ::open(filename.c_str(), O_RDONLY | O_DIRECT);
         size_t file_size = std::filesystem::file_size(filename);
         size_ = file_size / sizeof(T);
         fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
       }
     } else {
-      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT);
+      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT | O_DIRECT);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
       fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
@@ -201,11 +207,16 @@ class mmap_array {
         size_ = size;
         data_ = reinterpret_cast<T*>(
             mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
+        madvise(data_, size_ * sizeof(T),
+                MMAP_ADVICE_l);  // Turn off readahead
+
       } else if (size * sizeof(T) < std::filesystem::file_size(filename_)) {
         munmap(data_, size_ * sizeof(T));
         size_ = size;
         data_ = reinterpret_cast<T*>(
             mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
+        madvise(data_, size_ * sizeof(T),
+                MMAP_ADVICE_l);  // Turn off readahead
       } else {
         LOG(FATAL)
             << "cannot resize read-only mmap_array to larger size than file";
@@ -221,6 +232,8 @@ class mmap_array {
         data_ =
             static_cast<T*>(::mmap(NULL, size * sizeof(T),
                                    PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0));
+        ::madvise(data_, size_ * sizeof(T),
+                  MMAP_ADVICE_l);  // Turn off readahead
       }
       size_ = size;
     }
@@ -242,7 +255,7 @@ class mmap_array {
             << "cannot resize read-only mmap_array to larger size than file";
       }
     } else {
-      ftruncate(fd_, size * sizeof(T));
+      int aa = ftruncate(fd_, size * sizeof(T));
       size_ = size;
     }
   }
@@ -321,7 +334,7 @@ class mmap_array {
     size_t file_offset = idx * sizeof(T);
     size_t page_id = file_offset / PAGE_SIZE_BUFFER_POOL;
     size_t page_offset = file_offset % PAGE_SIZE_BUFFER_POOL;
-
+    signed long int t0 = 0;
     while (object_size > 0) {
       // size_t object_size_t = (page_offset + object_size) >
       // PAGE_SIZE_BUFFER_POOL
@@ -332,13 +345,17 @@ class mmap_array {
       //        (char*) data_ + page_id * PAGE_SIZE_BUFFER_POOL + page_offset,
       //        object_size_t);
       // std::cerr << "page_id = " << page_id << std::endl;
-      gbp::get_time_duration_g(0) -= gbp::GetSystemTime();
+      // gbp::get_time_duration_g(0) -= gbp::GetSystemTime();
+      // t0 = -gbp::GetSystemTime();
       auto pd = buffer_pool_manager_->FetchPage(page_id, fd_inner_);
-      gbp::get_time_duration_g(0) += gbp::GetSystemTime();
+      // t0 += gbp::GetSystemTime();
+      // if (gbp::get_start_log())
+      //   LOG(INFO) << "FP: " << page_id << "=" << t0;
+      // gbp::get_time_duration_g(0) += gbp::GetSystemTime();
 
-      gbp::get_time_duration_g(1) -= gbp::GetSystemTime();
+      // gbp::get_time_duration_g(1) -= gbp::GetSystemTime();
       size_t object_size_t = pd->GetObject(value, page_offset, object_size);
-      gbp::get_time_duration_g(1) += gbp::GetSystemTime();
+      // gbp::get_time_duration_g(1) += gbp::GetSystemTime();
 
       object_size -= object_size_t;
       value += object_size_t;

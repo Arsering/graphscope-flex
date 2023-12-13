@@ -77,13 +77,40 @@ int test_vertex(gs::GraphDB& db, const std::string& csv_data_path) {
   gs::oid_t req = 933;
   gs::vid_t root{};
   auto txn = graph_session.GetReadTransaction();
-#if !OV
+  s_size_t t0;
+
+#if OV
   while (test_count > 0) {
     auto& words = csv_reader.GetNextLine();
     req = stol(words[0]);
+    LOG(INFO) << gbp::GetSystemTime();
     txn.GetVertexIndex(person_label_id, req, root);
+    LOG(INFO) << gbp::GetSystemTime();
+    const auto email = person_email_col.get_view(root);
+    LOG(INFO) << gbp::GetSystemTime();
+    const auto firstname = person_firstName_col.get_view(root);
+    LOG(INFO) << gbp::GetSystemTime();
+    LOG(INFO) << "==============";
+    if (!(firstname.compare(words[1]) == 0 && email.compare(words[9]) == 0)) {
+      LOG(INFO) << firstname << " | " << email;
+      LOG(FATAL) << "test_vertex: failed!!";
+    }
+    test_count--;
+  }
+#else
+  while (test_count > 0) {
+    auto& words = csv_reader.GetNextLine();
+    req = stol(words[0]);
+
+    LOG(INFO) << gbp::GetSystemTime();
+    txn.GetVertexIndex(person_label_id, req, root);
+    LOG(INFO) << gbp::GetSystemTime();
     const auto email = person_email_col.get(root);
+    LOG(INFO) << gbp::GetSystemTime();
     const auto firstname = person_firstName_col.get(root);
+    LOG(INFO) << gbp::GetSystemTime();
+    LOG(INFO) << "==============";
+
     std::string str1{firstname.Data(), firstname.Size()};
     std::string str2{email.Data(), email.Size()};
     if (!(str1.compare(words[1]) == 0 && str2.compare(words[9]) == 0)) {
@@ -93,7 +120,8 @@ int test_vertex(gs::GraphDB& db, const std::string& csv_data_path) {
     test_count--;
   }
 #endif
-  LOG(INFO) << "test_vertex: success!!";
+
+  LOG(INFO) << "test_vertex: success!! time = " << t0;
   return 0;
 }
 
@@ -215,10 +243,11 @@ int main(int argc, char** argv) {
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
   LOG(INFO) << "Start loading graph";
+  gbp::set_start_log(false);
   db.Init(schema, data_path, shard_num);
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
-  gs::mark_g = true;
-  // test_vertex(db, csv_data_path);
-  test_edge(db, csv_data_path, log_data_path);
+
+  test_vertex(db, csv_data_path);
+  // test_edge(db, csv_data_path, log_data_path);
 }
