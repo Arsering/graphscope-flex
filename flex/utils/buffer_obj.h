@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <sys/mman.h>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
@@ -26,44 +27,10 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV true
+#define OV false
+#define MMAP_ADVICE_l MADV_RANDOM
+
 #define PAGE_SIZE_BUFFER_POOL 4096
-
-static bool mark_g = false;
-#define likely(x) __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
-
-static int log_file_global = -1;
-static std::string str_g = "no";
-static std::mutex lock_log_file_global;
-
-static void init_log_file_global(const std::string& log_data_path) {
-  std::string file_name = log_data_path + "/output_g.log";
-  log_file_global = open(file_name.c_str(), O_WRONLY | O_CREAT);
-
-  if (log_file_global == -1) {
-    LOG(FATAL) << "file open fail";
-  }
-  LOG(INFO) << "file open success" << log_file_global;
-  std::string buf = "starting...";
-  write(log_file_global, buf.data(), buf.size());
-  // fsync(log_file_global);
-}
-
-static void write_to_log_file_global(std::string_view log) {
-  std::string mark = "eor#";
-  std::lock_guard lock(lock_log_file_global);
-  write(log_file_global, log.data(), log.size());
-  write(log_file_global, mark.data(), mark.size());
-  fsync(log_file_global);
-  // if (log_file_global.is_open()) {
-  //   log_file_global << log;
-  //   log_file_global << "eor#";
-  //   log_file_global.flush();
-  // } else {
-  //   LOG(FATAL) << "file open fail";
-  // }
-}
 }  // namespace gs
 
 namespace gbp {

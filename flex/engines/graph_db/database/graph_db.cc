@@ -242,6 +242,7 @@ void GraphDB::initApps(const std::vector<std::string>& plugins) {
   uint8_t sp_index = 1;
   for (auto path : plugins) {
     registerApp(path, sp_index++);
+    LOG(INFO) << "Register APP: " << path;
   }
 }
 

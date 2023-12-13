@@ -16,10 +16,13 @@ option(BUILD_DOC "Whether to build doc" OFF)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
-set(DEFAULT_BUILD_TYPE "Release")
+set(DEFAULT_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Debug")
+
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC")
-set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
+# set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
+# set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 
 add_compile_definitions(FLEX_VERSION="${FLEX_VERSION}")

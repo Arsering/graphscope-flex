@@ -15,11 +15,13 @@
 
 #include "grape/util.h"
 
+#include <unistd.h>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <fstream>
 #include <hiactor/core/actor-app.hh>
 #include <iostream>
+#include <thread>
 #include <vector>
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/engines/http_server/executor_group.actg.h"
@@ -34,26 +36,33 @@ class Req {
     static Req r;
     return r;
   }
-  void init(int warmup_num, int benchmark_num) {
+  void init(size_t warmup_num, size_t benchmark_num) {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
+    num_of_reqs_unique_ = reqs_.size();
+    start_.resize(num_of_reqs_);
+    end_.resize(num_of_reqs_);
 
-    if (num_of_reqs_ == warmup_num_ || num_of_reqs_ >= reqs_.size()) {
-      num_of_reqs_ = reqs_.size();
-    }
     std::cout << "warmup count: " << warmup_num_
               << "; benchmark count: " << num_of_reqs_ << "\n";
+    log_thread_ = std::thread([this]() { logger(); });
   }
+
   void load(const std::string& file) {
-    std::cout << "load queries from " << file << "\n";
-    std::ifstream fi(file, std::ios::binary);
+    LOG(INFO) << "load queries from " << file << "\n";
+    std::ifstream fi(file, std::ios::in);
     const size_t size = 4096;
     std::vector<char> buffer(size);
     std::vector<char> tmp(size);
     size_t index = 0;
-    while (fi.read(buffer.data(), size)) {
+
+    while (true) {
+      fi.read(buffer.data(), size);
       auto len = fi.gcount();
+      if (len == 0)
+        break;
       for (size_t i = 0; i < len; ++i) {
+        tmp[index++] = buffer[i];
         if (index >= 4 && tmp[index - 1] == '#') {
           if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
               tmp[index - 2] == 'r') {
@@ -63,16 +72,12 @@ class Req {
             index = 0;
           }
         }
-        tmp[index++] = buffer[i];
       }
       buffer.clear();
     }
+    LOG(INFO) << "Number of query = " << reqs_.size();
     fi.close();
-    std::cout << "load " << reqs_.size() << " queries\n";
     num_of_reqs_ = reqs_.size();
-    // reqs_.resize(100000);
-    start_.resize(reqs_.size());
-    end_.resize(reqs_.size());
   }
 
   seastar::future<> do_query(server::executor_ref& ref) {
@@ -80,12 +85,16 @@ class Req {
     if (id >= num_of_reqs_) {
       return seastar::make_ready_future<>();
     }
+
     start_[id] = std::chrono::system_clock::now();
-    return ref.run_graph_db_query(server::query_param{reqs_[id]})
+    return ref
+        .run_graph_db_query(
+            server::query_param{reqs_[id % num_of_reqs_unique_]})
         .then_wrapped(
             [&, id](seastar::future<server::query_result>&& fut) mutable {
               auto result = fut.get0();
               end_[id] = std::chrono::system_clock::now();
+              operation_count_.fetch_add(1);
             })
         .then([&] { return do_query(ref); });
   }
@@ -104,7 +113,7 @@ class Req {
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
     for (size_t idx = warmup_num_; idx < num_of_reqs_; idx++) {
-      auto& s = reqs_[idx];
+      auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
       auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
                      end_[idx] - start_[idx])
@@ -138,14 +147,36 @@ class Req {
 
  private:
   Req() : cur_(0), warmup_num_(0) {}
+  ~Req() {
+    logger_stop_ = true;
+    log_thread_.join();
+  }
+  void logger() {
+    size_t operation_count_pre = 0;
+    size_t operation_count_now = 0;
+    while (true) {
+      sleep(1);
+      operation_count_now = operation_count_.load();
+      LOG(INFO) << "Throughput (Total) [" << operation_count_now / 10000
+                << "w] (last 1s) ["
+                << (operation_count_now - operation_count_pre) / 10000 << "w]";
+      operation_count_pre = operation_count_now;
+      if (logger_stop_)
+        break;
+    }
+  }
 
-  std::atomic<uint32_t> cur_;
-  uint32_t warmup_num_;
-  uint32_t num_of_reqs_;
+  std::atomic<size_t> cur_;
+  size_t warmup_num_;
+  size_t num_of_reqs_;
+  size_t num_of_reqs_unique_;
   std::vector<std::string> reqs_;
   std::vector<std::chrono::system_clock::time_point> start_;
   std::vector<std::chrono::system_clock::time_point> end_;
 
+  std::thread log_thread_;
+  std::atomic<size_t> operation_count_;
+  std::atomic<bool> logger_stop_ = false;
   // std::vector<executor_ref> executor_refs_;
 };
 
@@ -166,7 +197,7 @@ int main(int argc, char** argv) {
       "req-file,r", bpo::value<std::string>(), "requests file");
 
   google::InitGoogleLogging(argv[0]);
-  FLAGS_logtostderr = false;
+  FLAGS_logtostderr = true;
 
   bpo::variables_map vm;
   bpo::store(bpo::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -208,7 +239,14 @@ int main(int argc, char** argv) {
   double t0 = -grape::GetCurrentTime();
   auto& db = gs::GraphDB::get();
 
+#if !OV
+  size_t pool_size = 1024 * 1024 * 6;
+  auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
+  bpm->init(pool_size);
+#endif
+
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
+  LOG(INFO) << "Start loading graph";
   db.Init(schema, data_path, shard_num);
 
   t0 += grape::GetCurrentTime();
@@ -220,6 +258,7 @@ int main(int argc, char** argv) {
   Req::get().init(warmup_num, benchmark_num);
   hiactor::actor_app app;
 
+  sleep(10);
   auto begin = std::chrono::system_clock::now();
   int ac = 1;
   char* av[] = {(char*) "rt_bench"};

@@ -551,7 +551,8 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   vid_t get_neighbor() {
     if (buffer_ == nullptr) {
-      if (unlikely(is_valid() && !fresh_)) {
+      // if (gbp::unlikely(is_valid() && !fresh_)) {
+      if (is_valid() && !fresh_) {
         cur_obj_ = mmap_array_->get(cur_idx_);
         fresh_ = true;
       }
@@ -564,7 +565,8 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   gbp::BufferObject get_data() {
     gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
-      if (unlikely(is_valid() && !fresh_)) {
+      // if (gbp::unlikely(is_valid() && !fresh_)) {
+      if (is_valid() && !fresh_) {
         cur_obj_ = mmap_array_->get(cur_idx_);
         fresh_ = true;
       }
@@ -577,7 +579,8 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   timestamp_t get_timestamp() {
     if (buffer_ == nullptr) {
-      if (likely(is_valid() && !fresh_)) {
+      // if (gbp::likely(is_valid() && !fresh_)) {
+      if (is_valid() && !fresh_) {
         cur_obj_ = mmap_array_->get(cur_idx_);
         fresh_ = true;
       }
@@ -645,7 +648,8 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
 
   vid_t get_neighbor() {
     if (buffer_ == nullptr) {
-      if (unlikely(is_valid() && !fresh_)) {
+      // if (gbp::unlikely(is_valid() && !fresh_)) {
+      if (is_valid() && !fresh_) {
         cur_obj_ = mmap_array_->get(cur_idx_);
         fresh_ = true;
       }
@@ -658,7 +662,8 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
   gbp::BufferObject get_data() {
     gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
-      if (unlikely(is_valid() && !fresh_)) {
+      // if (gbp::unlikely(is_valid() && !fresh_)) {
+      if (is_valid() && !fresh_) {
         cur_obj_ = mmap_array_->get(cur_idx_);
         fresh_ = true;
       }
@@ -671,7 +676,8 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
 
   timestamp_t get_timestamp() {
     if (buffer_ == nullptr) {
-      if (likely(is_valid() && !fresh_)) {
+      // if (gbp::likely(is_valid() && !fresh_)) {
+      if (is_valid() && !fresh_) {
         cur_obj_ = mmap_array_->get(cur_idx_);
         fresh_ = true;
       }
@@ -777,7 +783,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) override {
-    LOG(INFO) << "MutableCsr";
+    // LOG(INFO) << "MutableCsr";
     mmap_array<int> degree_list;
     degree_list.open(snapshot_dir + "/" + name + ".deg", true);
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
@@ -785,21 +791,21 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
     adj_lists_.resize(degree_list.size());
     locks_ = new grape::SpinLock[degree_list.size()];
-    LOG(INFO) << " degree_list.size() = " << degree_list.size();
-    signed long int t1, t2, t3;
-    size_t sum = 0;
-    size_t sum2 = 0;
-    gbp::get_time_duration_g(0) = 0;
-    gbp::get_time_duration_g(1) = 0;
-
-    t1 = -gbp::GetSystemTime();
+    // LOG(INFO) << " degree_list.size() = " << degree_list.size();
+    // s_size_t t1, t2, t3;
+    // size_t sum = 0;
+    // size_t sum2 = 0;
+    // gbp::get_time_duration_g(0) = 0;
+    // gbp::get_time_duration_g(1) = 0;
+    // gbp::set_start_log(true);
+    // t1 = -gbp::GetSystemTime();
 #if OV
     nbr_t* ptr = nbr_list_.data();
     for (size_t i = 0; i < degree_list.size(); ++i) {
-      t2 = -gbp::GetSystemTime();
+      // t2 = -gbp::GetSystemTime();
       int degree = degree_list[i];
-      t2 += gbp::GetSystemTime();
-      sum += t2;
+      // t2 += gbp::GetSystemTime();
+      // sum += t2;
       // LOG(INFO) << "read degree (s) = " << t2;
       // t3 = -grape::GetCurrentTime();
       adj_lists_[i].init(ptr, degree, degree);
@@ -810,11 +816,11 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 #else
     size_t offset = 0;
     for (size_t i = 0; i < degree_list.size(); ++i) {
-      t2 = -gbp::GetSystemTime();
+      // t2 = -gbp::GetSystemTime();
       auto item = degree_list.get(
           i);  // 此操作占本函数40%的latency，且当i=1时的latency占整个本行代码latency的约20%
-      t2 += gbp::GetSystemTime();
-      sum += t2;
+      // t2 += gbp::GetSystemTime();
+      // sum += t2;
 
       int degree = gbp::Decode<int>(item);
       auto adj_list = gbp::BufferObject(sizeof(adjlist_t));
@@ -828,12 +834,12 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       offset += degree;
     }
 #endif
-    t1 += gbp::GetSystemTime();
-    LOG(INFO) << "sum  (CPU cycle) = " << sum;
-    LOG(INFO) << "Fetch Page (CPU cycle) = " << gbp::get_time_duration_g(0);
-    LOG(INFO) << "Copy Object (CPU cycle) = " << gbp::get_time_duration_g(1);
-    // LOG(INFO) << "sum2  (s) = " << sum2;
-    LOG(INFO) << "adjlist init (s) = " << t1;
+    // t1 += gbp::GetSystemTime();
+    // LOG(INFO) << "sum  (CPU cycle) = " << sum;
+    // LOG(INFO) << "Fetch Page (CPU cycle) = " << gbp::get_time_duration_g(0);
+    // LOG(INFO) << "Copy Object (CPU cycle) = " << gbp::get_time_duration_g(1);
+    // LOG(INFO) << "adjlist init (s) = " << t1;
+    // gbp::set_start_log(false);
   }
 
   void dump(const std::string& name,
@@ -1055,7 +1061,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) {
-    LOG(INFO) << " singleMutableCsr ";
+    // LOG(INFO) << " singleMutableCsr ";
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
     nbr_list_.touch(work_dir + "/" + name + ".nbr");
   }
@@ -1252,7 +1258,7 @@ class EmptyCsr : public TypedMutableCsrBase<EDATA_T> {
 
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) override {
-    LOG(INFO) << "EmptyCsr";
+    // LOG(INFO) << "EmptyCsr";
   }
 
   void dump(const std::string& name,
