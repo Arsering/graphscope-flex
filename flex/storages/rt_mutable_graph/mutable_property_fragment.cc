@@ -137,18 +137,18 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   // signed long int t0 = -gbp::GetSystemTime();
   // signed long int t1;
   // size_t sum = 0;
-  // size_t size_in_byte_lf_indexer = 0;
-  // size_t size_in_byte_vertex_data = 0;
+  size_t size_in_byte_lf_indexer = 0;
+  size_t size_in_byte_vertex_data = 0;
   for (size_t i = 0; i < vertex_label_num_; ++i) {
     std::string v_label_name = schema_.get_vertex_label_name(i);
     lf_indexers_[i].open(vertex_map_prefix(v_label_name), snapshot_dir,
                          tmp_dir_path);
-    // size_in_byte_lf_indexer += lf_indexers_[i].get_size_in_byte();
+    size_in_byte_lf_indexer += lf_indexers_[i].get_size_in_byte();
     vertex_data_[i].open(vertex_table_prefix(v_label_name), snapshot_dir,
                          tmp_dir_path, schema_.get_vertex_property_names(i),
                          schema_.get_vertex_properties(i),
                          schema_.get_vertex_storage_strategies(v_label_name));
-    // size_in_byte_vertex_data += vertex_data_[i].get_size_in_byte();
+    size_in_byte_vertex_data += vertex_data_[i].get_size_in_byte();
 
     size_t vertex_num = lf_indexers_[i].size();
     size_t vertex_capacity = vertex_num;
@@ -160,16 +160,15 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   size_t MB_in_byte = 1024LU * 1024;
   // LOG(INFO) << "Open lf_indexers_ and vertex_data_ in " << t0 <<
   // "seconds!!!";
-  // LOG(INFO) << "size_in_MB_lf_indexer=" << size_in_byte_lf_indexer /
-  // MB_in_byte
-  //           << " | size_in_MB_vertex_data="
-  //           << size_in_byte_vertex_data / MB_in_byte;
+  LOG(INFO) << "size_in_MB_lf_indexer=" << size_in_byte_lf_indexer / MB_in_byte
+            << " | size_in_MB_vertex_data="
+            << size_in_byte_vertex_data / MB_in_byte;
 
   ie_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   oe_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   // t0 = -gbp::GetSystemTime();
-  // size_t size_in_byte_edge_index = 0;
-  // size_t size_in_byte_edge_data = 0;
+  size_t size_in_byte_edge_index = 0;
+  size_t size_in_byte_edge_data = 0;
   for (size_t src_label_i = 0; src_label_i != vertex_label_num_;
        ++src_label_i) {
     std::string src_label =
@@ -208,20 +207,19 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
         // LOG(INFO) << "Time used in oe open (s) = " << t1;
         // sum += t1;
         oe_[index]->resize(vertex_capacities[src_label_i]);
-        // size_in_byte_edge_index += ie_[index]->get_index_size_in_byte();
-        // size_in_byte_edge_index += oe_[index]->get_index_size_in_byte();
-        // size_in_byte_edge_data += ie_[index]->get_data_size_in_byte();
-        // size_in_byte_edge_data += oe_[index]->get_data_size_in_byte();
+        size_in_byte_edge_index += ie_[index]->get_index_size_in_byte();
+        size_in_byte_edge_index += oe_[index]->get_index_size_in_byte();
+        size_in_byte_edge_data += ie_[index]->get_data_size_in_byte();
+        size_in_byte_edge_data += oe_[index]->get_data_size_in_byte();
       }
     }
   }
   // t0 += gbp::GetSystemTime();
   // LOG(INFO) << "Open in/out edges in (sum) " << sum << "seconds!!!";
   // LOG(INFO) << "Open in/out edges in " << t0 << "seconds!!!";
-  // LOG(INFO) << "size_in_MB_edge_index=" << size_in_byte_edge_index /
-  // MB_in_byte
-  //           << " | size_in_MB_edge_data="
-  //           << size_in_byte_edge_data / MB_in_byte;
+  LOG(INFO) << "size_in_MB_edge_index=" << size_in_byte_edge_index / MB_in_byte
+            << " | size_in_MB_edge_data="
+            << size_in_byte_edge_data / MB_in_byte;
 }
 
 void MutablePropertyFragment::Dump(const std::string& work_dir,

@@ -159,7 +159,8 @@ class Req {
       operation_count_now = operation_count_.load();
       LOG(INFO) << "Throughput (Total) [" << operation_count_now / 10000
                 << "w] (last 1s) ["
-                << (operation_count_now - operation_count_pre) / 10000 << "w]";
+                << (operation_count_now - operation_count_pre) / 10000 << "w+"
+                << (operation_count_now - operation_count_pre) % 10000 << "]";
       operation_count_pre = operation_count_now;
       if (logger_stop_)
         break;
@@ -194,7 +195,8 @@ int main(int argc, char** argv) {
       "num of warmup reqs")("benchmark-num,b",
                             bpo::value<uint32_t>()->default_value(0),
                             "num of benchmark reqs")(
-      "req-file,r", bpo::value<std::string>(), "requests file");
+      "req-file,r", bpo::value<std::string>(), "requests file")(
+      "log-data-path,l", bpo::value<std::string>(), "log data directory path");
 
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
@@ -218,6 +220,7 @@ int main(int argc, char** argv) {
   std::string graph_schema_path = "";
   std::string data_path = "";
   std::string bulk_load_config_path = "";
+  std::string log_data_path = "";
 
   if (!vm.count("graph-config")) {
     LOG(ERROR) << "graph-config is required";
@@ -229,9 +232,17 @@ int main(int argc, char** argv) {
     return -1;
   }
   data_path = vm["data-path"].as<std::string>();
-  if (vm.count("bulk-load")) {
-    bulk_load_config_path = vm["bulk-load"].as<std::string>();
+  if (!vm.count("log-data-path")) {
+    LOG(ERROR) << "log-data-path is required";
+    return -1;
   }
+  log_data_path = vm["log-data-path"].as<std::string>();
+
+  std::ofstream pid_file(log_data_path + "/graphscope.pid", std::ios::out);
+  pid_file << getpid();
+  pid_file.flush();
+  pid_file.close();
+  sleep(10);
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
@@ -240,7 +251,7 @@ int main(int argc, char** argv) {
   auto& db = gs::GraphDB::get();
 
 #if !OV
-  size_t pool_size = 1024 * 1024 * 6;
+  size_t pool_size = 1024 * 1024 * 1;
   auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
   bpm->init(pool_size);
 #endif
@@ -258,7 +269,6 @@ int main(int argc, char** argv) {
   Req::get().init(warmup_num, benchmark_num);
   hiactor::actor_app app;
 
-  sleep(10);
   auto begin = std::chrono::system_clock::now();
   int ac = 1;
   char* av[] = {(char*) "rt_bench"};

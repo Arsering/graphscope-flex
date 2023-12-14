@@ -28,6 +28,7 @@
 
 namespace gs {
 #define OV false
+#define PREAD true
 #define MMAP_ADVICE_l MADV_RANDOM
 
 #define PAGE_SIZE_BUFFER_POOL 4096
@@ -604,6 +605,15 @@ T& Decode(BufferObject& obj) {
     LOG(FATAL) << "Decode size mismatch!!!";
   }
   return *reinterpret_cast<T*>(obj.Data());
+}
+template <typename T>
+T& Decode(BufferObject& obj, int idx) {
+  if (sizeof(T) * (idx + 1) > obj.Size()) {
+    LOG(INFO) << "sizeof T = " << sizeof(T);
+    LOG(INFO) << "sizeof obj = " << obj.Size();
+    LOG(FATAL) << "Decode size mismatch!!!";
+  }
+  return *reinterpret_cast<T*>(obj.Data() + idx * sizeof(T));
 }
 
 template <typename T>

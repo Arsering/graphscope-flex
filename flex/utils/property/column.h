@@ -268,6 +268,16 @@ class StringColumn : public ColumnBase {
   }
 #endif
 
+#if OV
+  void read(size_t index, std::vector<char>& out) const override {
+    if (index < basic_size_) {
+      basic_buffer_.pread(index, out);
+    } else {
+      extra_buffer_.pread(index - basic_size_, out);
+    }
+  }
+#endif
+
   void dump(const std::string& filename) override {
     if (basic_size_ != 0 && extra_size_ == 0) {
       basic_buffer_.dump(filename);
