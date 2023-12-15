@@ -48,6 +48,11 @@ class ColumnBase {
   virtual gbp::BufferObject get(size_t index) const = 0;
   virtual void set(size_t index, const gbp::BufferObject& value) = 0;
 #endif
+
+#if PREAD
+  virtual void read(size_t index, std::vector<char>& out) const = 0;
+#endif
+
   virtual size_t get_size_in_byte() const = 0;
   virtual void ingest(uint32_t index, grape::OutArchive& arc) = 0;
 
@@ -167,8 +172,14 @@ class TypedColumn : public ColumnBase {
     return index < basic_size_ ? basic_buffer_.get(index)
                                : extra_buffer_.get(index - basic_size_);
   }
-
 #endif
+
+#if PREAD
+  void read(size_t index, std::vector<char>& out) const override {
+    LOG(FATAL) << "not support";
+  }
+#endif
+
   size_t get_size_in_byte() const override {
     return basic_buffer_.get_size_in_byte() + extra_buffer_.get_size_in_byte();
   }
@@ -268,7 +279,7 @@ class StringColumn : public ColumnBase {
   }
 #endif
 
-#if OV
+#if PREAD
   void read(size_t index, std::vector<char>& out) const override {
     if (index < basic_size_) {
       basic_buffer_.pread(index, out);

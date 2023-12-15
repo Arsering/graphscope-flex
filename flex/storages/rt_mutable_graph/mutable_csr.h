@@ -843,19 +843,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       offset += size_tmp;
     }
 #endif
-#if OV
-    void pread(vid_t v, std::vector<nbr_t> & out) const {
-      auto& adj = adj_lists_[v];
-      out.clear();
-      out.resize(adj.size());
-      if (!out.empty()) {
-        // nbr_list_.pread(adj.data() - nbr_list_.data(), out.size(),
-        // out.data());
-        nbr_list_.pread(adj.data() - ((const nbr_t*) NULL), out.size(),
-                        out.data());
-      }
-    }
-#endif
     if (reuse_nbr_list && !nbr_list_.filename().empty() &&
         std::filesystem::exists(nbr_list_.filename())) {
       std::filesystem::create_hard_link(nbr_list_.filename(),
@@ -887,6 +874,19 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       fclose(fout);
     }
   }
+#if PREAD
+  void pread(vid_t v, std::vector<nbr_t>& out) const {
+    auto& adj = adj_lists_[v];
+    out.clear();
+    out.resize(adj.size());
+    if (!out.empty()) {
+      // nbr_list_.pread(adj.data() - nbr_list_.data(), out.size(),
+      // out.data());
+      nbr_list_.pread(adj.data() - ((const nbr_t*) NULL), out.size(),
+                      out.data());
+    }
+  }
+#endif
 
   void resize(vid_t vnum) override {
     if (vnum > adj_lists_.size()) {

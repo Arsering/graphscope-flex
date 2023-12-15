@@ -378,12 +378,6 @@ class mmap_array {
     auto& val_obj = gbp::Decode<T>(val);
     set(idx, val_obj, len);
   }
-  void pread(size_t offset, size_t size, T* out) const {
-    // CHECK_LT(offset, size_);
-    CHECK_LE(offset + size, size_);
-    CHECK_EQ(::pread(fd_, out, sizeof(T) * size, offset * sizeof(T)),
-             sizeof(T) * size);
-  }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
     CHECK_LE(idx + len, size_);
@@ -397,7 +391,14 @@ class mmap_array {
 #endif
 
   size_t get_size_in_byte() const { return size_ * sizeof(T); }
-
+#if PREAD
+  void pread(size_t offset, size_t size, T* out) const {
+    // CHECK_LT(offset, size_);
+    CHECK_LE(offset + size, size_);
+    CHECK_EQ(::pread(fd_, out, sizeof(T) * size, offset * sizeof(T)),
+             sizeof(T) * size);
+  }
+#endif
 #if OV
   T& operator[](size_t idx) { return data_[idx]; }
   const T& operator[](size_t idx) const { return data_[idx]; }
@@ -509,7 +510,7 @@ class mmap_array<std::string_view> {
   }
 #endif
 
-#if OV
+#if PREAD
   void pread(size_t idx, std::vector<char>& out) const {
     const string_item& item = items_.get(idx);
     out.resize(item.length);

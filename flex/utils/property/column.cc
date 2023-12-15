@@ -50,6 +50,13 @@ class TypedEmptyColumn : public ColumnBase {
     return gbp::BufferObject();
   }
 #endif
+
+#if PREAD
+  void read(size_t index, std::vector<char>& out) const override {
+    LOG(FATAL) << "not support";
+  }
+#endif
+
   size_t get_size_in_byte() const override { return 0; }
 
   void ingest(uint32_t index, grape::OutArchive& arc) override {
