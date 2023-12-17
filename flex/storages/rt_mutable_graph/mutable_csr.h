@@ -465,6 +465,16 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     return std::make_shared<TypedMutableCsrEdgeIter<EDATA_T>>(get_edges_mut(v));
   }
 
+  void pread(vid_t v, std::vector<nbr_t>& out) const {
+    auto& adj = adj_lists_[v];
+    out.clear();
+    out.resize(adj.size());
+    if (!out.empty()) {
+      nbr_list_.pread((size_t) (adj.data() - nbr_list_.data()), out.size(),
+                      out.data());
+    }
+  }
+
  private:
   grape::SpinLock* locks_;
   mmap_array<adjlist_t> adj_lists_;
@@ -597,6 +607,14 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
   std::shared_ptr<MutableCsrEdgeIterBase> edge_iter_mut(vid_t v) override {
     return std::make_shared<TypedMutableCsrEdgeIter<EDATA_T>>(get_edges_mut(v));
+  }
+
+  void pread(vid_t v, std::vector<nbr_t>& out) const {
+    out.clear();
+    out.resize(1);
+    if (!out.empty()) {
+      nbr_list_.pread(v, out.size(), out.data());
+    }
   }
 
  private:

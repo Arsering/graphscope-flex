@@ -49,6 +49,8 @@ class ColumnBase {
   virtual void ingest(uint32_t index, grape::OutArchive& arc) = 0;
 
   virtual StorageStrategy storage_strategy() const = 0;
+
+  virtual void read(size_t index, std::vector<char>& out) const = 0;
 };
 
 template <typename T>
@@ -151,6 +153,18 @@ class TypedColumn : public ColumnBase {
   size_t basic_buffer_size() const { return basic_size_; }
   const mmap_array<T>& extra_buffer() const { return extra_buffer_; }
   size_t extra_buffer_size() const { return extra_size_; }
+
+  void read(size_t idx, std::vector<char>& out) const override {
+    // LOG(FATAL) << "not support";
+    out.clear();
+    out.resize(sizeof(T));
+    if (idx < basic_size_) {
+      basic_buffer_.pread(idx, 1, reinterpret_cast<T*>(out.data()));
+    } else {
+      extra_buffer_.pread(idx - basic_size_, 1,
+                          reinterpret_cast<T*>(out.data()));
+    }
+  }
 
  private:
   mmap_array<T> basic_buffer_;
@@ -279,6 +293,14 @@ class StringColumn : public ColumnBase {
   StorageStrategy storage_strategy() const override { return strategy_; }
 
   const mmap_array<std::string_view>& buffer() const { return basic_buffer_; }
+
+  void read(size_t idx, std::vector<char>& out) const override {
+    if (idx < basic_size_) {
+      basic_buffer_.pread(idx, out);
+    } else {
+      extra_buffer_.pread(idx - basic_size_, out);
+    }
+  }
 
  private:
   mmap_array<std::string_view> basic_buffer_;

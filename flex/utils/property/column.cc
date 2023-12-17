@@ -51,6 +51,9 @@ class TypedEmptyColumn : public ColumnBase {
   StorageStrategy storage_strategy() const override {
     return StorageStrategy::kNone;
   }
+  void read(size_t index, std::vector<char>& out) const override {
+    LOG(FATAL) << "Unsupported Operation";
+  }
 };
 
 using IntEmptyColumn = TypedEmptyColumn<int>;

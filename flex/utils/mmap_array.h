@@ -175,6 +175,22 @@ class mmap_array {
 
   const std::string& filename() const { return filename_; }
 
+  void pread(size_t offset, size_t size, T* out) const {
+    // CHECK_LT(offset, size_);
+    if (offset + size > size_)
+      LOG(FATAL) << "error " << offset << " | " << size << " | " << size_;
+    CHECK_LE(offset + size, size_);
+    // CHECK_EQ(::pread(fd_, out, sizeof(T) * size, offset * sizeof(T)),
+    //          sizeof(T) * size);
+    if (::pread(fd_, out, sizeof(T) * size, offset * sizeof(T)) !=
+        sizeof(T) * size) {
+      LOG(INFO) << "fd_ = " << fd_;
+      LOG(INFO) << "object size =" << sizeof(T) * size;
+      LOG(INFO) << "offset = " << offset * sizeof(T);
+      LOG(FATAL) << "filesize = " << std::filesystem::file_size(filename_);
+    }
+  }
+
  private:
   std::string filename_;
   int fd_;
@@ -240,6 +256,13 @@ class mmap_array<std::string_view> {
   void swap(mmap_array& rhs) {
     items_.swap(rhs.items_);
     data_.swap(rhs.data_);
+  }
+
+  void pread(size_t idx, std::vector<char>& out) const {
+    const string_item& item = items_.get(idx);
+    out.clear();
+    out.resize(item.length);
+    data_.pread(item.offset, item.length, out.data());
   }
 
  private:

@@ -97,6 +97,10 @@ class GraphView {
     return AdjListView<EDATA_T>(csr_.get_edges(v), timestamp_);
   }
 
+  void read(vid_t v, std::vector<MutableNbr<EDATA_T>>& vec) const {
+    csr_.pread(v, vec);
+  }
+
  private:
   const MutableCsr<EDATA_T>& csr_;
   timestamp_t timestamp_;
@@ -114,6 +118,10 @@ class SingleGraphView {
 
   const MutableNbr<EDATA_T>& get_edge(vid_t v) const {
     return csr_.get_edge(v);
+  }
+
+  void read(vid_t v, std::vector<MutableNbr<EDATA_T>>& vec) const {
+    csr_.pread(v, vec);
   }
 
  private:
@@ -252,6 +260,7 @@ class ReadTransaction {
         graph_.get_ie_csr(v_label, neighbor_label, edge_label));
     return SingleGraphView<EDATA_T>(*csr, timestamp_);
   }
+  timestamp_t GetTimeStamp() { return timestamp_; }
 
  private:
   void release();
