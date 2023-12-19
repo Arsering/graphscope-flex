@@ -294,29 +294,9 @@ class mmap_array {
     // memcpy((char*) (data_ + idx), &val, sizeof(T) * len);
 
     size_t object_size = sizeof(T) * len;
-    const char* value = reinterpret_cast<const char*>(&val);
-
-    size_t file_offset = idx * sizeof(T);
-    size_t page_id = file_offset / PAGE_SIZE_BUFFER_POOL;
-    size_t page_offset = file_offset % PAGE_SIZE_BUFFER_POOL;
-    while (object_size > 0) {
-      // size_t object_size_t = (page_offset + object_size) >
-      // PAGE_SIZE_BUFFER_POOL
-      //                            ? (PAGE_SIZE_BUFFER_POOL - page_offset)
-      //                            : object_size;
-
-      // memcpy(value,
-      //        (char*) data_ + page_id * PAGE_SIZE_BUFFER_POOL + page_offset,
-      //        object_size_t);
-      // std::cerr << "page_id = " << page_id << std::endl;
-      auto pd = buffer_pool_manager_->FetchPage(page_id, fd_inner_);
-      size_t object_size_t = pd->SetObject(value, page_offset, object_size);
-
-      object_size -= object_size_t;
-      value += object_size_t;
-      page_id++;
-      page_offset = 0;
-    }
+    buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(&val),
+                                    idx * sizeof(T), len * sizeof(T),
+                                    fd_inner_);
   }
 
   void set(size_t idx, const gbp::BufferObject& val, size_t len = 1) {
@@ -330,38 +310,9 @@ class mmap_array {
     size_t object_size = sizeof(T) * len;
     gbp::BufferObject ret(object_size);
     char* value = ret.Data();
+    buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
+                                    len * sizeof(T), fd_inner_);
 
-    size_t file_offset = idx * sizeof(T);
-    size_t page_id = file_offset / PAGE_SIZE_BUFFER_POOL;
-    size_t page_offset = file_offset % PAGE_SIZE_BUFFER_POOL;
-    signed long int t0 = 0;
-    while (object_size > 0) {
-      // size_t object_size_t = (page_offset + object_size) >
-      // PAGE_SIZE_BUFFER_POOL
-      //                            ? (PAGE_SIZE_BUFFER_POOL - page_offset)
-      //                            : object_size;
-
-      // memcpy(value,
-      //        (char*) data_ + page_id * PAGE_SIZE_BUFFER_POOL + page_offset,
-      //        object_size_t);
-      // std::cerr << "page_id = " << page_id << std::endl;
-      // gbp::get_time_duration_g(0) -= gbp::GetSystemTime();
-      // t0 = -gbp::GetSystemTime();
-      auto pd = buffer_pool_manager_->FetchPage(page_id, fd_inner_);
-      // t0 += gbp::GetSystemTime();
-      // if (gbp::get_start_log())
-      //   LOG(INFO) << "FP: " << page_id << "=" << t0;
-      // gbp::get_time_duration_g(0) += gbp::GetSystemTime();
-
-      // gbp::get_time_duration_g(1) -= gbp::GetSystemTime();
-      size_t object_size_t = pd->GetObject(value, page_offset, object_size);
-      // gbp::get_time_duration_g(1) += gbp::GetSystemTime();
-
-      object_size -= object_size_t;
-      value += object_size_t;
-      page_id++;
-      page_offset = 0;
-    }
     return ret;
   }
 

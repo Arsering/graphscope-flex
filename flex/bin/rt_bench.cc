@@ -28,6 +28,8 @@
 #include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
 #include "flex/engines/http_server/graph_db_service.h"
 
+#include <glog/logging.h>
+
 namespace bpo = boost::program_options;
 using namespace std::chrono_literals;
 class Req {
@@ -112,7 +114,7 @@ class Req {
     std::vector<long long> vec(29, 0);
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
-    for (size_t idx = warmup_num_; idx < num_of_reqs_; idx++) {
+    for (size_t idx = 0; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
       auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -194,7 +196,8 @@ int main(int argc, char** argv) {
       "num of warmup reqs")("benchmark-num,b",
                             bpo::value<uint32_t>()->default_value(0),
                             "num of benchmark reqs")(
-      "req-file,r", bpo::value<std::string>(), "requests file");
+      "req-file,r", bpo::value<std::string>(), "requests file")(
+      "log-data-path,l", bpo::value<std::string>(), "log data directory path");
 
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
@@ -218,6 +221,7 @@ int main(int argc, char** argv) {
   std::string graph_schema_path = "";
   std::string data_path = "";
   std::string bulk_load_config_path = "";
+  std::string log_data_path = "";
 
   if (!vm.count("graph-config")) {
     LOG(ERROR) << "graph-config is required";
@@ -229,9 +233,18 @@ int main(int argc, char** argv) {
     return -1;
   }
   data_path = vm["data-path"].as<std::string>();
-  if (vm.count("bulk-load")) {
-    bulk_load_config_path = vm["bulk-load"].as<std::string>();
+  if (!vm.count("log-data-path")) {
+    LOG(ERROR) << "log-data-path is required";
+    return -1;
   }
+  log_data_path = vm["log-data-path"].as<std::string>();
+
+  std::ofstream pid_file(log_data_path + "/graphscope.pid", std::ios::out);
+  LOG(INFO) << log_data_path + "/graphscope.pid";
+  pid_file << getpid();
+  pid_file.flush();
+  pid_file.close();
+  sleep(10);
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
@@ -258,7 +271,6 @@ int main(int argc, char** argv) {
   Req::get().init(warmup_num, benchmark_num);
   hiactor::actor_app app;
 
-  sleep(10);
   auto begin = std::chrono::system_clock::now();
   int ac = 1;
   char* av[] = {(char*) "rt_bench"};
