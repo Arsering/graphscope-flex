@@ -2,3 +2,6 @@ flex/build
 flex/docs/html/
 build/*
 flex_ldbc_snb/
+flex/.cache/*
+flex/graphscope_bufferpool
+.vscode/*

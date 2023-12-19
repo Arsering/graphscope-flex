@@ -78,5 +78,9 @@
         "valarray": "cpp",
         "variant": "cpp"
     },
-    "cmake.sourceDirectory": "/workspaces/graphscope-flex/flex"
+    "cmake.sourceDirectory": "/workspaces/graphscope-flex/flex",
+    "clangd.arguments": [
+        "--resource-dir=/usr/lib/clang/10.0.0",
+        "--compile-commands-dir=${workspaceFolder}/flex/build"
+    ]
 }

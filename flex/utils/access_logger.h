@@ -14,7 +14,7 @@
 #include <string>
 #include <thread>
 
-#include "flex/storages/rt_mutable_graph/types.h"
+//#include "flex/storages/rt_mutable_graph/types.h"
 #include "glog/logging.h"
 
 namespace gs {
