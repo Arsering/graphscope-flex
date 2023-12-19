@@ -36,7 +36,8 @@ int main(int argc, char** argv) {
       "http-port,p", bpo::value<uint16_t>()->default_value(10000),
       "http port of query handler")("graph-config,g", bpo::value<std::string>(),
                                     "graph schema config file")(
-      "data-path,d", bpo::value<std::string>(), "data directory path");
+      "data-path,d", bpo::value<std::string>(), "data directory path")(
+      "log-data-path,l", bpo::value<std::string>(), "log data directory path");
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
 
@@ -59,6 +60,7 @@ int main(int argc, char** argv) {
 
   std::string graph_schema_path = "";
   std::string data_path = "";
+  std::string log_data_path = "";
 
   if (!vm.count("graph-config")) {
     LOG(ERROR) << "graph-config is required";
@@ -70,6 +72,18 @@ int main(int argc, char** argv) {
     return -1;
   }
   data_path = vm["data-path"].as<std::string>();
+  if (!vm.count("log-data-path")) {
+    LOG(ERROR) << "log-data-path is required";
+    return -1;
+  }
+  log_data_path = vm["log-data-path"].as<std::string>();
+
+  std::ofstream pid_file(log_data_path + "/graphscope.pid", std::ios::out);
+  LOG(INFO) << log_data_path + "/graphscope.pid";
+  pid_file << getpid();
+  pid_file.flush();
+  pid_file.close();
+  sleep(10);
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();

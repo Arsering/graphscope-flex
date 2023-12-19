@@ -186,9 +186,7 @@ class MMapAllocator {
     cur_size_ = cap;
   }
 
-  void* allocate_large(size_t size) {
-    return malloc(size);
-  }
+  void* allocate_large(size_t size) { return malloc(size); }
 
   void allocate_new_batch() {
     cur_buffer_ = malloc(batch_size);
