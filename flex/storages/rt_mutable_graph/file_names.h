@@ -58,8 +58,8 @@ inline uint32_t get_snapshot_version(const std::string& work_dir) {
   std::string version_path = snapshot_version_path(work_dir);
   FILE* version_file = fopen(version_path.c_str(), "rb");
   uint32_t version = 0;
-  fread(&version, sizeof(uint32_t), 1, version_file);
-  fclose(version_file);
+  auto ret = ::fread(&version, sizeof(uint32_t), 1, version_file);
+  ::fclose(version_file);
   return version;
 }
 
@@ -67,9 +67,9 @@ inline void set_snapshot_version(const std::string& work_dir,
                                  uint32_t version) {
   std::string version_path = snapshot_version_path(work_dir);
   FILE* version_file = fopen(version_path.c_str(), "wb");
-  fwrite(&version, sizeof(uint32_t), 1, version_file);
-  fflush(version_file);
-  fclose(version_file);
+  auto ret = ::fwrite(&version, sizeof(uint32_t), 1, version_file);
+  ::fflush(version_file);
+  ::fclose(version_file);
 }
 
 inline std::string snapshot_dir(const std::string& work_dir, uint32_t version) {

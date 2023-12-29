@@ -70,6 +70,7 @@ class Req {
               tmp[index - 2] == 'r') {
             reqs_.emplace_back(
                 std::string(tmp.begin(), tmp.begin() + index - 4));
+
             index = 0;
           }
         }
@@ -112,7 +113,6 @@ class Req {
     std::vector<long long> vec(29, 0);
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
-    LOG(INFO) << "cp";
     for (size_t idx = 0; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
@@ -123,16 +123,13 @@ class Req {
       vec[id] += tmp;
       count[id] += 1;
     }
-    LOG(INFO) << "cp";
-
-    std::vector<std::string> queries = {"IS1", "IS2", "IS3", "IS4",
-                                        "IS5", "IS6", "IS7"};
-    LOG(INFO) << "cp";
-
+    std::vector<std::string> queries = {
+        "IC1", "IC2",  "IC3",  "IC4",  "IC5",  "IC6",  "IC7", "IC8",
+        "IC9", "IC10", "IC11", "IC12", "IC13", "IC14", "IS1", "IS2",
+        "IS3", "IS4",  "IS5",  "IS6",  "IS7",  "IU1",  "IU2", "IU3",
+        "IU4", "IU5",  "IU6",  "IU7",  "IU8"};
     for (auto i = 0; i < vec.size(); ++i) {
       size_t sz = ts[i].size();
-      LOG(INFO) << sz;
-      std::cout << "aaaaa";
       if (sz > 0) {
         std::cout << queries[i] << "; mean: " << vec[i] * 1. / count[i]
                   << "; counts: " << count[i] << "; ";
@@ -146,8 +143,6 @@ class Req {
         std::cout << " P99: " << ts[i][sz * 99 / 100] << "\n";
       }
     }
-    LOG(INFO) << "cp";
-
     std::cout << "unit: MICROSECONDS\n";
   }
 
@@ -155,9 +150,7 @@ class Req {
   Req() : cur_(0), warmup_num_(0) {}
   ~Req() {
     logger_stop_ = true;
-    if (log_thread_.joinable())
-      log_thread_.join();
-    LOG(INFO) << "finish";
+    log_thread_.join();
   }
   void logger() {
     size_t operation_count_pre = 0;
@@ -175,7 +168,6 @@ class Req {
       read_count_now = gbp::debug::get_counter_read().load();
       fetch_count_now = gbp::debug::get_counter_fetch().load();
       read_count_per_query_now = gbp::debug::get_counter_fetch_unique().load();
-
       LOG(INFO) << "Throughput (Total) [" << operation_count_now / 10000
                 << "w] (last 1s) ["
                 << (operation_count_now - operation_count_pre) / 10000 << "w"
@@ -193,8 +185,8 @@ class Req {
                 << "w"
                 << (read_count_per_query_now - read_count_per_query_pre) % 10000
                 << "]"
-#if !OV
                 << " | Num of free page in BP = "
+#if !OV
                 << gbp::BufferPoolManager::GetGlobalInstance().GetFreePageNum()
 #endif
           ;
@@ -285,20 +277,26 @@ int main(int argc, char** argv) {
   pid_file << getpid();
   pid_file.flush();
   pid_file.close();
-  sleep(10);
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 
+#if OV
+  gbp::get_mark_mmapwarmup().store(1);
+#else
+  pool_size = vm["buffer-pool-size"].as<uint64_t>();
+  gbp::get_pool_size() = pool_size;
+  LOG(INFO) << "pool_size = " << pool_size;
+  gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
+#ifdef DEBUG
+  gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
+#endif
+#endif
+
+  sleep(10);
+
   double t0 = -grape::GetCurrentTime();
   auto& db = gs::GraphDB::get();
-
-#if !OV
-  pool_size = vm["buffer-pool-size"].as<uint64_t>();
-  LOG(INFO) << "size of buffer pool = " << pool_size;
-  auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
-  bpm->init(pool_size);
-#endif
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
   LOG(INFO) << "Start loading graph";
@@ -308,6 +306,15 @@ int main(int argc, char** argv) {
   uint32_t warmup_num = vm["warmup-num"].as<uint32_t>();
   uint32_t benchmark_num = vm["benchmark-num"].as<uint32_t>();
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
+
+#if !OV
+  gbp::get_mark_warmup().store(0);
+  // LOG(INFO) << "Warmup start";
+  // gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  // LOG(INFO) << "Warmup finish";
+  gbp::get_mark_warmup().store(1);
+#endif
+
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load(req_file);
   Req::get().init(warmup_num, benchmark_num);
