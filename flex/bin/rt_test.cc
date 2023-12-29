@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
   LOG(INFO) << "Start loading graph";
-  gbp::set_start_log(false);
+  // gbp::set_start_log(false);
   db.Init(schema, data_path, shard_num);
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";

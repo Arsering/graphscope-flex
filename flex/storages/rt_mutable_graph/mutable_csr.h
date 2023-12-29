@@ -791,55 +791,26 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
     adj_lists_.resize(degree_list.size());
     locks_ = new grape::SpinLock[degree_list.size()];
-    // LOG(INFO) << " degree_list.size() = " << degree_list.size();
-    // s_size_t t1, t2, t3;
-    // size_t sum = 0;
-    // size_t sum2 = 0;
-    // gbp::get_time_duration_g(0) = 0;
-    // gbp::get_time_duration_g(1) = 0;
-    // gbp::set_start_log(true);
-    // t1 = -gbp::GetSystemTime();
 #if OV
     nbr_t* ptr = nbr_list_.data();
     for (size_t i = 0; i < degree_list.size(); ++i) {
-      // t2 = -gbp::GetSystemTime();
       int degree = degree_list[i];
-      // t2 += gbp::GetSystemTime();
-      // sum += t2;
-      // LOG(INFO) << "read degree (s) = " << t2;
-      // t3 = -grape::GetCurrentTime();
       adj_lists_[i].init(ptr, degree, degree);
-      // t3 += grape::GetCurrentTime();
-      // sum2 += t3;
       ptr += degree;
     }
 #else
     size_t offset = 0;
     for (size_t i = 0; i < degree_list.size(); ++i) {
-      // t2 = -gbp::GetSystemTime();
       auto item = degree_list.get(
           i);  // 此操作占本函数40%的latency，且当i=1时的latency占整个本行代码latency的约20%
-      // t2 += gbp::GetSystemTime();
-      // sum += t2;
 
       int degree = gbp::Decode<int>(item);
       auto adj_list = gbp::BufferObject(sizeof(adjlist_t));
-      // auto adj_list = gbp::BufferObject::Copy(adj_lists_.get(i));
       gbp::Decode<adjlist_t>(adj_list).init(&nbr_list_, offset, degree, degree);
-      // t3 = -grape::GetCurrentTime();
       adj_lists_.set(i, adj_list);  // 此操作占了本函数latency的另外40%
-      // t3 += grape::GetCurrentTime();
-      // sum2 += t3;
-      // LOG(INFO) << "init adjlist (s) = " << t3;
       offset += degree;
     }
 #endif
-    // t1 += gbp::GetSystemTime();
-    // LOG(INFO) << "sum  (CPU cycle) = " << sum;
-    // LOG(INFO) << "Fetch Page (CPU cycle) = " << gbp::get_time_duration_g(0);
-    // LOG(INFO) << "Copy Object (CPU cycle) = " << gbp::get_time_duration_g(1);
-    // LOG(INFO) << "adjlist init (s) = " << t1;
-    // gbp::set_start_log(false);
   }
 
   void dump(const std::string& name,

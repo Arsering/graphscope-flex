@@ -43,8 +43,8 @@ inline void copy_file(const std::string& src, const std::string& dst) {
     return;
   }
   size_t len = std::filesystem::file_size(src);
-  int src_fd = open(src.c_str(), O_RDONLY);
-  int dst_fd = open(dst.c_str(), O_WRONLY | O_CREAT);
+  int src_fd = ::open(src.c_str(), O_RDONLY, 0777);
+  int dst_fd = ::open(dst.c_str(), O_WRONLY | O_CREAT, 0777);
 
   ssize_t ret;
   do {
@@ -66,8 +66,7 @@ class mmap_array {
   mmap_array()
       : filename_(""), fd_(-1), data_(NULL), size_(0), read_only_(true) {}
 #else
-  mmap_array()
-      : filename_(""), fd_(-1), size_(0), read_only_(true), fd_inner_(-1) {
+  mmap_array() : filename_(""), size_(0), read_only_(true), fd_gbp_(-1) {
     buffer_pool_manager_ = &gbp::BufferPoolManager::GetGlobalInstance();
   }
 #endif
@@ -91,10 +90,9 @@ class mmap_array {
   void reset() {
     filename_ = "";
 
-    if (fd_ != -1) {
-      close(fd_);
-      fd_ = -1;
-      fd_inner_ = -1;
+    if (fd_gbp_ != -1) {
+      buffer_pool_manager_->CloseFile(fd_gbp_);
+      fd_gbp_ = -1;
     }
     read_only_ = true;
   }
@@ -112,7 +110,7 @@ class mmap_array {
         size_ = 0;
         data_ = NULL;
       } else {
-        fd_ = ::open(filename.c_str(), O_RDONLY);
+        fd_ = ::open(filename.c_str(), O_RDONLY, 0777);
         size_t file_size = std::filesystem::file_size(filename);
         size_ = file_size / sizeof(T);
         if (size_ == 0) {
@@ -126,7 +124,7 @@ class mmap_array {
         }
       }
     } else {
-      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT);
+      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT, 0777);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
       if (size_ == 0) {
@@ -150,19 +148,22 @@ class mmap_array {
     if (read_only) {
       if (!std::filesystem::exists(filename)) {
         LOG(ERROR) << "file not exists: " << filename;
-        fd_ = 1;
+        fd_gbp_ = -1;
         size_ = 0;
       } else {
-        fd_ = ::open(filename.c_str(), O_RDONLY | O_DIRECT);
+        // fd_ = ::open(filename.c_str(), O_RDONLY | O_DIRECT);
+        fd_gbp_ = buffer_pool_manager_->OpenFile(filename, O_RDONLY | O_DIRECT);
         size_t file_size = std::filesystem::file_size(filename);
         size_ = file_size / sizeof(T);
-        fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
+        // fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
       }
     } else {
-      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT | O_DIRECT);
+      // fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT | O_DIRECT);
+      fd_gbp_ =
+          buffer_pool_manager_->OpenFile(filename, O_RDWR | O_CREAT | O_DIRECT);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
-      fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
+      // fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
     }
   }
 #endif
@@ -225,7 +226,7 @@ class mmap_array {
       if (data_ != NULL) {
         munmap(data_, size_ * sizeof(T));
       }
-      ftruncate(fd_, size * sizeof(T));
+      auto ret = ::ftruncate(fd_, size * sizeof(T));
       if (size == 0) {
         data_ = NULL;
       } else {
@@ -240,7 +241,7 @@ class mmap_array {
   }
 #else
   void resize(size_t size) {
-    assert(fd_ != -1);
+    assert(fd_gbp_ != -1);
     if (size == size_) {
       return;
     }
@@ -255,7 +256,8 @@ class mmap_array {
             << "cannot resize read-only mmap_array to larger size than file";
       }
     } else {
-      int aa = ftruncate(fd_, size * sizeof(T));
+      // auto ret = ftruncate(fd_, size * sizeof(T));
+      buffer_pool_manager_->Resize(fd_gbp_, size * sizeof(T));
       size_ = size;
     }
   }
@@ -295,8 +297,7 @@ class mmap_array {
 
     size_t object_size = sizeof(T) * len;
     buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(&val),
-                                    idx * sizeof(T), len * sizeof(T),
-                                    fd_inner_);
+                                    idx * sizeof(T), len * sizeof(T), fd_gbp_);
   }
 
   void set(size_t idx, const gbp::BufferObject& val, size_t len = 1) {
@@ -311,7 +312,7 @@ class mmap_array {
     gbp::BufferObject ret(object_size);
     char* value = ret.Data();
     buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
-                                    len * sizeof(T), fd_inner_);
+                                    len * sizeof(T), fd_gbp_);
 
     return ret;
   }
@@ -337,8 +338,7 @@ class mmap_array {
 #else
   void swap(mmap_array<T>& rhs) {
     std::swap(filename_, rhs.filename_);
-    std::swap(fd_, rhs.fd_);
-    std::swap(fd_inner_, rhs.fd_inner_);
+    std::swap(fd_gbp_, rhs.fd_gbp_);
     std::swap(size_, rhs.size_);
     std::swap(buffer_pool_manager_, rhs.buffer_pool_manager_);
   }
@@ -348,16 +348,31 @@ class mmap_array {
 
  private:
 #if OV
+  void Warmup(char* data, size_t size) {
+    static size_t page_num_used = 0;
+    if (gbp::get_mark_mmapwarmup().load() == 1) {
+      volatile int64_t sum = 0;
+      for (gbp::page_id offset = 0; offset < size;
+           offset += PAGE_SIZE_BUFFER_POOL) {
+        sum += data[offset];
+        if (++page_num_used == gbp::get_pool_size()) {
+          LOG(INFO) << "pool is full";
+          return;
+        }
+      }
+    }
+  }
+
   std::string filename_;
   int fd_;
   T* data_;
   size_t size_;
   bool read_only_;
 #else
+
   gbp::BufferPoolManager* buffer_pool_manager_;
-  int fd_inner_ = -1;
+  int fd_gbp_ = -1;
   std::string filename_;
-  int fd_;
   size_t size_;
   bool read_only_;
 #endif

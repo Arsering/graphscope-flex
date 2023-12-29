@@ -117,7 +117,7 @@ std::string get_latest_snapshot(const std::string& work_dir) {
   uint32_t version;
   {
     FILE* fin = fopen((snapshots_dir + "/VERSION").c_str(), "r");
-    fread(&version, sizeof(uint32_t), 1, fin);
+    auto ret = ::fread(&version, sizeof(uint32_t), 1, fin);
   }
   return snapshots_dir + "/" + std::to_string(version);
 }
