@@ -112,7 +112,6 @@ class Req {
     std::vector<long long> vec(29, 0);
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
-    LOG(INFO) << "cp";
     for (size_t idx = 0; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
@@ -123,16 +122,12 @@ class Req {
       vec[id] += tmp;
       count[id] += 1;
     }
-    LOG(INFO) << "cp";
 
     std::vector<std::string> queries = {"IS1", "IS2", "IS3", "IS4",
                                         "IS5", "IS6", "IS7"};
-    LOG(INFO) << "cp";
 
     for (auto i = 0; i < vec.size(); ++i) {
       size_t sz = ts[i].size();
-      LOG(INFO) << sz;
-      std::cout << "aaaaa";
       if (sz > 0) {
         std::cout << queries[i] << "; mean: " << vec[i] * 1. / count[i]
                   << "; counts: " << count[i] << "; ";
@@ -146,8 +141,6 @@ class Req {
         std::cout << " P99: " << ts[i][sz * 99 / 100] << "\n";
       }
     }
-    LOG(INFO) << "cp";
-
     std::cout << "unit: MICROSECONDS\n";
   }
 

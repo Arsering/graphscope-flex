@@ -151,7 +151,8 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
 
     size_t vertex_num = lf_indexers_[i].size();
     size_t vertex_capacity = vertex_num;
-    vertex_capacity += vertex_capacity >> 2;
+    // TODO:
+    //  vertex_capacity += vertex_capacity >> 2;
     vertex_data_[i].resize(vertex_capacity);
     vertex_capacities[i] = vertex_capacity;
   }

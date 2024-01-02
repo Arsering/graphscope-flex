@@ -28,6 +28,7 @@
 
 namespace gs {
 #define OV false
+
 #define MMAP_ADVICE_l MADV_RANDOM
 
 #define PAGE_SIZE_BUFFER_POOL 4096
