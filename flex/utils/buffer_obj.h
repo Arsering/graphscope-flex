@@ -617,6 +617,17 @@ const T& Decode(const BufferObject& obj) {
 
   return *reinterpret_cast<const T*>(obj.Data());
 }
+
+template <typename T>
+const T& Decode(const BufferObject& obj, size_t idx) {
+  if (sizeof(T) * (idx + 1) > obj.Size()) {
+    LOG(INFO) << "sizeof T = " << sizeof(T);
+    LOG(INFO) << "sizeof obj = " << obj.Size();
+    LOG(FATAL) << "Decode size mismatch!!!";
+  }
+
+  return *reinterpret_cast<const T*>(obj.Data() + idx * sizeof(T));
+}
 #endif
 
 }  // namespace gbp
