@@ -541,6 +541,10 @@ class BufferObject {
  public:
   BufferObject() { inner_ = std::make_shared<BufferObjectImp>(); }
   BufferObject(size_t s) { inner_ = std::make_shared<BufferObjectImp>(s); }
+  BufferObject(size_t s, char* data) {
+    // assert(src.Size() >= s);
+    inner_ = std::make_shared<BufferObjectImp>(data, s);
+  }
   template <typename T>
   BufferObject() {
     inner_ = std::make_shared<BufferObjectImp>(sizeof(T));

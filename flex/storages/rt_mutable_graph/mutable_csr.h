@@ -560,20 +560,26 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   gbp::BufferObject get_data() {
     assert(is_valid());
 
-    gbp::BufferObject buf(sizeof(EDATA_T));
+    // gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
       // if (gbp::unlikely(!fresh_)) {
       if (!fresh_) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      memcpy(buf.Data(), &(gbp::Decode<nbr_t>(objs_, cur_idx_).data),
-             sizeof(EDATA_T));
+      // memcpy(buf.Data(), &(gbp::Decode<nbr_t>(objs_, cur_idx_).data),
+      //        sizeof(EDATA_T));
+      return gbp::BufferObject(
+          sizeof(EDATA_T),
+          (char*) (&(gbp::Decode<nbr_t>(objs_, cur_idx_).data)));
     } else {
-      memcpy(buf.Data(), &(buffer_[start_idx_ + cur_idx_].data),
-             sizeof(EDATA_T));
+      // memcpy(buf.Data(), &(buffer_[start_idx_ + cur_idx_].data),
+      //        sizeof(EDATA_T));
+      return gbp::BufferObject(
+          sizeof(EDATA_T), (char*) (&(buffer_[start_idx_ + cur_idx_].data)));
     }
-    return buf;
+
+    // return buf;
   }
 
   timestamp_t get_timestamp() {
@@ -659,20 +665,25 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
   gbp::BufferObject get_data() {
     assert(is_valid());
 
-    gbp::BufferObject buf(sizeof(EDATA_T));
+    // gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
       // if (gbp::unlikely(!fresh_)) {
       if (!fresh_) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      memcpy(buf.Data(), &(gbp::Decode<nbr_t>(objs_, cur_idx_).data),
-             sizeof(EDATA_T));
+      // memcpy(buf.Data(), &(gbp::Decode<nbr_t>(objs_, cur_idx_).data),
+      //        sizeof(EDATA_T));
+      return gbp::BufferObject(
+          sizeof(EDATA_T),
+          (char*) (&(gbp::Decode<nbr_t>(objs_, cur_idx_).data)));
     } else {
-      memcpy(buf.Data(), &(buffer_[start_idx_ + cur_idx_].data),
-             sizeof(EDATA_T));
+      // memcpy(buf.Data(), &(buffer_[start_idx_ + cur_idx_].data),
+      //        sizeof(EDATA_T));
+      return gbp::BufferObject(
+          sizeof(EDATA_T), (char*) (&(buffer_[start_idx_ + cur_idx_].data)));
     }
-    return buf;
+    // return buf;
   }
 
   timestamp_t get_timestamp() {
