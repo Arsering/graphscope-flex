@@ -281,12 +281,12 @@ int main(int argc, char** argv) {
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 
-#if OV
-  gbp::get_mark_mmapwarmup().store(1);
-#else
   pool_size = vm["buffer-pool-size"].as<uint64_t>();
   gbp::get_pool_size() = pool_size;
   LOG(INFO) << "pool_size = " << pool_size;
+#if OV
+  gbp::get_mark_mmapwarmup().store(1);
+#else
   gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
 #ifdef DEBUG
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
@@ -309,9 +309,9 @@ int main(int argc, char** argv) {
 
 #if !OV
   gbp::get_mark_warmup().store(0);
-  // LOG(INFO) << "Warmup start";
-  // gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
-  // LOG(INFO) << "Warmup finish";
+  LOG(INFO) << "Warmup start";
+  gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  LOG(INFO) << "Warmup finish";
   gbp::get_mark_warmup().store(1);
 #endif
 

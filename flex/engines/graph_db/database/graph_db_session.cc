@@ -98,7 +98,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   }
 
 #ifdef DEBUG
+#if !OV
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
+#endif
 #endif
   if (app->Query(decoder, encoder)) {
     return result_buffer;
@@ -111,7 +113,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   decoder.reset(str_data, str_len);
   result_buffer.clear();
 #ifdef DEBUG
+#if !OV
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
+#endif
 #endif
   if (app->Query(decoder, encoder)) {
     return result_buffer;
@@ -124,7 +128,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   decoder.reset(str_data, str_len);
   result_buffer.clear();
 #ifdef DEBUG
+#if !OV
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
+#endif
 #endif
   if (app->Query(decoder, encoder)) {
     return result_buffer;
@@ -137,7 +143,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   decoder.reset(str_data, str_len);
   result_buffer.clear();
 #ifdef DEBUG
+#if !OV
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
+#endif
 #endif
   if (app->Query(decoder, encoder)) {
     return result_buffer;

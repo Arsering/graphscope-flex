@@ -118,6 +118,7 @@ class mmap_array {
         } else {
           data_ = reinterpret_cast<T*>(
               mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
+          Warmup((char*) data_, size_ * sizeof(T));
           madvise(data_, size_ * sizeof(T),
                   MMAP_ADVICE_l);  // Turn off readahead
           assert(data_ != MAP_FAILED);
@@ -133,6 +134,8 @@ class mmap_array {
         data_ = reinterpret_cast<T*>(mmap(NULL, size_ * sizeof(T),
                                           PROT_READ | PROT_WRITE, MAP_SHARED,
                                           fd_, 0));
+        Warmup((char*) data_, size_ * sizeof(T));
+
         madvise(data_, size_ * sizeof(T),
                 MMAP_ADVICE_l);  // Turn off readahead
 
@@ -208,6 +211,8 @@ class mmap_array {
         size_ = size;
         data_ = reinterpret_cast<T*>(
             mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
+        Warmup((char*) data_, size_ * sizeof(T));
+
         madvise(data_, size_ * sizeof(T),
                 MMAP_ADVICE_l);  // Turn off readahead
 
@@ -216,6 +221,8 @@ class mmap_array {
         size_ = size;
         data_ = reinterpret_cast<T*>(
             mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
+        Warmup((char*) data_, size_ * sizeof(T));
+
         madvise(data_, size_ * sizeof(T),
                 MMAP_ADVICE_l);  // Turn off readahead
       } else {
@@ -233,6 +240,8 @@ class mmap_array {
         data_ =
             static_cast<T*>(::mmap(NULL, size * sizeof(T),
                                    PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0));
+        Warmup((char*) data_, size * sizeof(T));
+
         ::madvise(data_, size_ * sizeof(T),
                   MMAP_ADVICE_l);  // Turn off readahead
       }
@@ -351,6 +360,7 @@ class mmap_array {
   void Warmup(char* data, size_t size) {
     static size_t page_num_used = 0;
     if (gbp::get_mark_mmapwarmup().load() == 1) {
+      LOG(INFO) << "Warmup file " << filename_;
       volatile int64_t sum = 0;
       for (gbp::page_id offset = 0; offset < size;
            offset += PAGE_SIZE_BUFFER_POOL) {
