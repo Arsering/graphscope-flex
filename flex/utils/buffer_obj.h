@@ -57,7 +57,6 @@ class BufferObjectImp {
 
   void Malloc(size_t s) {
     data_ = (char*) LBMalloc(s);
-    // FMA_ASSERT(data_) << "Allocation falied, size = " << s;
     if (data_ == NULL)
       LOG(FATAL) << "Allocation failed!! (size = " << std::to_string(s);
     need_delete_ = true;
@@ -542,7 +541,6 @@ class BufferObject {
   BufferObject() { inner_ = std::make_shared<BufferObjectImp>(); }
   BufferObject(size_t s) { inner_ = std::make_shared<BufferObjectImp>(s); }
   BufferObject(size_t s, char* data) {
-    // assert(src.Size() >= s);
     inner_ = std::make_shared<BufferObjectImp>(data, s);
   }
   template <typename T>
