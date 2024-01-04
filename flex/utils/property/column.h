@@ -163,9 +163,17 @@ class TypedColumn : public ColumnBase {
     set_value(index, val);
   }
 
-  gbp::BufferObject get(size_t index) const override {
-    return index < basic_size_ ? basic_buffer_.get(index)
-                               : extra_buffer_.get(index - basic_size_);
+  gbp::BufferObject get_inner(size_t idx) const {
+    return idx < basic_size_ ? basic_buffer_.get(idx)
+                             : extra_buffer_.get(idx - basic_size_);
+  }
+  gbp::BufferObject get(size_t idx) const override {
+    size_t st, latency;
+    st = gbp::GetSystemTime();
+    auto ret = get_inner(idx);
+    // latency = gbp::GetSystemTime() - st;
+    // gbp::debug::get_counter_tmp().fetch_add(latency);
+    return ret;
   }
 
 #endif
@@ -346,13 +354,17 @@ class StringColumn : public ColumnBase {
     return AnyConverter<std::string_view>::to_any(get_view(idx));
   }
 #else
+  gbp::BufferObject get_inner(size_t idx) const {
+    return idx < basic_size_ ? basic_buffer_.get(idx)
+                             : extra_buffer_.get(idx - basic_size_);
+  }
   gbp::BufferObject get(size_t idx) const override {
-    if (idx < basic_size_) {
-      return basic_buffer_.get(idx);
-
-    } else {
-      return extra_buffer_.get(idx);
-    }
+    size_t st, latency;
+    st = gbp::GetSystemTime();
+    auto ret = get_inner(idx);
+    // latency = gbp::GetSystemTime() - st;
+    // gbp::debug::get_counter_tmp().fetch_add(latency);
+    return ret;
   }
   void set(size_t idx, const gbp::BufferObject& value) override {
     std::string_view sv = {value.Data(), value.Size()};

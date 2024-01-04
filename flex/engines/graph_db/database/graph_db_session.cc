@@ -77,6 +77,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   size_t str_len = input.size() - 1;
 
   std::vector<char> result_buffer;
+  if ((int) type != 4)
+    return result_buffer;
   gbp::get_counter_operation().fetch_add(1);
 
   Decoder decoder(str_data, str_len);
@@ -101,8 +103,28 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 #if !OV
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
 #endif
+
 #endif
+#ifdef DEBUG_2
+  size_t st, latency;
+  gbp::debug::get_counter_bpm().store(0);
+  gbp::debug::get_counter_copy().store(0);
+  gbp::debug::get_counter_tmp().store(0);
+  st = gbp::GetSystemTime();
+#endif
+  gbp::debug::get_counter_bpm().store(0);
+  size_t st, latency;
+  st = gbp::GetSystemTime();
   if (app->Query(decoder, encoder)) {
+#ifdef DEBUG_2
+    latency = gbp::GetSystemTime() - st;
+    LOG(INFO) << "profiling: [" << (int) type << "]" << latency << " | "
+              << gbp::debug::get_counter_bpm().load() << " | "
+              << gbp::debug::get_counter_copy().load() << " | "
+              << gbp::debug::get_counter_tmp().load();
+#endif
+    latency = gbp::GetSystemTime() - st;
+    LOG(INFO) << gbp::debug::get_counter_bpm().load() << " | " << latency;
     return result_buffer;
   }
 
