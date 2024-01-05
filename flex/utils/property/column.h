@@ -169,9 +169,7 @@ class TypedColumn : public ColumnBase {
   }
   gbp::BufferObject get(size_t idx) const override {
     size_t st, latency;
-    st = gbp::GetSystemTime();
-    // auto ret = get_inner(idx);
-    gbp::BufferObject ret(sizeof(T));
+    auto ret = get_inner(idx);
     return ret;
   }
 
@@ -359,9 +357,7 @@ class StringColumn : public ColumnBase {
   }
   gbp::BufferObject get(size_t idx) const override {
     size_t st, latency;
-    st = gbp::GetSystemTime();
-    // auto ret = get_inner(idx);
-    gbp::BufferObject ret(10);
+    auto ret = get_inner(idx);
     return ret;
   }
   void set(size_t idx, const gbp::BufferObject& value) override {

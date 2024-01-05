@@ -316,14 +316,10 @@ class mmap_array {
   }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
-    size_t st = gbp::GetSystemTime();
     CHECK_LE(idx + len, size_);
     size_t object_size = sizeof(T) * len;
     gbp::BufferObject ret(object_size);
     char* value = ret.Data();
-    st = gbp::GetSystemTime() - st;
-    if (gbp::get_mark_warmup().load() == 1)
-      gbp::debug::get_counter_any().fetch_add(st);
 
     buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
                                     len * sizeof(T), fd_gbp_);
