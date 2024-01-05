@@ -23,7 +23,6 @@
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/storages/rt_mutable_graph/types.h"
 
-#include "flex/graphscope_bufferpool/include/access_logger.h"
 
 namespace gs {
 

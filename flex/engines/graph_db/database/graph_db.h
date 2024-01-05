@@ -33,7 +33,6 @@
 #include "flex/storages/rt_mutable_graph/loader/loader_factory.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
-#include "flex/graphscope_bufferpool/include/access_logger.h"
 
 namespace gs {
 

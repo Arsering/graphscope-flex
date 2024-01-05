@@ -25,8 +25,6 @@
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/utils/property/column.h"
 
-#include "flex/graphscope_bufferpool/include/access_logger.h"
-
 namespace gs {
 
 class GraphDB;
@@ -34,7 +32,7 @@ class WalWriter;
 
 class GraphDBSession {
  public:
-  #if DL
+#if DL
   GraphDBSession(GraphDB& db, MMapAllocator& alloc, WalWriter& logger,
                  const std::string& work_dir, int thread_id)
       : db_(db),
@@ -47,8 +45,9 @@ class GraphDBSession {
     }
   }
 #else
-  GraphDBSession(GraphDB& db, MMapAllocator& alloc, gbp::ThreadLog& access_logger,
-                 WalWriter& logger, const std::string& work_dir, int thread_id)
+  GraphDBSession(GraphDB& db, MMapAllocator& alloc,
+                 gbp::ThreadLog& access_logger, WalWriter& logger,
+                 const std::string& work_dir, int thread_id)
       : db_(db),
         alloc_(alloc),
         access_logger_(access_logger),
