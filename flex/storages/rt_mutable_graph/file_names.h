@@ -94,7 +94,7 @@ inline std::string allocator_dir(const std::string& work_dir) {
 }
 
 inline std::string tmp_dir(const std::string& work_dir) {
-  return runtime_dir(work_dir) + "tmp/";
+  return runtime_dir(work_dir) + "tmp";
 }
 
 inline std::string vertex_map_prefix(const std::string& label) {
