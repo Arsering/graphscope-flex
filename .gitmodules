@@ -1,9 +1,6 @@
 [submodule "flex_ldbc_snb"]
 	path = flex_ldbc_snb
-	url = https://github.com/GraphScope/flex_ldbc_snb.git
-[submodule "graphscope_bufferpool"]
-	path = graphscope_bufferpool
-	url = https://github.com/Arsering/graphscope_bufferpool.git
+	url = https://github.com/Arsering/flex_ldbc_snb.git
 [submodule "flex/graphscope_bufferpool"]
 	path = flex/graphscope_bufferpool
 	url = https://github.com/Arsering/graphscope_bufferpool.git
