@@ -22,11 +22,6 @@ namespace gs {
 
 ReadTransaction GraphDBSession::GetReadTransaction() {
   uint32_t ts = db_.version_manager_.acquire_read_timestamp();
-#if !DL
-  if (gbp::thread_logger_is_empty()) {
-    set_thread_logger(&access_logger_);
-  }
-#endif
   return ReadTransaction(db_.graph_, db_.version_manager_, ts);
 }
 
@@ -117,9 +112,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   gbp::debug::get_counter_tmp().store(0);
   st = gbp::GetSystemTime();
 #endif
-  gbp::debug::get_counter_bpm().store(0);
-  size_t st, latency;
-  st = gbp::GetSystemTime();
+  gbp::debug::get_counter_any().store(0);
+  size_t st = gbp::GetSystemTime();
   if (app->Query(decoder, encoder)) {
 #ifdef DEBUG_2
     latency = gbp::GetSystemTime() - st;
@@ -128,8 +122,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << gbp::debug::get_counter_copy().load() << " | "
               << gbp::debug::get_counter_tmp().load();
 #endif
-    latency = gbp::GetSystemTime() - st;
-    LOG(INFO) << gbp::debug::get_counter_bpm().load() << " | " << latency;
+    st = gbp::GetSystemTime() - st;
+    LOG(INFO) << gbp::debug::get_counter_any().load() << " | " << st;
     return result_buffer;
   }
 

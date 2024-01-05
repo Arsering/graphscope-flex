@@ -15,32 +15,14 @@
 
 #include "flex/engines/graph_db/database/read_transaction.h"
 #include "flex/engines/graph_db/database/version_manager.h"
-#include "flex/graphscope_bufferpool/include/access_logger.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
 namespace gs {
 
 ReadTransaction::ReadTransaction(const MutablePropertyFragment& graph,
                                  VersionManager& vm, timestamp_t timestamp)
-    : graph_(graph), vm_(vm), timestamp_(timestamp) {
-#if !DL
-  if (gbp::get_thread_logger() == nullptr) {
-    LOG(FATAL) << "no thread logger";
-  }
-  std::string log_data = "rt_1";
-  gbp::get_thread_logger()->log_info(log_data);
-#endif
-}
-#if DL
+    : graph_(graph), vm_(vm), timestamp_(timestamp) {}
 ReadTransaction::~ReadTransaction() { release(); }
-#else
-ReadTransaction::~ReadTransaction() {
-  release();
-  std::string log_data = "rt_0";
-  gbp::get_thread_logger()->log_info(log_data);
-  gbp::set_thread_logger(nullptr);
-}
-#endif
 
 timestamp_t ReadTransaction::timestamp() const { return timestamp_; }
 

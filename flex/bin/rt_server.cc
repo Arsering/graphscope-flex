@@ -24,8 +24,6 @@
 
 #include <glog/logging.h>
 
-#include "flex/graphscope_bufferpool/include/access_logger.h"
-
 using namespace server;
 namespace bpo = boost::program_options;
 
@@ -101,7 +99,7 @@ int main(int argc, char** argv) {
   bpm->init(pool_size);
 #endif
 
-  //init access logger
+  // init access logger
   gbp::set_log_directory(vm["log-data-path"].as<std::string>());
   gbp::ThreadLog logger;
   gbp::set_thread_logger(&logger);
