@@ -316,20 +316,20 @@ class mmap_array {
   }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
-    size_t st = gbp::GetSystemTime();
+    // size_t st = gbp::GetSystemTime();
     CHECK_LE(idx + len, size_);
     size_t object_size = sizeof(T) * len;
     gbp::BufferObject ret(object_size);
     char* value = ret.Data();
-    st = gbp::GetSystemTime() - st;
-    gbp::debug::get_counter_any().fetch_add(st);
-    if (gbp::get_mark_warmup().load() == 1)
-      LOG(INFO) << sizeof(T) * len;
-    st = gbp::GetSystemTime();
+    // st = gbp::GetSystemTime() - st;
+    // gbp::debug::get_counter_any().fetch_add(st);
+    // if (gbp::get_mark_warmup().load() == 1)
+    //   LOG(INFO) << sizeof(T) * len;
+    // st = gbp::GetSystemTime();
     buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
                                     len * sizeof(T), fd_gbp_);
-    st = gbp::GetSystemTime() - st;
-    gbp::debug::get_counter_bpm().fetch_add(st);
+    // st = gbp::GetSystemTime() - st;
+    // gbp::debug::get_counter_bpm().fetch_add(st);
     return ret;
   }
 

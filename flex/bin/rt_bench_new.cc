@@ -88,14 +88,16 @@ class Req {
       return seastar::make_ready_future<>();
     }
 
-    start_[id] = std::chrono::system_clock::now();
+    // start_[id] = std::chrono::system_clock::now();
+    start_[id] = gbp::GetSystemTime();
     return ref
         .run_graph_db_query(
             server::query_param{reqs_[id % num_of_reqs_unique_]})
         .then_wrapped(
             [&, id](seastar::future<server::query_result>&& fut) mutable {
               auto result = fut.get0();
-              end_[id] = std::chrono::system_clock::now();
+              // end_[id] = std::chrono::system_clock::now();
+              end_[id] = gbp::GetSystemTime();
             })
         .then([&] { return do_query(ref); });
   }
@@ -116,18 +118,16 @@ class Req {
     for (size_t idx = 0; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
-      auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
-                     end_[idx] - start_[idx])
-                     .count();
+      // auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
+      //                end_[idx] - start_[idx])
+      //                .count();
+      auto tmp = end_[idx] - start_[idx];
       ts[id].emplace_back(tmp);
       vec[id] += tmp;
       count[id] += 1;
     }
-    std::vector<std::string> queries = {
-        "IC1", "IC2",  "IC3",  "IC4",  "IC5",  "IC6",  "IC7", "IC8",
-        "IC9", "IC10", "IC11", "IC12", "IC13", "IC14", "IS1", "IS2",
-        "IS3", "IS4",  "IS5",  "IS6",  "IS7",  "IU1",  "IU2", "IU3",
-        "IU4", "IU5",  "IU6",  "IU7",  "IU8"};
+    std::vector<std::string> queries = {"IS1", "IS2", "IS3", "IS4",
+                                        "IS5", "IS6", "IS7"};
     for (auto i = 0; i < vec.size(); ++i) {
       size_t sz = ts[i].size();
       if (sz > 0) {
@@ -204,8 +204,10 @@ class Req {
   size_t num_of_reqs_;
   size_t num_of_reqs_unique_;
   std::vector<std::string> reqs_;
-  std::vector<std::chrono::system_clock::time_point> start_;
-  std::vector<std::chrono::system_clock::time_point> end_;
+  // std::vector<std::chrono::system_clock::time_point> start_;
+  // std::vector<std::chrono::system_clock::time_point> end_;
+  std::vector<size_t> start_;
+  std::vector<size_t> end_;
 
   std::thread log_thread_;
   std::atomic<bool> logger_stop_ = false;
