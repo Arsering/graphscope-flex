@@ -77,8 +77,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   size_t str_len = input.size() - 1;
 
   std::vector<char> result_buffer;
-  if ((int) type != 4)
-    return result_buffer;
+
   gbp::get_counter_operation().fetch_add(1);
 
   Decoder decoder(str_data, str_len);
@@ -98,7 +97,6 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       app = apps_[type];
     }
   }
-
   if (app->Query(decoder, encoder)) {
     return result_buffer;
   }
