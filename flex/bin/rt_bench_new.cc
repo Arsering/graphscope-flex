@@ -285,7 +285,7 @@ int main(int argc, char** argv) {
   gbp::get_pool_size() = pool_size;
   LOG(INFO) << "pool_size = " << pool_size;
 #if OV
-  gbp::get_mark_mmapwarmup().store(1);
+  gbp::get_mark_mmapwarmup().store(0);
 #else
   gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
 #ifdef DEBUG
@@ -309,9 +309,9 @@ int main(int argc, char** argv) {
 
 #if !OV
   gbp::get_mark_warmup().store(0);
-  LOG(INFO) << "Warmup start";
-  gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
-  LOG(INFO) << "Warmup finish";
+  // LOG(INFO) << "Warmup start";
+  // gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  // LOG(INFO) << "Warmup finish";
   gbp::get_mark_warmup().store(1);
 #endif
 
