@@ -299,13 +299,13 @@ class StringColumn : public ColumnBase {
 #else
       for (size_t k = 0; k < basic_size_; ++k) {
         auto item = basic_buffer_.get(k);
-        std::string_view val = {&item.Obj<char>(), item.Size()};
+        std::string_view val = {item.Data(), item.Size()};
         tmp.set(k, offset, val);
         offset += val.size();
       }
       for (size_t k = 0; k < extra_size_; ++k) {
         auto item = extra_buffer_.get(k);
-        std::string_view val = {&item.Obj<char>(), item.Size()};
+        std::string_view val = {item.Data(), item.Size()};
         tmp.set(k + basic_size_, offset, val);
         offset += val.size();
       }

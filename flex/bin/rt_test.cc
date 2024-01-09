@@ -25,7 +25,6 @@
 #include <seastar/core/alien.hh>
 
 #include "flex/engines/graph_db/database/graph_db_session.h"
-#include "flex/utils/buffer_obj.h"
 
 namespace bpo = boost::program_options;
 using namespace std::chrono_literals;
