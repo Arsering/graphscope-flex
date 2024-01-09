@@ -31,7 +31,6 @@
 #include <string_view>
 
 #include "flex/graphscope_bufferpool/include/buffer_pool_manager.h"
-#include "flex/utils/buffer_obj.h"
 #include "glog/logging.h"
 
 namespace gs {
@@ -319,12 +318,17 @@ class mmap_array {
     CHECK_LE(idx + len, size_);
     size_t object_size = sizeof(T) * len;
     gbp::BufferObject ret(object_size);
-    char* value = ret.Data();
 
     buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
                                     len * sizeof(T), fd_gbp_);
     return ret;
   }
+
+  // const gbp::BufferObject get(size_t idx, size_t len = 1) const {
+  //   CHECK_LE(idx + len, size_);
+  //   return buffer_pool_manager_->GetObject(idx * sizeof(T), len * sizeof(T),
+  //                                          fd_gbp_);
+  // }
 
 #endif
 
@@ -452,7 +456,7 @@ class mmap_array<std::string_view> {
   gbp::BufferObject get(size_t idx) const {
     auto value = items_.get(idx);
     auto item = value.Obj<string_item>();
-    return std::move(data_.get(item.offset, item.length));
+    return data_.get(item.offset, item.length);
   }
 #endif
 

@@ -22,7 +22,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
 set(DEFAULT_BUILD_TYPE "Release")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
 
 add_compile_definitions(FLEX_VERSION="${FLEX_VERSION}")

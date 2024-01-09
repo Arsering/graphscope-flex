@@ -309,9 +309,9 @@ int main(int argc, char** argv) {
 
 #if !OV
   gbp::get_mark_warmup().store(0);
-  // LOG(INFO) << "Warmup start";
-  // gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
-  // LOG(INFO) << "Warmup finish";
+  LOG(INFO) << "Warmup start";
+  gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  LOG(INFO) << "Warmup finish";
   gbp::get_mark_warmup().store(1);
 #endif
 
