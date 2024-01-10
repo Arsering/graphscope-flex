@@ -34,7 +34,8 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define s_size_t signed long int
+#define OV true
+#define MMAP_ADVICE_l MADV_RANDOM
 
 inline void copy_file(const std::string& src, const std::string& dst) {
   if (!std::filesystem::exists(src)) {
@@ -314,21 +315,21 @@ class mmap_array {
     set(idx, val_obj, len);
   }
 
-  const gbp::BufferObject get(size_t idx, size_t len = 1) const {
-    CHECK_LE(idx + len, size_);
-    size_t object_size = sizeof(T) * len;
-    gbp::BufferObject ret(object_size);
-
-    buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
-                                    len * sizeof(T), fd_gbp_);
-    return ret;
-  }
-
   // const gbp::BufferObject get(size_t idx, size_t len = 1) const {
   //   CHECK_LE(idx + len, size_);
-  //   return buffer_pool_manager_->GetObject(idx * sizeof(T), len * sizeof(T),
-  //                                          fd_gbp_);
+  //   size_t object_size = sizeof(T) * len;
+  //   gbp::BufferObject ret(object_size);
+
+  //   buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
+  //                                   len * sizeof(T), fd_gbp_);
+  //   return ret;
   // }
+
+  const gbp::BufferObject get(size_t idx, size_t len = 1) const {
+    CHECK_LE(idx + len, size_);
+    return buffer_pool_manager_->GetObject(idx * sizeof(T), len * sizeof(T),
+                                           fd_gbp_);
+  }
 
 #endif
 
@@ -367,7 +368,7 @@ class mmap_array {
       LOG(INFO) << "Warmup file " << filename_;
       volatile int64_t sum = 0;
       for (gbp::page_id offset = 0; offset < size;
-           offset += PAGE_SIZE_BUFFER_POOL) {
+           offset += gbp::PAGE_SIZE_BUFFER_POOL) {
         sum += data[offset];
         if (++page_num_used == gbp::get_pool_size()) {
           LOG(INFO) << "pool is full";

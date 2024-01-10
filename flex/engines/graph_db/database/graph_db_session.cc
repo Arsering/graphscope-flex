@@ -77,7 +77,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   size_t str_len = input.size() - 1;
 
   std::vector<char> result_buffer;
-
+  if (type != 4)
+    return result_buffer;
   gbp::get_counter_operation().fetch_add(1);
 
   Decoder decoder(str_data, str_len);
@@ -97,7 +98,24 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       app = apps_[type];
     }
   }
+#ifdef DEBUG_1
+  gbp::debug::get_counter_malloc().store(0);
+  gbp::debug::get_counter_bpm().store(0);
+  gbp::debug::get_counter_copy().store(0);
+  gbp::debug::get_log_marker().store(1);
+  gbp::debug::get_counter_MAP_find().store(0);
+  gbp::debug::get_counter_any().store(0);
+
+  size_t ts = gbp::GetSystemTime();
+#endif
   if (app->Query(decoder, encoder)) {
+#ifdef DEBUG_1
+    ts = gbp::GetSystemTime() - ts;
+    LOG(INFO) << "profiling: [" << (int) type << "]["
+              << gbp::debug::get_counter_bpm().load() << " | "
+              << gbp::debug::get_counter_copy().load() << " | "
+              << gbp::debug::get_counter_any().load() << "]";
+#endif
     return result_buffer;
   }
 

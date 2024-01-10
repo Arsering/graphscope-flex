@@ -285,7 +285,7 @@ int main(int argc, char** argv) {
   gbp::get_pool_size() = pool_size;
   LOG(INFO) << "pool_size = " << pool_size;
 #if OV
-  gbp::get_mark_mmapwarmup().store(0);
+  gbp::get_mark_mmapwarmup().store(1);
 #else
   gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
 #ifdef DEBUG

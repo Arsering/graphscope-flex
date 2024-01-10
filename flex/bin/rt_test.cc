@@ -76,7 +76,7 @@ int test_vertex(gs::GraphDB& db, const std::string& csv_data_path) {
   gs::oid_t req = 933;
   gs::vid_t root{};
   auto txn = graph_session.GetReadTransaction();
-  s_size_t t0;
+  uint64_t t0;
 
 #if OV
   while (test_count > 0) {
@@ -120,7 +120,7 @@ int test_vertex(gs::GraphDB& db, const std::string& csv_data_path) {
   }
 #endif
 
-  LOG(INFO) << "test_vertex: success!! time = " << t0;
+  // LOG(INFO) << "test_vertex: success!! time = " << t0;
   return 0;
 }
 
