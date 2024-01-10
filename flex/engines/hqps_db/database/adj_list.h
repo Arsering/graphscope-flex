@@ -58,7 +58,8 @@
 //   std::array<LabelT, 3> label_triplet_;
 // };
 
-// // A subGraph is a view of a simple graph, with one src label and one dst label.
+// // A subGraph is a view of a simple graph, with one src label and one dst
+// label.
 // // Cound be empty.
 // template <typename LabelT, typename VID_T>
 // class SubGraph {
@@ -128,7 +129,8 @@
 //   }
 
 //   template <size_t... Is>
-//   inline result_tuple_t get_view(vid_t vid, std::index_sequence<Is...>) const {
+//   inline result_tuple_t get_view(vid_t vid, std::index_sequence<Is...>) const
+//   {
 //     if (vid == NONE) {
 //       return NullRecordCreator<result_tuple_t>::GetNull();
 //     }
@@ -153,7 +155,8 @@
 //   Adj() = default;
 //   ~Adj() = default;
 
-//   Adj(const Adj<T>& other) : neighbor_(other.neighbor_), prop_(other.prop_) {}
+//   Adj(const Adj<T>& other) : neighbor_(other.neighbor_), prop_(other.prop_)
+//   {}
 
 //   Adj(Adj<T>&& other)
 //       : neighbor_(other.neighbor_), prop_(std::move(other.prop_)) {}
@@ -210,7 +213,8 @@
 //           end1_(nullptr) {}
 //     Iterator(const nbr_t* begin0, const nbr_t* end0, const nbr_t* begin1,
 //              const nbr_t* end1)
-//         : cur_(), begin0_(begin0), end0_(end0), begin1_(begin1), end1_(end1) {
+//         : cur_(), begin0_(begin0), end0_(end0), begin1_(begin1), end1_(end1)
+//         {
 //       // probe for next;
 //       probe_for_next();
 //     }
@@ -307,7 +311,8 @@
 //                     slice1_.end());
 //   }
 //   Iterator end() const {
-//     return Iterator(slice0_.end(), slice0_.end(), slice1_.end(), slice1_.end());
+//     return Iterator(slice0_.end(), slice0_.end(), slice1_.end(),
+//     slice1_.end());
 //   }
 //   size_t size() const { return slice0_.size() + slice1_.size(); }
 
@@ -337,7 +342,8 @@
 //           end1_(nullptr) {}
 //     Iterator(const nbr_t* begin0, const nbr_t* end0, const nbr_t* begin1,
 //              const nbr_t* end1)
-//         : cur_(), begin0_(begin0), end0_(end0), begin1_(begin1), end1_(end1) {
+//         : cur_(), begin0_(begin0), end0_(end0), begin1_(begin1), end1_(end1)
+//         {
 //       probe_for_next();
 //     }
 
@@ -417,7 +423,8 @@
 //                     slice1_.end());
 //   }
 //   Iterator end() const {
-//     return Iterator(slice0_.end(), slice0_.end(), slice1_.end(), slice1_.end());
+//     return Iterator(slice0_.end(), slice0_.end(), slice1_.end(),
+//     slice1_.end());
 //   }
 //   size_t size() const { return slice0_.size() + slice1_.size(); }
 
@@ -528,7 +535,8 @@
 //         dynamic_cast<const typed_csr_base_t*>(csr);
 //     for (auto v : vids) {
 //       auto edges = casted_csr->get_edges(v);
-//       slices_.emplace_back(std::make_pair(casted_csr->get_edges(v), slice_t()));
+//       slices_.emplace_back(std::make_pair(casted_csr->get_edges(v),
+//       slice_t()));
 //     }
 //   }
 
@@ -543,7 +551,8 @@
 
 //     for (auto v : vids) {
 //       slices_.emplace_back(
-//           std::make_pair(casted_csr0->get_edges(v), casted_csr1->get_edges(v)));
+//           std::make_pair(casted_csr0->get_edges(v),
+//           casted_csr1->get_edges(v)));
 //     }
 //   }
 //   // move constructor
@@ -614,7 +623,8 @@
 //     return NbrList(list.data(), list.data() + list.size());
 //   }
 
-//   void put(std::vector<Nbr>&& list) { nbr_lists_.push_back(std::move(list)); }
+//   void put(std::vector<Nbr>&& list) { nbr_lists_.push_back(std::move(list));
+//   }
 
 //   size_t size() const { return nbr_lists_.size(); }
 

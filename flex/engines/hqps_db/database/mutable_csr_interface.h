@@ -90,7 +90,8 @@
 //   template <typename... T>
 //   using multi_prop_getter_t = mutable_csr_graph_impl::MultiPropGetter<T...>;
 
-//   using sub_graph_t = mutable_csr_graph_impl::SubGraph<label_id_t, vertex_id_t>;
+//   using sub_graph_t = mutable_csr_graph_impl::SubGraph<label_id_t,
+//   vertex_id_t>;
 
 //   static constexpr bool is_grape = true;
 
@@ -131,7 +132,8 @@
 //   }
 
 //   /**
-//    * @brief ScanVertices scans all vertices with the given label and calls the
+//    * @brief ScanVertices scans all vertices with the given label and calls
+//    the
 //    * given function on each vertex for filtering.
 //    * @tparam FUNC_T
 //    * @tparam SELECTOR
@@ -148,7 +150,8 @@
 //   }
 
 //   /**
-//    * @brief ScanVertices scans all vertices with the given label and calls the
+//    * @brief ScanVertices scans all vertices with the given label and calls
+//    the
 //    * given function on each vertex for filtering.
 //    * @tparam FUNC_T
 //    * @tparam SELECTOR
@@ -204,7 +207,8 @@
 //   }
 
 //   /**
-//    * @brief ScanVerticesWithoutProperty scans all vertices with the given label
+//    * @brief ScanVerticesWithoutProperty scans all vertices with the given
+//    label
 //    * and calls the given function on each vertex for filtering. With no
 //    * property.
 //    * @tparam FUNC_T
@@ -325,7 +329,8 @@
 //   }
 
 //   /**
-//    * @brief GetVertexPropsFromVidV2 gets the properties of the given vertices.
+//    * @brief GetVertexPropsFromVidV2 gets the properties of the given
+//    vertices.
 //    * Works for 2 labels.
 //    * @tparam T
 //    * @param vids
@@ -360,7 +365,8 @@
 //   }
 
 //   /**
-//    * @brief GetVertexPropsFromVidV2 gets the properties of the given vertices.
+//    * @brief GetVertexPropsFromVidV2 gets the properties of the given
+//    vertices.
 //    * Works for 2 labels.
 //    * @tparam T
 //    * @param vids
@@ -382,7 +388,8 @@
 //     for (auto label : labels) {
 //       CHECK(label < db_session_.schema().vertex_label_num());
 //       label_ids.emplace_back(label);
-//       // label_ids.emplace_back(db_session_.schema().get_vertex_label_id(label));
+//       //
+//       label_ids.emplace_back(db_session_.schema().get_vertex_label_id(label));
 //     }
 //     using column_tuple_t = std::tuple<std::shared_ptr<TypedRefColumn<T>>...>;
 //     std::vector<column_tuple_t> columns;
@@ -521,7 +528,8 @@
 //                                                  edge_label_id);
 //       return std::vector<sub_graph_t>{
 //           sub_graph_t{csr, {src_label_id, dst_label_id, edge_label_id}},
-//           sub_graph_t{other_csr, {dst_label_id, src_label_id, edge_label_id}}};
+//           sub_graph_t{other_csr, {dst_label_id, src_label_id,
+//           edge_label_id}}};
 //     } else {
 //       throw std::runtime_error("Not implemented - " + direction_str);
 //     }
@@ -575,7 +583,8 @@
 //                           direction_str, limit, prop_names);
 //   }
 
-//   std::pair<std::vector<vertex_id_t>, std::vector<size_t>> GetOtherVerticesV2(
+//   std::pair<std::vector<vertex_id_t>, std::vector<size_t>>
+//   GetOtherVerticesV2(
 //       const std::string& src_label, const std::string& dst_label,
 //       const std::string& edge_label, const std::vector<vertex_id_t>& vids,
 //       const std::string& direction_str, size_t limit) const {
@@ -583,12 +592,14 @@
 //     auto dst_label_id = db_session_.schema().get_vertex_label_id(dst_label);
 //     auto edge_label_id = db_session_.schema().get_edge_label_id(edge_label);
 
-//     return GetOtherVerticesV2(src_label_id, dst_label_id, edge_label_id, vids,
+//     return GetOtherVerticesV2(src_label_id, dst_label_id, edge_label_id,
+//     vids,
 //                               direction_str, limit);
 //   }
 
 //   // return the vids, and offset array.
-//   std::pair<std::vector<vertex_id_t>, std::vector<size_t>> GetOtherVerticesV2(
+//   std::pair<std::vector<vertex_id_t>, std::vector<size_t>>
+//   GetOtherVerticesV2(
 //       const label_id_t& src_label_id, const label_id_t& dst_label_id,
 //       const label_id_t& edge_label_id, const std::vector<vertex_id_t>& vids,
 //       const std::string& direction_str, size_t limit) const {
@@ -641,9 +652,11 @@
 //       }
 //     } else if (direction_str == "both" || direction_str == "Both" ||
 //                direction_str == "BOTH") {
-//       auto ie_csr = db_session_.graph().get_ie_csr(dst_label_id, src_label_id,
+//       auto ie_csr = db_session_.graph().get_ie_csr(dst_label_id,
+//       src_label_id,
 //                                                    edge_label_id);
-//       auto oe_csr = db_session_.graph().get_oe_csr(src_label_id, dst_label_id,
+//       auto oe_csr = db_session_.graph().get_oe_csr(src_label_id,
+//       dst_label_id,
 //                                                    edge_label_id);
 //       auto size = 0;
 //       for (auto i = 0; i < vids.size(); ++i) {
