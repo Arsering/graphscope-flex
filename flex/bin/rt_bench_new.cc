@@ -313,6 +313,8 @@ int main(int argc, char** argv) {
   gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
   LOG(INFO) << "Warmup finish";
   gbp::get_mark_warmup().store(1);
+  // gbp::debug::get_counter_CopyObj().store(0);
+  // gbp::debug::get_counter_RefObj().store(0);
 #endif
 
   std::string req_file = vm["req-file"].as<std::string>();
@@ -342,5 +344,9 @@ int main(int argc, char** argv) {
                    .count()
             << "\n";
   Req::get().output();
+  // LOG(INFO) << "CopyObj = " << gbp::debug::get_counter_CopyObj().load() << "
+  // | "
+  //           << "RefObj = " << gbp::debug::get_counter_RefObj().load();
+
   // std::cout << timer.get_time() / 1us << " microseconds\n";
 }

@@ -358,7 +358,6 @@ class MutableAdjlist {
   nbr_t* buffer_ = nullptr;
   std::atomic<int> size_;
   int capacity_;
-  // NBRs nbrs_;
   bool is_buffer_;
   mmap_array<nbr_t>* mmap_array_ = nullptr;
   size_t start_idx_;

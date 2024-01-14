@@ -34,7 +34,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV true
+#define OV false
 #define MMAP_ADVICE_l MADV_RANDOM
 
 inline void copy_file(const std::string& src, const std::string& dst) {
