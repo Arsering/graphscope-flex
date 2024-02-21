@@ -234,8 +234,10 @@ int main(int argc, char** argv) {
   tzset();
 
   size_t pool_size = 1024 * 1024 * 16;
-  auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
-  bpm->init(pool_size);
+
+  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size);
+
+  // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
 
   double t0 = -grape::GetCurrentTime();
   auto& db = gs::GraphDB::get();

@@ -289,8 +289,10 @@ int main(int argc, char** argv) {
 #if !OV
   pool_size = vm["buffer-pool-size"].as<uint64_t>();
   LOG(INFO) << "size of buffer pool = " << pool_size;
-  auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
-  bpm->init(pool_size);
+  // auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
+  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size);
+
+// gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
 #endif
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);

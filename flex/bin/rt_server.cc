@@ -83,6 +83,8 @@ int main(int argc, char** argv) {
   pid_file << getpid();
   pid_file.flush();
   pid_file.close();
+  gbp::get_query_file(log_data_path);
+  gbp::get_result_file(log_data_path);
   sleep(10);
 
   setenv("TZ", "Asia/Shanghai", 1);
@@ -95,8 +97,10 @@ int main(int argc, char** argv) {
 
 #if !OV
   size_t pool_size = 1024 * 1024 * 6;
-  auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
-  bpm->init(pool_size);
+  // auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
+  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size);
+
+  // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
 #endif
 
   // init access logger

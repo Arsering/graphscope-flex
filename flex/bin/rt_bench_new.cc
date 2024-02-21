@@ -57,6 +57,7 @@ class Req {
     std::vector<char> buffer(size);
     std::vector<char> tmp(size);
     size_t index = 0;
+    size_t log_count = 0;
 
     while (true) {
       fi.read(buffer.data(), size);
@@ -68,9 +69,14 @@ class Req {
         if (index >= 4 && tmp[index - 1] == '#') {
           if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
               tmp[index - 2] == 'r') {
-            reqs_.emplace_back(
-                std::string(tmp.begin(), tmp.begin() + index - 4));
-
+            if (log_count % 2 == 0)
+              reqs_.emplace_back(
+                  std::string(tmp.begin(), tmp.begin() + index - 4));
+            else {
+              auto tmp_str = std::string(tmp.begin(), tmp.begin() + index - 4);
+              req_ids_.emplace_back(std::stoull(tmp_str));
+            }
+            log_count++;
             index = 0;
           }
         }
@@ -88,14 +94,15 @@ class Req {
       return seastar::make_ready_future<>();
     }
 
-    start_[id] = std::chrono::system_clock::now();
+    start_[id] = gbp::GetSystemTime();
+    gbp::debug::get_query_id().store(req_ids_[id % num_of_reqs_unique_]);
     return ref
         .run_graph_db_query(
             server::query_param{reqs_[id % num_of_reqs_unique_]})
         .then_wrapped(
             [&, id](seastar::future<server::query_result>&& fut) mutable {
               auto result = fut.get0();
-              end_[id] = std::chrono::system_clock::now();
+              end_[id] = gbp::GetSystemTime();
             })
         .then([&] { return do_query(ref); });
   }
@@ -110,19 +117,26 @@ class Req {
   }
 
   void output() {
+    // std::ofstream profiling_file(log_data_path + "/profiling.log",
+    //                              std::ios::out);
+    // profiling_file << "LOG Format: Query Type | latency (OV)" << std::endl;
+
     std::vector<long long> vec(29, 0);
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
     for (size_t idx = 0; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
-      auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
-                     end_[idx] - start_[idx])
-                     .count();
+      // auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
+      //                end_[idx] - start_[idx])
+      //                .count();
+      auto tmp = end_[idx] - start_[idx];
+      // profiling_file << id << " | " << tmp << std::endl;
       ts[id].emplace_back(tmp);
       vec[id] += tmp;
       count[id] += 1;
     }
+
     std::vector<std::string> queries = {
         "IC1", "IC2",  "IC3",  "IC4",  "IC5",  "IC6",  "IC7", "IC8",
         "IC9", "IC10", "IC11", "IC12", "IC13", "IC14", "IS1", "IS2",
@@ -145,6 +159,7 @@ class Req {
     }
     std::cout << "unit: MICROSECONDS\n";
   }
+  void LoggerStop() { logger_stop_ = true; }
 
  private:
   Req() : cur_(0), warmup_num_(0) {}
@@ -204,8 +219,11 @@ class Req {
   size_t num_of_reqs_;
   size_t num_of_reqs_unique_;
   std::vector<std::string> reqs_;
-  std::vector<std::chrono::system_clock::time_point> start_;
-  std::vector<std::chrono::system_clock::time_point> end_;
+  std::vector<size_t> req_ids_;
+  // std::vector<std::chrono::system_clock::time_point> start_;
+  // std::vector<std::chrono::system_clock::time_point> end_;
+  std::vector<size_t> start_;
+  std::vector<size_t> end_;
 
   std::thread log_thread_;
   std::atomic<bool> logger_stop_ = false;
@@ -277,6 +295,8 @@ int main(int argc, char** argv) {
   pid_file << getpid();
   pid_file.flush();
   pid_file.close();
+  gbp::get_query_file(log_data_path);
+  gbp::get_result_file(log_data_path);
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
@@ -287,7 +307,9 @@ int main(int argc, char** argv) {
 #if OV
   gbp::get_mark_mmapwarmup().store(1);
 #else
-  gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
+  // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
+  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size);
+
 #ifdef DEBUG
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
 #endif
@@ -343,6 +365,7 @@ int main(int argc, char** argv) {
                                                                      begin)
                    .count()
             << "\n";
+  Req::get().LoggerStop();
   Req::get().output();
   // LOG(INFO) << "CopyObj = " << gbp::debug::get_counter_CopyObj().load() << "
   // | "

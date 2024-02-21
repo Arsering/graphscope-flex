@@ -79,6 +79,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   std::vector<char> result_buffer;
   // if (type != 7)
   //   return result_buffer;
+  static std::atomic<size_t> query_id = 0;
   gbp::get_counter_operation().fetch_add(1);
 
   Decoder decoder(str_data, str_len);
@@ -108,6 +109,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 
   size_t ts = gbp::GetSystemTime();
 #endif
+  LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
+
   if (app->Query(decoder, encoder)) {
 #ifdef DEBUG_1
     ts = gbp::GetSystemTime() - ts;
@@ -116,6 +119,22 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << gbp::debug::get_counter_copy().load() << " | "
               << gbp::debug::get_counter_any().load() << "]";
 #endif
+
+    std::string_view output{result_buffer.data(), result_buffer.size()};
+    size_t cur_query_id = query_id.fetch_add(1);
+    gbp::debug::get_query_id().store(cur_query_id);
+    if (cur_query_id < 100) {
+      std::lock_guard lock(gbp::debug::get_file_lock());
+      gbp::get_query_file()
+          << input << "eor#" << gbp::debug::get_query_id().load() << "eor#";
+      gbp::get_result_file()
+          << output << "eor#" << gbp::debug::get_query_id().load() << "eor#";
+    } else if (cur_query_id == 100) {
+      gbp::get_query_file().flush();
+      gbp::get_result_file().flush();
+      gbp::get_query_file().close();
+      gbp::get_result_file().close();
+    }
     return result_buffer;
   }
 

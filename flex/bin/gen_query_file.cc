@@ -70,7 +70,7 @@ std::vector<std::string> gen_query(const std::string& csv_dir_path,
       break;
 
     encoder.put_long(stol(words[0]));
-    encoder.put_byte(query_id);
+    encoder.put_byte(query_id + 14);
     result_buffer.emplace_back(std::string(tmp.begin(), tmp.end()));
     tmp.clear();
   }

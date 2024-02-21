@@ -524,21 +524,21 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
       : mmap_array_(slice.get_mmap_array()),
         buffer_(slice.get_buffer()),
         start_idx_(slice.get_start_idx()),
-        cur_idx_(start_idx_),
+        cur_idx_(0),
         size_(slice.size()) {}
   explicit TypedMutableCsrConstEdgeIter(const mmap_array<nbr_t>* ma,
                                         size_t start_idx, size_t size)
       : mmap_array_(ma),
         buffer_(nullptr),
         start_idx_(start_idx),
-        cur_idx_(start_idx_),
+        cur_idx_(0),
         size_(size) {}
   explicit TypedMutableCsrConstEdgeIter(const nbr_t* buffer, size_t start_idx,
                                         size_t size)
       : mmap_array_(nullptr),
         buffer_(buffer),
         start_idx_(start_idx),
-        cur_idx_(start_idx_),
+        cur_idx_(0),
         size_(size) {}
   ~TypedMutableCsrConstEdgeIter() = default;
 
@@ -577,7 +577,6 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
       return gbp::BufferObject(
           sizeof(EDATA_T), (char*) (&(buffer_[start_idx_ + cur_idx_].data)));
     }
-
     // return buf;
   }
 
@@ -629,20 +628,20 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
       : mmap_array_(slice.get_mmap_array()),
         buffer_(slice.get_buffer()),
         start_idx_(slice.get_start_idx()),
-        cur_idx_(start_idx_),
+        cur_idx_(0),
         size_(slice.size()) {}
   explicit TypedMutableCsrEdgeIter(mmap_array<nbr_t>* ma, size_t start_idx,
                                    size_t size)
       : mmap_array_(ma),
         buffer_(nullptr),
         start_idx_(start_idx),
-        cur_idx_(start_idx_),
+        cur_idx_(0),
         size_(size) {}
   explicit TypedMutableCsrEdgeIter(nbr_t* buffer, size_t start_idx, size_t size)
       : mmap_array_(nullptr),
         buffer_(buffer),
         start_idx_(start_idx),
-        cur_idx_(start_idx_),
+        cur_idx_(0),
         size_(size) {}
   ~TypedMutableCsrEdgeIter() = default;
 
