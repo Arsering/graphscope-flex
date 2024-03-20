@@ -77,7 +77,7 @@ class mmap_array {
         }
       }
     } else {
-      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT);
+      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT, 0777);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
       if (size_ == 0) {

@@ -28,121 +28,127 @@ class LDBCTimeStampParser : public arrow::TimestampParser {
   LDBCTimeStampParser() = default;
 
   ~LDBCTimeStampParser() override {}
-
+#if defined(ARROW_VERSION) && ARROW_VERSION < 8000000
   bool operator()(const char* s, size_t length, arrow::TimeUnit::type out_unit,
-                  int64_t* out) const override {
-    using seconds_type = std::chrono::duration<arrow::TimestampType::c_type>;
+                  int64_t* out) const override{
+#else
+  bool operator()(const char* s, size_t length, arrow::TimeUnit::type out_unit,
+                  int64_t* out,
+                  bool* out_zone_offset_present = NULLPTR) const override {
+#endif
+      using seconds_type = std::chrono::duration<arrow::TimestampType::c_type>;
 
-    // We allow the following formats for all units:
-    // - "YYYY-MM-DD"
-    // - "YYYY-MM-DD[ T]hhZ?"
-    // - "YYYY-MM-DD[ T]hh:mmZ?"
-    // - "YYYY-MM-DD[ T]hh:mm:ssZ?"
-    //
-    // We allow the following formats for unit == MILLI, MICRO, or NANO:
-    // - "YYYY-MM-DD[ T]hh:mm:ss.s{1,3}Z?"
-    //
-    // We allow the following formats for unit == MICRO, or NANO:
-    // - "YYYY-MM-DD[ T]hh:mm:ss.s{4,6}Z?"
-    //
-    // We allow the following formats for unit == NANO:
-    // - "YYYY-MM-DD[ T]hh:mm:ss.s{7,9}Z?"
-    //
-    // UTC is always assumed, and the DataType's timezone is ignored.
-    //
+  // We allow the following formats for all units:
+  // - "YYYY-MM-DD"
+  // - "YYYY-MM-DD[ T]hhZ?"
+  // - "YYYY-MM-DD[ T]hh:mmZ?"
+  // - "YYYY-MM-DD[ T]hh:mm:ssZ?"
+  //
+  // We allow the following formats for unit == MILLI, MICRO, or NANO:
+  // - "YYYY-MM-DD[ T]hh:mm:ss.s{1,3}Z?"
+  //
+  // We allow the following formats for unit == MICRO, or NANO:
+  // - "YYYY-MM-DD[ T]hh:mm:ss.s{4,6}Z?"
+  //
+  // We allow the following formats for unit == NANO:
+  // - "YYYY-MM-DD[ T]hh:mm:ss.s{7,9}Z?"
+  //
+  // UTC is always assumed, and the DataType's timezone is ignored.
+  //
 
-    if (ARROW_PREDICT_FALSE(length < 10))
-      return false;
+  if (ARROW_PREDICT_FALSE(length < 10))
+    return false;
 
-    seconds_type seconds_since_epoch;
-    if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseYYYY_MM_DD(
-            s, &seconds_since_epoch))) {
-      return false;
-    }
+  seconds_type seconds_since_epoch;
+  if (ARROW_PREDICT_FALSE(
+          !arrow::internal::detail::ParseYYYY_MM_DD(s, &seconds_since_epoch))) {
+    return false;
+  }
 
-    if (length == 10) {
-      *out =
-          arrow::util::CastSecondsToUnit(out_unit, seconds_since_epoch.count());
-      return true;
-    }
-
-    if (ARROW_PREDICT_FALSE(s[10] != ' ') &&
-        ARROW_PREDICT_FALSE(s[10] != 'T')) {
-      return false;
-    }
-
-    if (s[length - 1] == 'Z') {
-      --length;
-    }
-
-    // if the back the s is '+0000', we should ignore it
-    auto time_zones = std::string_view(s + length - 5, 5);
-    if (time_zones == "+0000") {
-      length -= 5;
-    }
-
-    seconds_type seconds_since_midnight;
-    switch (length) {
-    case 13:  // YYYY-MM-DD[ T]hh
-      if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseHH(
-              s + 11, &seconds_since_midnight))) {
-        return false;
-      }
-      break;
-    case 16:  // YYYY-MM-DD[ T]hh:mm
-      if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseHH_MM(
-              s + 11, &seconds_since_midnight))) {
-        return false;
-      }
-      break;
-    case 19:  // YYYY-MM-DD[ T]hh:mm:ss
-    case 21:  // YYYY-MM-DD[ T]hh:mm:ss.s
-    case 22:  // YYYY-MM-DD[ T]hh:mm:ss.ss
-    case 23:  // YYYY-MM-DD[ T]hh:mm:ss.sss
-    case 24:  // YYYY-MM-DD[ T]hh:mm:ss.ssss
-    case 25:  // YYYY-MM-DD[ T]hh:mm:ss.sssss
-    case 26:  // YYYY-MM-DD[ T]hh:mm:ss.ssssss
-    case 27:  // YYYY-MM-DD[ T]hh:mm:ss.sssssss
-    case 28:  // YYYY-MM-DD[ T]hh:mm:ss.ssssssss
-    case 29:  // YYYY-MM-DD[ T]hh:mm:ss.sssssssss
-      if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseHH_MM_SS(
-              s + 11, &seconds_since_midnight))) {
-        return false;
-      }
-      break;
-    default:
-      LOG(ERROR) << "unsupported length: " << length;
-      return false;
-    }
-
-    seconds_since_epoch += seconds_since_midnight;
-
-    if (length <= 19) {
-      *out =
-          arrow::util::CastSecondsToUnit(out_unit, seconds_since_epoch.count());
-      return true;
-    }
-
-    if (ARROW_PREDICT_FALSE(s[19] != '.')) {
-      return false;
-    }
-
-    uint32_t subseconds = 0;
-    if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseSubSeconds(
-            s + 20, length - 20, out_unit, &subseconds))) {
-      return false;
-    }
-
+  if (length == 10) {
     *out =
-        arrow::util::CastSecondsToUnit(out_unit, seconds_since_epoch.count()) +
-        subseconds;
+        arrow::util::CastSecondsToUnit(out_unit, seconds_since_epoch.count());
     return true;
   }
 
-  virtual const char* kind() const override { return "LDBC timestamp parser"; }
+  if (ARROW_PREDICT_FALSE(s[10] != ' ') && ARROW_PREDICT_FALSE(s[10] != 'T')) {
+    return false;
+  }
 
-  virtual const char* format() const override { return "EmptyFormat"; }
-};
+  if (s[length - 1] == 'Z') {
+    --length;
+  }
+
+  // if the back the s is '+0000', we should ignore it
+  auto time_zones = std::string_view(s + length - 5, 5);
+  if (time_zones == "+0000") {
+    length -= 5;
+  }
+
+  seconds_type seconds_since_midnight;
+  switch (length) {
+  case 13:  // YYYY-MM-DD[ T]hh
+    if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseHH(
+            s + 11, &seconds_since_midnight))) {
+      return false;
+    }
+    break;
+  case 16:  // YYYY-MM-DD[ T]hh:mm
+    if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseHH_MM(
+            s + 11, &seconds_since_midnight))) {
+      return false;
+    }
+    break;
+  case 19:  // YYYY-MM-DD[ T]hh:mm:ss
+  case 21:  // YYYY-MM-DD[ T]hh:mm:ss.s
+  case 22:  // YYYY-MM-DD[ T]hh:mm:ss.ss
+  case 23:  // YYYY-MM-DD[ T]hh:mm:ss.sss
+  case 24:  // YYYY-MM-DD[ T]hh:mm:ss.ssss
+  case 25:  // YYYY-MM-DD[ T]hh:mm:ss.sssss
+  case 26:  // YYYY-MM-DD[ T]hh:mm:ss.ssssss
+  case 27:  // YYYY-MM-DD[ T]hh:mm:ss.sssssss
+  case 28:  // YYYY-MM-DD[ T]hh:mm:ss.ssssssss
+  case 29:  // YYYY-MM-DD[ T]hh:mm:ss.sssssssss
+    if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseHH_MM_SS(
+            s + 11, &seconds_since_midnight))) {
+      return false;
+    }
+    break;
+  default:
+    LOG(ERROR) << "unsupported length: " << length;
+    return false;
+  }
+
+  seconds_since_epoch += seconds_since_midnight;
+
+  if (length <= 19) {
+    *out =
+        arrow::util::CastSecondsToUnit(out_unit, seconds_since_epoch.count());
+    return true;
+  }
+
+  if (ARROW_PREDICT_FALSE(s[19] != '.')) {
+    return false;
+  }
+
+  uint32_t subseconds = 0;
+  if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseSubSeconds(
+          s + 20, length - 20, out_unit, &subseconds))) {
+    return false;
+  }
+
+  *out = arrow::util::CastSecondsToUnit(out_unit, seconds_since_epoch.count()) +
+         subseconds;
+  return true;
+}
+
+virtual const char*
+kind() const override {
+  return "LDBC timestamp parser";
+}
+
+virtual const char* format() const override { return "EmptyFormat"; }
+};  // namespace gs
 
 // convert c++ type to arrow type. support other types likes emptyType, Date
 template <typename T>

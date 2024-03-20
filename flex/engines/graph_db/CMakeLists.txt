@@ -4,7 +4,9 @@ file(GLOB_RECURSE GRAPH_DB_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/app/*.cc"
 add_library(flex_graph_db SHARED ${GRAPH_DB_SRC_FILES})
 
 target_link_libraries(flex_graph_db flex_rt_mutable_graph flex_utils ${GLOG_LIBRARIES} ${LIBGRAPELITE_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-
+if (BUILD_HQPS)
+        target_link_libraries(flex_graph_db hqps_plan_proto)
+endif()
 install(TARGETS flex_graph_db
         RUNTIME DESTINATION bin
         ARCHIVE DESTINATION lib
