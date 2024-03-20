@@ -17,8 +17,10 @@ option(BUILD_DOC "Whether to build doc" ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 set(DEFAULT_BUILD_TYPE "Release")
+set(CMAKE_CXX_COMPILER clang++-13)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
 
 
@@ -27,10 +29,21 @@ add_compile_definitions(FLEX_VERSION="${FLEX_VERSION}")
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
 else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Werror -Wl,-rpath,$ORIGIN")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Wl,-rpath,$ORIGIN") # 删除了-Werror
 endif ()
 
+# set(CMAKE_CXX_COMPILER clang++-13)  # 设置 MPI C++ 编译器
+# set(MPI_CXX_INCLUDE_DIRS /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi)  # 设置 MPI C++ 头文件目录
+# set(MPI_CXX_LIBRARIES /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so)   # 设置 MPI C++ 库文件路径
+# set(PATH "/usr/lib/x86_64-linux-gnu/" ${PATH})
+# message(STATUS ${CMAKE_PREFIX_PATH})
+# message(STATUS ${CMAKE_FRAMEWORK_PATH})
+# message(STATUS ${CMAKE_APPBUNDLE_PATH})
+# message(STATUS ${PATH})
+
 find_package(MPI REQUIRED)
+# set(MPI_CXX_INCLUDE_PATH /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/usr/lib/x86_64-linux-gnu/openmpi/include)
+# message(FATAL_ERROR ${MPI_CXX_INCLUDE_PATH})
 include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
 
 find_package(libgrapelite REQUIRED)
@@ -38,6 +51,12 @@ include_directories(SYSTEM ${LIBGRAPELITE_INCLUDE_DIRS})
 include_directories(SYSTEM ${LIBGRAPELITE_INCLUDE_DIRS}/grape/analytical_apps)
 
 # find Threads------------------------------------------------------------------
+# set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+# set(CMAKE_HAVE_THREADS_LIBRARY 1)
+# set(CMAKE_USE_WIN32_THREADS_INIT 0)
+# set(CMAKE_USE_PTHREADS_INIT 1)
+# set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
 find_package(Threads REQUIRED)
 
@@ -67,6 +86,7 @@ include("cmake/FindArrow.cmake")
 if (NOT ARROW_FOUND)
     message(FATAL_ERROR "arrow not found, please install the arrow library")
 else ()
+    # message(FATAL_ERROR ${ARROW_INCLUDE_DIRS})
     include_directories(SYSTEM ${ARROW_INCLUDE_DIRS})
     if (TARGET arrow_shared)
         set(ARROW_SHARED_LIB arrow_shared)

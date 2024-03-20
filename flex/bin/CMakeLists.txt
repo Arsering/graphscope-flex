@@ -1,8 +1,39 @@
 find_package(Hiactor)
-
+set(WITH_TRICACHE OFF)
 if(Hiactor_FOUND)
         add_executable(rt_server rt_server.cc)
         target_link_libraries(rt_server flex_utils flex_rt_mutable_graph flex_graph_db flex_server)
+
+       
+
+        if(WITH_TRICACHE)
+                target_link_libraries(rt_server pthread)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")  # 设置 OpenMP 编译选项
+                find_package(OpenMP REQUIRED)  # 查找 OpenMP
+                target_link_libraries(rt_server Threads::Threads OpenMP::OpenMP_CXX)
+                # if(NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+                #         message(FATAL_ERROR "TriCache requires Clang 13.0.1.")
+                # endif()
+                message(STATUS "Enabling TriCache.")
+                set(CMAKE_AR llvm-ar-13)
+                set(CMAKE_RANLIB llvm-ranlib-13)
+
+                target_compile_options(rt_server PUBLIC -flto=thin -fpass-plugin=/data-1/yichengzhang/data/TriCache_space/TriCache/build/llvm-plugin/TriCacheInstrument/TriCacheInstrument.so -fpass-plugin=/data-1/yichengzhang/data/TriCache_space/TriCache/build/llvm-plugin/TriCacheAlloc/TriCacheAlloc.so)
+                target_link_directories(rt_server PUBLIC /data-1/yichengzhang/data/TriCache_space/TriCache)
+
+                target_link_libraries(rt_server -flto=thin cache)
+
+                #这里Tricache link了一遍了这边还要link一遍吗？
+                find_package(PkgConfig)
+                pkg_check_modules(SPDK REQUIRED spdk_nvme spdk_env_dpdk spdk_syslibs)
+                link_directories(${SPDK_LIBRARY_DIRS})
+                message("(${SPDK_INCLUDE_DIRS})")
+                message("(${SPDK_LIBRARIES_DIRS})")
+                message("(${SPDK_LIBRARIES})")
+                target_link_directories(rt_server PUBLIC ${SPDK_LIBRARY_DIRS})
+                target_link_libraries(rt_server -Wl,--whole-archive ${SPDK_LIBRARIES} -Wl,--no-whole-archive)
+                target_link_libraries(rt_server boost_fiber boost_context boost_thread boost_filesystem boost_atomic numa dl)
+        endif()
 
         install(TARGETS rt_server
                 RUNTIME DESTINATION bin

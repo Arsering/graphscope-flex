@@ -1,7 +1,8 @@
 find_package (Hiactor)
+# message(FATAL_ERROR ${Hiactor_CODEGEN_CMAKE_FILE})
 if (Hiactor_FOUND)
+#   set(Hiactor_CODEGEN_CMAKE_FILE /usr/local/bin/hiactor_codegen/ActorAutoGen.cmake)
   include (${Hiactor_CODEGEN_CMAKE_FILE})
-
   hiactor_codegen (server_actor_autogen server_actor_autogen_files
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/
         INCLUDE_PATHS ${Hiactor_INCLUDE_DIR},${CMAKE_CURRENT_SOURCE_DIR}/../../../)
