@@ -8,7 +8,7 @@ if (Hiactor_FOUND)
 
   if (NOT BUILD_HQPS)
     list(FILTER server_actor_autogen_files EXCLUDE REGEX ".*admin.*")
-    list(FILTER server_actor_autogen_files EXCLUDE REGEX ".*codegen.*")
+    list(FILTER server_actor_autogen_files EXCLUDE REGEX ".*codegen*")
   endif ()
 
   # get all .cc files in current directory, except for generated/
@@ -20,6 +20,7 @@ if (Hiactor_FOUND)
     list(FILTER SERVER_FILES EXCLUDE REGEX ".*hqps*")
     list(FILTER SERVER_FILES EXCLUDE REGEX ".*codegen*")
     list(FILTER SERVER_FILES EXCLUDE REGEX ".*workdir_manipulator*")
+    list(FILTER SERVER_FILES EXCLUDE REGEX ".*stored_procedure*")
   endif ()
 
   add_library(flex_server STATIC ${SERVER_FILES} ${server_actor_autogen_files})

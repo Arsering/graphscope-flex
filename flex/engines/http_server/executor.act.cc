@@ -17,8 +17,10 @@
 
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/engines/graph_db/database/graph_db_session.h"
+#ifdef BUILD_HQPS
 #include "flex/engines/http_server/codegen_proxy.h"
 #include "flex/engines/http_server/stored_procedure.h"
+#endif
 
 #include <seastar/core/print.hh>
 
@@ -48,6 +50,7 @@ seastar::future<query_result> executor::run_graph_db_query(
 // run_query_for stored_procedure
 seastar::future<query_result> executor::run_hqps_procedure_query(
     query_param&& param) {
+#ifdef BUILD_HQPS
   auto& str = param.content;
   const char* str_data = str.data();
   size_t str_length = str.size();
@@ -69,10 +72,15 @@ seastar::future<query_result> executor::run_hqps_procedure_query(
         seastar::sstring content(tem_str.data(), tem_str.size());
         return seastar::make_ready_future<query_result>(std::move(content));
       });
+#else
+  return seastar::make_exception_future<query_result>(
+      std::runtime_error("HQPS not enabled"));
+#endif
 }
 
 seastar::future<query_result> executor::run_hqps_adhoc_query(
     query_param&& param) {
+#ifdef BUILD_HQPS
   LOG(INFO) << "Run adhoc query";
   // The received query's pay load shoud be able to deserialze to physical plan
   auto& str = param.content;
@@ -122,6 +130,10 @@ seastar::future<query_result> executor::run_hqps_adhoc_query(
 
   seastar::sstring content = server::load_and_run(job_id, lib_path);
   return seastar::make_ready_future<query_result>(std::move(content));
+#else
+  return seastar::make_exception_future<query_result>(
+      std::runtime_error("HQPS not enabled"));
+#endif
 }
 
 }  // namespace server

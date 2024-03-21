@@ -19,7 +19,9 @@ limitations under the License.
 #include <string>
 
 #include "flex/codegen/src/pb_parser/internal_struct.h"
+#ifdef BUILD_HQPS
 #include "proto_generated_gie/physical.pb.h"
+#endif
 
 #include "glog/logging.h"
 namespace gs {
