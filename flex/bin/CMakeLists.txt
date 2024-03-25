@@ -1,5 +1,5 @@
 find_package(Hiactor)
-set(WITH_TRICACHE OFF)
+set(WITH_TRICACHE ON)
 if(Hiactor_FOUND)
         add_executable(rt_server rt_server.cc)
         target_link_libraries(rt_server flex_utils flex_rt_mutable_graph flex_graph_db flex_server)
@@ -17,9 +17,9 @@ if(Hiactor_FOUND)
                 message(STATUS "Enabling TriCache.")
                 set(CMAKE_AR llvm-ar-13)
                 set(CMAKE_RANLIB llvm-ranlib-13)
-
-                target_compile_options(rt_server PUBLIC -flto=thin -fpass-plugin=/data-1/yichengzhang/data/TriCache_space/TriCache/build/llvm-plugin/TriCacheInstrument/TriCacheInstrument.so -fpass-plugin=/data-1/yichengzhang/data/TriCache_space/TriCache/build/llvm-plugin/TriCacheAlloc/TriCacheAlloc.so)
-                target_link_directories(rt_server PUBLIC /data-1/yichengzhang/data/TriCache_space/TriCache)
+                set(TRICACHE_DIR /data-1/yichengzhang/data/TriCache_space/TriCache/build CACHE STRING "build directory of TriCache")
+                target_compile_options(rt_server PUBLIC -flto=thin -fpass-plugin=${TRICACHE_DIR}/llvm-plugin/TriCacheInstrument/TriCacheInstrument.so -fpass-plugin=${TRICACHE_DIR}/llvm-plugin/TriCacheAlloc/TriCacheAlloc.so)
+                target_link_directories(rt_server PUBLIC ${TRICACHE_DIR})
 
                 target_link_libraries(rt_server -flto=thin cache)
 
