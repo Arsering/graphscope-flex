@@ -235,7 +235,7 @@ int main(int argc, char** argv) {
 
   size_t pool_size = 1024 * 1024 * 16;
 
-  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size);
+  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size, 200);
 
   // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
 

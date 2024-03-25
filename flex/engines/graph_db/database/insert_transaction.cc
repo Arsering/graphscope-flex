@@ -175,7 +175,7 @@ void InsertTransaction::clear() {
   timestamp_ = std::numeric_limits<timestamp_t>::max();
 }
 
-#define likely(x) __builtin_expect(!!(x), 1)
+// #define likely(x) __builtin_expect(!!(x), 1)
 
 bool InsertTransaction::get_vertex_with_retries(MutablePropertyFragment& graph,
                                                 label_t label, oid_t oid,

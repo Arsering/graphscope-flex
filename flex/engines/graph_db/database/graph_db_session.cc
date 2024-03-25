@@ -69,7 +69,7 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
       db_.graph().lf_indexers_[label].get_keys(), StorageStrategy::kMem);
 }
 
-#define likely(x) __builtin_expect(!!(x), 1)
+// #define likely(x) __builtin_expect(!!(x), 1)
 
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
   uint8_t type = input.back();

@@ -308,7 +308,7 @@ int main(int argc, char** argv) {
   gbp::get_mark_mmapwarmup().store(1);
 #else
   // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
-  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size);
+  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size, 200);
 
 #ifdef DEBUG
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
