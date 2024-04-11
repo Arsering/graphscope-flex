@@ -154,19 +154,15 @@ class mmap_array {
         fd_gbp_ = -1;
         size_ = 0;
       } else {
-        // fd_ = ::open(filename.c_str(), O_RDONLY | O_DIRECT);
         fd_gbp_ = buffer_pool_manager_->OpenFile(filename, O_RDONLY | O_DIRECT);
         size_t file_size = std::filesystem::file_size(filename);
         size_ = file_size / sizeof(T);
-        // fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
       }
     } else {
-      // fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT | O_DIRECT);
       fd_gbp_ =
           buffer_pool_manager_->OpenFile(filename, O_RDWR | O_CREAT | O_DIRECT);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
-      // fd_inner_ = buffer_pool_manager_->RegisterFile(fd_);
     }
   }
 #endif
@@ -302,7 +298,6 @@ class mmap_array {
 #else
   void set(size_t idx, const T& val, size_t len = 1) {
     CHECK_LE(idx + len, size_);
-    // memcpy((char*) (data_ + idx), &val, sizeof(T) * len);
 
     size_t object_size = sizeof(T) * len;
     buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(&val),
@@ -311,7 +306,7 @@ class mmap_array {
 
   void set(size_t idx, const gbp::BufferObject& val, size_t len = 1) {
     CHECK_LE(idx + len, size_);
-    auto& val_obj = gbp::Decode<T>(val);
+    auto& val_obj = val.Decode<T>();
     set(idx, val_obj, len);
   }
 
@@ -438,7 +433,8 @@ class mmap_array<std::string_view> {
   }
 #else
   void set(size_t idx, size_t offset, const std::string_view& val) {
-    items_.set(idx, {offset, static_cast<uint32_t>(val.size())});
+    string_item string_item_obj = {offset, static_cast<uint32_t>(val.size())};
+    items_.set(idx, std::move(string_item_obj));
     data_.set(offset, *(val.data()), val.size());
     // memcpy(data_.data() + offset, val.data(), val.size());
   }
@@ -459,6 +455,7 @@ class mmap_array<std::string_view> {
     auto item = value.Obj<string_item>();
     return data_.get(item.offset, item.length);
   }
+
 #endif
 
   size_t get_size_in_byte() const {

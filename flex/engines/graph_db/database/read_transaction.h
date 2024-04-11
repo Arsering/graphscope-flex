@@ -23,7 +23,6 @@
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/storages/rt_mutable_graph/types.h"
 
-
 namespace gs {
 
 class MutablePropertyFragment;
@@ -152,7 +151,8 @@ class SingleGraphView {
 #else
   bool exist(vid_t v) const {
     auto item = csr_.get_edge(v);
-    return (gbp::Decode<nbr_t>(item).timestamp.load() <= timestamp_);
+    return (gbp::BufferObject::Decode<nbr_t>(item).timestamp.load() <=
+            timestamp_);
   }
 
   const gbp::BufferObject get_edge(vid_t v) const { return csr_.get_edge(v); }

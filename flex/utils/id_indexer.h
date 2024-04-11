@@ -202,10 +202,10 @@ class LFIndexer {
 #else
     while (true) {
       auto item1 = indices_.get(index);
-      if (gbp::Decode<INDEX_T>(item1) == sentinel) {
+      if (gbp::BufferObject::Decode<INDEX_T>(item1) == sentinel) {
         std::lock_guard lock(indices_lock_);
         auto item2 = indices_.get(index);
-        if (gbp::Decode<INDEX_T>(item2) == sentinel) {
+        if (gbp::BufferObject::Decode<INDEX_T>(item2) == sentinel) {
           indices_.set(index, ind);
           break;
         }
@@ -225,7 +225,7 @@ class LFIndexer {
       INDEX_T ind = indices_.get(index);
 #else
       auto item = indices_.get(index);
-      INDEX_T ind = gbp::Decode<INDEX_T>(item);
+      INDEX_T ind = gbp::BufferObject::Decode<INDEX_T>(item);
 #endif
 #if OV
       if (ind == sentinel) {
@@ -240,7 +240,7 @@ class LFIndexer {
         LOG(FATAL) << "cannot find " << oid << " in id_indexer";
       } else {
         auto item = keys_.get(ind);
-        if (gbp::Decode<int64_t>(item) == oid) {
+        if (gbp::BufferObject::Decode<int64_t>(item) == oid) {
           return ind;
         }
       }
@@ -275,12 +275,12 @@ class LFIndexer {
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
       auto item = indices_.get(index);
-      INDEX_T ind = gbp::Decode<INDEX_T>(item);
+      INDEX_T ind = gbp::BufferObject::Decode<INDEX_T>(item);
       if (ind == sentinel) {
         return false;
       } else {
         auto item = keys_.get(ind);
-        if (gbp::Decode<int64_t>(item) == oid) {
+        if (gbp::BufferObject::Decode<int64_t>(item) == oid) {
           ret = ind;
           return true;
         }
@@ -292,7 +292,7 @@ class LFIndexer {
 
   int64_t get_key(const INDEX_T& index) const {
     auto item = keys_.get(index);
-    return gbp::Decode<int64_t>(item);
+    return gbp::BufferObject::Decode<int64_t>(item);
   }
 #endif
 
@@ -884,7 +884,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         input.hasher_(pair.first), input.num_slots_minus_one_);
     while (true) {
       auto item = lf.indices_.get(index);
-      if (gbp::Decode<INDEX_T>(item) == sentinel) {
+      if (gbp::BufferObject::Decode<INDEX_T>(item) == sentinel) {
         lf.indices_.set(index, pair.second);
         break;
       }

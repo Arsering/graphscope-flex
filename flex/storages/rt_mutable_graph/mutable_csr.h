@@ -43,7 +43,7 @@ struct MutableNbr {
   vid_t neighbor;
   std::atomic<timestamp_t> timestamp;
   EDATA_T data;
-};  // namespace gstemplate<typenameEDATA_T>struct MutableNbr
+};
 
 template <>
 struct MutableNbr<grape::EmptyType> {
@@ -343,7 +343,7 @@ class MutableAdjlist {
       return buffer_[idx];
     } else {
       auto item = mmap_array_->get(idx + start_idx_);
-      return gbp::Decode<nbr_t>(item);
+      return gbp::BufferObject::Decode<nbr_t>(item);
     }
   }
 
@@ -545,12 +545,12 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   vid_t get_neighbor() {
     assert(is_valid());
     if (buffer_ == nullptr) {
-      // if (gbp::unlikely(!fresh_)) {
-      if (!fresh_) {
+      if (unlikely(!fresh_)) {
+        // if (!fresh_) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      return gbp::Decode<nbr_t>(objs_, cur_idx_).neighbor;
+      return gbp::BufferObject::Decode<nbr_t>(objs_, cur_idx_).neighbor;
     } else {
       return buffer_[start_idx_ + cur_idx_].neighbor;
     }
@@ -559,37 +559,30 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   gbp::BufferObject get_data() {
     assert(is_valid());
 
-    // gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
-      // if (gbp::unlikely(!fresh_)) {
-      if (!fresh_) {
+      if (unlikely(!fresh_)) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      // memcpy(buf.Data(), &(gbp::Decode<nbr_t>(objs_, cur_idx_).data),
-      //        sizeof(EDATA_T));
-      return gbp::BufferObject(
-          sizeof(EDATA_T),
-          (char*) (&(gbp::Decode<nbr_t>(objs_, cur_idx_).data)));
+      return gbp::BufferObject(sizeof(EDATA_T),
+                               (char*) (&(objs_.Decode<nbr_t>(cur_idx_).data)));
     } else {
-      // memcpy(buf.Data(), &(buffer_[start_idx_ + cur_idx_].data),
-      //        sizeof(EDATA_T));
       return gbp::BufferObject(
           sizeof(EDATA_T), (char*) (&(buffer_[start_idx_ + cur_idx_].data)));
     }
-    // return buf;
+    assert(false);
   }
 
   timestamp_t get_timestamp() {
     assert(is_valid());
 
     if (buffer_ == nullptr) {
-      // if (gbp::unlikely(!fresh_)) {
-      if (!fresh_) {
+      if (unlikely(!fresh_)) {
+        // if (!fresh_) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      return gbp::Decode<nbr_t>(objs_, cur_idx_).timestamp.load();
+      return gbp::BufferObject::Decode<nbr_t>(objs_, cur_idx_).timestamp.load();
     } else {
       return buffer_[start_idx_ + cur_idx_].timestamp.load();
     }
@@ -649,12 +642,12 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
     assert(is_valid());
 
     if (buffer_ == nullptr) {
-      // if (gbp::unlikely(!fresh_)) {
-      if (!fresh_) {
+      if (unlikely(!fresh_)) {
+        // if (!fresh_) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      return gbp::Decode<nbr_t>(objs_, cur_idx_).neighbor;
+      return gbp::BufferObject::Decode<nbr_t>(objs_, cur_idx_).neighbor;
     } else {
       return buffer_[start_idx_ + cur_idx_].neighbor;
     }
@@ -663,37 +656,31 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
   gbp::BufferObject get_data() {
     assert(is_valid());
 
-    // gbp::BufferObject buf(sizeof(EDATA_T));
     if (buffer_ == nullptr) {
-      // if (gbp::unlikely(!fresh_)) {
-      if (!fresh_) {
+      if (unlikely(!fresh_)) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      // memcpy(buf.Data(), &(gbp::Decode<nbr_t>(objs_, cur_idx_).data),
-      //        sizeof(EDATA_T));
       return gbp::BufferObject(
           sizeof(EDATA_T),
-          (char*) (&(gbp::Decode<nbr_t>(objs_, cur_idx_).data)));
+          (char*) (&(gbp::BufferObject::Decode<nbr_t>(objs_, cur_idx_).data)));
     } else {
-      // memcpy(buf.Data(), &(buffer_[start_idx_ + cur_idx_].data),
-      //        sizeof(EDATA_T));
       return gbp::BufferObject(
           sizeof(EDATA_T), (char*) (&(buffer_[start_idx_ + cur_idx_].data)));
     }
-    // return buf;
+    assert(false);
   }
 
   timestamp_t get_timestamp() {
     assert(is_valid());
 
     if (buffer_ == nullptr) {
-      // if (gbp::unlikely(!fresh_)) {
-      if (!fresh_) {
+      if (unlikely(!fresh_)) {
+        // if (!fresh_) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      return gbp::Decode<nbr_t>(objs_, cur_idx_).timestamp.load();
+      return gbp::BufferObject::Decode<nbr_t>(objs_, cur_idx_).timestamp.load();
     } else {
       return buffer_[start_idx_ + cur_idx_].timestamp.load();
     }
@@ -703,12 +690,12 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
     assert(is_valid());
 
     if (buffer_ == nullptr) {
-      // if (gbp::unlikely(!fresh_)) {
-      if (!fresh_) {
+      if (unlikely(!fresh_)) {
+        // if (!fresh_) {
         objs_ = mmap_array_->get(start_idx_, size_);
         fresh_ = true;
       }
-      auto item_obj = gbp::Decode<nbr_t>(objs_, cur_idx_);
+      auto item_obj = gbp::BufferObject::Decode<nbr_t>(objs_, cur_idx_);
       ConvertAny<EDATA_T>::to(value, item_obj.data);
       item_obj.timestamp.store(ts);
       mmap_array_->set(start_idx_ + cur_idx_, item_obj);
@@ -789,7 +776,8 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     for (vid_t i = 0; i < vnum; ++i) {
       int deg = degree[i];
       auto adj_list = gbp::BufferObject::Copy(adj_lists_.get(i));
-      gbp::Decode<adjlist_t>(adj_list).init(&nbr_list_, offset, deg, 0);
+      gbp::BufferObject::Decode<adjlist_t>(adj_list).init(&nbr_list_, offset,
+                                                          deg, 0);
       adj_lists_.set(i, adj_list);
       offset += deg;
     }
@@ -819,9 +807,10 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       auto item = degree_list.get(
           i);  // 此操作占本函数40%的latency，且当i=1时的latency占整个本行代码latency的约20%
 
-      int degree = gbp::Decode<int>(item);
+      int degree = gbp::BufferObject::Decode<int>(item);
       auto adj_list = gbp::BufferObject(sizeof(adjlist_t));
-      gbp::Decode<adjlist_t>(adj_list).init(&nbr_list_, offset, degree, degree);
+      gbp::BufferObject::Decode<adjlist_t>(adj_list).init(&nbr_list_, offset,
+                                                          degree, degree);
       adj_lists_.set(i, adj_list);  // 此操作占了本函数latency的另外40%
       offset += degree;
     }
@@ -854,7 +843,8 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       size_tmp = adj_lists_.get(i).Size();
       if (size_tmp != 0) {
         auto adj_list = adj_lists_.get(i);
-        if (gbp::Decode<adjlist_t>(adj_list).get_mmap_array() == nullptr) {
+        if (gbp::BufferObject::Decode<adjlist_t>(adj_list).get_mmap_array() ==
+            nullptr) {
           reuse_nbr_list = false;
         }
       }
@@ -878,7 +868,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       for (size_t i = 0; i < vnum; ++i) {
         nbr_t* buffer;
         auto adj_list = adj_lists_.get(i);
-        auto& adj_list_obj = gbp::Decode<adjlist_t>(adj_list);
+        auto& adj_list_obj = gbp::BufferObject::Decode<adjlist_t>(adj_list);
         if ((buffer = adj_list_obj.get_buffer()) != nullptr) {
           fwrite(buffer, sizeof(nbr_t), adj_list_obj.size(), fout);
         } else {
@@ -904,7 +894,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
         adj_lists_[k].init(NULL, 0, 0);
 #else
         auto adj_list = gbp::BufferObject::Copy(adj_lists_.get(k));
-        gbp::Decode<adjlist_t>(adj_list).init(nullptr, 0, 0, 0);
+        gbp::BufferObject::Decode<adjlist_t>(adj_list).init(nullptr, 0, 0, 0);
         adj_lists_.set(k, adj_list);
 #endif
       }
@@ -925,7 +915,8 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
   void batch_put_edge(vid_t src, vid_t dst, const EDATA_T& data,
                       timestamp_t ts = 0) override {
     auto adj_list = adj_lists_.get(src);
-    gbp::Decode<adjlist_t>(adj_list).batch_put_edge(dst, data, ts);
+    gbp::BufferObject::Decode<adjlist_t>(adj_list).batch_put_edge(dst, data,
+                                                                  ts);
   }
 #endif
   void put_generic_edge(vid_t src, vid_t dst, const Any& data, timestamp_t ts,
@@ -948,7 +939,8 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     CHECK_LT(src, adj_lists_.size());
     locks_[src].lock();
     auto adj_list = gbp::BufferObject::Copy(adj_lists_.get(src));
-    gbp::Decode<adjlist_t>(adj_list).put_edge(dst, data, ts, alloc);
+    gbp::BufferObject::Decode<adjlist_t>(adj_list).put_edge(dst, data, ts,
+                                                            alloc);
     adj_lists_.set(src, adj_list);
     locks_[src].unlock();
   }
@@ -963,15 +955,15 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 #else
   int degree(vid_t i) const {
     auto adj_list = adj_lists_.get(i);
-    return gbp::Decode<adjlist_t>(adj_list).size();
+    return gbp::BufferObject::Decode<adjlist_t>(adj_list).size();
   }
   slice_t get_edges(vid_t i) const override {
     auto item = adj_lists_.get(i);
-    return gbp::Decode<adjlist_t>(item).get_edges();
+    return gbp::BufferObject::Decode<adjlist_t>(item).get_edges();
   }
   mut_slice_t get_edges_mut(vid_t i) {
     auto item = adj_lists_.get(i);
-    return gbp::Decode<adjlist_t>(item).get_edges_mut();
+    return gbp::BufferObject::Decode<adjlist_t>(item).get_edges_mut();
   }
 
 #endif
@@ -1038,7 +1030,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
     // FIXME: store/load在这里是没有意义的！！！
     for (size_t k = 0; k != vnum; ++k) {
       auto item = nbr_list_.get(k);
-      gbp::Decode<nbr_t>(item).timestamp.store(
+      gbp::BufferObject::Decode<nbr_t>(item).timestamp.store(
           std::numeric_limits<timestamp_t>::max());
       nbr_list_.set(k, item);
     }
@@ -1071,7 +1063,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
 #else
         // FIXME:
         auto item = nbr_list_.get(k);
-        gbp::Decode<nbr_t>(item).timestamp.store(
+        gbp::BufferObject::Decode<nbr_t>(item).timestamp.store(
             std::numeric_limits<timestamp_t>::max());
         nbr_list_.set(k, item);
 #endif
@@ -1098,7 +1090,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
     buf.neighbor = dst;
     buf.data = data;
     auto item = nbr_list_.get(src);
-    CHECK_EQ(gbp::Decode<nbr_t>(item).timestamp.load(),
+    CHECK_EQ(gbp::BufferObject::Decode<nbr_t>(item).timestamp.load(),
              std::numeric_limits<timestamp_t>::max());
     buf.timestamp.store(ts);
     nbr_list_.set(src, buf);
@@ -1127,7 +1119,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
     buf.neighbor = dst;
     buf.data = data;
     auto item = nbr_list_.get(src);
-    CHECK_EQ(gbp::Decode<nbr_t>(item).timestamp,
+    CHECK_EQ(gbp::BufferObject::Decode<nbr_t>(item).timestamp,
              std::numeric_limits<timestamp_t>::max());
     buf.timestamp.store(ts);
     nbr_list_.set(src, buf);
@@ -1163,7 +1155,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
   slice_t get_edges(vid_t i) const override {
     slice_t ret;
     auto item = nbr_list_.get(i);
-    ret.set_size(gbp::Decode<nbr_t>(item).timestamp.load() ==
+    ret.set_size(gbp::BufferObject::Decode<nbr_t>(item).timestamp.load() ==
                          std::numeric_limits<timestamp_t>::max()
                      ? 0
                      : 1);
@@ -1179,7 +1171,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
   mut_slice_t get_edges_mut(vid_t i) {
     mut_slice_t ret;
     auto item = nbr_list_.get(i);
-    ret.set_size(gbp::Decode<nbr_t>(item).timestamp.load() ==
+    ret.set_size(gbp::BufferObject::Decode<nbr_t>(item).timestamp.load() ==
                          std::numeric_limits<timestamp_t>::max()
                      ? 0
                      : 1);

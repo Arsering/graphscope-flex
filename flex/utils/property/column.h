@@ -87,14 +87,14 @@ class TypedColumn : public ColumnBase {
     }
 #else
     for (size_t k = 0; k < basic_size_; ++k) {
-      auto item = basic_buffer_.get(k);
-      auto val = gbp::Decode<T>(item);
+      const gbp::BufferObject item = basic_buffer_.get(k);
+      auto val = item.Decode<T>();
       tmp.set(k, val);
     }
+
     for (size_t k = 0; k < extra_size_; ++k) {
-      auto item = extra_buffer_.get(k);
-      // auto val = item.Obj<T>();
-      auto val = gbp::Decode<T>(item);
+      const gbp::BufferObject item = extra_buffer_.get(k);
+      auto val = item.Decode<T>();
       tmp.set(k + basic_size_, val);
     }
 #endif
@@ -159,7 +159,7 @@ class TypedColumn : public ColumnBase {
     set_value(index, AnyConverter<T>::from_any(value));
   }
   void set(size_t index, const gbp::BufferObject& value) override {
-    auto val = gbp::Decode<T>(value);
+    auto val = value.template Decode<T>();
     set_value(index, val);
   }
 
