@@ -89,30 +89,23 @@ int main(int argc, char** argv) {
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
-
   double t0 = -grape::GetCurrentTime();
-  auto& db = gs::GraphDB::get();
-
-  auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
 
 #if !OV
   size_t pool_num = 10;
   size_t pool_size = 1024 * 1024 * 6 / pool_num;
-  // auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
   gbp::BufferPoolManager::GetGlobalInstance().init(pool_num, pool_size,
                                                    pool_num);
-
   // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
+  t0 += grape::GetCurrentTime();
+  LOG(INFO) << "Finished initializing BufferPoolManager, elapsed " << t0
+            << " s";
+
+  t0 = -grape::GetCurrentTime();
 #endif
-#if !OV
-  // gbp::get_mark_warmup().store(0);
-  LOG(INFO) << "Warmup start";
-  gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
-  LOG(INFO) << "Warmup finish";
-  gbp::get_mark_warmup().store(1);
-  // gbp::debug::get_counter_CopyObj().store(0);
-  // gbp::debug::get_counter_RefObj().store(0);
-#endif
+
+  auto& db = gs::GraphDB::get();
+  auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
 
   // init access logger
   gbp::set_log_directory(vm["log-data-path"].as<std::string>());
@@ -125,6 +118,20 @@ int main(int argc, char** argv) {
   t0 += grape::GetCurrentTime();
 
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
+
+#if !OV
+  t0 = -grape::GetCurrentTime();
+  gbp::get_mark_warmup().store(0);
+  LOG(INFO) << "Warmup start";
+  gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  LOG(INFO) << "Warmup finish";
+  gbp::get_mark_warmup().store(1);
+  t0 += grape::GetCurrentTime();
+  LOG(INFO) << "Finished warm up, elapsed " << t0 << " s";
+  // gbp::debug::get_counter_CopyObj().store(0);
+  // gbp::debug::get_counter_RefObj().store(0);
+#endif
+
   // start service
   LOG(INFO) << "GraphScope http server start to listen on port " << http_port;
   server::GraphDBService::get().init(shard_num, http_port, enable_dpdk);

@@ -134,6 +134,7 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   std::filesystem::create_directory(tmp_dir_path);
   std::vector<size_t> vertex_capacities(vertex_label_num_, 0);
 
+  auto t0 = -grape::GetCurrentTime();
   size_t size_in_byte_lf_indexer = 0;
   size_t size_in_byte_vertex_data = 0;
   for (size_t i = 0; i < vertex_label_num_; ++i) {
@@ -156,6 +157,8 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
     vertex_data_[i].resize(vertex_capacity);
     vertex_capacities[i] = vertex_capacity;
   }
+  t0 += grape::GetCurrentTime();
+  LOG(INFO) << "Time used = " << t0;
   size_t MB_in_byte = 1024LU * 1024;
   LOG(INFO) << "size_in_MB_lf_indexer=" << size_in_byte_lf_indexer / MB_in_byte
             << " | size_in_MB_vertex_data="
@@ -164,6 +167,7 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   ie_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   oe_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
 
+  t0 = -grape::GetCurrentTime();
   size_t size_in_byte_edge_index = 0;
   size_t size_in_byte_edge_data = 0;
   for (size_t src_label_i = 0; src_label_i != vertex_label_num_;
@@ -204,6 +208,8 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
       }
     }
   }
+  t0 += grape::GetCurrentTime();
+  LOG(INFO) << "Time used = " << t0;
   LOG(INFO) << "size_in_MB_edge_index=" << size_in_byte_edge_index / MB_in_byte
             << " | size_in_MB_edge_data="
             << size_in_byte_edge_data / MB_in_byte;

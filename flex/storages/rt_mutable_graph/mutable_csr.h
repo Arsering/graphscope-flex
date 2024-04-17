@@ -816,14 +816,20 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       ptr += deg;
     }
 #else
+    // FIXME: 此处的实现未经验证，需要检查其实现正确性
+    adjlist_t* buf = (adjlist_t*) malloc(sizeof(adjlist_t) * vnum);
+    auto adj_lists_old = adj_lists_.get(0, vnum);
+
     size_t offset = 0;
     for (vid_t i = 0; i < vnum; ++i) {
       int deg = degree[i];
-      auto adj_list = gbp::BufferObject::Copy(adj_lists_.get(i));
-      gbp::BufferObject::Decode<adjlist_t>(adj_list).init(offset, deg, 0);
-      adj_lists_.set(i, adj_list);
+      // auto adj_list = gbp::BufferObject::Copy(adj_lists_.get(i));
+      // gbp::BufferObject::Decode<adjlist_t>(adj_list).init(offset, deg, 0);
+      // adj_lists_.set(i, adj_list);
+      buf[i].init(offset, deg, 0);
       offset += deg;
     }
+    adj_lists_.set(0, (*buf), vnum);
 #endif
   }
 #if OV
@@ -848,7 +854,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 #else
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) override {
-    // LOG(INFO) << "MutableCsr";
     mmap_array<int> degree_list;
     degree_list.open(snapshot_dir + "/" + name + ".deg", true);
 
@@ -863,23 +868,18 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     adj_lists_.resize(degree_list.size());
     locks_ = new grape::SpinLock[degree_list.size()];
 
+    adjlist_t* buf =
+        (adjlist_t*) malloc(sizeof(adjlist_t) * degree_list.size());
+    auto degree_list_batch = degree_list.get(0, degree_list.size());
+
     size_t offset = 0;
-    for (size_t i = 0; i < degree_list.size(); ++i) {
-      auto item = degree_list.get(
-          i);  // 此操作占本函数40%的latency，且当i=1时的latency占整个本行代码latency的约20%
-      int degree = gbp::BufferObject::Decode<int>(item);
-      auto adj_list = gbp::BufferObject(sizeof(adjlist_t));
-      gbp::BufferObject::Decode<adjlist_t>(adj_list).init(offset, degree,
-                                                          degree);
-      adj_lists_.set(i, adj_list);  // 此操作占了本函数latency的另外40%
+    for (size_t i = 0; i < degree_list.size(); i++) {
+      int degree = gbp::BufferObject::Decode<int>(degree_list_batch, i);
+      buf[i].init(offset, degree, degree);
       offset += degree;
-      // if (nbr_list_.filehandle() == 197) {
-      //   LOG(INFO) << "degree = " << degree;
-      // }
     }
-    // if (nbr_list_.filehandle() == 197) {
-    //   LOG(INFO) << "aa = " << offset;
-    // }
+    adj_lists_.set(0, (*buf), degree_list.size());
+    free(buf);
   }
 #endif
 
@@ -1003,15 +1003,20 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     if (vnum > adj_lists_.size()) {
       size_t old_size = adj_lists_.size();
       adj_lists_.resize(vnum);
-      for (size_t k = old_size; k != vnum; ++k) {
 #if OV
+      for (size_t k = old_size; k != vnum; ++k) {
         adj_lists_[k].init(NULL, 0, 0);
-#else
-        auto adj_list = gbp::BufferObject::Copy(adj_lists_.get(k));
-        gbp::BufferObject::Decode<adjlist_t>(adj_list).init(0, 0, 0);
-        adj_lists_.set(k, adj_list);
-#endif
       }
+#else
+      adjlist_t* buf =
+          (adjlist_t*) malloc(sizeof(adjlist_t) * (vnum - old_size));
+      for (size_t i = 0; i < vnum - old_size; i++) {
+        buf[i].init(0, 0, 0);
+      }
+      adj_lists_.set(old_size, (*buf), (vnum - old_size));
+      free(buf);
+#endif
+
       delete[] locks_;
       locks_ = new grape::SpinLock[vnum];
     } else {

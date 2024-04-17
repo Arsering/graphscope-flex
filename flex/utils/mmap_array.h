@@ -283,6 +283,7 @@ class mmap_array {
 #else
   void touch(const std::string& filename) {
     copy_file(filename_, filename);
+    buffer_pool_manager_->CloseFile(fd_gbp_);
     open(filename, false);
   }
 #endif
