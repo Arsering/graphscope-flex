@@ -299,15 +299,14 @@ class mmap_array {
   void set(size_t idx, const T& val, size_t len = 1) {
     CHECK_LE(idx + len, size_);
 
-    size_t object_size = sizeof(T) * len;
     buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(&val),
                                     idx * sizeof(T), len * sizeof(T), fd_gbp_);
   }
 
   void set(size_t idx, const gbp::BufferObject& val, size_t len = 1) {
     CHECK_LE(idx + len, size_);
-    auto& val_obj = val.Decode<T>();
-    set(idx, val_obj, len);
+    buffer_pool_manager_->SetObject(val, idx * sizeof(T), len * sizeof(T),
+                                    fd_gbp_);
   }
 
   // const gbp::BufferObject get(size_t idx, size_t len = 1) const {
@@ -321,6 +320,8 @@ class mmap_array {
   // }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
+    if (idx + len > size_)
+      LOG(INFO) << idx << " " << size_ << " " << sizeof(T) << " " << len;
     CHECK_LE(idx + len, size_);
     return buffer_pool_manager_->GetObject(idx * sizeof(T), len * sizeof(T),
                                            fd_gbp_);
@@ -351,6 +352,8 @@ class mmap_array {
     std::swap(size_, rhs.size_);
     std::swap(buffer_pool_manager_, rhs.buffer_pool_manager_);
   }
+
+  gbp::GBPfile_handle_type filehandle() const { return fd_gbp_; }
 #endif
 
   const std::string& filename() const { return filename_; }
@@ -362,8 +365,7 @@ class mmap_array {
     if (gbp::get_mark_mmapwarmup().load() == 1) {
       LOG(INFO) << "Warmup file " << filename_;
       volatile int64_t sum = 0;
-      for (gbp::page_id offset = 0; offset < size;
-           offset += gbp::PAGE_SIZE_BUFFER_POOL) {
+      for (size_t offset = 0; offset < size; offset += 4096) {
         sum += data[offset];
         if (++page_num_used == gbp::get_pool_size()) {
           LOG(INFO) << "pool is full";
@@ -452,7 +454,8 @@ class mmap_array<std::string_view> {
   // }
   gbp::BufferObject get(size_t idx) const {
     auto value = items_.get(idx);
-    auto item = value.Obj<string_item>();
+    auto item = gbp::BufferObject::Decode<gs::string_item>(value);
+    // LOG(INFO) << item.offset << " " << item.length;
     return data_.get(item.offset, item.length);
   }
 

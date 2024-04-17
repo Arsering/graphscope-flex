@@ -95,23 +95,31 @@ class AdjListView {
   using sliceiter_t = TypedMutableCsrConstEdgeIter<EDATA_T>;
 
   AdjListView(const slice_t& slice, timestamp_t timestamp)
-      : edges_(sliceiter_t(slice)), timestamp_(timestamp) {}
-
-  vid_t get_neighbor() { return edges_.get_neighbor(); }
-
-  gbp::BufferObject get_data() { return edges_.get_data(); }
-
-  timestamp_t get_timestamp() { return edges_.get_timestamp(); }
-
-  void next() {
-    edges_.next();
-    while (edges_.is_valid() && edges_.get_timestamp() > timestamp_) {
+      : edges_(sliceiter_t(slice)), timestamp_(timestamp) {
+    while (is_valid()) {
       edges_.next();
     }
   }
 
-  bool is_valid() { return edges_.is_valid(); }
+  FORCE_INLINE vid_t get_neighbor() { return edges_.get_neighbor(); }
+
+  FORCE_INLINE gbp::BufferObject get_data() { return edges_.get_data(); }
+
+  FORCE_INLINE timestamp_t get_timestamp() { return edges_.get_timestamp(); }
+
+  FORCE_INLINE void next() {
+    edges_.next();
+    while (is_valid()) {
+      edges_.next();
+    }
+  }
+
+  FORCE_INLINE bool is_valid() {
+    return edges_.is_valid() && edges_.get_timestamp() > timestamp_;
+  }
+
   int estimated_degree() const { return edges_.size(); }
+  timestamp_t timestamp() const { return timestamp_; }
 
  private:
   sliceiter_t edges_;
@@ -127,6 +135,7 @@ class GraphView {
   AdjListView<EDATA_T> get_edges(vid_t v) const {
     return AdjListView<EDATA_T>(csr_.get_edges(v), timestamp_);
   }
+  timestamp_t timestamp() const { return timestamp_; }
 
  private:
   const MutableCsr<EDATA_T>& csr_;
@@ -156,6 +165,8 @@ class SingleGraphView {
   }
 
   const gbp::BufferObject get_edge(vid_t v) const { return csr_.get_edge(v); }
+
+  timestamp_t timestamp() const { return timestamp_; }
 #endif
  private:
   const SingleMutableCsr<EDATA_T>& csr_;
@@ -251,6 +262,7 @@ class ReadTransaction {
                                         label_t edge_label) const {
     auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
         graph_.get_oe_csr(v_label, neighbor_label, edge_label));
+
     return AdjListView<EDATA_T>(csr->get_edges(v), timestamp_);
   }
 

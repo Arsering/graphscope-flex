@@ -52,7 +52,14 @@ class Req {
 
   void load(const std::string& file) {
     LOG(INFO) << "load queries from " << file << "\n";
-    std::ifstream fi(file, std::ios::in);
+    std::ifstream fi;
+    try {
+      fi.open(file, std::ios::in);
+    } catch (std::ios_base::failure& e) {
+      LOG(INFO) << "fuck";
+      return;
+    }
+
     const size_t size = 4096;
     std::vector<char> buffer(size);
     std::vector<char> tmp(size);
@@ -81,6 +88,7 @@ class Req {
           }
         }
       }
+
       buffer.clear();
     }
     LOG(INFO) << "Number of query = " << reqs_.size();
@@ -308,7 +316,12 @@ int main(int argc, char** argv) {
   gbp::get_mark_mmapwarmup().store(1);
 #else
   // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
-  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size, 200);
+  size_t pool_num = 1;
+  gbp::get_mark_warmup().store(0);
+
+  pool_size = 1024LU * 1024LU * 6 / pool_num;
+  gbp::BufferPoolManager::GetGlobalInstance().init(pool_num, pool_size,
+                                                   pool_num);
 
 #ifdef DEBUG
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
@@ -330,7 +343,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
 
 #if !OV
-  gbp::get_mark_warmup().store(0);
+  // gbp::get_mark_warmup().store(0);
   LOG(INFO) << "Warmup start";
   gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
   LOG(INFO) << "Warmup finish";

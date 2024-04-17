@@ -17,7 +17,7 @@
 
 #include "flex/engines/graph_db/app/app_base.h"
 
-#define likely(x) __builtin_expect(!!(x), 1)
+// #define likely(x) __builtin_expect(!!(x), 1)
 
 namespace gs {
 

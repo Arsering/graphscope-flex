@@ -23,7 +23,12 @@ class CSVReader {
   ~CSVReader() = default;
 
   void init(const std::string& file_name) {
-    csv_data_.open(file_name, std::ios::in);
+    try {
+      csv_data_.open(file_name, std::ios::in);
+    } catch (std::ios_base::failure& e) {
+      std::cout << "fuck" << std::endl;
+      return;
+    }
     LOG(INFO) << "file_name=" << file_name;
     std::string line;
     std::getline(csv_data_, line);  // ignore the first line of file
@@ -74,6 +79,7 @@ std::vector<std::string> gen_query(const std::string& csv_dir_path,
     result_buffer.emplace_back(std::string(tmp.begin(), tmp.end()));
     tmp.clear();
   }
+  // LOG(INFO) << csv_reader << std::endl;
   return std::move(result_buffer);
 }
 
@@ -117,6 +123,7 @@ int main(int argc, char** argv) {
     return -1;
   }
   csv_data_path = vm["csv-data-path"].as<std::string>();
+
   if (!vm.count("output-data-path")) {
     LOG(ERROR) << "output-data-path is required";
     return -1;
@@ -138,7 +145,7 @@ int main(int argc, char** argv) {
 
   auto orders = create_random_order(overall_size);
   std::string end_mark = "eor#";
-  // size_t count = 1;
+  size_t count = 0;
   for (auto i : orders) {
     std::string* data_ptr;
     if (i < size_p[0])
@@ -161,6 +168,9 @@ int main(int argc, char** argv) {
     // LOG(INFO) << "queries_1[i].data()"
     //           << *reinterpret_cast<size_t*>(queries_1[i].data());
     query_file.write(end_mark.data(), end_mark.size());
+    query_file << count++;
+    query_file.write(end_mark.data(), end_mark.size());
+
     // if (--count == 0)
     //   break;
   }

@@ -246,6 +246,7 @@ class StringColumn : public ColumnBase {
     pos_.store(offset);
   }
 #else
+
   void touch(const std::string& filename) override {
     mmap_array<std::string_view> tmp;
     tmp.open(filename, false);
@@ -297,18 +298,19 @@ class StringColumn : public ColumnBase {
         offset += val.size();
       }
 #else
-      for (size_t k = 0; k < basic_size_; ++k) {
-        auto item = basic_buffer_.get(k);
-        std::string_view val = {item.Data(), item.Size()};
-        tmp.set(k, offset, val);
-        offset += val.size();
-      }
-      for (size_t k = 0; k < extra_size_; ++k) {
-        auto item = extra_buffer_.get(k);
-        std::string_view val = {item.Data(), item.Size()};
-        tmp.set(k + basic_size_, offset, val);
-        offset += val.size();
-      }
+      // for (size_t k = 0; k < basic_size_; ++k) {
+      //   auto item = basic_buffer_.get(k);
+      //   std::string_view val = {item.Data(), item.Size()};
+      //   tmp.set(k, offset, val);
+      //   offset += val.size();
+      // }
+      // for (size_t k = 0; k < extra_size_; ++k) {
+      //   auto item = extra_buffer_.get(k);
+      //   std::string_view val = {item.Data(), item.Size()};
+      //   tmp.set(k + basic_size_, offset, val);
+      //   offset += val.size();
+      // }
+      assert(false);
 #endif
       tmp.resize(basic_size_ + extra_size_, offset);
     }
@@ -360,8 +362,10 @@ class StringColumn : public ColumnBase {
     auto ret = get_inner(idx);
     return ret;
   }
+  // TODO: 优化掉不必要的copy
   void set(size_t idx, const gbp::BufferObject& value) override {
-    std::string_view sv = {value.Data(), value.Size()};
+    std::string sv(value.Size(), 'a');
+    value.Copy(sv.data(), value.Size());
     set_value(idx, sv);
   }
 

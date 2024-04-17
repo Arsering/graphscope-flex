@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
   pid_file.close();
   gbp::get_query_file(log_data_path);
   gbp::get_result_file(log_data_path);
-  sleep(10);
+  // sleep(10);
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
@@ -96,19 +96,30 @@ int main(int argc, char** argv) {
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
 
 #if !OV
-  size_t pool_size = 1024 * 1024 * 6;
+  size_t pool_num = 10;
+  size_t pool_size = 1024 * 1024 * 6 / pool_num;
   // auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
-  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size, 200);
+  gbp::BufferPoolManager::GetGlobalInstance().init(pool_num, pool_size,
+                                                   pool_num);
 
   // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
+#endif
+#if !OV
+  // gbp::get_mark_warmup().store(0);
+  LOG(INFO) << "Warmup start";
+  gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  LOG(INFO) << "Warmup finish";
+  gbp::get_mark_warmup().store(1);
+  // gbp::debug::get_counter_CopyObj().store(0);
+  // gbp::debug::get_counter_RefObj().store(0);
 #endif
 
   // init access logger
   gbp::set_log_directory(vm["log-data-path"].as<std::string>());
   gbp::ThreadLog logger;
   gbp::set_thread_logger(&logger);
-
   db.Init(schema, data_path, shard_num);
+
   logger.log_sync();
 
   t0 += grape::GetCurrentTime();

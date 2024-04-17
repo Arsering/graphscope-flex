@@ -107,8 +107,7 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
           output.put_string(vit.GetField(i).to_string());
 #else
           auto item = vit.GetField(i);
-          std::string_view val = {item.Data(), item.Size()};
-          output.put_string_view(val);
+          output.put_buffer_object(item);
 #endif
         }
         return true;

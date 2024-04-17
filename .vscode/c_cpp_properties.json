@@ -9,7 +9,7 @@
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "intelliSenseMode": "linux-gcc-x64",
-            "compileCommands": "${workspaceFolder}/graphscope-flex/flex/build/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/flex/build/compile_commands.json"
         }
     ],
     "version": 4

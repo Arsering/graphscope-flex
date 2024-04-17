@@ -110,10 +110,10 @@ int test_vertex(gs::GraphDB& db, const std::string& csv_data_path) {
     LOG(INFO) << gbp::GetSystemTime();
     LOG(INFO) << "==============";
 
-    std::string str1{firstname.Data(), firstname.Size()};
-    std::string str2{email.Data(), email.Size()};
-    if (!(str1.compare(words[1]) == 0 && str2.compare(words[9]) == 0)) {
-      LOG(INFO) << str1 << " | " << str2;
+    // std::string str1{firstname.Data(), firstname.Size()};
+    // std::string str2{email.Data(), email.Size()};
+    if (!(firstname == words[1] && email == words[9])) {
+      // LOG(INFO) << str1 << " | " << str2;
       LOG(FATAL) << "test_vertex: failed!!";
     }
     test_count--;

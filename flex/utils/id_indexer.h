@@ -323,6 +323,7 @@ class LFIndexer {
 
     load_meta(snapshot_dir + "/" + name + ".meta");
   }
+
   size_t get_size_in_byte() {
     return keys_.get_size_in_byte() + indices_.get_size_in_byte();
   }

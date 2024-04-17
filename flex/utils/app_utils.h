@@ -19,6 +19,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include "flex/graphscope_bufferpool/include/buffer_obj.h"
 
 namespace gs {
 
@@ -47,6 +48,7 @@ class Encoder {
   void put_string(const std::string& v);
 
   void put_string_view(const std::string_view& v);
+  void put_buffer_object(const gbp::BufferObject& v);
 
   void put_double(double v);
 
