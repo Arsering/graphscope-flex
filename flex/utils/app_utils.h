@@ -54,6 +54,8 @@ class Encoder {
 
   void clear();
 
+  size_t size() const { return buf_.size(); }
+
  private:
   std::vector<char>& buf_;
 };
@@ -78,6 +80,8 @@ class Decoder {
   bool empty() const;
 
   void reset(const char* ptr, size_t size);
+
+  size_t size() const { return end_ - data_; }
 
  private:
   const char* data_;

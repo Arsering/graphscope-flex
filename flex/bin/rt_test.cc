@@ -161,7 +161,7 @@ int test_edge(gs::GraphDB& db, const std::string& csv_data_path,
   log_file.open(log_data_path + "/n_output.log", std::ios::out);
   for (; oe.is_valid(); oe.next()) {
     auto item = oe.get_data();
-    vec_date.emplace_back(item.Decode<gs::Date>().to_string());
+    vec_date.emplace_back(gbp::BufferObject::Ref<gs::Date>(item).to_string());
     LOG(INFO) << vec_date[vec_date.size() - 1];
     log_file << vec_date[vec_date.size() - 1] << std::endl;
   }

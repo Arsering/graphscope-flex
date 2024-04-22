@@ -86,24 +86,18 @@ class TypedColumn : public ColumnBase {
       tmp.set(k + basic_size_, extra_buffer_.get(k));
     }
 #else
-    for (size_t k = 0; k < basic_size_; ++k) {
-      const gbp::BufferObject item = basic_buffer_.get(k);
-      auto val = item.Decode<T>();
-      tmp.set(k, val);
-    }
-
-    for (size_t k = 0; k < extra_size_; ++k) {
-      const gbp::BufferObject item = extra_buffer_.get(k);
-      auto val = item.Decode<T>();
-      tmp.set(k + basic_size_, val);
-    }
+    auto basic_buffer_items = basic_buffer_.get(0, basic_size_);
+    tmp.set(0, basic_buffer_items, basic_size_);
+    basic_buffer_items.free();
+    auto extra_buffer_items = extra_buffer_.get(0, extra_size_);
+    tmp.set(basic_size_, extra_buffer_items, extra_size_);
 #endif
     basic_size_ = 0;
     basic_buffer_.reset();
     extra_size_ = tmp.size();
     extra_buffer_.swap(tmp);
   }
-
+#if OV
   void dump(const std::string& filename) override {
     if (basic_size_ != 0 && extra_size_ == 0) {
       basic_buffer_.dump(filename);
@@ -121,7 +115,25 @@ class TypedColumn : public ColumnBase {
       }
     }
   }
+#else
+  void dump(const std::string& filename) override {
+    if (basic_size_ != 0 && extra_size_ == 0) {
+      basic_buffer_.dump(filename);
+    } else if (basic_size_ == 0 && extra_size_ != 0) {
+      extra_buffer_.dump(filename);
+    } else {
+      mmap_array<T> tmp;
+      tmp.open(filename, false);
+      tmp.resize(basic_size_ + extra_size_);
 
+      auto basic_buffer_items = basic_buffer_.get(0, basic_size_);
+      tmp.set(0, basic_buffer_items, basic_size_);
+      basic_buffer_items.free();
+      auto extra_buffer_items = extra_buffer_.get(0, extra_size_);
+      tmp.set(basic_size_, extra_buffer_items, extra_size_);
+    }
+  }
+#endif
   size_t size() const override { return basic_size_ + extra_size_; }
 
   void resize(size_t size) override {
@@ -159,7 +171,7 @@ class TypedColumn : public ColumnBase {
     set_value(index, AnyConverter<T>::from_any(value));
   }
   void set(size_t index, const gbp::BufferObject& value) override {
-    auto val = value.template Decode<T>();
+    auto val = gbp::BufferObject::Ref<T>(value);
     set_value(index, val);
   }
 

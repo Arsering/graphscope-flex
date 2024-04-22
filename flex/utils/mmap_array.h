@@ -34,7 +34,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV false
+#define OV true
 #define MMAP_ADVICE_l MADV_RANDOM
 
 inline void copy_file(const std::string& src, const std::string& dst) {
@@ -297,17 +297,21 @@ class mmap_array {
   void set(size_t idx, const T& val) { data_[idx] = val; }
   const T& get(size_t idx) const { return data_[idx]; }
 #else
+
+  // FIXME: 无法保证atomic
   void set(size_t idx, const T& val, size_t len = 1) {
     CHECK_LE(idx + len, size_);
 
     buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(&val),
-                                    idx * sizeof(T), len * sizeof(T), fd_gbp_);
+                                    idx * sizeof(T), len * sizeof(T), fd_gbp_,
+                                    false);
   }
 
+  // FIXME: 无法保证atomic
   void set(size_t idx, const gbp::BufferObject& val, size_t len = 1) {
     CHECK_LE(idx + len, size_);
     buffer_pool_manager_->SetObject(val, idx * sizeof(T), len * sizeof(T),
-                                    fd_gbp_);
+                                    fd_gbp_, false);
   }
 
   // const gbp::BufferObject get(size_t idx, size_t len = 1) const {
@@ -321,8 +325,6 @@ class mmap_array {
   // }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
-    if (idx + len > size_)
-      LOG(INFO) << idx << " " << size_ << " " << sizeof(T) << " " << len;
     CHECK_LE(idx + len, size_);
     return buffer_pool_manager_->GetObject(idx * sizeof(T), len * sizeof(T),
                                            fd_gbp_);
@@ -437,7 +439,7 @@ class mmap_array<std::string_view> {
 #else
   void set(size_t idx, size_t offset, const std::string_view& val) {
     string_item string_item_obj = {offset, static_cast<uint32_t>(val.size())};
-    items_.set(idx, std::move(string_item_obj));
+    items_.set(idx, std::move(string_item_obj), true);
     data_.set(offset, *(val.data()), val.size());
     // memcpy(data_.data() + offset, val.data(), val.size());
   }
@@ -455,7 +457,7 @@ class mmap_array<std::string_view> {
   // }
   gbp::BufferObject get(size_t idx) const {
     auto value = items_.get(idx);
-    auto item = gbp::BufferObject::Decode<gs::string_item>(value);
+    auto item = gbp::BufferObject::Ref<gs::string_item>(value);
     // LOG(INFO) << item.offset << " " << item.length;
     return data_.get(item.offset, item.length);
   }

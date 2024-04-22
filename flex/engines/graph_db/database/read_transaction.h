@@ -160,8 +160,7 @@ class SingleGraphView {
 #else
   bool exist(vid_t v) const {
     auto item = csr_.get_edge(v);
-    return (gbp::BufferObject::Decode<nbr_t>(item).timestamp.load() <=
-            timestamp_);
+    return (gbp::BufferObject::Ref<nbr_t>(item).timestamp.load() <= timestamp_);
   }
 
   const gbp::BufferObject get_edge(vid_t v) const { return csr_.get_edge(v); }

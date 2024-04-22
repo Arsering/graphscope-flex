@@ -29,6 +29,8 @@ namespace bpo = boost::program_options;
 
 int main(int argc, char** argv) {
   bpo::options_description desc("Usage:");
+  size_t pool_size_Byte = 1024LU * 1024LU * 8;
+
   desc.add_options()("help", "Display help message")(
       "version,v", "Display version")("shard-num,s",
                                       bpo::value<uint32_t>()->default_value(1),
@@ -37,7 +39,11 @@ int main(int argc, char** argv) {
       "http port of query handler")("graph-config,g", bpo::value<std::string>(),
                                     "graph schema config file")(
       "data-path,d", bpo::value<std::string>(), "data directory path")(
-      "log-data-path,l", bpo::value<std::string>(), "log data directory path");
+      "log-data-path,l", bpo::value<std::string>(), "log data directory path")(
+      "buffer-pool-size,B",
+      bpo::value<uint64_t>()->default_value(pool_size_Byte),
+      "size of buffer pool");
+
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
 
@@ -92,11 +98,21 @@ int main(int argc, char** argv) {
   double t0 = -grape::GetCurrentTime();
 
 #if !OV
+  LOG(INFO) << "Launch Performance Logger";
+  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
+      log_data_path + "/performance.log", "vdc");
+
   size_t pool_num = 10;
-  size_t pool_size = 1024 * 1024 * 6 / pool_num;
-  gbp::BufferPoolManager::GetGlobalInstance().init(pool_num, pool_size,
-                                                   pool_num);
-  // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
+  if (vm.count("buffer-pool-size")) {
+    pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
+  }
+  LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
+
+  gbp::BufferPoolManager::GetGlobalInstance().init(
+      pool_num,
+      gbp::ceil(gbp::ceil(pool_size_Byte, gbp::PAGE_SIZE_MEMORY), pool_num),
+      pool_num);
+
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished initializing BufferPoolManager, elapsed " << t0
             << " s";
@@ -128,8 +144,6 @@ int main(int argc, char** argv) {
   gbp::get_mark_warmup().store(1);
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished warm up, elapsed " << t0 << " s";
-  // gbp::debug::get_counter_CopyObj().store(0);
-  // gbp::debug::get_counter_RefObj().store(0);
 #endif
 
   // start service

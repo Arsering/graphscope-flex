@@ -239,7 +239,7 @@ class Req {
 };
 
 int main(int argc, char** argv) {
-  size_t pool_size = 1024LU * 1024LU * 8;
+  size_t pool_size_Byte = 1024LU * 1024LU * 1024LU * 32;
   bpo::options_description desc("Usage:");
   desc.add_options()("help", "Display help message")(
       "version,v", "Display version")("shard-num,s",
@@ -255,7 +255,8 @@ int main(int argc, char** argv) {
                             "num of benchmark reqs")(
       "req-file,r", bpo::value<std::string>(), "requests file")(
       "log-data-path,l", bpo::value<std::string>(), "log data directory path")(
-      "buffer-pool-size,B", bpo::value<uint64_t>()->default_value(pool_size),
+      "buffer-pool-size,B",
+      bpo::value<uint64_t>()->default_value(pool_size_Byte),
       "size of buffer pool");
 
   google::InitGoogleLogging(argv[0]);
@@ -308,10 +309,6 @@ int main(int argc, char** argv) {
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
-
-  pool_size = vm["buffer-pool-size"].as<uint64_t>();
-  gbp::get_pool_size() = pool_size;
-  LOG(INFO) << "pool_size = " << pool_size;
 #if OV
   gbp::get_mark_mmapwarmup().store(1);
 #else
@@ -319,9 +316,13 @@ int main(int argc, char** argv) {
   size_t pool_num = 1;
   gbp::get_mark_warmup().store(0);
 
-  pool_size = 1024LU * 1024LU * 6 / pool_num;
-  gbp::BufferPoolManager::GetGlobalInstance().init(pool_num, pool_size,
-                                                   pool_num);
+  if (vm.count("buffer-pool-size")) {
+    pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
+  }
+  LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
+  gbp::BufferPoolManager::GetGlobalInstance().init(
+      pool_num, gbp::ceil(pool_size_Byte, gbp::PAGE_SIZE_MEMORY) / pool_num,
+      pool_num);
 
 #ifdef DEBUG
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
