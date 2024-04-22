@@ -91,6 +91,10 @@ int main(int argc, char** argv) {
   pid_file.close();
   gbp::get_query_file(log_data_path);
   gbp::get_result_file(log_data_path);
+
+  LOG(INFO) << "Launch Performance Logger";
+  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
+      log_data_path + "/performance.log", "vdc");
   // sleep(10);
 
   setenv("TZ", "Asia/Shanghai", 1);
@@ -98,9 +102,6 @@ int main(int argc, char** argv) {
   double t0 = -grape::GetCurrentTime();
 
 #if !OV
-  LOG(INFO) << "Launch Performance Logger";
-  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "vdc");
 
   size_t pool_num = 10;
   if (vm.count("buffer-pool-size")) {

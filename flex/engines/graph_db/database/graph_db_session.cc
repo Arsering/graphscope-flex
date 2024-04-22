@@ -142,7 +142,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     //     LOG(INFO) << "file content has flushed to the file";
     //   }
     // }
-    encoder.put_byte_at(encoder.size() / 2, 10);
+    // if (encoder.size() > 4)
+    //   encoder.put_byte_at(3, 10);
     return result_buffer;
   }
 

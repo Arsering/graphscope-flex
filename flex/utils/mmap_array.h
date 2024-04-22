@@ -35,6 +35,7 @@
 
 namespace gs {
 #define OV true
+#define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
 
 inline void copy_file(const std::string& src, const std::string& dst) {
@@ -110,7 +111,7 @@ class mmap_array {
         size_ = 0;
         data_ = NULL;
       } else {
-        fd_ = ::open(filename.c_str(), O_RDONLY, 0777);
+        fd_ = ::open(filename.c_str(), O_RDONLY | FILE_FLAG, 0777);
         size_t file_size = std::filesystem::file_size(filename);
         size_ = file_size / sizeof(T);
         if (size_ == 0) {
@@ -119,13 +120,13 @@ class mmap_array {
           data_ = reinterpret_cast<T*>(
               mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
           Warmup((char*) data_, size_ * sizeof(T));
-          madvise(data_, size_ * sizeof(T),
-                  MMAP_ADVICE_l);  // Turn off readahead
+          // madvise(data_, size_ * sizeof(T),
+          //         MMAP_ADVICE_l);  // Turn off readahead
           assert(data_ != MAP_FAILED);
         }
       }
     } else {
-      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT, 0777);
+      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT | FILE_FLAG, 0777);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
       if (size_ == 0) {
@@ -136,8 +137,8 @@ class mmap_array {
                                           fd_, 0));
         Warmup((char*) data_, size_ * sizeof(T));
 
-        madvise(data_, size_ * sizeof(T),
-                MMAP_ADVICE_l);  // Turn off readahead
+        // madvise(data_, size_ * sizeof(T),
+        //         MMAP_ADVICE_l);  // Turn off readahead
 
         assert(data_ != MAP_FAILED);
       }
@@ -154,13 +155,14 @@ class mmap_array {
         fd_gbp_ = -1;
         size_ = 0;
       } else {
-        fd_gbp_ = buffer_pool_manager_->OpenFile(filename, O_RDONLY | O_DIRECT);
+        fd_gbp_ =
+            buffer_pool_manager_->OpenFile(filename, O_RDONLY | FILE_FLAG);
         size_t file_size = std::filesystem::file_size(filename);
         size_ = file_size / sizeof(T);
       }
     } else {
-      fd_gbp_ =
-          buffer_pool_manager_->OpenFile(filename, O_RDWR | O_CREAT | O_DIRECT);
+      fd_gbp_ = buffer_pool_manager_->OpenFile(filename,
+                                               O_RDWR | O_CREAT | FILE_FLAG);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
     }
