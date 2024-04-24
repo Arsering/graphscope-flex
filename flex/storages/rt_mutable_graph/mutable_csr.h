@@ -618,38 +618,25 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   using nbr_t = MutableNbr<EDATA_T>;
 
  public:
-  TypedMutableCsrConstEdgeIter()
-      : mmap_array_(nullptr), start_idx_(0), cur_idx_(0), size_(0) {}
+  TypedMutableCsrConstEdgeIter() : objs_(), cur_idx_(0), size_(0) {}
   explicit TypedMutableCsrConstEdgeIter(const MutableNbrSlice<EDATA_T>& slice)
-      : mmap_array_(slice.get_mmap_array()),
-        start_idx_(slice.get_start_idx()),
-        cur_idx_(0),
-        size_(slice.size()) {}
-
+      : cur_idx_(0), size_(slice.size()) {
+    objs_ = slice.get_mmap_array()->get(slice.get_start_idx(), slice.size());
+  }
   explicit TypedMutableCsrConstEdgeIter(const mmap_array<nbr_t>* ma,
                                         size_t start_idx, size_t size)
-      : mmap_array_(ma), start_idx_(start_idx), cur_idx_(0), size_(size) {}
-
-  explicit TypedMutableCsrConstEdgeIter(size_t start_idx, size_t size)
-      : mmap_array_(nullptr), start_idx_(start_idx), cur_idx_(0), size_(size) {}
+      : cur_idx_(0), size_(size) {
+    objs_ = ma->get(start_idx, size);
+  }
   ~TypedMutableCsrConstEdgeIter() = default;
 
   FORCE_INLINE vid_t get_neighbor() {
     assert(is_valid());
-    if (unlikely(!fresh_)) {
-      objs_ = mmap_array_->get(start_idx_, size_);
-      fresh_ = true;
-    }
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).neighbor;
   }
 
   FORCE_INLINE gbp::BufferObject get_data() {
     assert(is_valid());
-    if (unlikely(!fresh_)) {
-      objs_ = mmap_array_->get(start_idx_, size_);
-      fresh_ = true;
-    }
-
     // return gbp::BufferObject(sizeof(EDATA_T),
     //                          (char*) (&(objs_.Ref<nbr_t>(cur_idx_).data)));
     gbp::BufferObject ret{sizeof(EDATA_T)};
@@ -660,27 +647,20 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   FORCE_INLINE timestamp_t get_timestamp() {
     assert(is_valid());
-    if (unlikely(!fresh_)) {
-      objs_ = mmap_array_->get(start_idx_, size_);
-      fresh_ = true;
-    }
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).timestamp.load();
   }
 
-  void next() { ++cur_idx_; }
-  void set_cur(size_t idx) {
+  FORCE_INLINE void next() { ++cur_idx_; }
+  FORCE_INLINE void set_cur(size_t idx) {
     CHECK_LT(idx, size_);
     cur_idx_ = idx;
   }
-  bool is_valid() const { return cur_idx_ < size_; }
-  size_t size() const { return size_; }
+  FORCE_INLINE bool is_valid() const { return cur_idx_ < size_; }
+  FORCE_INLINE size_t size() const { return size_; }
 
  private:
-  const mmap_array<nbr_t>* mmap_array_;
-  size_t start_idx_;
-  size_t cur_idx_;
   gbp::BufferObject objs_;
-  bool fresh_ = false;
+  size_t cur_idx_;
   size_t size_;
 };
 
@@ -689,38 +669,25 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
   using nbr_t = MutableNbr<EDATA_T>;
 
  public:
-  TypedMutableCsrEdgeIter()
-      : mmap_array_(nullptr), start_idx_(0), cur_idx_(0), size_(0) {}
+  TypedMutableCsrEdgeIter() : objs_(), cur_idx_(0), size_(0) {}
   explicit TypedMutableCsrEdgeIter(MutableNbrSliceMut<EDATA_T> slice)
-      : mmap_array_(slice.get_mmap_array()),
-        start_idx_(slice.get_start_idx()),
-        cur_idx_(0),
-        size_(slice.size()) {}
+      : cur_idx_(0), size_(slice.size()) {
+    objs_ = slice.get_mmap_array()->get(slice.get_start_idx(), slice.size());
+  }
   explicit TypedMutableCsrEdgeIter(mmap_array<nbr_t>* ma, size_t start_idx,
                                    size_t size)
-      : mmap_array_(ma), start_idx_(start_idx), cur_idx_(0), size_(size) {}
-  explicit TypedMutableCsrEdgeIter(size_t start_idx, size_t size)
-      : mmap_array_(nullptr), start_idx_(start_idx), cur_idx_(0), size_(size) {}
+      : cur_idx_(0), size_(size) {
+    objs_ = ma->get(start_idx, size_);
+  }
   ~TypedMutableCsrEdgeIter() = default;
 
-  vid_t get_neighbor() {
+  FORCE_INLINE vid_t get_neighbor() {
     assert(is_valid());
-
-    if (unlikely(!fresh_)) {
-      // if (!fresh_) {
-      objs_ = mmap_array_->get(start_idx_, size_);
-      fresh_ = true;
-    }
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).neighbor;
   }
 
-  gbp::BufferObject get_data() {
+  FORCE_INLINE gbp::BufferObject get_data() {
     assert(is_valid());
-
-    if (unlikely(!fresh_)) {
-      objs_ = mmap_array_->get(start_idx_, size_);
-      fresh_ = true;
-    }
     // return gbp::BufferObject(
     //     sizeof(EDATA_T),
     //     (char*) (&(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data)));
@@ -730,25 +697,13 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
     return ret;
   }
 
-  timestamp_t get_timestamp() {
+  FORCE_INLINE timestamp_t get_timestamp() {
     assert(is_valid());
-
-    if (unlikely(!fresh_)) {
-      // if (!fresh_) {
-      objs_ = mmap_array_->get(start_idx_, size_);
-      fresh_ = true;
-    }
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).timestamp.load();
   }
 
-  void set_data(const Any& value, timestamp_t ts) {
+  FORCE_INLINE void set_data(const Any& value, timestamp_t ts) {
     assert(is_valid());
-
-    if (unlikely(!fresh_)) {
-      // if (!fresh_) {
-      objs_ = mmap_array_->get(start_idx_, size_);
-      fresh_ = true;
-    }
     gbp::BufferObject::UpdateContent<nbr_t>(
         [&](nbr_t& item) {
           ConvertAny<EDATA_T>::to(value, item.data);
@@ -757,20 +712,17 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
         objs_, cur_idx_);
   }
 
-  void next() { ++cur_idx_; }
-  void set_cur(size_t idx) {
+  FORCE_INLINE void next() { ++cur_idx_; }
+  FORCE_INLINE void set_cur(size_t idx) {
     CHECK_LT(idx, size_);
     cur_idx_ = idx;
   }
-  bool is_valid() const { return cur_idx_ < size_; }
-  size_t size() const { return size_; }
+  FORCE_INLINE bool is_valid() const { return cur_idx_ < size_; }
+  FORCE_INLINE size_t size() const { return size_; }
 
  private:
-  mmap_array<nbr_t>* mmap_array_;
-  size_t start_idx_;
   size_t cur_idx_;
   gbp::BufferObject objs_;
-  bool fresh_ = false;
   size_t size_;
 };
 #endif
