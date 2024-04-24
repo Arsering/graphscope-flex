@@ -650,8 +650,12 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
       fresh_ = true;
     }
 
-    return gbp::BufferObject(sizeof(EDATA_T),
-                             (char*) (&(objs_.Ref<nbr_t>(cur_idx_).data)));
+    // return gbp::BufferObject(sizeof(EDATA_T),
+    //                          (char*) (&(objs_.Ref<nbr_t>(cur_idx_).data)));
+    gbp::BufferObject ret{sizeof(EDATA_T)};
+    ::memcpy(ret.Data(), &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data),
+             sizeof(EDATA_T));
+    return ret;
   }
 
   FORCE_INLINE timestamp_t get_timestamp() {
@@ -717,9 +721,13 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
       objs_ = mmap_array_->get(start_idx_, size_);
       fresh_ = true;
     }
-    return gbp::BufferObject(
-        sizeof(EDATA_T),
-        (char*) (&(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data)));
+    // return gbp::BufferObject(
+    //     sizeof(EDATA_T),
+    //     (char*) (&(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data)));
+    gbp::BufferObject ret{sizeof(EDATA_T)};
+    ::memcpy(ret.Data(), &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data),
+             sizeof(EDATA_T));
+    return ret;
   }
 
   timestamp_t get_timestamp() {
