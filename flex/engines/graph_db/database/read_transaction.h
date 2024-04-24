@@ -96,7 +96,7 @@ class AdjListView {
 
   AdjListView(const slice_t& slice, timestamp_t timestamp)
       : edges_(sliceiter_t(slice)), timestamp_(timestamp) {
-    while (is_valid()) {
+    while (edges_.is_valid() && edges_.get_timestamp() > timestamp_) {
       edges_.next();
     }
   }
@@ -109,13 +109,13 @@ class AdjListView {
 
   FORCE_INLINE void next() {
     edges_.next();
-    while (is_valid()) {
+    while (edges_.is_valid() && edges_.get_timestamp() > timestamp_) {
       edges_.next();
     }
   }
 
   FORCE_INLINE bool is_valid() {
-    return edges_.is_valid() && edges_.get_timestamp() > timestamp_;
+    return edges_.is_valid() && edges_.get_timestamp() <= timestamp_;
   }
 
   int estimated_degree() const { return edges_.size(); }

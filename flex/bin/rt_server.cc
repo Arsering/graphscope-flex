@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Warmup finish";
   gbp::get_mark_warmup().store(1);
   t0 += grape::GetCurrentTime();
-  LOG(INFO) << "Finished warm up, elapsed " << t0 << " s";
+  LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 #endif
 
   // start service

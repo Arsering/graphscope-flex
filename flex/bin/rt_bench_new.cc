@@ -306,14 +306,16 @@ int main(int argc, char** argv) {
   pid_file.close();
   gbp::get_query_file(log_data_path);
   gbp::get_result_file(log_data_path);
+  LOG(INFO) << "Launch Performance Logger";
+  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
+      log_data_path + "/performance.log", "vdb");
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 #if OV
   gbp::get_mark_mmapwarmup().store(1);
 #else
-  // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
-  size_t pool_num = 1;
+  size_t pool_num = 10;
   gbp::get_mark_warmup().store(0);
 
   if (vm.count("buffer-pool-size")) {
@@ -344,13 +346,15 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
 
 #if !OV
-  // gbp::get_mark_warmup().store(0);
+  t0 = -grape::GetCurrentTime();
+  gbp::get_mark_warmup().store(0);
   LOG(INFO) << "Warmup start";
   gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
   LOG(INFO) << "Warmup finish";
   gbp::get_mark_warmup().store(1);
-  // gbp::debug::get_counter_CopyObj().store(0);
-  // gbp::debug::get_counter_RefObj().store(0);
+  t0 += grape::GetCurrentTime();
+
+  LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 #endif
 
   std::string req_file = vm["req-file"].as<std::string>();

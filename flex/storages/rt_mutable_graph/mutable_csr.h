@@ -637,7 +637,6 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   FORCE_INLINE vid_t get_neighbor() {
     assert(is_valid());
     if (unlikely(!fresh_)) {
-      // if (!fresh_) {
       objs_ = mmap_array_->get(start_idx_, size_);
       fresh_ = true;
     }
@@ -646,20 +645,18 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   FORCE_INLINE gbp::BufferObject get_data() {
     assert(is_valid());
-
     if (unlikely(!fresh_)) {
       objs_ = mmap_array_->get(start_idx_, size_);
       fresh_ = true;
     }
+
     return gbp::BufferObject(sizeof(EDATA_T),
                              (char*) (&(objs_.Ref<nbr_t>(cur_idx_).data)));
   }
 
   FORCE_INLINE timestamp_t get_timestamp() {
     assert(is_valid());
-
     if (unlikely(!fresh_)) {
-      // if (!fresh_) {
       objs_ = mmap_array_->get(start_idx_, size_);
       fresh_ = true;
     }
