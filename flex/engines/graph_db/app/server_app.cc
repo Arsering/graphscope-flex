@@ -167,7 +167,8 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
           output.put_int(1);
           output.put_long(src_id);
           output.put_long(dst_id);
-          output.put_string(ieit.GetData().to_string());
+          // output.put_string(ieit.GetData().to_string());
+          assert(false);
           return true;
         }
         ieit.Next();
@@ -184,7 +185,8 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
           output.put_int(1);
           output.put_long(src_id);
           output.put_long(dst_id);
-          output.put_string(oeit.GetData().to_string());
+          // output.put_string(oeit.GetData().to_string());
+          assert(false);
           return true;
         }
         oeit.Next();
@@ -245,8 +247,9 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
             uint32_t u = ieit.GetNeighbor();
             if (src_range.contains(u)) {
               int64_t u_oid = txn.GetVertexId(src_label_id, u);
-              match_edges.emplace_back(u_oid, v_oid,
-                                       ieit.GetData().to_string());
+              // match_edges.emplace_back(u_oid, v_oid,
+              //                          ieit.GetData().to_string());
+              assert(false);
             }
             ieit.Next();
           }
@@ -260,8 +263,9 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
               uint32_t v = oeit.GetNeighbor();
               if (dst_range.contains(v)) {
                 int64_t v_oid = txn.GetVertexId(dst_label_id, v);
-                match_edges.emplace_back(u_oid, v_oid,
-                                         oeit.GetData().to_string());
+                // match_edges.emplace_back(u_oid, v_oid,
+                //                          oeit.GetData().to_string());
+                assert(false);
               }
               oeit.Next();
             }

@@ -503,7 +503,7 @@ class MutableCsrConstEdgeIterBase {
   virtual ~MutableCsrConstEdgeIterBase() = default;
 
   virtual vid_t get_neighbor() = 0;
-  virtual gbp::BufferObject get_data() = 0;
+  virtual const void* get_data() = 0;
   virtual timestamp_t get_timestamp() = 0;
   virtual size_t size() const = 0;
 
@@ -517,7 +517,7 @@ class MutableCsrEdgeIterBase {
   virtual ~MutableCsrEdgeIterBase() = default;
 
   virtual vid_t get_neighbor() = 0;
-  virtual gbp::BufferObject get_data() = 0;
+  virtual const void* get_data() = 0;
   virtual timestamp_t get_timestamp() = 0;
   // virtual void set_data(const gbp::BufferObject& value, timestamp_t ts) = 0;
   virtual void set_data(const Any& value, timestamp_t ts) = 0;
@@ -631,22 +631,25 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   ~TypedMutableCsrConstEdgeIter() = default;
 
   FORCE_INLINE vid_t get_neighbor() {
-    assert(is_valid());
+    // assert(is_valid());
+
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).neighbor;
   }
 
-  FORCE_INLINE gbp::BufferObject get_data() {
-    assert(is_valid());
+  FORCE_INLINE const void* get_data() {
+    // assert(is_valid());
     // return gbp::BufferObject(sizeof(EDATA_T),
     //                          (char*) (&(objs_.Ref<nbr_t>(cur_idx_).data)));
-    gbp::BufferObject ret{sizeof(EDATA_T)};
-    ::memcpy(ret.Data(), &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data),
-             sizeof(EDATA_T));
-    return ret;
+    // gbp::BufferObject ret{sizeof(EDATA_T)};
+    // ::memcpy(ret.Data(), &(gbp::BufferObject::Ref<nbr_t>(objs_,
+    // cur_idx_).data),
+    //          sizeof(EDATA_T));
+    // return ret;
+    return &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data);
   }
 
   FORCE_INLINE timestamp_t get_timestamp() {
-    assert(is_valid());
+    // assert(is_valid());
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).timestamp.load();
   }
 
@@ -682,28 +685,34 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
   ~TypedMutableCsrEdgeIter() = default;
 
   FORCE_INLINE vid_t get_neighbor() {
-    assert(is_valid());
+    // assert(is_valid());
+
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).neighbor;
   }
 
-  FORCE_INLINE gbp::BufferObject get_data() {
-    assert(is_valid());
+  FORCE_INLINE const void* get_data() {
+    // assert(is_valid());
+
     // return gbp::BufferObject(
     //     sizeof(EDATA_T),
     //     (char*) (&(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data)));
-    gbp::BufferObject ret{sizeof(EDATA_T)};
-    ::memcpy(ret.Data(), &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data),
-             sizeof(EDATA_T));
-    return ret;
+    // gbp::BufferObject ret{sizeof(EDATA_T)};
+    // ::memcpy(ret.Data(), &(gbp::BufferObject::Ref<nbr_t>(objs_,
+    // cur_idx_).data),
+    //          sizeof(EDATA_T));
+    // return ret;
+    return &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data);
   }
 
   FORCE_INLINE timestamp_t get_timestamp() {
-    assert(is_valid());
+    // assert(is_valid());
+
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).timestamp.load();
   }
 
   FORCE_INLINE void set_data(const Any& value, timestamp_t ts) {
-    assert(is_valid());
+    // assert(is_valid());
+
     gbp::BufferObject::UpdateContent<nbr_t>(
         [&](nbr_t& item) {
           ConvertAny<EDATA_T>::to(value, item.data);

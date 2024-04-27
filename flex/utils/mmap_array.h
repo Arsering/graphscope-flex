@@ -34,7 +34,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV false
+#define OV true
 #define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
 
@@ -305,7 +305,7 @@ class mmap_array {
 
   // FIXME: 无法保证atomic
   void set(size_t idx, const T& val, size_t len = 1) {
-    CHECK_LE(idx + len, size_);
+    // CHECK_LE(idx + len, size_);
 
     buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(&val),
                                     idx * sizeof(T), len * sizeof(T), fd_gbp_,
@@ -314,7 +314,7 @@ class mmap_array {
 
   // FIXME: 无法保证atomic
   void set(size_t idx, const gbp::BufferObject& val, size_t len = 1) {
-    CHECK_LE(idx + len, size_);
+    // CHECK_LE(idx + len, size_);
     buffer_pool_manager_->SetObject(val, idx * sizeof(T), len * sizeof(T),
                                     fd_gbp_, false);
   }
@@ -330,7 +330,7 @@ class mmap_array {
   // }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
-    CHECK_LE(idx + len, size_);
+    // CHECK_LE(idx + len, size_);
     // if (gbp::get_mark_warmup() == 1)
     // LOG(INFO) << filename_;
     return buffer_pool_manager_->GetObject(idx * sizeof(T), len * sizeof(T),

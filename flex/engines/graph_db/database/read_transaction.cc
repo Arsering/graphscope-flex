@@ -73,7 +73,7 @@ Any ReadTransaction::edge_iterator::GetData() const {
   return iter_->get_data();
 }
 #else
-gbp::BufferObject ReadTransaction::edge_iterator::GetData() const {
+const void* ReadTransaction::edge_iterator::GetData() const {
   return iter_->get_data();
 }
 #endif

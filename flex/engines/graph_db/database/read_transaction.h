@@ -103,7 +103,7 @@ class AdjListView {
 
   FORCE_INLINE vid_t get_neighbor() { return edges_.get_neighbor(); }
 
-  FORCE_INLINE gbp::BufferObject get_data() { return edges_.get_data(); }
+  FORCE_INLINE const void* get_data() { return edges_.get_data(); }
 
   FORCE_INLINE timestamp_t get_timestamp() { return edges_.get_timestamp(); }
 
@@ -218,7 +218,7 @@ class ReadTransaction {
 #if OV
     Any GetData() const;
 #else
-    gbp::BufferObject GetData() const;
+    const void* GetData() const;
 #endif
     bool IsValid() const;
 

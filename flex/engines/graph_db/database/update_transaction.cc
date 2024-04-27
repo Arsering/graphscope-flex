@@ -228,23 +228,25 @@ Any UpdateTransaction::edge_iterator::GetData() const {
 }
 #else
 gbp::BufferObject UpdateTransaction::edge_iterator::GetData() const {
-  if (init_iter_->is_valid()) {
-    vid_t cur = init_iter_->get_neighbor();
-    Any any_tmp;
-    if (txn_->GetUpdatedEdgeData(dir_, label_, v_, neighbor_label_, cur,
-                                 edge_label_, any_tmp)) {
-      return gbp::BufferObject(any_tmp);
-      // return ret;
-    } else {
-      return init_iter_->get_data();
-    }
-  } else {
-    vid_t cur = *added_edges_cur_;
-    Any any_tmp;
-    CHECK(txn_->GetUpdatedEdgeData(dir_, label_, v_, neighbor_label_, cur,
-                                   edge_label_, any_tmp));
-    return gbp::BufferObject(any_tmp);
-  }
+  // if (init_iter_->is_valid()) {
+  //   vid_t cur = init_iter_->get_neighbor();
+  //   Any any_tmp;
+  //   if (txn_->GetUpdatedEdgeData(dir_, label_, v_, neighbor_label_, cur,
+  //                                edge_label_, any_tmp)) {
+  //     return gbp::BufferObject(any_tmp);
+  //     // return ret;
+  //   } else {
+  //     return init_iter_->get_data();
+  //   }
+  // } else {
+  //   vid_t cur = *added_edges_cur_;
+  //   Any any_tmp;
+  //   CHECK(txn_->GetUpdatedEdgeData(dir_, label_, v_, neighbor_label_, cur,
+  //                                  edge_label_, any_tmp));
+  //   return gbp::BufferObject(any_tmp);
+  // }
+  assert(false);
+  return gbp::BufferObject();
 }
 #endif
 
