@@ -72,9 +72,9 @@ class mmap_array {
   }
 #endif
   mmap_array(mmap_array&& rhs) : mmap_array() { swap(rhs); }
-
-  ~mmap_array() {}
 #if OV
+  ~mmap_array() {}
+
   void reset() {
     filename_ = "";
     if (data_ != NULL) {
@@ -88,6 +88,9 @@ class mmap_array {
     read_only_ = true;
   }
 #else
+  ~mmap_array() { buffer_pool_manager_->CloseFile(fd_gbp_); }
+
+  void close() { buffer_pool_manager_->CloseFile(fd_gbp_); }
   void reset() {
     filename_ = "";
 
@@ -328,6 +331,8 @@ class mmap_array {
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
     CHECK_LE(idx + len, size_);
+    // if (gbp::get_mark_warmup() == 1)
+    // LOG(INFO) << filename_;
     return buffer_pool_manager_->GetObject(idx * sizeof(T), len * sizeof(T),
                                            fd_gbp_);
   }

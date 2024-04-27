@@ -323,7 +323,7 @@ int main(int argc, char** argv) {
   }
   LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
   gbp::BufferPoolManager::GetGlobalInstance().init(
-      pool_num, gbp::ceil(pool_size_Byte, gbp::PAGE_SIZE_MEMORY) / pool_num,
+      pool_num, gbp::CEIL(pool_size_Byte, gbp::PAGE_SIZE_MEMORY) / pool_num,
       pool_num);
 
 #ifdef DEBUG

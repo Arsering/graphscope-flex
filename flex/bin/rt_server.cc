@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
 
   gbp::BufferPoolManager::GetGlobalInstance().init(
       pool_num,
-      gbp::ceil(gbp::ceil(pool_size_Byte, gbp::PAGE_SIZE_MEMORY), pool_num),
+      gbp::CEIL(gbp::CEIL(pool_size_Byte, gbp::PAGE_SIZE_MEMORY), pool_num),
       pool_num);
 
   t0 += grape::GetCurrentTime();
