@@ -86,11 +86,12 @@ class TypedColumn : public ColumnBase {
       tmp.set(k + basic_size_, extra_buffer_.get(k));
     }
 #else
-    auto basic_buffer_items = basic_buffer_.get(0, basic_size_);
-    tmp.set(0, basic_buffer_items, basic_size_);
-    basic_buffer_items.free();
-    auto extra_buffer_items = extra_buffer_.get(0, extra_size_);
-    tmp.set(basic_size_, extra_buffer_items, extra_size_);
+    assert(false);
+    // auto basic_buffer_items = basic_buffer_.get(0, basic_size_);
+    // tmp.set(0, basic_buffer_items);
+    // basic_buffer_items.free();
+    // auto extra_buffer_items = extra_buffer_.get(0, extra_size_);
+    // tmp.set(basic_size_, extra_buffer_items);
 #endif
     basic_size_ = 0;
     basic_buffer_.reset();
@@ -126,11 +127,27 @@ class TypedColumn : public ColumnBase {
       tmp.open(filename, false);
       tmp.resize(basic_size_ + extra_size_);
 
-      auto basic_buffer_items = basic_buffer_.get(0, basic_size_);
-      tmp.set(0, basic_buffer_items, basic_size_);
-      basic_buffer_items.free();
-      auto extra_buffer_items = extra_buffer_.get(0, extra_size_);
-      tmp.set(basic_size_, extra_buffer_items, extra_size_);
+      auto basic_buffer_items_old = basic_buffer_.get(0, basic_size_);
+      auto basic_buffer_items_new = tmp.get(0, basic_size_);
+      for (size_t i = 0; i < basic_size_; i++)
+        gbp::BufferObject::UpdateContent<T>(
+            [&](T& item) {
+              memcpy(&item,
+                     &gbp::BufferObject::Ref<T>(basic_buffer_items_old, i),
+                     sizeof(T));
+            },
+            basic_buffer_items_new, i);
+
+      auto extra_buffer_items_old = extra_buffer_.get(0, extra_size_);
+      auto extra_buffer_items_new = tmp.get(basic_size_, extra_size_);
+      for (size_t i = 0; i < extra_size_; i++)
+        gbp::BufferObject::UpdateContent<T>(
+            [&](T& item) {
+              memcpy(&item,
+                     &gbp::BufferObject::Ref<T>(extra_buffer_items_old, i),
+                     sizeof(T));
+            },
+            extra_buffer_items_new, i);
     }
   }
 #endif
@@ -149,11 +166,12 @@ class TypedColumn : public ColumnBase {
 
   PropertyType type() const override { return AnyConverter<T>::type; }
 
+#if OV
   void set_value(size_t index, const T& val) {
     assert(index >= basic_size_ && index < basic_size_ + extra_size_);
     extra_buffer_.set(index - basic_size_, val);
   }
-#if OV
+
   void set_any(size_t index, const Any& value) override {
     set_value(index, AnyConverter<T>::from_any(value));
   }
@@ -167,6 +185,17 @@ class TypedColumn : public ColumnBase {
     return AnyConverter<T>::to_any(get_view(index));
   }
 #else
+  void set_value(size_t index, const T& val) {
+    assert(index >= basic_size_ && index < basic_size_ + extra_size_);
+
+    // 为了防止一个obj跨两个页
+    if constexpr (gbp::PAGE_SIZE_FILE / sizeof(T) == 0)
+      extra_buffer_.set(index - basic_size_, val);
+    else {
+      auto item_t = extra_buffer_.get(index - basic_size_);
+      gbp::BufferObject::UpdateContent<T>([&](T& item) { item = val; }, item_t);
+    }
+  }
   void set_any(size_t index, const Any& value) override {
     set_value(index, AnyConverter<T>::from_any(value));
   }

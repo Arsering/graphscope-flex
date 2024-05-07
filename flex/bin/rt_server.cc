@@ -95,14 +95,12 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
       log_data_path + "/performance.log", "vdc");
-  // sleep(10);
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
+
   double t0 = -grape::GetCurrentTime();
-
 #if !OV
-
   size_t pool_num = 10;
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();

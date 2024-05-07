@@ -187,11 +187,12 @@ class LFIndexer {
 
   INDEX_T insert(int64_t oid) {
     INDEX_T ind = static_cast<INDEX_T>(num_elements_.fetch_add(1));
+#if OV
     keys_.set(ind, oid);
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
-#if OV
+
     while (true) {
       if (__sync_bool_compare_and_swap(&indices_.data()[index], sentinel,
                                        ind)) {
@@ -200,6 +201,11 @@ class LFIndexer {
       index = (index + 1) % num_slots_minus_one_;
     }
 #else
+    keys_.set(ind, &oid);
+    size_t index =
+        hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
+    static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+
     bool mark = false;
     while (true) {
       auto item1 = indices_.get(index);
@@ -840,11 +846,12 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
 
   for (size_t t = 0; t < size; t++) {
     auto item = input.keys_[t];
-    lf.keys_.set(t, item, true);
+    lf.keys_.set(t, &item);
   }
 
+  auto empty_value = std::numeric_limits<int64_t>::max();
   for (size_t k = size; k != lf_size; ++k) {
-    lf.keys_.set(k, std::numeric_limits<int64_t>::max(), true);
+    lf.keys_.set(k, &empty_value);
   }
 
   lf.num_elements_.store(size);
@@ -852,8 +859,9 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
   lf.indices_.open(filename + ".indices", false);
   lf.indices_.resize(input.indices_.size());
 
+  INDEX_T empty_value_1 = std::numeric_limits<INDEX_T>::max();
   for (size_t k = 0; k != input.indices_.size(); ++k) {
-    lf.indices_.set(k, std::numeric_limits<INDEX_T>::max(), true);
+    lf.indices_.set(k, &empty_value_1);
   }
   lf.indices_size_ = input.indices_.size();
 
@@ -872,7 +880,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         if (index >= input.num_slots_minus_one_) {
           extra.emplace_back(oid, ret);
         } else {
-          lf.indices_.set(index, ret, true);
+          lf.indices_.set(index, &ret);
         }
         break;
       }
@@ -886,7 +894,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
     while (true) {
       auto item = lf.indices_.get(index);
       if (gbp::BufferObject::Ref<INDEX_T>(item) == sentinel) {
-        lf.indices_.set(index, pair.second, true);
+        lf.indices_.set(index, &(pair.second));
         break;
       }
       index = (index + 1) % input.num_slots_minus_one_;

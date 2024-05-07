@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include "grape/util.h"
 
+#include <algorithm>
 #include <atomic>
 #include <filesystem>
 #include <string>
@@ -88,7 +89,9 @@ class mmap_array {
     read_only_ = true;
   }
 #else
-  ~mmap_array() { buffer_pool_manager_->CloseFile(fd_gbp_); }
+  // mmap_array(const mmap_array&) = delete;             // 阻止拷贝
+  // mmap_array& operator=(const mmap_array&) = delete;  // 阻止赋值
+  ~mmap_array() {}
 
   void close() { buffer_pool_manager_->CloseFile(fd_gbp_); }
   void reset() {
@@ -303,21 +306,21 @@ class mmap_array {
   const T& get(size_t idx) const { return data_[idx]; }
 #else
 
-  // FIXME: 无法保证atomic
-  void set(size_t idx, const T& val, size_t len = 1) {
-    // CHECK_LE(idx + len, size_);
-
-    buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(&val),
+  // FIXME: 无法保证atomic，也无法保证单个obj不跨页
+  void set(size_t idx, const T* val, size_t len = 1) {
+    CHECK_LE(idx + len, size_);
+    buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(val),
                                     idx * sizeof(T), len * sizeof(T), fd_gbp_,
                                     false);
   }
 
-  // FIXME: 无法保证atomic
-  void set(size_t idx, const gbp::BufferObject& val, size_t len = 1) {
-    // CHECK_LE(idx + len, size_);
-    buffer_pool_manager_->SetObject(val, idx * sizeof(T), len * sizeof(T),
-                                    fd_gbp_, false);
-  }
+  // // FIXME: 无法保证atomic
+  // void set(size_t idx, const gbp::BufferObject& val) {
+  //   const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+  //                              (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+  //   buffer_pool_manager_->SetObject(val, file_offset, val.Size(), fd_gbp_,
+  //                                   false);
+  // }
 
   // const gbp::BufferObject get(size_t idx, size_t len = 1) const {
   //   CHECK_LE(idx + len, size_);
@@ -333,8 +336,25 @@ class mmap_array {
     // CHECK_LE(idx + len, size_);
     // if (gbp::get_mark_warmup() == 1)
     // LOG(INFO) << filename_;
-    return buffer_pool_manager_->GetObject(idx * sizeof(T), len * sizeof(T),
-                                           fd_gbp_);
+    size_t buf_size = 0;
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+    uint16_t obj_num_rest = 0;
+    size_t file_offset_tmp = file_offset;
+    while (len != 0) {
+      obj_num_rest =
+          (gbp::PAGE_SIZE_FILE - file_offset_tmp % gbp::PAGE_SIZE_FILE) /
+          sizeof(T);
+      if (len > obj_num_rest) {
+        buf_size += gbp::PAGE_SIZE_FILE - file_offset_tmp % gbp::PAGE_SIZE_FILE;
+        len -= obj_num_rest;
+        file_offset_tmp += buf_size;
+      } else {
+        buf_size += sizeof(T) * len;
+        len -= len;
+      }
+    }
+    return buffer_pool_manager_->GetObject(file_offset, buf_size, fd_gbp_);
   }
 
 #endif
@@ -392,6 +412,7 @@ class mmap_array {
   bool read_only_;
 #else
 
+  constexpr static uint16_t OBJ_NUM_PERPAGE = gbp::PAGE_SIZE_FILE / sizeof(T);
   gbp::BufferPoolManager* buffer_pool_manager_;
   int fd_gbp_ = -1;
   std::string filename_;
@@ -446,9 +467,8 @@ class mmap_array<std::string_view> {
 #else
   void set(size_t idx, size_t offset, const std::string_view& val) {
     string_item string_item_obj = {offset, static_cast<uint32_t>(val.size())};
-    items_.set(idx, std::move(string_item_obj), true);
-    data_.set(offset, *(val.data()), val.size());
-    // memcpy(data_.data() + offset, val.data(), val.size());
+    items_.set(idx, &string_item_obj);
+    data_.set(offset, val.data(), val.size());
   }
 #endif
 
@@ -458,17 +478,12 @@ class mmap_array<std::string_view> {
     return std::string_view(data_.data() + item.offset, item.length);
   }
 #else
-  // std::string_view get(size_t idx) const {
-  //   const string_item& item = items_.get(idx);
-  //   return std::string_view(&data_.get(item.offset), item.length);
-  // }
   gbp::BufferObject get(size_t idx) const {
     auto value = items_.get(idx);
     auto item = gbp::BufferObject::Ref<gs::string_item>(value);
     // LOG(INFO) << item.offset << " " << item.length;
     return data_.get(item.offset, item.length);
   }
-
 #endif
 
   size_t get_size_in_byte() const {

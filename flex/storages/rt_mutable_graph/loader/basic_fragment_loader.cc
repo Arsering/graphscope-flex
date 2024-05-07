@@ -142,6 +142,7 @@ void BasicFragmentLoader::FinishAddingVertex(
   std::string prefix =
       snapshot_dir(work_dir_, 0) +
       vertex_map_prefix(schema_.get_vertex_label_name(v_label));
+
   build_lf_indexer(indexer, prefix, lf_indexers_[v_label]);
 }
 

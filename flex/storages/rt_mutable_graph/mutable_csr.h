@@ -373,13 +373,7 @@ struct MutableAdjlist {
   // using slice_t = MutableNbrSlice<EDATA_T>;
   // using mut_slice_t = MutableNbrSliceMut<EDATA_T>;
 
-  MutableAdjlist()
-      :  // mmap_array_(nullptr),
-         //   buffer_(nullptr),
-         //   is_buffer_(false),
-        start_idx_(0),
-        size_(0),
-        capacity_(0) {}
+  MutableAdjlist() : start_idx_(0), size_(0), capacity_(0) {}
   ~MutableAdjlist() {}
 
   void init(size_t start_idx, size_t cap, size_t size) {
@@ -459,11 +453,8 @@ struct MutableAdjlist {
   // mmap_array<nbr_t>* get_mmap_array() { return mmap_array_; }
 
   //  private:
-  // nbr_t* buffer_ = nullptr;
   std::atomic<int> size_;
   int capacity_;
-  // bool is_buffer_;
-  // mmap_array<nbr_t>* mmap_array_ = nullptr;
   size_t start_idx_;
 };
 #endif
@@ -785,14 +776,15 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     }
 #else
     // FIXME: 此处的实现未经验证，需要检查其实现正确性
-    adjlist_t* buf = (adjlist_t*) malloc(sizeof(adjlist_t) * vnum);
+    auto items_tmp = adj_lists_.get(0, vnum);
+
     size_t offset = 0;
     for (vid_t i = 0; i < vnum; ++i) {
       int deg = degree[i];
-      buf[i].init(offset, deg, 0);
+      gbp::BufferObject::UpdateContent<adjlist_t>(
+          [&](adjlist_t& item) { item.init(offset, deg, 0); }, items_tmp, i);
       offset += deg;
     }
-    adj_lists_.set(0, (*buf), vnum);
 #endif
   }
 #if OV
@@ -831,18 +823,16 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     adj_lists_.resize(degree_list.size());
     locks_ = new grape::SpinLock[degree_list.size()];
 
-    adjlist_t* buf =
-        (adjlist_t*) malloc(sizeof(adjlist_t) * degree_list.size());
     auto degree_list_batch = degree_list.get(0, degree_list.size());
-
+    auto items_tmp = adj_lists_.get(0, degree_list.size());
     size_t offset = 0;
     for (size_t i = 0; i < degree_list.size(); i++) {
       int degree = gbp::BufferObject::Ref<int>(degree_list_batch, i);
-      buf[i].init(offset, degree, degree);
+      gbp::BufferObject::UpdateContent<adjlist_t>(
+          [&](adjlist_t& item) { item.init(offset, degree, degree); },
+          items_tmp, i);
       offset += degree;
     }
-    adj_lists_.set(0, (*buf), degree_list.size());
-    free(buf);
   }
 #endif
 
@@ -886,8 +876,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
 #else
   // TODO: 需要重新实现
-  void dump(const std::string& name,
-            const std::string& new_spanshot_dir) override {
+  void dump_1(const std::string& name, const std::string& new_spanshot_dir) {
     assert(false);
     //     size_t vnum = adj_lists_.size();
     //     bool reuse_nbr_list = true;
@@ -960,6 +949,63 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     //       fclose(fout);
     //     }
   }
+  void dump(const std::string& name,
+            const std::string& new_spanshot_dir) override {
+    size_t vnum = adj_lists_.size();
+    bool reuse_nbr_list = true;
+    mmap_array<int> degree_list;
+    degree_list.open(new_spanshot_dir + "/" + name + ".deg", false);
+    degree_list.resize(vnum);
+
+    size_t offset = 0;
+    int size_tmp;
+    gbp::BufferObject adjlists_tmp = adj_lists_.get(0, adj_lists_.size());
+    for (size_t i = 0; i < vnum; ++i) {
+      auto& item_tmp = gbp::BufferObject::Ref<adjlist_t>(adjlists_tmp, i);
+
+      if (item_tmp.size_ != 0) {
+        if (!(item_tmp.start_idx_ == offset && offset < nbr_list_.size())) {
+          reuse_nbr_list = false;
+        }
+      }
+      size_tmp = item_tmp.size_.load();
+      degree_list.set(i, &size_tmp);
+      offset += item_tmp.size_;
+    }
+
+    if (reuse_nbr_list && !nbr_list_.filename().empty() &&
+        std::filesystem::exists(nbr_list_.filename())) {
+      std::filesystem::create_hard_link(nbr_list_.filename(),
+                                        new_spanshot_dir + "/" + name + ".nbr");
+    } else {
+      // FILE* fout =
+      //     fopen((new_spanshot_dir + "/" + name + ".nbr").c_str(), "wb");
+      mmap_array<nbr_t> fout;
+      fout.open(new_spanshot_dir + "/" + name + ".nbr", false);
+      offset = 0;
+      size_t size_old = 0;
+      for (size_t i = 0; i < vnum; ++i) {
+        auto& item_tmp = gbp::BufferObject::Ref<adjlist_t>(adjlists_tmp, i);
+
+        auto nbrs_old = nbr_list_.get(item_tmp.start_idx_, item_tmp.size_);
+        auto nbrs_new = fout.get(offset, item_tmp.size_);
+
+        size_old = item_tmp.size_.load();
+        for (size_t i = 0; i < size_old; i++)
+          gbp::BufferObject::UpdateContent<nbr_t>(
+              [&](nbr_t& item) {
+                auto& item_old = gbp::BufferObject::Ref<nbr_t>(nbrs_old, i);
+                item.neighbor = item_old.neighbor;
+                item.data = item_old.data;
+                item.timestamp = item_old.timestamp.load();
+              },
+              nbrs_new, i);
+
+        offset += item_tmp.size_;
+      }
+      fout.close();
+    }
+  }
 #endif
 
   void resize(vid_t vnum) override {
@@ -971,13 +1017,11 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
         adj_lists_[k].init(NULL, 0, 0);
       }
 #else
-      adjlist_t* buf =
-          (adjlist_t*) malloc(sizeof(adjlist_t) * (vnum - old_size));
+      auto items_tmp = adj_lists_.get(old_size, vnum - old_size);
       for (size_t i = 0; i < vnum - old_size; i++) {
-        buf[i].init(0, 0, 0);
+        gbp::BufferObject::UpdateContent<adjlist_t>(
+            [&](adjlist_t& item) { item.init(0, 0, 0); }, items_tmp, i);
       }
-      adj_lists_.set(old_size, (*buf), (vnum - old_size));
-      free(buf);
 #endif
       delete[] locks_;
       locks_ = new grape::SpinLock[vnum];
@@ -1035,13 +1079,23 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       bool success = false;
       std::tie<bool, size_t>(success, start_idx_new) =
           gbp::atomic_add<size_t>(size_, capacity_new, nbr_list_.size());
+      if (!success)
+        LOG(FATAL) << "fuck";
       assert(success);
 
       // 复制数据到新的位置
       auto nbr_slice_old = nbr_list_.get(adj_list.start_idx_, adj_list.size_);
-      nbr_list_.set(
-          start_idx_new, nbr_slice_old,
-          adj_list.size_);  // copy nbr_slice from old place to new place
+      auto nbr_slice_new = nbr_list_.get(start_idx_new, adj_list.size_);
+      for (size_t i = 0; i < adj_list.size_; i++)
+        gbp::BufferObject::UpdateContent<nbr_t>(
+            [&](nbr_t& item) {
+              auto& item_old = gbp::BufferObject::Ref<nbr_t>(nbr_slice_old, i);
+              item.data = item_old.data;
+              item.neighbor = item_old.neighbor;
+              item.timestamp = item_old.timestamp.load();
+            },
+            nbr_slice_new, i);
+
       gbp::BufferObject::UpdateContent<adjlist_t>(
           [&](adjlist_t& item) {
             item.capacity_ = capacity_new;

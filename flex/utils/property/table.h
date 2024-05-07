@@ -93,7 +93,9 @@ class Table {
   void insert(size_t index, const std::vector<gbp::BufferObject>& values,
               const std::vector<int32_t>& col_ind_mapping);
 #endif
+
   void resize(size_t row_num);
+
 #if OV
   Any at(size_t row_id, size_t col_id);
 

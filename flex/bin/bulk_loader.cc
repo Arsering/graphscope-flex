@@ -26,6 +26,8 @@
 namespace bpo = boost::program_options;
 
 int main(int argc, char** argv) {
+  size_t pool_size_Byte = 1024LU * 1024LU * 8;
+
   bpo::options_description desc("Usage:");
   desc.add_options()("help", "Display help message")(
       "version,v", "Display version")("parallelism,p",
@@ -33,7 +35,10 @@ int main(int argc, char** argv) {
                                       "parallelism of bulk loader")(
       "data-path,d", bpo::value<std::string>(), "data directory path")(
       "graph-config,g", bpo::value<std::string>(), "graph schema config file")(
-      "bulk-load,l", bpo::value<std::string>(), "bulk-load config file");
+      "bulk-load,l", bpo::value<std::string>(), "bulk-load config file")(
+      "buffer-pool-size,B",
+      bpo::value<uint64_t>()->default_value(pool_size_Byte),
+      "size of buffer pool");
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
 
@@ -88,6 +93,25 @@ int main(int argc, char** argv) {
     LOG(ERROR) << "data directory is not empty";
     return -1;
   }
+
+  double t0 = -grape::GetCurrentTime();
+#if !OV
+  size_t pool_num = 10;
+  if (vm.count("buffer-pool-size")) {
+    pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
+  }
+  LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
+
+  gbp::BufferPoolManager::GetGlobalInstance().init(
+      pool_num, CEIL(CEIL(pool_size_Byte, gbp::PAGE_SIZE_MEMORY), pool_num),
+      pool_num);
+
+  t0 += grape::GetCurrentTime();
+  LOG(INFO) << "Finished initializing BufferPoolManager, elapsed " << t0
+            << " s";
+
+  t0 = -grape::GetCurrentTime();
+#endif
 
   auto loader = gs::LoaderFactory::CreateFragmentLoader(
       data_dir_path.string(), schema, loading_config, parallelism);

@@ -395,6 +395,7 @@ void CSVFragmentLoader::addVerticesImpl(label_t v_label_id,
     bool is_stream = !loading_config_.GetIsBatchReader();
     auto reader = create_vertex_reader(schema_, loading_config_, v_label_id,
                                        v_file, is_stream);
+
     while (true) {
       std::shared_ptr<arrow::RecordBatch> record_batch = reader->Read();
       if (record_batch == nullptr) {
@@ -437,6 +438,7 @@ void CSVFragmentLoader::addVertices(label_t v_label_id,
   if (indexer.bucket_count() == 0) {
     indexer._rehash(schema_.get_max_vnum(v_label_name));
   }
+
   basic_fragment_loader_.FinishAddingVertex(v_label_id, indexer);
 
   VLOG(10) << "Finish init vertices for label " << v_label_name;

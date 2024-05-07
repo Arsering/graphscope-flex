@@ -229,6 +229,7 @@ inline void fill_vertex_reader_meta(
       arrow_types.insert(
           {included_col_names[ind], PropertyTypeToArrowType(property_type)});
     }
+
     {
       // add primary key types;
       auto primary_key_name = std::get<1>(primary_key);
@@ -240,11 +241,13 @@ inline void fill_vertex_reader_meta(
           break;
         }
       }
+
       if (ind == mapped_property_names.size()) {
         LOG(FATAL) << "The specified property name: " << primary_key_name
                    << " does not exist in the vertex column mapping, please "
                       "check your configuration";
       }
+
       arrow_types.insert(
           {included_col_names[ind], PropertyTypeToArrowType(primary_key_type)});
     }
@@ -397,6 +400,7 @@ inline std::shared_ptr<CSVReaderBase> create_vertex_reader(
   arrow::csv::ParseOptions parse_options;
   fill_vertex_reader_meta(schema, loading_config, v_label, v_file, read_options,
                           parse_options, convert_options);
+
   if (is_streaming) {
     return std::make_shared<CSVStreamReader>(v_file, convert_options,
                                              read_options, parse_options);
