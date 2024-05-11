@@ -164,10 +164,11 @@ class Req {
 
     while (true) {
       sleep(1);
-      operation_count_now = gbp::get_counter_operation().load();
-      read_count_now = gbp::debug::get_counter_read().load();
-      fetch_count_now = gbp::debug::get_counter_fetch().load();
-      read_count_per_query_now = gbp::debug::get_counter_fetch_unique().load();
+      operation_count_now = gbp::get_counter_query().load();
+      // read_count_now = gbp::debug::get_counter_read().load();
+      // fetch_count_now = gbp::debug::get_counter_fetch().load();
+      // read_count_per_query_now =
+      // gbp::debug::get_counter_fetch_unique().load();
 
       LOG(INFO) << "Throughput (Total) [" << operation_count_now / 10000
                 << "w] (last 1s) ["
@@ -290,7 +291,7 @@ int main(int argc, char** argv) {
   pool_size = vm["buffer-pool-size"].as<uint64_t>();
   LOG(INFO) << "size of buffer pool = " << pool_size;
   // auto* bpm = &gbp::BufferPoolManager::GetGlobalInstance();
-  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size,200);
+  gbp::BufferPoolManager::GetGlobalInstance().init(200, pool_size, 200);
 
 // gbp::BufferPoolManager::GetGlobalInstance().init(pool_size);
 #endif

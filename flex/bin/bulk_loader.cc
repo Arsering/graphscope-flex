@@ -26,7 +26,7 @@
 namespace bpo = boost::program_options;
 
 int main(int argc, char** argv) {
-  size_t pool_size_Byte = 1024LU * 1024LU * 8;
+  size_t pool_size_Byte = 1024LU * 1024LU * 1024LU * 50;
 
   bpo::options_description desc("Usage:");
   desc.add_options()("help", "Display help message")(
@@ -117,5 +117,7 @@ int main(int argc, char** argv) {
       data_dir_path.string(), schema, loading_config, parallelism);
   loader->LoadFragment();
 
+  t0 += grape::GetCurrentTime();
+  LOG(INFO) << "Finished reloading Graph, elapsed " << t0 << " s";
   return 0;
 }

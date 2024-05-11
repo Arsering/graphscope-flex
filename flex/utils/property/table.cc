@@ -42,9 +42,11 @@ void Table::init(const std::string& name, const std::string& work_dir,
                  const std::vector<PropertyType>& property_types,
                  const std::vector<StorageStrategy>& strategies_) {
   initColumns(col_name, property_types, strategies_);
+
   for (size_t i = 0; i < columns_.size(); ++i) {
     columns_[i]->open(name + ".col_" + std::to_string(i), "", work_dir);
   }
+
   touched_ = true;
   buildColumnPtrs();
 }

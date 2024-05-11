@@ -35,7 +35,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV false
+#define OV true
 #define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
 
@@ -91,9 +91,13 @@ class mmap_array {
 #else
   // mmap_array(const mmap_array&) = delete;             // 阻止拷贝
   // mmap_array& operator=(const mmap_array&) = delete;  // 阻止赋值
-  ~mmap_array() {}
+  ~mmap_array() {
+    if (!mark_used_) {
+      LOG(INFO) << filename_;
+    }
+  }
 
-  void close() { buffer_pool_manager_->CloseFile(fd_gbp_); }
+  void close() { buffer_pool_manager_->CloseFile(fd_gbp_), fd_gbp_ = -1; }
   void reset() {
     filename_ = "";
 
@@ -117,7 +121,7 @@ class mmap_array {
         size_ = 0;
         data_ = NULL;
       } else {
-        fd_ = ::open(filename.c_str(), O_RDONLY | FILE_FLAG, 0777);
+        fd_ = ::open(filename.c_str(), O_RDONLY, 0777);
         size_t file_size = std::filesystem::file_size(filename);
         size_ = file_size / sizeof(T);
         if (size_ == 0) {
@@ -132,7 +136,7 @@ class mmap_array {
         }
       }
     } else {
-      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT | FILE_FLAG, 0777);
+      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT, 0777);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
       if (size_ == 0) {
@@ -160,18 +164,18 @@ class mmap_array {
         LOG(ERROR) << "file not exists: " << filename;
         fd_gbp_ = -1;
         size_ = 0;
+        return;
       } else {
         fd_gbp_ =
             buffer_pool_manager_->OpenFile(filename, O_RDONLY | FILE_FLAG);
-        size_t file_size = std::filesystem::file_size(filename);
-        size_ = file_size / sizeof(T);
       }
     } else {
       fd_gbp_ = buffer_pool_manager_->OpenFile(filename,
                                                O_RDWR | O_CREAT | FILE_FLAG);
-      size_t file_size = std::filesystem::file_size(filename);
-      size_ = file_size / sizeof(T);
     }
+    size_t file_size = std::filesystem::file_size(filename);
+    size_ = (file_size / gbp::PAGE_SIZE_FILE) * OBJ_NUM_PERPAGE +
+            (file_size % gbp::PAGE_SIZE_FILE) / sizeof(T);
   }
 #endif
 
@@ -262,15 +266,16 @@ class mmap_array {
     if (read_only_) {
       if (size < size_) {
         size_ = size;
-      } else if (size * sizeof(T) < std::filesystem::file_size(filename_)) {
+      } else if (size < size_) {
         size_ = size;
       } else {
         LOG(FATAL)
             << "cannot resize read-only mmap_array to larger size than file";
       }
     } else {
-      // auto ret = ftruncate(fd_, size * sizeof(T));
-      buffer_pool_manager_->Resize(fd_gbp_, size * sizeof(T));
+      size_t file_size_new = (size % OBJ_NUM_PERPAGE) * sizeof(T) +
+                             (size / OBJ_NUM_PERPAGE) * gbp::PAGE_SIZE_MEMORY;
+      buffer_pool_manager_->Resize(fd_gbp_, file_size_new);
       size_ = size;
     }
   }
@@ -334,8 +339,10 @@ class mmap_array {
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
     // CHECK_LE(idx + len, size_);
-    // if (gbp::get_mark_warmup() == 1)
     // LOG(INFO) << filename_;
+    if (gbp::log_enable().load()) {
+      mark_used_ = true;
+    }
     size_t buf_size = 0;
     const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
                                (idx % OBJ_NUM_PERPAGE) * sizeof(T);
@@ -359,8 +366,6 @@ class mmap_array {
 
 #endif
 
-  size_t get_size_in_byte() const { return size_ * sizeof(T); }
-
 #if OV
   T& operator[](size_t idx) { return data_[idx]; }
   const T& operator[](size_t idx) const { return data_[idx]; }
@@ -375,6 +380,7 @@ class mmap_array {
     std::swap(data_, rhs.data_);
     std::swap(size_, rhs.size_);
   }
+  size_t get_size_in_byte() const { return size_ * sizeof(T); }
 #else
   void swap(mmap_array<T>& rhs) {
     std::swap(filename_, rhs.filename_);
@@ -384,15 +390,20 @@ class mmap_array {
   }
 
   gbp::GBPfile_handle_type filehandle() const { return fd_gbp_; }
+  size_t get_size_in_byte() const {
+    return (size_ % OBJ_NUM_PERPAGE) * sizeof(T) +
+           (size_ / OBJ_NUM_PERPAGE) * gbp::PAGE_SIZE_MEMORY;
+  }
 #endif
 
   const std::string& filename() const { return filename_; }
 
  private:
+  mutable bool mark_used_ = false;
 #if OV
   void Warmup(char* data, size_t size) {
     static size_t page_num_used = 0;
-    if (gbp::get_mark_mmapwarmup().load() == 1) {
+    if (gbp::warmup_mark().load() == 1) {
       LOG(INFO) << "Warmup file " << filename_;
       volatile int64_t sum = 0;
       for (size_t offset = 0; offset < size; offset += 4096) {
@@ -411,7 +422,6 @@ class mmap_array {
   size_t size_;
   bool read_only_;
 #else
-
   constexpr static uint16_t OBJ_NUM_PERPAGE = gbp::PAGE_SIZE_FILE / sizeof(T);
   gbp::BufferPoolManager* buffer_pool_manager_;
   int fd_gbp_ = -1;
@@ -481,7 +491,6 @@ class mmap_array<std::string_view> {
   gbp::BufferObject get(size_t idx) const {
     auto value = items_.get(idx);
     auto item = gbp::BufferObject::Ref<gs::string_item>(value);
-    // LOG(INFO) << item.offset << " " << item.length;
     return data_.get(item.offset, item.length);
   }
 #endif

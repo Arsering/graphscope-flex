@@ -98,6 +98,7 @@ class TypedColumn : public ColumnBase {
     extra_size_ = tmp.size();
     extra_buffer_.swap(tmp);
   }
+
 #if OV
   void dump(const std::string& filename) override {
     if (basic_size_ != 0 && extra_size_ == 0) {

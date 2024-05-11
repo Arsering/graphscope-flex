@@ -493,9 +493,9 @@ class MutableCsrConstEdgeIterBase {
   MutableCsrConstEdgeIterBase() = default;
   virtual ~MutableCsrConstEdgeIterBase() = default;
 
-  virtual vid_t get_neighbor() = 0;
-  virtual const void* get_data() = 0;
-  virtual timestamp_t get_timestamp() = 0;
+  virtual vid_t get_neighbor() const = 0;
+  virtual const void* get_data() const = 0;
+  virtual timestamp_t get_timestamp() const = 0;
   virtual size_t size() const = 0;
 
   virtual void next() = 0;
@@ -507,9 +507,9 @@ class MutableCsrEdgeIterBase {
   MutableCsrEdgeIterBase() = default;
   virtual ~MutableCsrEdgeIterBase() = default;
 
-  virtual vid_t get_neighbor() = 0;
-  virtual const void* get_data() = 0;
-  virtual timestamp_t get_timestamp() = 0;
+  virtual vid_t get_neighbor() const = 0;
+  virtual const void* get_data() const = 0;
+  virtual timestamp_t get_timestamp() const = 0;
   // virtual void set_data(const gbp::BufferObject& value, timestamp_t ts) = 0;
   virtual void set_data(const Any& value, timestamp_t ts) = 0;
 
@@ -621,13 +621,13 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   }
   ~TypedMutableCsrConstEdgeIter() = default;
 
-  FORCE_INLINE vid_t get_neighbor() {
+  FORCE_INLINE vid_t get_neighbor() const {
     // assert(is_valid());
 
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).neighbor;
   }
 
-  FORCE_INLINE const void* get_data() {
+  FORCE_INLINE const void* get_data() const {
     // assert(is_valid());
     // return gbp::BufferObject(sizeof(EDATA_T),
     //                          (char*) (&(objs_.Ref<nbr_t>(cur_idx_).data)));
@@ -639,7 +639,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
     return &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data);
   }
 
-  FORCE_INLINE timestamp_t get_timestamp() {
+  FORCE_INLINE timestamp_t get_timestamp() const {
     // assert(is_valid());
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).timestamp.load();
   }
@@ -675,13 +675,13 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
   }
   ~TypedMutableCsrEdgeIter() = default;
 
-  FORCE_INLINE vid_t get_neighbor() {
+  FORCE_INLINE vid_t get_neighbor() const {
     // assert(is_valid());
 
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).neighbor;
   }
 
-  FORCE_INLINE const void* get_data() {
+  FORCE_INLINE const void* get_data() const {
     // assert(is_valid());
 
     // return gbp::BufferObject(
@@ -695,9 +695,8 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
     return &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data);
   }
 
-  FORCE_INLINE timestamp_t get_timestamp() {
+  FORCE_INLINE timestamp_t get_timestamp() const {
     // assert(is_valid());
-
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).timestamp.load();
   }
 
@@ -856,6 +855,14 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       degree_list[i] = adj_lists_[i].size();
       offset += degree_list[i];
     }
+    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1) {
+    //   for (size_t i = 0; i < nbr_list_.size(); i++) {
+    //     LOG(INFO) << vnum << " " << nbr_list_[i].neighbor << " "
+    //               << nbr_list_[i].data << " " << nbr_list_[i].timestamp << "
+    //               "
+    //               << i;
+    //   }
+    // }
 
     if (reuse_nbr_list && !nbr_list_.filename().empty() &&
         std::filesystem::exists(nbr_list_.filename())) {
@@ -875,80 +882,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
   }
 
 #else
-  // TODO: 需要重新实现
-  void dump_1(const std::string& name, const std::string& new_spanshot_dir) {
-    assert(false);
-    //     size_t vnum = adj_lists_.size();
-    //     bool reuse_nbr_list = true;
-    //     mmap_array<int> degree_list;
-    //     degree_list.open(new_spanshot_dir + "/" + name + ".deg", false);
-    //     degree_list.resize(vnum);
-    // #if OV
-    //     size_t offset = 0;
-    //     for (size_t i = 0; i < vnum; ++i) {
-    //       if (adj_lists_[i].size() != 0) {
-    //         if (!(adj_lists_[i].data() == nbr_list_.data() + offset &&
-    //               offset < nbr_list_.size())) {
-    //           reuse_nbr_list = false;
-    //         }
-    //       }
-    //       degree_list[i] = adj_lists_[i].size();
-    //       offset += degree_list[i];
-    //     }
-    // #else
-    //     size_t offset = 0;
-    //     size_t size_tmp = 0;
-    //     for (size_t i = 0; i < vnum; ++i) {
-    //       size_tmp = adj_lists_.get(i).Size();
-    //       if (size_tmp != 0) {
-    //         auto adj_list = adj_lists_.get(i);
-    //         if
-    //         (gbp::BufferObject::Decode<adjlist_t>(adj_list).get_mmap_array()
-    //         ==
-    //             nullptr) {
-    //           reuse_nbr_list = false;
-    //         }
-    //       }
-    //       degree_list.set(i, size_tmp);
-    //       offset += size_tmp;
-    //     }
-    // #endif
-
-    //     if (reuse_nbr_list && !nbr_list_.filename().empty() &&
-    //         std::filesystem::exists(nbr_list_.filename())) {
-    //       std::filesystem::create_hard_link(nbr_list_.filename(),
-    //                                         new_spanshot_dir + "/" + name +
-    //                                         ".nbr");
-    //     } else {
-    //       FILE* fout =
-    //           fopen((new_spanshot_dir + "/" + name + ".nbr").c_str(), "wb");
-    // #if OV
-    //       for (size_t i = 0; i < vnum; ++i) {
-    //         fwrite(adj_lists_[i].data(), sizeof(nbr_t), adj_lists_[i].size(),
-    //         fout);
-    //       }
-    // #else
-    //       for (size_t i = 0; i < vnum; ++i) {
-    //         nbr_t* buffer;
-    //         auto adj_list = adj_lists_.get(i);
-    //         auto& adj_list_obj =
-    //         gbp::BufferObject::Decode<adjlist_t>(adj_list); if ((buffer =
-    //         adj_list_obj.get_buffer()) != nullptr) {
-    //           fwrite(buffer, sizeof(nbr_t), adj_list_obj.size(), fout);
-    //         } else {
-    //           for (size_t j = 0; j < adj_list_obj.size(); j++) {
-    //             auto item = get_edge(i, j);
-    //             // TODO: 完成它
-    //             fwrite(&item, sizeof(nbr_t), 1, fout);
-    //           }
-    //         }
-    //       }
-    // #endif
-
-    //       fflush(fout);
-    //       fclose(fout);
-    //     }
-  }
   void dump(const std::string& name,
             const std::string& new_spanshot_dir) override {
     size_t vnum = adj_lists_.size();
@@ -972,6 +905,14 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       degree_list.set(i, &size_tmp);
       offset += item_tmp.size_;
     }
+    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1) {
+    //   auto tmp_values = nbr_list_.get(0, nbr_list_.size());
+    //   for (size_t i = 0; i < nbr_list_.size(); i++) {
+    //     auto& aa = gbp::BufferObject::Ref<nbr_t>(tmp_values, i);
+    //     LOG(INFO) << vnum << " | " << aa.neighbor << " " << aa.data << " "
+    //               << aa.timestamp << " " << i;
+    //   }
+    // }
 
     if (reuse_nbr_list && !nbr_list_.filename().empty() &&
         std::filesystem::exists(nbr_list_.filename())) {
@@ -1000,7 +941,10 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
                 item.timestamp = item_old.timestamp.load();
               },
               nbrs_new, i);
-
+        auto& aa = gbp::BufferObject::Ref<nbr_t>(nbrs_old, i);
+        if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
+          LOG(INFO) << vnum << " " << aa.neighbor << " " << aa.data << " "
+                    << aa.timestamp;
         offset += item_tmp.size_;
       }
       fout.close();
@@ -1034,12 +978,17 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 #if OV
   void batch_put_edge(vid_t src, vid_t dst, const EDATA_T& data,
                       timestamp_t ts = 0) override {
+    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
+    //   LOG(INFO) << src << " " << dst << " " << data << " " << ts;
     adj_lists_[src].batch_put_edge(dst, data, ts);
   }
 #else
 
   void batch_put_edge(vid_t src, vid_t dst, const EDATA_T& data,
                       timestamp_t ts = 0) override {
+    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
+    //   LOG(INFO) << src << " " << dst << " " << data << " " << ts
+    //             << nbr_list_.filename();
     put_edge(src, dst, data, ts);
   }
 
@@ -1107,7 +1056,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     gbp::BufferObject::UpdateContent<adjlist_t>(
         [&](adjlist_t& item) { idx_new = item.size_.fetch_add(1); },
         adj_list_item);
-
+    idx_new += adj_list.start_idx_;
     auto nbr_item_new = nbr_list_.get(idx_new);
     gbp::BufferObject::UpdateContent<nbr_t>(
         [&](nbr_t& item) {
@@ -1116,6 +1065,11 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
           item.timestamp.store(ts);
         },
         nbr_item_new);
+    // auto& aa = gbp::BufferObject::Ref<nbr_t>(nbr_item_new);
+    // assert(aa.neighbor == dst);
+    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
+    //   LOG(INFO) << src << " " << aa.neighbor << " " << aa.data << " "
+    //             << aa.timestamp << " | " << idx_new;
     locks_[src].unlock();
   }
 #endif

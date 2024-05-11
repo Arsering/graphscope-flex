@@ -50,15 +50,10 @@ class Req {
     log_thread_ = std::thread([this]() { logger(); });
   }
 
-  void load(const std::string& file) {
-    LOG(INFO) << "load queries from " << file << "\n";
-    std::ifstream fi;
-    try {
-      fi.open(file, std::ios::in);
-    } catch (std::ios_base::failure& e) {
-      LOG(INFO) << "fuck";
-      return;
-    }
+  void load(const std::string& file_path) {
+    LOG(INFO) << "load queries from " << file_path + "query_file.log" << "\n";
+    std::ifstream query_file;
+    query_file.open(file_path + "query_file.log", std::ios::in);
 
     const size_t size = 4096;
     std::vector<char> buffer(size);
@@ -67,8 +62,8 @@ class Req {
     size_t log_count = 0;
 
     while (true) {
-      fi.read(buffer.data(), size);
-      auto len = fi.gcount();
+      query_file.read(buffer.data(), size);
+      auto len = query_file.gcount();
       if (len == 0)
         break;
       for (size_t i = 0; i < len; ++i) {
@@ -92,8 +87,49 @@ class Req {
       buffer.clear();
     }
     LOG(INFO) << "Number of query = " << reqs_.size();
-    fi.close();
+    query_file.close();
     num_of_reqs_ = reqs_.size();
+  }
+
+  void load_result(const std::string& file_path) {
+    LOG(INFO) << "load queries from " << file_path + "result_file.log";
+    std::ifstream fi;
+    fi.open(file_path + "result_file.log", std::ios::in);
+
+    const size_t size = 4096;
+    std::vector<char> buffer(size);
+    std::vector<char> tmp(size * 128);
+    size_t index = 0;
+    size_t log_count = 0;
+
+    while (true) {
+      fi.read(buffer.data(), size);
+      auto len = fi.gcount();
+      if (len == 0)
+        break;
+      for (size_t i = 0; i < len; ++i) {
+        tmp[index++] = buffer[i];
+        if (index >= 4 && tmp[index - 1] == '#') {
+          if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
+              tmp[index - 2] == 'r') {
+            if (log_count % 2 == 0)
+              results_.emplace_back(tmp.begin(), tmp.begin() + index - 4);
+            else {
+              // auto tmp_str = std::string(tmp.begin(), tmp.begin() + index -
+              // 4); req_ids_.emplace_back(std::stoull(tmp_str));
+            }
+            log_count++;
+            index = 0;
+          }
+        }
+      }
+
+      buffer.clear();
+    }
+
+    fi.close();
+    LOG(INFO) << "load result file successfully";
+    gbp::get_results_vec() = results_;
   }
 
   seastar::future<> do_query(server::executor_ref& ref) {
@@ -103,7 +139,7 @@ class Req {
     }
 
     start_[id] = gbp::GetSystemTime();
-    gbp::debug::get_query_id().store(req_ids_[id % num_of_reqs_unique_]);
+    gbp::get_query_id().store(req_ids_[id % num_of_reqs_unique_]);
     return ref
         .run_graph_db_query(
             server::query_param{reqs_[id % num_of_reqs_unique_]})
@@ -187,12 +223,13 @@ class Req {
 
     while (true) {
       sleep(1);
-      operation_count_now = gbp::get_counter_operation().load();
-      read_count_now = gbp::debug::get_counter_read().load();
-      fetch_count_now = gbp::debug::get_counter_fetch().load();
-      read_count_per_query_now = gbp::debug::get_counter_fetch_unique().load();
-      LOG(INFO) << "Throughput (Total) [" << operation_count_now / 10000
-                << "w] (last 1s) ["
+      operation_count_now = gbp::get_counter_query().load();
+      // read_count_now = gbp::debug::get_counter_read().load();
+      // fetch_count_now = gbp::debug::get_counter_fetch().load();
+      // read_count_per_query_now =
+      // gbp::debug::get_counter_fetch_unique().load();
+      LOG(INFO) << "Throughput (Total) [" << operation_count_now / 10000 << "w"
+                << operation_count_now % 10000 << "]" << "(last 1s) ["
                 << (operation_count_now - operation_count_pre) / 10000 << "w"
                 << (operation_count_now - operation_count_pre) % 10000 << "]"
                 << " | Read Count (Total) [" << read_count_now / 10000
@@ -207,8 +244,7 @@ class Req {
                 << (read_count_per_query_now - read_count_per_query_pre) / 10000
                 << "w"
                 << (read_count_per_query_now - read_count_per_query_pre) % 10000
-                << "]"
-                << " | Num of free page in BP = "
+                << "]" << " | Num of free page in BP = "
 #if !OV
                 << gbp::BufferPoolManager::GetGlobalInstance().GetFreePageNum()
 #endif
@@ -228,6 +264,7 @@ class Req {
   size_t num_of_reqs_unique_;
   std::vector<std::string> reqs_;
   std::vector<size_t> req_ids_;
+  std::vector<std::string> results_;
   // std::vector<std::chrono::system_clock::time_point> start_;
   // std::vector<std::chrono::system_clock::time_point> end_;
   std::vector<size_t> start_;
@@ -239,7 +276,7 @@ class Req {
 };
 
 int main(int argc, char** argv) {
-  size_t pool_size_Byte = 1024LU * 1024LU * 1024LU * 32;
+  size_t pool_size_Byte = 1024LU * 1024LU * 1024LU * 10;
   bpo::options_description desc("Usage:");
   desc.add_options()("help", "Display help message")(
       "version,v", "Display version")("shard-num,s",
@@ -309,14 +346,14 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
       log_data_path + "/performance.log", "vdb");
-
+  gbp::log_enable().store(false);
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 #if OV
-  gbp::get_mark_mmapwarmup().store(1);
+  gbp::warmup_mark().store(0);
 #else
   size_t pool_num = 10;
-  gbp::get_mark_warmup().store(0);
+  gbp::warmup_mark().store(0);
 
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
@@ -347,11 +384,11 @@ int main(int argc, char** argv) {
 
 #if !OV
   t0 = -grape::GetCurrentTime();
-  gbp::get_mark_warmup().store(0);
+  gbp::warmup_mark().store(0);
   LOG(INFO) << "Warmup start";
-  gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  // gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
   LOG(INFO) << "Warmup finish";
-  gbp::get_mark_warmup().store(1);
+  gbp::warmup_mark().store(1);
   t0 += grape::GetCurrentTime();
 
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
@@ -359,8 +396,10 @@ int main(int argc, char** argv) {
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load(req_file);
+  Req::get().load_result(req_file);
   Req::get().init(warmup_num, benchmark_num);
   hiactor::actor_app app;
+  gbp::log_enable().store(true);
 
   auto begin = std::chrono::system_clock::now();
   int ac = 1;

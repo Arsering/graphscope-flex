@@ -49,6 +49,7 @@ void BasicFragmentLoader::init_vertex_data() {
                 schema_.get_vertex_storage_strategies(label_name));
     v_data.resize(schema_.get_max_vnum(label_name));
   }
+
   VLOG(10) << "Finish init vertex data";
 }
 

@@ -16,6 +16,11 @@ make -j && make install
 cp /usr/local/lib/libgrape-lite.so /usr/lib/libgrape-lite.so
 
 cd ../..
+git clone https://github.com/axboe/liburing.git
+cd liburing
+./configure && make -j && make install
+
+cd ..
 git clone https://github.com/alibaba/hiactor.git
 cd hiactor && git checkout e16949ca53
 git submodule update --init --recursive
@@ -26,3 +31,9 @@ make -j && make install
 
 echo "fs.aio-max-nr = 1048576" >> /etc/sysctl.conf
 sysctl -p /etc/sysctl.conf
+
+
+cd /tmp && apt-get install -y -V ca-certificates lsb-release wget && \
+    curl -o apache-arrow-apt-source-latest.deb https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb && \
+    apt-get install -y ./apache-arrow-apt-source-latest.deb && \
+    apt-get update && apt-get install -y libarrow-dev=6.0.1-1

@@ -502,7 +502,6 @@ static bool parse_bulk_load_config_file(const std::string& config_file,
       return false;
     }
   }
-
   VLOG(10) << "Finish parsing bulk load config file";
 
   return true;

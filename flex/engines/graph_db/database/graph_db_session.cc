@@ -77,12 +77,13 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   size_t str_len = input.size() - 1;
 
   std::vector<char> result_buffer;
-  auto query_id_t = gbp::debug::get_query_id().load();
-  // if (type != 21)
-  //   return result_buffer;
-
+  auto query_id_t = gbp::get_query_id().load();
+  // if (query_id_t != 37850)
+  // assert(false);
+  // return result_buffer;
+  // LOG(INFO) << query_id_t << " " << (int) type;
   static std::atomic<size_t> query_id = 0;
-  gbp::get_counter_operation().fetch_add(1);
+  gbp::get_counter_query().fetch_add(1);
 
   Decoder decoder(str_data, str_len);
   Encoder encoder(result_buffer);
@@ -121,28 +122,35 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << gbp::debug::get_counter_copy().load() << " | "
               << gbp::debug::get_counter_any().load() << "]";
 #endif
+    if constexpr (false) {
+      std::string_view output{result_buffer.data(), result_buffer.size()};
+      size_t cur_query_id = query_id.fetch_add(1);
+      // gbp::get_query_id().store(cur_query_id);
+      static std::atomic<size_t> query_tofile_count = 0;
 
-    std::string_view output{result_buffer.data(), result_buffer.size()};
-    size_t cur_query_id = query_id.fetch_add(1);
-    // gbp::debug::get_query_id().store(cur_query_id);
-    static std::atomic<size_t> query_tofile_count = 0;
-
-    if (cur_query_id < 100000) {
-      std::lock_guard lock(gbp::debug::get_file_lock());
-      gbp::get_query_file()
-          << input << "eor#" << gbp::debug::get_query_id().load() << "eor#";
-      gbp::get_result_file()
-          << output << "eor#" << gbp::debug::get_query_id().load() << "eor#";
-      query_tofile_count.fetch_add(1);
-      if (query_tofile_count == 100000) {
-        gbp::get_query_file().flush();
-        gbp::get_result_file().flush();
-        gbp::get_query_file().close();
-        gbp::get_result_file().close();
-        LOG(INFO) << "file content has flushed to the file";
+      if (cur_query_id < 10000000) {
+        std::lock_guard lock(gbp::get_log_lock());
+        if (gbp::get_results_vec()[gbp::get_query_id().load()] != output) {
+          LOG(INFO) << "\n"
+                    << gbp::get_results_vec()[gbp::get_query_id().load()];
+          LOG(INFO) << "=========";
+          LOG(INFO) << "\n" << output;
+          LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
+        }
+        gbp::get_query_file()
+            << input << "eor#" << gbp::get_query_id().load() << "eor#";
+        gbp::get_result_file()
+            << output << "eor#" << gbp::get_query_id().load() << "eor#";
+        query_tofile_count.fetch_add(1);
+        if (query_tofile_count == 10000000) {
+          gbp::get_query_file().flush();
+          gbp::get_result_file().flush();
+          gbp::get_query_file().close();
+          gbp::get_result_file().close();
+          LOG(INFO) << "file content has flushed to the file";
+        }
       }
     }
-
     return result_buffer;
   }
 

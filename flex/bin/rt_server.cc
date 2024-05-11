@@ -135,11 +135,11 @@ int main(int argc, char** argv) {
 
 #if !OV
   t0 = -grape::GetCurrentTime();
-  gbp::get_mark_warmup().store(0);
+  gbp::warmup_mark().store(0);
   LOG(INFO) << "Warmup start";
   gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
   LOG(INFO) << "Warmup finish";
-  gbp::get_mark_warmup().store(1);
+  gbp::warmup_mark().store(1);
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 #endif

@@ -206,7 +206,7 @@ class LFIndexer {
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
 
-    bool mark = false;
+    int mark = 0;
     while (true) {
       auto item1 = indices_.get(index);
       gbp::BufferObject::UpdateContent<INDEX_T>(
@@ -214,8 +214,10 @@ class LFIndexer {
             mark = __sync_bool_compare_and_swap(&item, sentinel, ind);
           },
           item1);
-      if (mark)
+      if (mark) {
+        // assert(gbp::BufferObject::Ref<INDEX_T>(item1) == ind);
         break;
+      }
       index = (index + 1) % num_slots_minus_one_;
     }
 #endif
@@ -259,9 +261,11 @@ class LFIndexer {
   bool get_index(int64_t oid, INDEX_T& ret) const {
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
+
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
     while (true) {
       INDEX_T ind = indices_.get(index);
+
       if (ind == sentinel) {
         return false;
       } else if (keys_.get(ind) == oid) {
@@ -271,6 +275,7 @@ class LFIndexer {
         index = (index + 1) % num_slots_minus_one_;
       }
     }
+
     return false;
   }
   int64_t get_key(const INDEX_T& index) const { return keys_.get(index); }
@@ -279,9 +284,10 @@ class LFIndexer {
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+
     while (true) {
       auto item = indices_.get(index);
-      INDEX_T ind = gbp::BufferObject::Ref<INDEX_T>(item);
+      auto& ind = gbp::BufferObject::Ref<INDEX_T>(item);
       if (ind == sentinel) {
         return false;
       } else {
@@ -293,6 +299,7 @@ class LFIndexer {
       }
       index = (index + 1) % num_slots_minus_one_;
     }
+
     return false;
   }
 
@@ -310,7 +317,6 @@ class LFIndexer {
     indices_.touch(work_dir + "/" + name + ".indices");
 
     indices_size_ = indices_.size();
-
     for (size_t k = keys_.size() - 1; k >= 0; --k) {
 #if OV
       if (keys_.get(k) != std::numeric_limits<int64_t>::max()) {
@@ -319,8 +325,8 @@ class LFIndexer {
       }
 #else
       auto item = keys_.get(k);
-
-      if (item.Obj<int64_t>() != std::numeric_limits<int64_t>::max()) {
+      if (gbp::BufferObject::Ref<int64_t>(item) !=
+          std::numeric_limits<int64_t>::max()) {
         num_elements_.store(k + 1);
         break;
       }
@@ -368,11 +374,8 @@ class LFIndexer {
  private:
   mmap_array<int64_t> keys_;
   mmap_array<INDEX_T>
-      indices_;  // size() == indices_size_ == num_slots_minus_one_ +
-// log(num_slots_minus_one_)
-#if !OV
-  std::mutex indices_lock_;
-#endif
+      indices_;  // size() == indices_size_ == num_slots_minus_one_
+                 // +log(num_slots_minus_one_)
 
   std::atomic<size_t> num_elements_;
   size_t num_slots_minus_one_;
@@ -842,16 +845,18 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
 
   lf.keys_.open(filename + ".keys", false);
   lf.keys_.resize(lf_size);
-  // FIXME: input.keys_是mmap分配的还是malloc分配的？？？
 
+  // FIXME: input.keys_是mmap分配的还是malloc分配的？？？
+  auto keys_item = lf.keys_.get(0, lf_size);
   for (size_t t = 0; t < size; t++) {
-    auto item = input.keys_[t];
-    lf.keys_.set(t, &item);
+    gbp::BufferObject::UpdateContent<int64_t>(
+        [&](int64_t& item) { item = input.keys_[t]; }, keys_item, t);
   }
 
-  auto empty_value = std::numeric_limits<int64_t>::max();
   for (size_t k = size; k != lf_size; ++k) {
-    lf.keys_.set(k, &empty_value);
+    gbp::BufferObject::UpdateContent<int64_t>(
+        [&](int64_t& item) { item = std::numeric_limits<int64_t>::max(); },
+        keys_item, k);
   }
 
   lf.num_elements_.store(size);
