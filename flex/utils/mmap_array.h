@@ -35,7 +35,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV true
+#define OV false
 #define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
 
@@ -91,11 +91,7 @@ class mmap_array {
 #else
   // mmap_array(const mmap_array&) = delete;             // 阻止拷贝
   // mmap_array& operator=(const mmap_array&) = delete;  // 阻止赋值
-  ~mmap_array() {
-    if (!mark_used_) {
-      LOG(INFO) << filename_;
-    }
-  }
+  ~mmap_array() {}
 
   void close() { buffer_pool_manager_->CloseFile(fd_gbp_), fd_gbp_ = -1; }
   void reset() {
@@ -313,7 +309,9 @@ class mmap_array {
 
   // FIXME: 无法保证atomic，也无法保证单个obj不跨页
   void set(size_t idx, const T* val, size_t len = 1) {
+#if ASSERT_ENABLE
     CHECK_LE(idx + len, size_);
+#endif
     buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(val),
                                     idx * sizeof(T), len * sizeof(T), fd_gbp_,
                                     false);
@@ -338,11 +336,10 @@ class mmap_array {
   // }
 
   const gbp::BufferObject get(size_t idx, size_t len = 1) const {
-    // CHECK_LE(idx + len, size_);
-    // LOG(INFO) << filename_;
-    if (gbp::log_enable().load()) {
-      mark_used_ = true;
-    }
+#if ASSERT_ENABLE
+    CHECK_LE(idx + len, size_);
+#endif
+
     size_t buf_size = 0;
     const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
                                (idx % OBJ_NUM_PERPAGE) * sizeof(T);

@@ -41,9 +41,11 @@ class Req {
   void init(size_t warmup_num, size_t benchmark_num) {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
-    num_of_reqs_unique_ = reqs_.size();
+    // num_of_reqs_unique_ = reqs_.size();
+    num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
     end_.resize(num_of_reqs_);
+    cur_ = 0;
 
     std::cout << "warmup count: " << warmup_num_
               << "; benchmark count: " << num_of_reqs_ << "\n";
@@ -60,6 +62,8 @@ class Req {
     std::vector<char> tmp(size);
     size_t index = 0;
     size_t log_count = 0;
+    bool mark = true;
+    size_t req_id_cur = 0;
 
     while (true) {
       query_file.read(buffer.data(), size);
@@ -71,14 +75,19 @@ class Req {
         if (index >= 4 && tmp[index - 1] == '#') {
           if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
               tmp[index - 2] == 'r') {
-            if (log_count % 2 == 0)
+            if (mark) {
               reqs_.emplace_back(
                   std::string(tmp.begin(), tmp.begin() + index - 4));
-            else {
-              auto tmp_str = std::string(tmp.begin(), tmp.begin() + index - 4);
-              req_ids_.emplace_back(std::stoull(tmp_str));
+              mark = false;
+            } else {
+              auto req_id = std::stoull(
+                  std::string(tmp.begin(), tmp.begin() + index - 4));
+              if (req_id != req_id_cur)
+                continue;
+              req_ids_.emplace_back(req_id);
+              mark = true;
+              req_id_cur++;
             }
-            log_count++;
             index = 0;
           }
         }
@@ -92,7 +101,7 @@ class Req {
   }
 
   void load_result(const std::string& file_path) {
-    LOG(INFO) << "load queries from " << file_path + "result_file.log";
+    LOG(INFO) << "load results from " << file_path + "result_file.log";
     std::ifstream fi;
     fi.open(file_path + "result_file.log", std::ios::in);
 
@@ -100,7 +109,9 @@ class Req {
     std::vector<char> buffer(size);
     std::vector<char> tmp(size * 128);
     size_t index = 0;
-    size_t log_count = 0;
+    bool mark = false;
+    size_t req_id_cur = 0, req_id;
+    size_t last_index = 0;
 
     while (true) {
       fi.read(buffer.data(), size);
@@ -112,13 +123,22 @@ class Req {
         if (index >= 4 && tmp[index - 1] == '#') {
           if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
               tmp[index - 2] == 'r') {
-            if (log_count % 2 == 0)
-              results_.emplace_back(tmp.begin(), tmp.begin() + index - 4);
-            else {
-              // auto tmp_str = std::string(tmp.begin(), tmp.begin() + index -
-              // 4); req_ids_.emplace_back(std::stoull(tmp_str));
+            try {
+              auto str_tmp = std::string(tmp.begin() + last_index,
+                                         tmp.begin() + index - 4);
+              req_id = std::stoull(str_tmp);
+            } catch (const std::exception& e) {
+              last_index = index - 1 + 1;
+              continue;
             }
-            log_count++;
+            if (req_id != req_id_cur) {
+              last_index = index - 1 + 1;
+              continue;
+            }
+
+            results_.emplace_back(
+                std::string(tmp.begin(), tmp.begin() + last_index - 4));
+            req_id_cur++;
             index = 0;
           }
         }
@@ -168,7 +188,7 @@ class Req {
     std::vector<long long> vec(29, 0);
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
-    for (size_t idx = 0; idx < num_of_reqs_; idx++) {
+    for (size_t idx = num_of_reqs_unique_; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
       // auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -397,36 +417,34 @@ int main(int argc, char** argv) {
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load(req_file);
   Req::get().load_result(req_file);
-  Req::get().init(warmup_num, benchmark_num);
-  hiactor::actor_app app;
-  gbp::log_enable().store(true);
+  for (size_t idx = 0; idx < 1; idx++) {
+    Req::get().init(warmup_num, benchmark_num);
 
-  auto begin = std::chrono::system_clock::now();
-  int ac = 1;
-  char* av[] = {(char*) "rt_bench"};
-  app.run(ac, av, [shard_num] {
-    return seastar::parallel_for_each(
-               boost::irange<unsigned>(0u, shard_num),
-               [](unsigned id) {
-                 return seastar::smp::submit_to(
-                     id, [id] { return Req::get().simulate(); });
-               })
-        .then([] {
-          hiactor::actor_engine().exit();
-          fmt::print("Exit actor system.\n");
-        });
-  });
-  auto end = std::chrono::system_clock::now();
-  std::cout << "cost time:"
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end -
-                                                                     begin)
-                   .count()
-            << "\n";
-  Req::get().LoggerStop();
-  Req::get().output();
-  // LOG(INFO) << "CopyObj = " << gbp::debug::get_counter_CopyObj().load() << "
-  // | "
-  //           << "RefObj = " << gbp::debug::get_counter_RefObj().load();
+    hiactor::actor_app app;
+    gbp::log_enable().store(true);
 
-  // std::cout << timer.get_time() / 1us << " microseconds\n";
+    auto begin = std::chrono::system_clock::now();
+    int ac = 1;
+    char* av[] = {(char*) "rt_bench"};
+    app.run(ac, av, [shard_num] {
+      return seastar::parallel_for_each(
+                 boost::irange<unsigned>(0u, shard_num),
+                 [](unsigned id) {
+                   return seastar::smp::submit_to(
+                       id, [id] { return Req::get().simulate(); });
+                 })
+          .then([] {
+            hiactor::actor_engine().exit();
+            fmt::print("Exit actor system.\n");
+          });
+    });
+    auto end = std::chrono::system_clock::now();
+    std::cout << "cost time:"
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end -
+                                                                       begin)
+                     .count()
+              << "\n";
+    Req::get().LoggerStop();
+    Req::get().output();
+  }
 }

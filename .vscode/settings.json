@@ -77,5 +77,6 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/workspaces/graphscope-flex/flex/graphscope_bufferpool"
 }
