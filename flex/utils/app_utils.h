@@ -48,7 +48,7 @@ class Encoder {
   void put_string(const std::string& v);
 
   void put_string_view(const std::string_view& v);
-  void put_buffer_object(const gbp::BufferObject& v);
+  void put_buffer_object(const gbp::BufferBlock& v);
 
   void put_double(double v);
 

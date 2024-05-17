@@ -79,7 +79,7 @@ void Encoder::put_string_view(const std::string_view& v) {
   memcpy(&buf_[size + 4], v.data(), len);
 }
 
-void Encoder::put_buffer_object(const gbp::BufferObject& v) {
+void Encoder::put_buffer_object(const gbp::BufferBlock& v) {
   size_t size = buf_.size();
   int len = v.Size();
   buf_.resize(size + sizeof(int) + len);

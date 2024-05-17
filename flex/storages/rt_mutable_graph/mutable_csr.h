@@ -612,12 +612,22 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   TypedMutableCsrConstEdgeIter() : objs_(), cur_idx_(0), size_(0) {}
   explicit TypedMutableCsrConstEdgeIter(const MutableNbrSlice<EDATA_T>& slice)
       : cur_idx_(0), size_(slice.size()) {
+#ifdef USING_EDGE_ITER
+    auto tmp = slice.get_mmap_array()->get(slice.get_start_idx(), slice.size());
+    objs_ = gbp::BufferObjectIter<nbr_t>(tmp);
+#else
     objs_ = slice.get_mmap_array()->get(slice.get_start_idx(), slice.size());
+#endif
   }
   explicit TypedMutableCsrConstEdgeIter(const mmap_array<nbr_t>* ma,
                                         size_t start_idx, size_t size)
       : cur_idx_(0), size_(size) {
+#ifdef USING_EDGE_ITER
+    auto tmp = ma->get(start_idx, size);
+    objs_ = gbp::BufferObjectIter<nbr_t>(tmp);
+#else
     objs_ = ma->get(start_idx, size);
+#endif
   }
   ~TypedMutableCsrConstEdgeIter() = default;
 
@@ -625,41 +635,70 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 #if ASSERT_ENABLE
     assert(is_valid());
 #endif
-
+#ifdef USING_EDGE_ITER
+    return objs_.current()->neighbor;
+#else
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).neighbor;
+#endif
   }
 
   FORCE_INLINE const void* get_data() const {
 #if ASSERT_ENABLE
     assert(is_valid());
 #endif
-    // return gbp::BufferObject(sizeof(EDATA_T),
-    //                          (char*) (&(objs_.Ref<nbr_t>(cur_idx_).data)));
-    // gbp::BufferObject ret{sizeof(EDATA_T)};
-    // ::memcpy(ret.Data(), &(gbp::BufferObject::Ref<nbr_t>(objs_,
-    // cur_idx_).data),
-    //          sizeof(EDATA_T));
-    // return ret;
+// return gbp::BufferObject(sizeof(EDATA_T),
+//                          (char*) (&(objs_.Ref<nbr_t>(cur_idx_).data)));
+// gbp::BufferObject ret{sizeof(EDATA_T)};
+// ::memcpy(ret.Data(), &(gbp::BufferObject::Ref<nbr_t>(objs_,
+// cur_idx_).data),
+//          sizeof(EDATA_T));
+// return ret;
+#ifdef USING_EDGE_ITER
+    return &(objs_.current()->data);
+#else
     return &(gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).data);
+#endif
   }
 
   FORCE_INLINE timestamp_t get_timestamp() const {
 #if ASSERT_ENABLE
     assert(is_valid());
 #endif
+#ifdef USING_EDGE_ITER
+    return objs_.current()->timestamp.load();
+#else
     return gbp::BufferObject::Ref<nbr_t>(objs_, cur_idx_).timestamp.load();
+#endif
   }
 
-  FORCE_INLINE void next() { ++cur_idx_; }
+  FORCE_INLINE void next() {
+#ifdef USING_EDGE_ITER
+    objs_.next();
+    ++cur_idx_;
+#else
+    ++cur_idx_;
+#endif
+  }
   FORCE_INLINE void set_cur(size_t idx) {
     CHECK_LT(idx, size_);
     cur_idx_ = idx;
   }
-  FORCE_INLINE bool is_valid() const { return cur_idx_ < size_; }
+  FORCE_INLINE bool is_valid() const {
+#ifdef USING_EDGE_ITER
+    return cur_idx_ < size_;
+    // return objs_.current() != nullptr;
+#else
+    return cur_idx_ < size_;
+#endif
+  }
   FORCE_INLINE size_t size() const { return size_; }
 
  private:
+#ifdef USING_EDGE_ITER
+  gbp::BufferObjectIter<nbr_t> objs_;
+#else
   gbp::BufferObject objs_;
+#endif
   size_t cur_idx_;
   size_t size_;
 };
@@ -869,10 +908,12 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       degree_list[i] = adj_lists_[i].size();
       offset += degree_list[i];
     }
-    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1) {
+    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
+    // {
     //   for (size_t i = 0; i < nbr_list_.size(); i++) {
     //     LOG(INFO) << vnum << " " << nbr_list_[i].neighbor << " "
-    //               << nbr_list_[i].data << " " << nbr_list_[i].timestamp << "
+    //               << nbr_list_[i].data << " " << nbr_list_[i].timestamp
+    //               << "
     //               "
     //               << i;
     //   }

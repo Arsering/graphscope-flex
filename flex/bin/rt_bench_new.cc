@@ -209,7 +209,7 @@ class Req {
     for (auto i = 0; i < vec.size(); ++i) {
       size_t sz = ts[i].size();
       if (sz > 0) {
-        std::cout << queries[i] << "; mean: " << vec[i] * 1. / count[i]
+        std::cout << queries[i] << "; mean: " << vec[i] * 1.0 / count[i]
                   << "; counts: " << count[i] << "; ";
 
         std::sort(ts[i].begin(), ts[i].end());
@@ -365,7 +365,7 @@ int main(int argc, char** argv) {
   gbp::get_result_file(log_data_path);
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "vdb");
+      log_data_path + "/performance.log", "nvme0n1");
   gbp::log_enable().store(false);
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();

@@ -122,12 +122,8 @@ int main(int argc, char** argv) {
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
 
   // init access logger
-  gbp::set_log_directory(vm["log-data-path"].as<std::string>());
-  gbp::ThreadLog logger;
-  gbp::set_thread_logger(&logger);
+  gbp::get_log_dir() = log_data_path;
   db.Init(schema, data_path, shard_num);
-
-  logger.log_sync();
 
   t0 += grape::GetCurrentTime();
 

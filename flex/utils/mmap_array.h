@@ -35,7 +35,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV false
+#define OV true
 #define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
 
@@ -343,22 +343,19 @@ class mmap_array {
     size_t buf_size = 0;
     const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
                                (idx % OBJ_NUM_PERPAGE) * sizeof(T);
-    uint16_t obj_num_rest = 0;
-    size_t file_offset_tmp = file_offset;
-    while (len != 0) {
-      obj_num_rest =
-          (gbp::PAGE_SIZE_FILE - file_offset_tmp % gbp::PAGE_SIZE_FILE) /
-          sizeof(T);
-      if (len > obj_num_rest) {
-        buf_size += gbp::PAGE_SIZE_FILE - file_offset_tmp % gbp::PAGE_SIZE_FILE;
-        len -= obj_num_rest;
-        file_offset_tmp += buf_size;
-      } else {
-        buf_size += sizeof(T) * len;
-        len -= len;
-      }
+    size_t rest_filelen_firstpage =
+        gbp::PAGE_SIZE_MEMORY - file_offset % gbp::PAGE_SIZE_MEMORY;
+    if (rest_filelen_firstpage / sizeof(T) > len) {
+      buf_size += sizeof(T) * len;
+    } else {
+      buf_size += rest_filelen_firstpage;
+      len -= rest_filelen_firstpage / sizeof(T);
+      buf_size += len / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_MEMORY +
+                  len % OBJ_NUM_PERPAGE * sizeof(T);
     }
-    return buffer_pool_manager_->GetObject(file_offset, buf_size, fd_gbp_);
+    auto ret = buffer_pool_manager_->GetObject(file_offset, buf_size, fd_gbp_);
+
+    return ret;
   }
 
 #endif

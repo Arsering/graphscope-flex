@@ -78,8 +78,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 
   std::vector<char> result_buffer;
   auto query_id_t = gbp::get_query_id().load();
-  // if (query_id_t != 37850)
-  // return result_buffer;
+  if ((int) type != 2)
+    return result_buffer;
   static std::atomic<size_t> query_id = 0;
   gbp::get_counter_query().fetch_add(1);
 
@@ -100,19 +100,22 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       app = apps_[type];
     }
   }
-#ifdef DEBUG
-
+#ifdef DEBUG_1
+  gbp::get_counter(1) = 0;
+  gbp::get_counter(2) = 0;
+  gbp::get_counter(11) = 0;
+  gbp::get_counter(12) = 0;
   size_t ts = gbp::GetSystemTime();
 #endif
   // LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
 
   if (app->Query(decoder, encoder)) {
-#ifdef DEBUG
+#ifdef DEBUG_1
     ts = gbp::GetSystemTime() - ts;
-    LOG(INFO) << "profiling: [" << (int) type << "]["
-              << gbp::debug::get_counter_bpm().load() << " | "
-              << gbp::debug::get_counter_copy().load() << " | "
-              << gbp::debug::get_counter_any().load() << "]";
+    LOG(INFO) << "profiling: [" << gbp::get_query_id().load() << "][" << ts
+              << " | " << gbp::get_counter(1) << " | " << gbp::get_counter(2)
+              << " | " << gbp::get_counter(11) << " | " << gbp::get_counter(12)
+              << "]";
 #endif
     if constexpr (true) {
       std::string_view output{result_buffer.data(), result_buffer.size()};
