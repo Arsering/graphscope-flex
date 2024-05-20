@@ -180,7 +180,7 @@ Any UpdateTransaction::vertex_iterator::GetField(int col_id) const {
   return txn_->GetVertexField(label_, cur_, col_id);
 }
 #else
-gbp::BufferObject UpdateTransaction::vertex_iterator::GetField(
+gbp::BufferBlock UpdateTransaction::vertex_iterator::GetField(
     int col_id) const {
   return txn_->GetVertexField(label_, cur_, col_id);
 }
@@ -227,13 +227,13 @@ Any UpdateTransaction::edge_iterator::GetData() const {
   }
 }
 #else
-gbp::BufferObject UpdateTransaction::edge_iterator::GetData() const {
+gbp::BufferBlock UpdateTransaction::edge_iterator::GetData() const {
   // if (init_iter_->is_valid()) {
   //   vid_t cur = init_iter_->get_neighbor();
   //   Any any_tmp;
   //   if (txn_->GetUpdatedEdgeData(dir_, label_, v_, neighbor_label_, cur,
   //                                edge_label_, any_tmp)) {
-  //     return gbp::BufferObject(any_tmp);
+  //     return gbp::BufferBlock(any_tmp);
   //     // return ret;
   //   } else {
   //     return init_iter_->get_data();
@@ -243,10 +243,10 @@ gbp::BufferObject UpdateTransaction::edge_iterator::GetData() const {
   //   Any any_tmp;
   //   CHECK(txn_->GetUpdatedEdgeData(dir_, label_, v_, neighbor_label_, cur,
   //                                  edge_label_, any_tmp));
-  //   return gbp::BufferObject(any_tmp);
+  //   return gbp::BufferBlock(any_tmp);
   // }
   assert(false);
-  return gbp::BufferObject();
+  return gbp::BufferBlock();
 }
 #endif
 
@@ -349,8 +349,8 @@ Any UpdateTransaction::GetVertexField(label_t label, vid_t lid,
   }
 }
 #else
-gbp::BufferObject UpdateTransaction::GetVertexField(label_t label, vid_t lid,
-                                                    int col_id) const {
+gbp::BufferBlock UpdateTransaction::GetVertexField(label_t label, vid_t lid,
+                                                   int col_id) const {
   auto& vertex_offset = vertex_offsets_[label];
   auto iter = vertex_offset.find(lid);
   if (iter == vertex_offset.end()) {

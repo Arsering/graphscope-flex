@@ -58,10 +58,10 @@ class BasicFragmentLoader {
 #else
   // props vector is column_num X batch_size
   void AddVertexBatch(label_t v_label, const std::vector<vid_t>& vids,
-                      const std::vector<std::vector<gbp::BufferObject>>& props);
+                      const std::vector<std::vector<gbp::BufferBlock>>& props);
 
   inline void SetVertexProperty(label_t v_label, size_t col_ind, vid_t vid,
-                                gbp::BufferObject&& prop) {
+                                gbp::BufferBlock&& prop) {
     auto& table = vertex_data_[v_label];
     auto dst_columns = table.column_ptrs();
     CHECK(col_ind < dst_columns.size());

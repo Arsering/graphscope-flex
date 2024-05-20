@@ -64,7 +64,7 @@ endif ()
 #find boost----------------------------------------------------------------------
 find_package(Boost REQUIRED COMPONENTS system filesystem
              # required by folly
-             context program_options regex thread)
+             context program_options regex thread fiber)
 
 #find arrow----------------------------------------------------------------------
 include("cmake/FindArrow.cmake")

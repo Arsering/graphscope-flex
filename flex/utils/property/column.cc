@@ -44,10 +44,10 @@ class TypedEmptyColumn : public ColumnBase {
   Any get(size_t index) const override { return Any(); }
 #else
   void set_any(size_t index, const Any& value) override {}
-  void set(size_t index, const gbp::BufferObject& value) {}
+  void set(size_t index, const gbp::BufferBlock& value) {}
 
-  gbp::BufferObject get(size_t index) const override {
-    return gbp::BufferObject();
+  gbp::BufferBlock get(size_t index) const override {
+    return gbp::BufferBlock();
   }
 #endif
   size_t get_size_in_byte() const override { return 0; }

@@ -35,7 +35,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV true
+#define OV false
 #define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
 
@@ -74,7 +74,20 @@ class mmap_array {
 #endif
   mmap_array(mmap_array&& rhs) : mmap_array() { swap(rhs); }
 #if OV
-  ~mmap_array() {}
+  ~mmap_array() {
+    size_t file_len = std::filesystem::file_size(filename_);
+    size_t total_pages = (file_len + 4095) / 4096;
+    unsigned char* vec = (unsigned char*) malloc(total_pages);
+    assert(::mincore(data_, file_len, vec) != -1);
+    size_t pages_in_memory = 0;
+    for (size_t i = 0; i < total_pages; i++) {
+      if (vec[i] & 1) {
+        pages_in_memory++;
+      }
+    }
+    gbp::get_counter_global(10).fetch_add(pages_in_memory);
+    ::free(vec);
+  }
 
   void reset() {
     filename_ = "";
@@ -117,7 +130,7 @@ class mmap_array {
         size_ = 0;
         data_ = NULL;
       } else {
-        fd_ = ::open(filename.c_str(), O_RDONLY, 0777);
+        fd_ = ::open(filename.c_str(), O_RDONLY | FILE_FLAG, 0777);
         size_t file_size = std::filesystem::file_size(filename);
         size_ = file_size / sizeof(T);
         if (size_ == 0) {
@@ -132,7 +145,7 @@ class mmap_array {
         }
       }
     } else {
-      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT, 0777);
+      fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT | FILE_FLAG, 0777);
       size_t file_size = std::filesystem::file_size(filename);
       size_ = file_size / sizeof(T);
       if (size_ == 0) {
@@ -215,7 +228,7 @@ class mmap_array {
         size_ = size;
         data_ = reinterpret_cast<T*>(
             mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
-        Warmup((char*) data_, size_ * sizeof(T));
+        // Warmup((char*) data_, size_ * sizeof(T));
 
         madvise(data_, size_ * sizeof(T),
                 MMAP_ADVICE_l);  // Turn off readahead
@@ -225,7 +238,7 @@ class mmap_array {
         size_ = size;
         data_ = reinterpret_cast<T*>(
             mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
-        Warmup((char*) data_, size_ * sizeof(T));
+        // Warmup((char*) data_, size_ * sizeof(T));
 
         madvise(data_, size_ * sizeof(T),
                 MMAP_ADVICE_l);  // Turn off readahead
@@ -244,7 +257,7 @@ class mmap_array {
         data_ =
             static_cast<T*>(::mmap(NULL, size * sizeof(T),
                                    PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0));
-        Warmup((char*) data_, size * sizeof(T));
+        // Warmup((char*) data_, size * sizeof(T));
 
         ::madvise(data_, size_ * sizeof(T),
                   MMAP_ADVICE_l);  // Turn off readahead
@@ -312,30 +325,30 @@ class mmap_array {
 #if ASSERT_ENABLE
     CHECK_LE(idx + len, size_);
 #endif
-    buffer_pool_manager_->SetObject(reinterpret_cast<const char*>(val),
-                                    idx * sizeof(T), len * sizeof(T), fd_gbp_,
-                                    false);
+    buffer_pool_manager_->SetBlock(reinterpret_cast<const char*>(val),
+                                   idx * sizeof(T), len * sizeof(T), fd_gbp_,
+                                   false);
   }
 
   // // FIXME: 无法保证atomic
-  // void set(size_t idx, const gbp::BufferObject& val) {
+  // void set(size_t idx, const gbp::BufferBlock& val) {
   //   const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
   //                              (idx % OBJ_NUM_PERPAGE) * sizeof(T);
   //   buffer_pool_manager_->SetObject(val, file_offset, val.Size(), fd_gbp_,
   //                                   false);
   // }
 
-  // const gbp::BufferObject get(size_t idx, size_t len = 1) const {
+  // const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
   //   CHECK_LE(idx + len, size_);
   //   size_t object_size = sizeof(T) * len;
-  //   gbp::BufferObject ret(object_size);
+  //   gbp::BufferBlock ret(object_size);
 
   //   buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
   //                                   len * sizeof(T), fd_gbp_);
   //   return ret;
   // }
 
-  const gbp::BufferObject get(size_t idx, size_t len = 1) const {
+  const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
 #if ASSERT_ENABLE
     CHECK_LE(idx + len, size_);
 #endif
@@ -353,7 +366,7 @@ class mmap_array {
       buf_size += len / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_MEMORY +
                   len % OBJ_NUM_PERPAGE * sizeof(T);
     }
-    auto ret = buffer_pool_manager_->GetObject(file_offset, buf_size, fd_gbp_);
+    auto ret = buffer_pool_manager_->GetBlock(file_offset, buf_size, fd_gbp_);
 
     return ret;
   }
@@ -482,9 +495,9 @@ class mmap_array<std::string_view> {
     return std::string_view(data_.data() + item.offset, item.length);
   }
 #else
-  gbp::BufferObject get(size_t idx) const {
+  gbp::BufferBlock get(size_t idx) const {
     auto value = items_.get(idx);
-    auto item = gbp::BufferObject::Ref<gs::string_item>(value);
+    auto item = gbp::BufferBlock::Ref<gs::string_item>(value);
     return data_.get(item.offset, item.length);
   }
 #endif

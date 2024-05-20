@@ -78,8 +78,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 
   std::vector<char> result_buffer;
   auto query_id_t = gbp::get_query_id().load();
-  if ((int) type != 2)
-    return result_buffer;
+  // if ((int) type != 2)
+  //   return result_buffer;
   static std::atomic<size_t> query_id = 0;
   gbp::get_counter_query().fetch_add(1);
 

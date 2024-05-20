@@ -162,8 +162,8 @@ std::vector<Any> Table::get_row(size_t row_id) const {
   return ret;
 }
 #else
-std::vector<gbp::BufferObject> Table::get_row(size_t row_id) const {
-  std::vector<gbp::BufferObject> ret;
+std::vector<gbp::BufferBlock> Table::get_row(size_t row_id) const {
+  std::vector<gbp::BufferBlock> ret;
   for (auto ptr : columns_) {
     ret.push_back(ptr->get(row_id));
   }
@@ -222,7 +222,7 @@ void Table::insert(size_t index, const std::vector<Any>& values,
 }
 
 #else
-void Table::insert(size_t index, const std::vector<gbp::BufferObject>& values) {
+void Table::insert(size_t index, const std::vector<gbp::BufferBlock>& values) {
   assert(values.size() == columns_.size());
   CHECK_EQ(values.size(), columns_.size());
   size_t col_num = columns_.size();
@@ -233,7 +233,7 @@ void Table::insert(size_t index, const std::vector<gbp::BufferObject>& values) {
 
 // column_id_mapping is the mapping from the column id in the input table to the
 // column id in the current table
-void Table::insert(size_t index, const std::vector<gbp::BufferObject>& values,
+void Table::insert(size_t index, const std::vector<gbp::BufferBlock>& values,
                    const std::vector<int32_t>& col_ind_mapping) {
   assert(values.size() == columns_.size() + 1);
   CHECK_EQ(values.size(), columns_.size() + 1);
@@ -260,11 +260,11 @@ Any Table::at(size_t row_id, size_t col_id) const {
   return columns_[col_id]->get(row_id);
 }
 #else
-gbp::BufferObject Table::at(size_t row_id, size_t col_id) {
+gbp::BufferBlock Table::at(size_t row_id, size_t col_id) {
   return columns_[col_id]->get(row_id);
 }
 
-gbp::BufferObject Table::at(size_t row_id, size_t col_id) const {
+gbp::BufferBlock Table::at(size_t row_id, size_t col_id) const {
   return columns_[col_id]->get(row_id);
 }
 #endif

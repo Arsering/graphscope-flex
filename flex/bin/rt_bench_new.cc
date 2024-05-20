@@ -296,6 +296,8 @@ class Req {
 };
 
 int main(int argc, char** argv) {
+  gbp::warmup_mark().store(0);
+
   size_t pool_size_Byte = 1024LU * 1024LU * 1024LU * 10;
   bpo::options_description desc("Usage:");
   desc.add_options()("help", "Display help message")(
@@ -366,6 +368,8 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
       log_data_path + "/performance.log", "nvme0n1");
+  gbp::get_log_dir() = log_data_path;
+  gbp::get_db_dir() = data_path;
   gbp::log_enable().store(false);
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
@@ -412,6 +416,8 @@ int main(int argc, char** argv) {
   t0 += grape::GetCurrentTime();
 
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
+#else
+  gbp::warmup_mark().store(1);
 #endif
 
   std::string req_file = vm["req-file"].as<std::string>();
@@ -439,6 +445,8 @@ int main(int argc, char** argv) {
           });
     });
     auto end = std::chrono::system_clock::now();
+    gbp::warmup_mark().store(0);
+
     std::cout << "cost time:"
               << std::chrono::duration_cast<std::chrono::milliseconds>(end -
                                                                        begin)

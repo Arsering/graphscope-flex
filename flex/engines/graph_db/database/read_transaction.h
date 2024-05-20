@@ -160,10 +160,10 @@ class SingleGraphView {
 #else
   bool exist(vid_t v) const {
     auto item = csr_.get_edge(v);
-    return (gbp::BufferObject::Ref<nbr_t>(item).timestamp.load() <= timestamp_);
+    return (gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_);
   }
 
-  const gbp::BufferObject get_edge(vid_t v) const { return csr_.get_edge(v); }
+  const gbp::BufferBlock get_edge(vid_t v) const { return csr_.get_edge(v); }
 
   timestamp_t timestamp() const { return timestamp_; }
 #endif
@@ -199,7 +199,7 @@ class ReadTransaction {
 #if OV
     Any GetField(int col_id) const;
 #else
-    gbp::BufferObject GetField(int col_id) const;
+    gbp::BufferBlock GetField(int col_id) const;
 #endif
     int FieldNum() const;
 

@@ -63,7 +63,7 @@ class Table {
 #if OV
   std::vector<Any> get_row(size_t row_id) const;
 #else
-  std::vector<gbp::BufferObject> get_row(size_t row_id) const;
+  std::vector<gbp::BufferBlock> get_row(size_t row_id) const;
 #endif
   size_t get_size_in_byte() const {
     size_t size_in_byte = 0;
@@ -89,8 +89,8 @@ class Table {
   void insert(size_t index, const std::vector<Any>& values,
               const std::vector<int32_t>& col_ind_mapping);
 #else
-  void insert(size_t index, const std::vector<gbp::BufferObject>& values);
-  void insert(size_t index, const std::vector<gbp::BufferObject>& values,
+  void insert(size_t index, const std::vector<gbp::BufferBlock>& values);
+  void insert(size_t index, const std::vector<gbp::BufferBlock>& values,
               const std::vector<int32_t>& col_ind_mapping);
 #endif
 
@@ -101,9 +101,9 @@ class Table {
 
   Any at(size_t row_id, size_t col_id) const;
 #else
-  gbp::BufferObject at(size_t row_id, size_t col_id);
+  gbp::BufferBlock at(size_t row_id, size_t col_id);
 
-  gbp::BufferObject at(size_t row_id, size_t col_id) const;
+  gbp::BufferBlock at(size_t row_id, size_t col_id) const;
 #endif
   void ingest(uint32_t index, grape::OutArchive& arc);
 

@@ -51,7 +51,7 @@ Any ReadTransaction::vertex_iterator::GetField(int col_id) const {
   return graph_.get_vertex_table(label_).get_column_by_id(col_id)->get(cur_);
 }
 #else
-gbp::BufferObject ReadTransaction::vertex_iterator::GetField(int col_id) const {
+gbp::BufferBlock ReadTransaction::vertex_iterator::GetField(int col_id) const {
   return graph_.get_vertex_table(label_).get_column_by_id(col_id)->get(cur_);
 }
 #endif

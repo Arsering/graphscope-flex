@@ -27,6 +27,8 @@ namespace gs {
 MutablePropertyFragment::MutablePropertyFragment() {}
 
 MutablePropertyFragment::~MutablePropertyFragment() {
+  gbp::get_counter_global(10).store(0);
+
   std::vector<size_t> degree_list(vertex_label_num_, 0);
   for (size_t i = 0; i < vertex_label_num_; ++i) {
     degree_list[i] = lf_indexers_[i].size();
@@ -48,6 +50,7 @@ MutablePropertyFragment::~MutablePropertyFragment() {
       }
     }
   }
+  LOG(INFO) << "pages_in_memory = " << gbp::get_counter_global(10).load();
 }
 
 void MutablePropertyFragment::loadSchema(const std::string& schema_path) {

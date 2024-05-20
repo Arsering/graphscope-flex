@@ -45,8 +45,8 @@ class ColumnBase {
 #if OV
   virtual Any get(size_t index) const = 0;
 #else
-  virtual gbp::BufferObject get(size_t index) const = 0;
-  virtual void set(size_t index, const gbp::BufferObject& value) = 0;
+  virtual gbp::BufferBlock get(size_t index) const = 0;
+  virtual void set(size_t index, const gbp::BufferBlock& value) = 0;
 #endif
   virtual size_t get_size_in_byte() const = 0;
   virtual void ingest(uint32_t index, grape::OutArchive& arc) = 0;
@@ -131,10 +131,10 @@ class TypedColumn : public ColumnBase {
       auto basic_buffer_items_old = basic_buffer_.get(0, basic_size_);
       auto basic_buffer_items_new = tmp.get(0, basic_size_);
       for (size_t i = 0; i < basic_size_; i++)
-        gbp::BufferObject::UpdateContent<T>(
+        gbp::BufferBlock::UpdateContent<T>(
             [&](T& item) {
               memcpy(&item,
-                     &gbp::BufferObject::Ref<T>(basic_buffer_items_old, i),
+                     &gbp::BufferBlock::Ref<T>(basic_buffer_items_old, i),
                      sizeof(T));
             },
             basic_buffer_items_new, i);
@@ -142,10 +142,10 @@ class TypedColumn : public ColumnBase {
       auto extra_buffer_items_old = extra_buffer_.get(0, extra_size_);
       auto extra_buffer_items_new = tmp.get(basic_size_, extra_size_);
       for (size_t i = 0; i < extra_size_; i++)
-        gbp::BufferObject::UpdateContent<T>(
+        gbp::BufferBlock::UpdateContent<T>(
             [&](T& item) {
               memcpy(&item,
-                     &gbp::BufferObject::Ref<T>(extra_buffer_items_old, i),
+                     &gbp::BufferBlock::Ref<T>(extra_buffer_items_old, i),
                      sizeof(T));
             },
             extra_buffer_items_new, i);
@@ -194,22 +194,22 @@ class TypedColumn : public ColumnBase {
       extra_buffer_.set(index - basic_size_, val);
     else {
       auto item_t = extra_buffer_.get(index - basic_size_);
-      gbp::BufferObject::UpdateContent<T>([&](T& item) { item = val; }, item_t);
+      gbp::BufferBlock::UpdateContent<T>([&](T& item) { item = val; }, item_t);
     }
   }
   void set_any(size_t index, const Any& value) override {
     set_value(index, AnyConverter<T>::from_any(value));
   }
-  void set(size_t index, const gbp::BufferObject& value) override {
-    auto val = gbp::BufferObject::Ref<T>(value);
+  void set(size_t index, const gbp::BufferBlock& value) override {
+    auto val = gbp::BufferBlock::Ref<T>(value);
     set_value(index, val);
   }
 
-  gbp::BufferObject get_inner(size_t idx) const {
+  gbp::BufferBlock get_inner(size_t idx) const {
     return idx < basic_size_ ? basic_buffer_.get(idx)
                              : extra_buffer_.get(idx - basic_size_);
   }
-  gbp::BufferObject get(size_t idx) const override {
+  gbp::BufferBlock get(size_t idx) const override {
     size_t st, latency;
     auto ret = get_inner(idx);
     return ret;
@@ -395,17 +395,17 @@ class StringColumn : public ColumnBase {
     return AnyConverter<std::string_view>::to_any(get_view(idx));
   }
 #else
-  gbp::BufferObject get_inner(size_t idx) const {
+  gbp::BufferBlock get_inner(size_t idx) const {
     return idx < basic_size_ ? basic_buffer_.get(idx)
                              : extra_buffer_.get(idx - basic_size_);
   }
-  gbp::BufferObject get(size_t idx) const override {
+  gbp::BufferBlock get(size_t idx) const override {
     size_t st, latency;
     auto ret = get_inner(idx);
     return ret;
   }
   // TODO: 优化掉不必要的copy
-  void set(size_t idx, const gbp::BufferObject& value) override {
+  void set(size_t idx, const gbp::BufferBlock& value) override {
     std::string sv(value.Size(), 'a');
     value.Copy(sv.data(), value.Size());
     set_value(idx, sv);

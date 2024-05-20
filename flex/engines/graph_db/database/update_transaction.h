@@ -67,7 +67,7 @@ class UpdateTransaction {
 #if OV
     Any GetField(int col_id) const;
 #else
-    gbp::BufferObject GetField(int col_id) const;
+    gbp::BufferBlock GetField(int col_id) const;
 #endif
     bool SetField(int col_id, const Any& value);
 
@@ -89,7 +89,7 @@ class UpdateTransaction {
 #if OV
     Any GetData() const;
 #else
-    gbp::BufferObject GetData() const;
+    gbp::BufferBlock GetData() const;
 #endif
     void SetData(const Any& value);
 
@@ -130,7 +130,7 @@ class UpdateTransaction {
 #if OV
   Any GetVertexField(label_t label, vid_t lid, int col_id) const;
 #else
-  gbp::BufferObject GetVertexField(label_t label, vid_t lid, int col_id) const;
+  gbp::BufferBlock GetVertexField(label_t label, vid_t lid, int col_id) const;
 #endif
   bool SetVertexField(label_t label, vid_t lid, int col_id, const Any& value);
 

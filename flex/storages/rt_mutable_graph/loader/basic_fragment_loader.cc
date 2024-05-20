@@ -118,7 +118,7 @@ void BasicFragmentLoader::AddVertexBatch(
 #else
 void BasicFragmentLoader::AddVertexBatch(
     label_t v_label, const std::vector<vid_t>& vids,
-    const std::vector<std::vector<gbp::BufferObject>>& props) {
+    const std::vector<std::vector<gbp::BufferBlock>>& props) {
   auto& table = vertex_data_[v_label];
   CHECK(props.size() == table.col_num());
   for (auto i = 0; i < props.size(); ++i) {
