@@ -376,7 +376,7 @@ int main(int argc, char** argv) {
 #if OV
   gbp::warmup_mark().store(0);
 #else
-  size_t pool_num = 10;
+  size_t pool_num = 1;
   gbp::warmup_mark().store(0);
 
   if (vm.count("buffer-pool-size")) {
