@@ -44,7 +44,9 @@ inline void copy_file(const std::string& src, const std::string& dst) {
     LOG(ERROR) << "file not exists: " << src;
     return;
   }
+
   size_t len = std::filesystem::file_size(src);
+
   int src_fd = ::open(src.c_str(), O_RDONLY, 0777);
   int dst_fd = ::open(dst.c_str(), O_WRONLY | O_CREAT, 0777);
 
@@ -57,8 +59,8 @@ inline void copy_file(const std::string& src, const std::string& dst) {
     }
     len -= ret;
   } while (len > 0 && ret > 0);
-  close(src_fd);
-  close(dst_fd);
+  ::close(src_fd);
+  ::close(dst_fd);
 }
 
 template <typename T>
@@ -68,14 +70,36 @@ class mmap_array {
   mmap_array()
       : filename_(""), fd_(-1), data_(NULL), size_(0), read_only_(true) {}
 #else
-  mmap_array() : filename_(""), size_(0), read_only_(true), fd_gbp_(-1) {
+  mmap_array()
+      : filename_(""),
+        size_(0),
+        read_only_(true),
+        fd_gbp_(gbp::INVALID_FILE_HANDLE) {
     buffer_pool_manager_ = &gbp::BufferPoolManager::GetGlobalInstance();
   }
+  mmap_array(const mmap_array& other) = delete;
+  mmap_array& operator=(const mmap_array&) = delete;
 #endif
   mmap_array(mmap_array&& rhs) : mmap_array() { swap(rhs); }
 #if OV
   ~mmap_array() {
+    if (fd_ != -1) {
+      std::vector<std::tuple<void**, int, size_t>>& mas_ = gbp::GetMAS();
+      bool mark = true;
+      for (size_t i = 0; i < mas_.size(); i++) {
+        if (std::get<1>(mas_[i]) == fd_) {
+          std::get<1>(mas_[i]) = -1;
+          mark = false;
+          break;
+        }
+      }
+      if (mark)
+        assert(false);
+    }
+    if (fd_ == -1)
+      return;
     size_t file_len = std::filesystem::file_size(filename_);
+
     size_t total_pages = (file_len + 4095) / 4096;
     unsigned char* vec = (unsigned char*) malloc(total_pages);
     assert(::mincore(data_, file_len, vec) != -1);
@@ -92,11 +116,11 @@ class mmap_array {
   void reset() {
     filename_ = "";
     if (data_ != NULL) {
-      munmap(data_, size_);
+      ::munmap(data_, size_);
       data_ = NULL;
     }
     if (fd_ != -1) {
-      close(fd_);
+      ::close(fd_);
       fd_ = -1;
     }
     read_only_ = true;
@@ -104,16 +128,19 @@ class mmap_array {
 #else
   // mmap_array(const mmap_array&) = delete;             // 阻止拷贝
   // mmap_array& operator=(const mmap_array&) = delete;  // 阻止赋值
-  ~mmap_array() {}
+  ~mmap_array() { close(); }
 
-  void close() { buffer_pool_manager_->CloseFile(fd_gbp_), fd_gbp_ = -1; }
+  void close() {
+    // if (fd_gbp_ != gbp::INVALID_FILE_HANDLE) {
+    //   buffer_pool_manager_->CloseFile(fd_gbp_);
+    //   fd_gbp_ = gbp::INVALID_FILE_HANDLE;
+    // }
+  }
+
   void reset() {
     filename_ = "";
 
-    if (fd_gbp_ != -1) {
-      buffer_pool_manager_->CloseFile(fd_gbp_);
-      fd_gbp_ = -1;
-    }
+    close();
     read_only_ = true;
   }
 #endif
@@ -131,7 +158,9 @@ class mmap_array {
         data_ = NULL;
       } else {
         fd_ = ::open(filename.c_str(), O_RDONLY | FILE_FLAG, 0777);
+
         size_t file_size = std::filesystem::file_size(filename);
+
         size_ = file_size / sizeof(T);
         if (size_ == 0) {
           data_ = NULL;
@@ -139,14 +168,15 @@ class mmap_array {
           data_ = reinterpret_cast<T*>(
               mmap(NULL, size_ * sizeof(T), PROT_READ, MAP_PRIVATE, fd_, 0));
           Warmup((char*) data_, size_ * sizeof(T));
-          // madvise(data_, size_ * sizeof(T),
-          //         MMAP_ADVICE_l);  // Turn off readahead
+          madvise(data_, size_ * sizeof(T),
+                  MMAP_ADVICE_l);  // Turn off readahead
           assert(data_ != MAP_FAILED);
         }
       }
     } else {
       fd_ = ::open(filename.c_str(), O_RDWR | O_CREAT | FILE_FLAG, 0777);
       size_t file_size = std::filesystem::file_size(filename);
+
       size_ = file_size / sizeof(T);
       if (size_ == 0) {
         data_ = NULL;
@@ -156,13 +186,16 @@ class mmap_array {
                                           fd_, 0));
         Warmup((char*) data_, size_ * sizeof(T));
 
-        // madvise(data_, size_ * sizeof(T),
-        //         MMAP_ADVICE_l);  // Turn off readahead
+        madvise(data_, size_ * sizeof(T),
+                MMAP_ADVICE_l);  // Turn off readahead
 
         assert(data_ != MAP_FAILED);
       }
     }
+    gbp::GetMAS().push_back(std::tuple((void**) (&data_), fd_,
+                                       std::filesystem::file_size(filename)));
   }
+
 #else
   void open(const std::string& filename, bool read_only) {
     reset();
@@ -259,10 +292,24 @@ class mmap_array {
                                    PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0));
         // Warmup((char*) data_, size * sizeof(T));
 
-        ::madvise(data_, size_ * sizeof(T),
+        ::madvise(data_, size * sizeof(T),
                   MMAP_ADVICE_l);  // Turn off readahead
       }
       size_ = size;
+    }
+
+    if (fd_ != -1) {
+      bool mark = true;
+      std::vector<std::tuple<void**, int, size_t>>& mas_ = gbp::GetMAS();
+      for (size_t i = 0; i < mas_.size(); i++) {
+        if (std::get<1>(mas_[i]) == fd_) {
+          std::get<2>(mas_[i]) = size_ * sizeof(T);
+          mark = false;
+          break;
+        }
+      }
+      if (mark)
+        assert(false);
     }
   }
 #else
@@ -304,8 +351,8 @@ class mmap_array {
   }
 #else
   void touch(const std::string& filename) {
+    close();
     copy_file(filename_, filename);
-    buffer_pool_manager_->CloseFile(fd_gbp_);
     open(filename, false);
   }
 #endif
@@ -386,6 +433,7 @@ class mmap_array {
     std::swap(fd_, rhs.fd_);
     std::swap(data_, rhs.data_);
     std::swap(size_, rhs.size_);
+    rhs.fd_ = -1;
   }
   size_t get_size_in_byte() const { return size_ * sizeof(T); }
 #else
@@ -394,6 +442,7 @@ class mmap_array {
     std::swap(fd_gbp_, rhs.fd_gbp_);
     std::swap(size_, rhs.size_);
     std::swap(buffer_pool_manager_, rhs.buffer_pool_manager_);
+    rhs.fd_gbp_ = gbp::INVALID_FILE_HANDLE;
   }
 
   gbp::GBPfile_handle_type filehandle() const { return fd_gbp_; }
@@ -428,13 +477,15 @@ class mmap_array {
   T* data_;
   size_t size_;
   bool read_only_;
+  mutable bool restart_finish_ = false;
 #else
   constexpr static uint16_t OBJ_NUM_PERPAGE = gbp::PAGE_SIZE_FILE / sizeof(T);
   gbp::BufferPoolManager* buffer_pool_manager_;
-  int fd_gbp_ = -1;
+  gbp::GBPfile_handle_type fd_gbp_ = gbp::INVALID_FILE_HANDLE;
   std::string filename_;
   size_t size_;
   bool read_only_;
+  mutable bool restart_finish_ = false;
 #endif
 };
 
@@ -497,8 +548,10 @@ class mmap_array<std::string_view> {
 #else
   gbp::BufferBlock get(size_t idx) const {
     auto value = items_.get(idx);
-    auto item = gbp::BufferBlock::Ref<gs::string_item>(value);
-    return data_.get(item.offset, item.length);
+    auto& item = gbp::BufferBlock::Ref<gs::string_item>(value);
+    auto ret = data_.get(item.offset, item.length);
+    value.free();
+    return ret;
   }
 #endif
 

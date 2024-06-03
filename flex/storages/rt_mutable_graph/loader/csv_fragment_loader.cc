@@ -164,6 +164,7 @@ static void set_vertex_properties(gs::ColumnBase* col,
   auto type = array->type();
   auto col_type = col->type();
   size_t cur_ind = 0;
+
   if (col_type == PropertyType::kInt64) {
     CHECK(type == arrow::int64())
         << "Inconsistent data type, expect int64, but got " << type->ToString();
@@ -359,6 +360,7 @@ void CSVFragmentLoader::addVertexBatch(
   vid_t vid;
   std::vector<vid_t> vids;
   vids.reserve(row_num);
+
   for (auto i = 0; i < row_num; ++i) {
     if (!indexer.add(casted_array->Value(i), vid)) {
       LOG(FATAL) << "Duplicate vertex id: " << casted_array->Value(i) << " for "
@@ -370,9 +372,11 @@ void CSVFragmentLoader::addVertexBatch(
   for (auto j = 0; j < property_cols.size(); ++j) {
     auto array = property_cols[j];
     auto chunked_array = std::make_shared<arrow::ChunkedArray>(array);
+    // LOG(INFO) << "cp";
     set_vertex_properties(
         basic_fragment_loader_.GetVertexTable(v_label_id).column_ptrs()[j],
         chunked_array, vids);
+    // LOG(INFO) << "cp";
   }
 
   VLOG(10) << "Insert rows: " << row_num;
@@ -621,8 +625,8 @@ void CSVFragmentLoader::loadVertices() {
          ++iter) {
       vertex_files.emplace_back(iter->first, iter->second);
     }
-    LOG(INFO) << "Parallel loading with " << thread_num_ << " threads, "
-              << " " << vertex_files.size() << " vertex files, ";
+    LOG(INFO) << "Parallel loading with " << thread_num_ << " threads, " << " "
+              << vertex_files.size() << " vertex files, ";
     std::atomic<size_t> v_ind(0);
     std::vector<std::thread> threads(thread_num_);
     for (int i = 0; i < thread_num_; ++i) {

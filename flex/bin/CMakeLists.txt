@@ -23,6 +23,17 @@ endif()
 
 if(Hiactor_FOUND)
         include_directories(../engines/http_server)
+        add_executable(rt_bench_thread rt_bench_thread.cc)
+        target_link_libraries(rt_bench_thread flex_utils flex_rt_mutable_graph flex_graph_db flex_server)
+
+        install(TARGETS rt_bench_thread
+                RUNTIME DESTINATION bin
+                ARCHIVE DESTINATION lib
+                LIBRARY DESTINATION lib)
+endif()
+
+if(Hiactor_FOUND)
+        include_directories(../engines/http_server)
         add_executable(rt_bench_new rt_bench_new.cc)
         target_link_libraries(rt_bench_new flex_utils flex_rt_mutable_graph flex_graph_db flex_server)
 

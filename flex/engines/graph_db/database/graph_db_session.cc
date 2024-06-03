@@ -77,9 +77,11 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   size_t str_len = input.size() - 1;
 
   std::vector<char> result_buffer;
+
   auto query_id_t = gbp::get_query_id().load();
-  // if ((int) type != 2)
+  // if ((int) type == 17)
   //   return result_buffer;
+  // LOG(INFO) << (int) type << " " << gbp::get_query_id().load();
   static std::atomic<size_t> query_id = 0;
   gbp::get_counter_query().fetch_add(1);
 
@@ -117,8 +119,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << " | " << gbp::get_counter(11) << " | " << gbp::get_counter(12)
               << "]";
 #endif
+    std::string_view output{result_buffer.data(), result_buffer.size()};
+
     if constexpr (true) {
-      std::string_view output{result_buffer.data(), result_buffer.size()};
       size_t cur_query_id = query_id.fetch_add(1);
       // gbp::get_query_id().store(cur_query_id);
       static std::atomic<size_t> query_tofile_count = 0;
@@ -130,7 +133,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
                     << gbp::get_results_vec()[gbp::get_query_id().load()];
           LOG(INFO) << "=========";
           LOG(INFO) << "\n" << output;
-          LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
+          LOG(INFO) << (int) type << " " << gbp::get_query_id().load();
         }
         gbp::get_query_file()
             << input << "eor#" << gbp::get_query_id().load() << "eor#";

@@ -358,7 +358,9 @@ class LFIndexer {
   void load_meta(const std::string& filename) {
     grape::OutArchive arc;
     FILE* fin = fopen(filename.c_str(), "r");
+
     size_t meta_file_size = std::filesystem::file_size(filename);
+
     std::vector<char> buf(meta_file_size);
     CHECK_EQ(fread(buf.data(), sizeof(char), meta_file_size, fin),
              meta_file_size);

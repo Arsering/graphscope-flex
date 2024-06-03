@@ -187,8 +187,10 @@ class TypedColumn : public ColumnBase {
   }
 #else
   void set_value(size_t index, const T& val) {
+#if ASSERT_ENABLE
     assert(index >= basic_size_ && index < basic_size_ + extra_size_);
-
+#endif
+    // LOG(INFO) << "cp";
     // 为了防止一个obj跨两个页
     if constexpr (gbp::PAGE_SIZE_FILE / sizeof(T) == 0)
       extra_buffer_.set(index - basic_size_, val);
@@ -196,10 +198,13 @@ class TypedColumn : public ColumnBase {
       auto item_t = extra_buffer_.get(index - basic_size_);
       gbp::BufferBlock::UpdateContent<T>([&](T& item) { item = val; }, item_t);
     }
+    // LOG(INFO) << "cp";
   }
+
   void set_any(size_t index, const Any& value) override {
     set_value(index, AnyConverter<T>::from_any(value));
   }
+
   void set(size_t index, const gbp::BufferBlock& value) override {
     auto val = gbp::BufferBlock::Ref<T>(value);
     set_value(index, val);
@@ -376,7 +381,9 @@ class StringColumn : public ColumnBase {
   }
 
   void set_value(size_t idx, const std::string_view& val) {
+#if ASSERT_ENABLE
     assert(idx >= basic_size_ && idx < basic_size_ + extra_size_);
+#endif
     size_t offset = pos_.fetch_add(val.size());
     extra_buffer_.set(idx - basic_size_, offset, val);
   }
@@ -399,11 +406,7 @@ class StringColumn : public ColumnBase {
     return idx < basic_size_ ? basic_buffer_.get(idx)
                              : extra_buffer_.get(idx - basic_size_);
   }
-  gbp::BufferBlock get(size_t idx) const override {
-    size_t st, latency;
-    auto ret = get_inner(idx);
-    return ret;
-  }
+  gbp::BufferBlock get(size_t idx) const override { return get_inner(idx); }
   // TODO: 优化掉不必要的copy
   void set(size_t idx, const gbp::BufferBlock& value) override {
     std::string sv(value.Size(), 'a');

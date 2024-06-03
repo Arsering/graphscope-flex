@@ -16,6 +16,7 @@
 #include "grape/util.h"
 
 #include <unistd.h>
+// #include <boost/fiber/all.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <fstream>
@@ -24,6 +25,7 @@
 #include <thread>
 #include <vector>
 #include "flex/engines/graph_db/database/graph_db.h"
+#include "flex/engines/graph_db/database/graph_db_session.h"
 #include "flex/engines/http_server/executor_group.actg.h"
 #include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
 #include "flex/engines/http_server/graph_db_service.h"
@@ -31,7 +33,7 @@
 #include <glog/logging.h>
 
 namespace bpo = boost::program_options;
-using namespace std::chrono_literals;
+// using namespace std::chrono_literals;
 class Req {
  public:
   static Req& get() {
@@ -41,15 +43,16 @@ class Req {
   void init(size_t warmup_num, size_t benchmark_num) {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
-    // num_of_reqs_unique_ = reqs_.size();
-    num_of_reqs_unique_ = 2000000;
+    num_of_reqs_unique_ = reqs_.size();
+    // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
     end_.resize(num_of_reqs_);
     cur_ = 0;
 
     std::cout << "warmup count: " << warmup_num_
               << "; benchmark count: " << num_of_reqs_ << "\n";
-    log_thread_ = std::thread([this]() { logger(); });
+    if (!log_thread_.joinable())
+      log_thread_ = std::thread([this]() { logger(); });
   }
 
   void load(const std::string& file_path) {
@@ -152,32 +155,34 @@ class Req {
     gbp::get_results_vec() = results_;
   }
 
-  seastar::future<> do_query(server::executor_ref& ref) {
-    auto id = cur_.fetch_add(1);
-    if (id >= num_of_reqs_) {
-      return seastar::make_ready_future<>();
-    }
+  void do_query(size_t thread_id) {
+    while (true) {
+      auto id = cur_.fetch_add(1);
+      if (id >= num_of_reqs_) {
+        return;
+      }
 
-    start_[id] = gbp::GetSystemTime();
-    gbp::get_query_id().store(req_ids_[id % num_of_reqs_unique_]);
-    return ref
-        .run_graph_db_query(
-            server::query_param{reqs_[id % num_of_reqs_unique_]})
-        .then_wrapped(
-            [&, id](seastar::future<server::query_result>&& fut) mutable {
-              auto result = fut.get0();
-              end_[id] = gbp::GetSystemTime();
-            })
-        .then([&] { return do_query(ref); });
+      start_[id] = gbp::GetSystemTime();
+      gbp::get_query_id().store(req_ids_[id % num_of_reqs_unique_]);
+
+      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
+          reqs_[id % num_of_reqs_unique_]);
+      end_[id] = gbp::GetSystemTime();
+    }
+    return;
   }
 
-  seastar::future<> simulate() {
-    hiactor::scope_builder builder;
-    builder.set_shard(hiactor::local_shard_id())
-        .enter_sub_scope(hiactor::scope<server::executor_group>(0));
-    return seastar::do_with(
-        builder.build_ref<server::executor_ref>(0),
-        [&](server::executor_ref& ref) { return do_query(ref); });
+  bool simulate(size_t thread_num = 10) {
+    std::vector<std::thread> workers;
+    assert(cur_ == 0);
+    for (size_t i = 0; i < thread_num; i++) {
+      workers.emplace_back([this, i]() { do_query(i); });
+    }
+
+    for (auto& worker : workers) {
+      worker.join();
+    }
+    return true;
   }
 
   void output() {
@@ -188,7 +193,7 @@ class Req {
     std::vector<long long> vec(29, 0);
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
-    for (size_t idx = num_of_reqs_unique_; idx < num_of_reqs_; idx++) {
+    for (size_t idx = 0; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
       // auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -370,13 +375,14 @@ int main(int argc, char** argv) {
       log_data_path + "/performance.log", "nvme0n1");
   gbp::get_log_dir() = log_data_path;
   gbp::get_db_dir() = data_path;
+
   gbp::log_enable().store(false);
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 #if OV
   gbp::warmup_mark().store(0);
 #else
-  size_t pool_num = 10;
+  size_t pool_num = 1;
   gbp::warmup_mark().store(0);
 
   if (vm.count("buffer-pool-size")) {
@@ -415,36 +421,33 @@ int main(int argc, char** argv) {
   gbp::warmup_mark().store(1);
   t0 += grape::GetCurrentTime();
 
+  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 #else
   gbp::warmup_mark().store(1);
+  gbp::CleanMAS();
 #endif
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load(req_file);
   Req::get().load_result(req_file);
-  for (size_t idx = 0; idx < 1; idx++) {
+  for (size_t idx = 0; idx < 2; idx++) {
     Req::get().init(warmup_num, benchmark_num);
 
     hiactor::actor_app app;
     gbp::log_enable().store(true);
+    sleep(10);
+    size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes());
 
     auto begin = std::chrono::system_clock::now();
-    int ac = 1;
-    char* av[] = {(char*) "rt_bench"};
-    app.run(ac, av, [shard_num] {
-      return seastar::parallel_for_each(
-                 boost::irange<unsigned>(0u, shard_num),
-                 [](unsigned id) {
-                   return seastar::smp::submit_to(
-                       id, [id] { return Req::get().simulate(); });
-                 })
-          .then([] {
-            hiactor::actor_engine().exit();
-            fmt::print("Exit actor system.\n");
-          });
-    });
+    gbp::get_counter_global(30).store(0);
+    Req::get().simulate(shard_num);
+    LOG(INFO) << "aaaaa = " << gbp::get_counter_global(30).load();
     auto end = std::chrono::system_clock::now();
+
+    ssd_io_byte = std::get<0>(gbp::SSD_io_bytes()) - ssd_io_byte;
+    LOG(INFO) << "SSD IO = " << ssd_io_byte << "B";
     gbp::warmup_mark().store(0);
 
     std::cout << "cost time:"
@@ -452,7 +455,16 @@ int main(int argc, char** argv) {
                                                                        begin)
                      .count()
               << "\n";
-    Req::get().LoggerStop();
     Req::get().output();
   }
+
+  Req::get().LoggerStop();
+
+  auto memory_usages =
+      gbp::BufferPoolManager::GetGlobalInstance().GetMemoryUsage();
+
+  LOG(INFO) << std::get<0>(memory_usages) << " | " << std::get<1>(memory_usages)
+            << " | " << std::get<2>(memory_usages) << " | "
+            << std::get<3>(memory_usages) << " | "
+            << std::get<4>(memory_usages);
 }

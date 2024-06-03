@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 
   double t0 = -grape::GetCurrentTime();
 #if !OV
-  size_t pool_num = 10;
+  size_t pool_num = 1;
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
   }
