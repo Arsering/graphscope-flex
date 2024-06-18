@@ -382,7 +382,7 @@ int main(int argc, char** argv) {
 #if OV
   gbp::warmup_mark().store(0);
 #else
-  size_t pool_num = 1;
+  size_t pool_num = 10;
   gbp::warmup_mark().store(0);
 
   if (vm.count("buffer-pool-size")) {
@@ -420,18 +420,21 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Warmup finish";
   gbp::warmup_mark().store(1);
   t0 += grape::GetCurrentTime();
-
-  gbp::BufferPoolManager::GetGlobalInstance().Clean();
-
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
+
+  LOG(INFO) << "Clean start";
+  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  LOG(INFO) << "Clean finish";
 #else
   gbp::warmup_mark().store(1);
+  LOG(INFO) << "Clean start";
   gbp::CleanMAS();
+  LOG(INFO) << "Clean finish";
 #endif
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load(req_file);
-  Req::get().load_result(req_file);
+  // Req::get().load_result(req_file);
   for (size_t idx = 0; idx < 2; idx++) {
     Req::get().init(warmup_num, benchmark_num);
 
@@ -441,13 +444,20 @@ int main(int argc, char** argv) {
     size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes());
 
     auto begin = std::chrono::system_clock::now();
-    gbp::get_counter_global(30).store(0);
+    gbp::get_counter_global(10).store(0);
+    gbp::get_counter_global(11).store(0);
+
     Req::get().simulate(shard_num);
-    LOG(INFO) << "aaaaa = " << gbp::get_counter_global(30).load();
     auto end = std::chrono::system_clock::now();
+    sleep(10);
 
     ssd_io_byte = std::get<0>(gbp::SSD_io_bytes()) - ssd_io_byte;
     LOG(INFO) << "SSD IO = " << ssd_io_byte << "B";
+    LOG(INFO) << "Host IO = " << gbp::get_counter_global(10).load() << "B";
+    LOG(INFO) << "Memory IO = "
+              << gbp::get_counter_global(11).load() * gbp::PAGE_SIZE_MEMORY
+              << "B";
+
     gbp::warmup_mark().store(0);
 
     std::cout << "cost time:"

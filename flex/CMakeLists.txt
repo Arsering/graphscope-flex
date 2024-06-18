@@ -20,7 +20,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC -O0")
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC -rdynamic")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
@@ -62,10 +62,12 @@ else ()
 endif ()
 
 #find boost----------------------------------------------------------------------
-find_package(Boost REQUIRED COMPONENTS system filesystem
+# set(BOOST_ROOT "/usr/local")
+# set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
+# set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
+find_package(Boost 1.84 REQUIRED COMPONENTS system filesystem
              # required by folly
              context program_options regex thread fiber)
-
 #find arrow----------------------------------------------------------------------
 include("cmake/FindArrow.cmake")
 if (NOT ARROW_FOUND)

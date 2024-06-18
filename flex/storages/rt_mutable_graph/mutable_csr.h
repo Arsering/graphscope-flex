@@ -453,8 +453,8 @@ struct MutableAdjlist {
   // mmap_array<nbr_t>* get_mmap_array() { return mmap_array_; }
 
   //  private:
-  std::atomic<int> size_;
-  int capacity_;
+  std::atomic<u_int32_t> size_;
+  u_int32_t capacity_;
   size_t start_idx_;
 };
 #endif
@@ -876,15 +876,21 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     adj_lists_.resize(degree_list.size());
     locks_ = new grape::SpinLock[degree_list.size()];
 
-    auto degree_list_batch = degree_list.get(0, degree_list.size());
-    auto items_tmp = adj_lists_.get(0, degree_list.size());
+    size_t step_size = 1024;
     size_t offset = 0;
-    for (size_t i = 0; i < degree_list.size(); i++) {
-      int degree = gbp::BufferBlock::Ref<int>(degree_list_batch, i);
-      gbp::BufferBlock::UpdateContent<adjlist_t>(
-          [&](adjlist_t& item) { item.init(offset, degree, degree); },
-          items_tmp, i);
-      offset += degree;
+    for (size_t step_id = 0; step_id < gbp::ceil(degree_list.size(), step_size);
+         step_id++) {
+      size_t block_size =
+          std::min(step_size, degree_list.size() - step_id * step_size);
+      auto degree_list_batch = degree_list.get(step_id * step_size, block_size);
+      auto items_tmp = adj_lists_.get(step_id * step_size, block_size);
+      for (size_t i = 0; i < block_size; i++) {
+        int degree = gbp::BufferBlock::Ref<int>(degree_list_batch, i);
+        gbp::BufferBlock::UpdateContent<adjlist_t>(
+            [&](adjlist_t& item) { item.init(offset, degree, degree); },
+            items_tmp, i);
+        offset += degree;
+      }
     }
   }
 #endif
@@ -1081,7 +1087,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     size_t start_idx_new;
     if (adj_list.size_ == adj_list.capacity_) {
       capacity_new += ((capacity_new) >> 1);
-      capacity_new = std::max(capacity_new, 8);
+      capacity_new = capacity_new > 8 ? capacity_new : 8;
 
       bool success = false;
       std::tie<bool, size_t>(success, start_idx_new) =

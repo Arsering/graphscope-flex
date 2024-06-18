@@ -45,12 +45,10 @@ class GraphDBSession {
     }
   }
 #else
-  GraphDBSession(GraphDB& db, MMapAllocator& alloc,
-                 gbp::ThreadLog& access_logger, WalWriter& logger,
+  GraphDBSession(GraphDB& db, MMapAllocator& alloc, WalWriter& logger,
                  const std::string& work_dir, int thread_id)
       : db_(db),
         alloc_(alloc),
-        access_logger_(access_logger),
         logger_(logger),
         work_dir_(work_dir),
         thread_id_(thread_id) {
@@ -92,9 +90,6 @@ class GraphDBSession {
   GraphDB& db_;
   MMapAllocator& alloc_;
   WalWriter& logger_;
-#if !DL
-  gbp::ThreadLog& access_logger_;
-#endif
   std::string work_dir_;
   int thread_id_;
 

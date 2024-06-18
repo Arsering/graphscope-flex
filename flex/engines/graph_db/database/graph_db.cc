@@ -24,18 +24,11 @@ namespace gs {
 struct SessionLocalContext {
   SessionLocalContext(GraphDB& db, const std::string& work_dir, int thread_id)
       : allocator(thread_local_allocator_prefix(work_dir, thread_id)),
-#if DL
-        session(db, allocator, logger, work_dir, thread_id)
-#else
-        session(db, allocator, access_logger, logger, work_dir, thread_id)
-#endif
-  {
-  }
+        session(db, allocator, logger, work_dir, thread_id) {}
   ~SessionLocalContext() { logger.close(); }
 
   MMapAllocator allocator;
   char _padding0[128 - sizeof(MMapAllocator) % 128];
-  gbp::ThreadLog access_logger;
   WalWriter logger;
   char _padding1[4096 - sizeof(WalWriter) - sizeof(MMapAllocator) -
                  sizeof(_padding0)];
@@ -91,7 +84,6 @@ void GraphDB::Init(const Schema& schema, const std::string& data_dir,
 
   for (int i = 0; i < thread_num_; ++i) {
     contexts_[i].logger.open(wal_dir_path, i);
-    contexts_[i].access_logger.open_log_file(i);
   }
 
   initApps(schema.GetPluginsList());

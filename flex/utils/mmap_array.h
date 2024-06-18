@@ -35,7 +35,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV true
+#define OV false
 #define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
 
@@ -413,7 +413,8 @@ class mmap_array {
       buf_size += len / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_MEMORY +
                   len % OBJ_NUM_PERPAGE * sizeof(T);
     }
-    auto ret = buffer_pool_manager_->GetBlock(file_offset, buf_size, fd_gbp_);
+    auto ret =
+        buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
 
     return ret;
   }
