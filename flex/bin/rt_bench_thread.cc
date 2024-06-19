@@ -20,15 +20,15 @@
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <fstream>
-#include <hiactor/core/actor-app.hh>
+// #include <hiactor/core/actor-app.hh>
 #include <iostream>
 #include <thread>
 #include <vector>
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/engines/graph_db/database/graph_db_session.h"
-#include "flex/engines/http_server/executor_group.actg.h"
-#include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
-#include "flex/engines/http_server/graph_db_service.h"
+// #include "flex/engines/http_server/executor_group.actg.h"
+// #include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
+// #include "flex/engines/http_server/graph_db_service.h"
 
 #include <glog/logging.h>
 
@@ -56,9 +56,12 @@ class Req {
   }
 
   void load(const std::string& file_path) {
-    LOG(INFO) << "load queries from " << file_path + "query_file.log" << "\n";
+    // LOG(INFO) << "load queries from " << file_path + "query_file.log" << "\n";
+    // std::ifstream query_file;
+    // query_file.open(file_path + "query_file.log", std::ios::in);
+    LOG(INFO) << "load queries from " << file_path << "\n";
     std::ifstream query_file;
-    query_file.open(file_path + "query_file.log", std::ios::in);
+    query_file.open(file_path, std::ios::in);
 
     const size_t size = 4096;
     std::vector<char> buffer(size);
@@ -189,10 +192,15 @@ class Req {
     // std::ofstream profiling_file(log_data_path + "/profiling.log",
     //                              std::ios::out);
     // profiling_file << "LOG Format: Query Type | latency (OV)" << std::endl;
+    std::vector<std::string> queries = {
+            "IC1", "IC2",  "IC3",  "IC4",  "IC5",  "IC6",  "IC7", "IC8",
+            "IC9", "IC10", "IC11", "IC12", "IC13", "IC14","PERSON_IS" ,"POST_IS","FORUM_IS","COMMENT_IS","IS1", "IS2",
+            "IS3", "IS4", "IS5",  "IS6",  "IS7",  "IU1",  "IU2", "IU3",
+            "IU4", "IU5",  "IU6",  "IU7",  "IU8"};
 
-    std::vector<long long> vec(29, 0);
-    std::vector<int> count(29, 0);
-    std::vector<std::vector<long long>> ts(29);
+    std::vector<long long> vec(queries.size(), 0);
+    std::vector<int> count(queries.size(), 0);
+    std::vector<std::vector<long long>> ts(queries.size());
     for (size_t idx = 0; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
@@ -206,11 +214,7 @@ class Req {
       count[id] += 1;
     }
 
-    std::vector<std::string> queries = {
-        "IC1", "IC2",  "IC3",  "IC4",  "IC5",  "IC6",  "IC7", "IC8",
-        "IC9", "IC10", "IC11", "IC12", "IC13", "IC14", "IS1", "IS2",
-        "IS3", "IS4",  "IS5",  "IS6",  "IS7",  "IU1",  "IU2", "IU3",
-        "IU4", "IU5",  "IU6",  "IU7",  "IU8"};
+    
     for (auto i = 0; i < vec.size(); ++i) {
       size_t sz = ts[i].size();
       if (sz > 0) {
@@ -438,7 +442,7 @@ int main(int argc, char** argv) {
   for (size_t idx = 0; idx < 2; idx++) {
     Req::get().init(warmup_num, benchmark_num);
 
-    hiactor::actor_app app;
+    // hiactor::actor_app app;
     gbp::log_enable().store(true);
     sleep(10);
     size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes());

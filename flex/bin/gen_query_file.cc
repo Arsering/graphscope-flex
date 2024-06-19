@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -63,16 +64,46 @@ std::vector<std::string> gen_query(const std::string& csv_dir_path,
   std::vector<std::string> result_buffer;
   std::vector<char> tmp;
   CSVReader csv_reader;
-  if (query_id < 4)
+  if (query_id==1)
+    csv_reader.init(csv_dir_path + "/dynamic/person_0_0.csv");
+  else if (query_id==2)
+    csv_reader.init(csv_dir_path + "/dynamic/post_0_0.csv");
+  else if (query_id==3)
+    csv_reader.init(csv_dir_path + "/dynamic/forum_0_0.csv");
+  else if (query_id==4)
+    csv_reader.init(csv_dir_path + "/dynamic/comment_0_0.csv");
+  else if (query_id < 8)
     csv_reader.init(csv_dir_path + "/dynamic/person_0_0.csv");
   else
     csv_reader.init(csv_dir_path + "/dynamic/post_0_0.csv");
-
+  
+  size_t word_count=0;
   while (true) {
     gs::Encoder encoder(tmp);
     auto& words = csv_reader.GetNextLine();
     if (words.size() == 0)
+    {
+      if (query_id==1){
+        LOG(INFO)<<csv_dir_path+"/dynamic/person_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
+      }
+      else if (query_id==2){
+        LOG(INFO)<<csv_dir_path+"/dynamic/post_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
+      }
+      else if (query_id==3){
+        LOG(INFO)<<csv_dir_path+"/dynamic/forum_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
+      }
+      else if (query_id==4){
+        LOG(INFO)<<csv_dir_path+"/dynamic/comment_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
+      }
+      else if (query_id<8)
+        LOG(INFO)<<csv_dir_path+"/dynamic/person_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
+      else {
+        LOG(INFO)<<csv_dir_path+"/dynamic/post_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
+      }
       break;
+    }
+
+    word_count++;
 
     encoder.put_long(stol(words[0]));
     encoder.put_byte(query_id + 14);
@@ -136,7 +167,8 @@ int main(int argc, char** argv) {
   std::vector<std::vector<std::string>> queries;
   size_t overall_size = 0;
   std::vector<size_t> size_p;
-  for (int query_id = 1; query_id < 8; query_id++) {
+  for (int query_id = 1; query_id < 12; query_id++) {// change 8 to 9
+    LOG(INFO) << "gen query "<<query_id;  
     auto queries_1 = gen_query(csv_data_path, query_id);
     overall_size += queries_1.size();
     queries.push_back(std::move(queries_1));
@@ -162,6 +194,14 @@ int main(int argc, char** argv) {
       data_ptr = &(queries[5][i - size_p[4]]);
     else if (i < size_p[6])
       data_ptr = &(queries[6][i - size_p[5]]);
+    else if (i < size_p[7])
+      data_ptr = &(queries[7][i - size_p[6]]);
+    else if (i < size_p[8])
+      data_ptr = &(queries[8][i - size_p[7]]);
+    else if (i < size_p[9])
+      data_ptr = &(queries[9][i - size_p[8]]);
+    else if (i < size_p[10])
+      data_ptr = &(queries[10][i - size_p[9]]);
     else
       LOG(FATAL) << "Great Error";
     query_file.write(data_ptr->data(), data_ptr->size());
