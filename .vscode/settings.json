@@ -80,7 +80,8 @@
         "csetjmp": "cpp",
         "rope": "cpp",
         "slist": "cpp",
-        "scoped_allocator": "cpp"
+        "scoped_allocator": "cpp",
+        "charconv": "cpp"
     },
     "cmake.sourceDirectory": "/workspaces/graphscope-flex/flex/graphscope_bufferpool"
 }
