@@ -73,6 +73,7 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
 
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
   uint8_t type = input.back();
+  // LOG(INFO)<<"type is "<<type;
   const char* str_data = input.data();
   size_t str_len = input.size() - 1;
 
@@ -86,6 +87,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   gbp::get_counter_query().fetch_add(1);
 
   Decoder decoder(str_data, str_len);
+  // LOG(INFO)<<"decoder is "<<decoder.get_string();
   Encoder encoder(result_buffer);
 
   AppBase* app = nullptr;
@@ -111,6 +113,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 #endif
   // LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
 
+  // LOG(INFO)<<"decoder is "<<decoder.get_string() << "and begin query";
   if (app->Query(decoder, encoder)) {
 #ifdef DEBUG_1
     ts = gbp::GetSystemTime() - ts;

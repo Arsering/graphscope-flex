@@ -19,6 +19,7 @@
 // #include <boost/fiber/all.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
+#include <cstddef>
 #include <fstream>
 // #include <hiactor/core/actor-app.hh>
 #include <iostream>
@@ -55,54 +56,78 @@ class Req {
       log_thread_ = std::thread([this]() { logger(); });
   }
 
-  void load(const std::string& file_path) {
+  void load(const std::string& file_data_path,const std::string& file_meta_path) {
     // LOG(INFO) << "load queries from " << file_path + "query_file.log" << "\n";
     // std::ifstream query_file;
     // query_file.open(file_path + "query_file.log", std::ios::in);
-    LOG(INFO) << "load queries from " << file_path << "\n";
-    std::ifstream query_file;
-    query_file.open(file_path, std::ios::in);
+    LOG(INFO) << "load queries from " << file_data_path << " and "<<file_meta_path<<"\n";
+    std::ifstream query_data_file;
+    std::ifstream query_meta_file;
+    query_data_file.open(file_data_path, std::ios::in);
+    query_meta_file.open(file_meta_path, std::ios::in);
 
-    const size_t size = 4096;
-    std::vector<char> buffer(size);
-    std::vector<char> tmp(size);
-    size_t index = 0;
-    size_t log_count = 0;
-    bool mark = true;
-    size_t req_id_cur = 0;
+    // const size_t size = 4096;
+    // std::vector<char> buffer(size);
+    // std::vector<char> tmp(size);
+    // size_t index = 0;
+    // size_t log_count = 0;
+    // bool mark = true;
+    // size_t req_id_cur = 0;
 
-    while (true) {
-      query_file.read(buffer.data(), size);
-      auto len = query_file.gcount();
-      if (len == 0)
-        break;
-      for (size_t i = 0; i < len; ++i) {
-        tmp[index++] = buffer[i];
-        if (index >= 4 && tmp[index - 1] == '#') {
-          if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
-              tmp[index - 2] == 'r') {
-            if (mark) {
-              reqs_.emplace_back(
-                  std::string(tmp.begin(), tmp.begin() + index - 4));
-              mark = false;
-            } else {
-              auto req_id = std::stoull(
-                  std::string(tmp.begin(), tmp.begin() + index - 4));
-              if (req_id != req_id_cur)
-                continue;
-              req_ids_.emplace_back(req_id);
-              mark = true;
-              req_id_cur++;
-            }
-            index = 0;
-          }
-        }
-      }
+    // while (true) {
+    //   query_data_file.read(buffer.data(), size);
+    //   auto len = query_data_file.gcount();
+    //   if (len == 0)
+    //     break;
+    //   for (size_t i = 0; i < len; ++i) {
+    //     tmp[index++] = buffer[i];
+    //     if (index >= 4 && tmp[index - 1] == '#') {
+    //       if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
+    //           tmp[index - 2] == 'r') {
+    //         if (mark) {
+    //           reqs_.emplace_back(
+    //               std::string(tmp.begin(), tmp.begin() + index - 4));
+    //           mark = false;
+    //         } else {
+    //           auto req_id = std::stoull(
+    //               std::string(tmp.begin(), tmp.begin() + index - 4));
+    //           if (req_id != req_id_cur)
+    //             continue;
+    //           req_ids_.emplace_back(req_id);
+    //           mark = true;
+    //           req_id_cur++;
+    //         }
+    //         index = 0;
+    //       }
+    //     }
+    //   //}
 
-      buffer.clear();
+    if (!query_data_file || !query_meta_file) {
+        std::cerr << "Failed to open files for reading." << std::endl;
+        return;
     }
+
+    std::vector<std::string> data;
+    size_t count=0;
+    size_t size, offset;
+    while (query_meta_file.read(reinterpret_cast<char*>(&size), sizeof(size)) &&
+           query_meta_file.read(reinterpret_cast<char*>(&offset), sizeof(offset))) {
+        // std::cout<<"size is "<<size<<" offset is "<<offset<<std::endl;
+        std::vector<char> buffer(size);
+        query_data_file.seekg(offset, std::ios::beg);
+        query_data_file.read(buffer.data(), size);
+        reqs_.emplace_back(buffer.begin(), buffer.end());
+        req_ids_.emplace_back(int(buffer.back()));
+        count++;
+        if (count%10000000==0){
+          LOG(INFO)<<"processed "<<count<< " logs";
+        }
+        // break;
+        // std::cout<<"data is "<<reqs_.back()<<" type is "<<req_ids_.back()<<std::endl;
+    }
+
     LOG(INFO) << "Number of query = " << reqs_.size();
-    query_file.close();
+    query_data_file.close();
     num_of_reqs_ = reqs_.size();
   }
 
@@ -167,7 +192,7 @@ class Req {
 
       start_[id] = gbp::GetSystemTime();
       gbp::get_query_id().store(req_ids_[id % num_of_reqs_unique_]);
-
+      // LOG(INFO)<<"begin process req "<<req_ids_[id % num_of_reqs_unique_]<<" and param is "<< reqs_[id % num_of_reqs_unique_];
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           reqs_[id % num_of_reqs_unique_]);
       end_[id] = gbp::GetSystemTime();
@@ -194,7 +219,7 @@ class Req {
     // profiling_file << "LOG Format: Query Type | latency (OV)" << std::endl;
     std::vector<std::string> queries = {
             "IC1", "IC2",  "IC3",  "IC4",  "IC5",  "IC6",  "IC7", "IC8",
-            "IC9", "IC10", "IC11", "IC12", "IC13", "IC14","PERSON_IS" ,"POST_IS","FORUM_IS","COMMENT_IS","IS1", "IS2",
+            "IC9", "IC10", "IC11", "IC12", "IC13", "IC14","PERSON_IS","PERSON_EDGE_IS" ,"POST_IS","POST_EDGE_IS","FORUM_IS","COMMENT_IS","COMMENT_EDGE_IS","IS1", "IS2",
             "IS3", "IS4", "IS5",  "IS6",  "IS7",  "IU1",  "IU2", "IU3",
             "IU4", "IU5",  "IU6",  "IU7",  "IU8"};
 
@@ -436,8 +461,8 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Clean finish";
 #endif
 
-  std::string req_file = vm["req-file"].as<std::string>();
-  Req::get().load(req_file);
+  std::string req_file = vm["req-file"].as<std::string>();//这里改成req-dir
+  Req::get().load(req_file+"/query_data.file",req_file+"/query_meta.file");
   // Req::get().load_result(req_file);
   for (size_t idx = 0; idx < 2; idx++) {
     Req::get().init(warmup_num, benchmark_num);

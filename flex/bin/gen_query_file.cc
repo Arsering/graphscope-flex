@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -64,15 +65,15 @@ std::vector<std::string> gen_query(const std::string& csv_dir_path,
   std::vector<std::string> result_buffer;
   std::vector<char> tmp;
   CSVReader csv_reader;
-  if (query_id==1)
+  if (query_id==1 || query_id==2)
     csv_reader.init(csv_dir_path + "/dynamic/person_0_0.csv");
-  else if (query_id==2)
+  else if (query_id==3 || query_id==4)
     csv_reader.init(csv_dir_path + "/dynamic/post_0_0.csv");
-  else if (query_id==3)
+  else if (query_id==5)
     csv_reader.init(csv_dir_path + "/dynamic/forum_0_0.csv");
-  else if (query_id==4)
+  else if (query_id==6 || query_id==7)
     csv_reader.init(csv_dir_path + "/dynamic/comment_0_0.csv");
-  else if (query_id < 8)
+  else if (query_id < 11)
     csv_reader.init(csv_dir_path + "/dynamic/person_0_0.csv");
   else
     csv_reader.init(csv_dir_path + "/dynamic/post_0_0.csv");
@@ -83,19 +84,19 @@ std::vector<std::string> gen_query(const std::string& csv_dir_path,
     auto& words = csv_reader.GetNextLine();
     if (words.size() == 0)
     {
-      if (query_id==1){
+      if (query_id==1 || query_id==2){
         LOG(INFO)<<csv_dir_path+"/dynamic/person_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
       }
-      else if (query_id==2){
+      else if (query_id==3 || query_id==4){
         LOG(INFO)<<csv_dir_path+"/dynamic/post_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
       }
-      else if (query_id==3){
+      else if (query_id==5){
         LOG(INFO)<<csv_dir_path+"/dynamic/forum_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
       }
-      else if (query_id==4){
+      else if (query_id==6 || query_id==7){
         LOG(INFO)<<csv_dir_path+"/dynamic/comment_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
       }
-      else if (query_id<8)
+      else if (query_id < 11)
         LOG(INFO)<<csv_dir_path+"/dynamic/person_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
       else {
         LOG(INFO)<<csv_dir_path+"/dynamic/post_0_0.csv"<<" word size is 0, and total word num is "<<word_count;
@@ -161,13 +162,15 @@ int main(int argc, char** argv) {
   }
   output_data_path = vm["output-data-path"].as<std::string>();
 
-  std::string query_file_name = output_data_path + "/query.file";
-  std::ofstream query_file(query_file_name, std::ios::out);
+  std::string query_file_data_name = output_data_path + "/query_data.file";
+  std::string query_file_meta_name = output_data_path + "/query_meta.file";
+  std::ofstream query_data_file(query_file_data_name, std::ios::out);
+  std::ofstream query_meta_file(query_file_meta_name, std::ios::out);
 
   std::vector<std::vector<std::string>> queries;
   size_t overall_size = 0;
   std::vector<size_t> size_p;
-  for (int query_id = 1; query_id < 12; query_id++) {// change 8 to 9
+  for (int query_id = 1; query_id < 15; query_id++) {// change 8 to 9
     LOG(INFO) << "gen query "<<query_id;  
     auto queries_1 = gen_query(csv_data_path, query_id);
     overall_size += queries_1.size();
@@ -177,7 +180,8 @@ int main(int argc, char** argv) {
 
   auto orders = create_random_order(overall_size);
   std::string end_mark = "eor#";
-  size_t count = 0;
+  // size_t count = 0;
+  size_t offset = 0;
   for (auto i : orders) {
     std::string* data_ptr;
     if (i < size_p[0])
@@ -202,20 +206,30 @@ int main(int argc, char** argv) {
       data_ptr = &(queries[9][i - size_p[8]]);
     else if (i < size_p[10])
       data_ptr = &(queries[10][i - size_p[9]]);
+    else if (i < size_p[11])
+      data_ptr = &(queries[11][i - size_p[10]]);
+    else if (i < size_p[12])
+      data_ptr = &(queries[12][i - size_p[11]]);
+    else if (i < size_p[13])
+      data_ptr = &(queries[13][i - size_p[12]]);
     else
       LOG(FATAL) << "Great Error";
-    query_file.write(data_ptr->data(), data_ptr->size());
+    query_data_file.write(data_ptr->data(), data_ptr->size());
+    size_t size=data_ptr->size();
+    query_meta_file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    query_meta_file.write(reinterpret_cast<const char*>(&offset), sizeof(offset));
+    offset+=size;
     // LOG(INFO) << "queries_1[i].data()"
     //           << *reinterpret_cast<size_t*>(queries_1[i].data());
-    query_file.write(end_mark.data(), end_mark.size());
-    query_file << count++;
-    query_file.write(end_mark.data(), end_mark.size());
+    // query_data_file.write(end_mark.data(), end_mark.size());
+    // query_data_file << count++;
+    // query_data_file.write(end_mark.data(), end_mark.size());
 
     // if (--count == 0)
     //   break;
   }
   LOG(INFO) << "Number of query = " << overall_size;
-  query_file.flush();
-  query_file.close();
+  query_data_file.flush();
+  query_data_file.close();
   // LOG(INFO) << "file size = " << std::filesystem::file_size(query_file_name);
 }
