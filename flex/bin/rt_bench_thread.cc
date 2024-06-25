@@ -428,7 +428,7 @@ int main(int argc, char** argv) {
 #else
   gbp::warmup_mark().store(1);
   LOG(INFO) << "Clean start";
-  gbp::CleanMAS();
+  // gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
 
@@ -442,6 +442,7 @@ int main(int argc, char** argv) {
     gbp::log_enable().store(true);
     sleep(10);
     size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes());
+    auto cpu_cost_before = gbp::GetCPUTime();
 
     auto begin = std::chrono::system_clock::now();
     gbp::get_counter_global(10).store(0);
@@ -449,14 +450,22 @@ int main(int argc, char** argv) {
 
     Req::get().simulate(shard_num);
     auto end = std::chrono::system_clock::now();
-    sleep(10);
+    auto cpu_cost_after = gbp::GetCPUTime();
 
     ssd_io_byte = std::get<0>(gbp::SSD_io_bytes()) - ssd_io_byte;
-    LOG(INFO) << "SSD IO = " << ssd_io_byte << "B";
-    LOG(INFO) << "Host IO = " << gbp::get_counter_global(10).load() << "B";
+
+    LOG(INFO) << "CPU Cost = "
+              << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /
+                     1000000.0
+              << "u/"
+              << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /
+                     1000000.0
+              << "s (second)";
+    LOG(INFO) << "SSD IO = " << ssd_io_byte << "(Byte)";
+    LOG(INFO) << "Host IO = " << gbp::get_counter_global(10).load() << "(Byte)";
     LOG(INFO) << "Memory IO = "
               << gbp::get_counter_global(11).load() * gbp::PAGE_SIZE_MEMORY
-              << "B";
+              << "(Byte)";
 
     gbp::warmup_mark().store(0);
 
