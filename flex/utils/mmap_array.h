@@ -401,17 +401,21 @@ class mmap_array {
 #endif
 
     size_t buf_size = 0;
+    // size_t num_page = 0;
     const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
                                (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+
     size_t rest_filelen_firstpage =
         gbp::PAGE_SIZE_MEMORY - file_offset % gbp::PAGE_SIZE_MEMORY;
     if (rest_filelen_firstpage / sizeof(T) > len) {
       buf_size += sizeof(T) * len;
+      // num_page = 1;
     } else {
       buf_size += rest_filelen_firstpage;
       len -= rest_filelen_firstpage / sizeof(T);
       buf_size += len / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_MEMORY +
                   len % OBJ_NUM_PERPAGE * sizeof(T);
+      // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
     }
     auto ret =
         buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);

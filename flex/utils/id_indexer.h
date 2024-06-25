@@ -201,14 +201,17 @@ class LFIndexer {
       index = (index + 1) % num_slots_minus_one_;
     }
 #else
-    keys_.set(ind, &oid);
+    // keys_.set(ind, &oid);
+    auto item1 = keys_.get(ind);
+    gbp::BufferBlock::UpdateContent<int64_t>([&](int64_t& item) { item = oid; },
+                                             item1);
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
 
     int mark = 0;
     while (true) {
-      auto item1 = indices_.get(index);
+      item1 = indices_.get(index);
       gbp::BufferBlock::UpdateContent<INDEX_T>(
           [&](INDEX_T& item) {
             mark = __sync_bool_compare_and_swap(&item, sentinel, ind);

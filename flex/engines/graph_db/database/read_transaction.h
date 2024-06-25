@@ -158,14 +158,22 @@ class SingleGraphView {
     return csr_.get_edge(v);
   }
 #else
-  bool exist(vid_t v) const {
+  // bool exist(vid_t v) const {
+  //   auto item = csr_.get_edge(v);
+  //   return (gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <=
+  //   timestamp_);
+  // }
+
+  FORCE_INLINE gbp::BufferBlock exist(vid_t v, bool& exist) const {
+    exist = false;
     auto item = csr_.get_edge(v);
-    return (gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_);
+    exist = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
+    return item;
   }
 
-  const gbp::BufferBlock get_edge(vid_t v) const { return csr_.get_edge(v); }
+  FORCE_INLINE const gbp::BufferBlock get_edge(vid_t v) const { return csr_.get_edge(v); }
 
-  timestamp_t timestamp() const { return timestamp_; }
+ FORCE_INLINE timestamp_t timestamp() const { return timestamp_; }
 #endif
  private:
   const SingleMutableCsr<EDATA_T>& csr_;

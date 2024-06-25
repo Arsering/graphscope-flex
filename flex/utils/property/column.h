@@ -210,15 +210,11 @@ class TypedColumn : public ColumnBase {
     set_value(index, val);
   }
 
-  gbp::BufferBlock get_inner(size_t idx) const {
+  FORCE_INLINE gbp::BufferBlock get_inner(size_t idx) const {
     return idx < basic_size_ ? basic_buffer_.get(idx)
                              : extra_buffer_.get(idx - basic_size_);
   }
-  gbp::BufferBlock get(size_t idx) const override {
-    size_t st, latency;
-    auto ret = get_inner(idx);
-    return ret;
-  }
+  gbp::BufferBlock get(size_t idx) const override { return get_inner(idx); }
 
 #endif
   size_t get_size_in_byte() const override {
@@ -407,11 +403,13 @@ class StringColumn : public ColumnBase {
                              : extra_buffer_.get(idx - basic_size_);
   }
   gbp::BufferBlock get(size_t idx) const override { return get_inner(idx); }
+
   // TODO: 优化掉不必要的copy
   void set(size_t idx, const gbp::BufferBlock& value) override {
     std::string sv(value.Size(), 'a');
     value.Copy(sv.data(), value.Size());
     set_value(idx, sv);
+    assert(false);
   }
 
 #endif
