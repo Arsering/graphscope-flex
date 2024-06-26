@@ -115,74 +115,28 @@ class MutableNbrSliceMut {
 };
 #else
 template <typename EDATA_T>
-class MutableNbrSlice {
- public:
+struct MutableNbrSlice {
   using nbr_t = MutableNbr<EDATA_T>;
   MutableNbrSlice() = default;
   ~MutableNbrSlice() = default;
 
-  void set_size(int size) { size_ = size; }
-  int size() const { return size_; }
-  size_t get_size() const { return size_; }
-  void set_mmap_array(const mmap_array<nbr_t>* ma) { mmap_array_ = ma; }
-  const mmap_array<nbr_t>* get_mmap_array() const { return mmap_array_; }
+  static MutableNbrSlice empty() { return {nullptr, 0, 0}; }
 
-  void set_buffer(const nbr_t* buffer) { buffer_ = buffer; }
-  const nbr_t* get_buffer() const { return buffer_; }
-
-  void set_start_idx(size_t start_idx) { start_idx_ = start_idx; }
-  size_t get_start_idx() const { return start_idx_; }
-
-  static MutableNbrSlice empty() {
-    MutableNbrSlice ret;
-    ret.set_mmap_array(nullptr);
-    ret.set_buffer(nullptr);
-    ret.set_start_idx(0);
-    ret.set_size(0);
-    return ret;
-  }
-
- private:
   const mmap_array<nbr_t>* mmap_array_;
-  const nbr_t* buffer_;
   size_t start_idx_;
-  size_t cur_idx_;
   size_t size_;
 };
 
 template <typename EDATA_T>
-class MutableNbrSliceMut {
- public:
+struct MutableNbrSliceMut {
   using nbr_t = MutableNbr<EDATA_T>;
   MutableNbrSliceMut() = default;
   ~MutableNbrSliceMut() = default;
 
-  void set_size(int size) { size_ = size; }
-  int size() const { return size_; }
+  static MutableNbrSliceMut empty() { return {nullptr, 0, 0}; }
 
-  void set_mmap_array(mmap_array<nbr_t>* ma) { mmap_array_ = ma; }
-  mmap_array<nbr_t>* get_mmap_array() const { return mmap_array_; }
-
-  void set_buffer(nbr_t* buffer) { buffer_ = buffer; }
-  nbr_t* get_buffer() const { return buffer_; }
-
-  void set_start_idx(size_t start_idx) { start_idx_ = start_idx; }
-  size_t get_start_idx() const { return start_idx_; }
-
-  static MutableNbrSliceMut empty() {
-    MutableNbrSliceMut ret;
-    ret.set_mmap_array(nullptr);
-    ret.set_buffer(nullptr);
-    ret.set_start_idx(0);
-    ret.set_size(0);
-    return ret;
-  }
-
- private:
   mmap_array<nbr_t>* mmap_array_;
-  nbr_t* buffer_;
   size_t start_idx_;
-  size_t cur_idx_;
   size_t size_;
 };
 #endif
@@ -611,12 +565,12 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
  public:
   TypedMutableCsrConstEdgeIter() : objs_(), cur_idx_(0), size_(0) {}
   explicit TypedMutableCsrConstEdgeIter(const MutableNbrSlice<EDATA_T>& slice)
-      : cur_idx_(0), size_(slice.size()) {
+      : cur_idx_(0), size_(slice.size_) {
 #ifdef USING_EDGE_ITER
     auto tmp = slice.get_mmap_array()->get(slice.get_start_idx(), slice.size());
     objs_ = gbp::BufferBlockIter<nbr_t>(tmp);
 #else
-    objs_ = slice.get_mmap_array()->get(slice.get_start_idx(), slice.size());
+    objs_ = slice.mmap_array_->get(slice.start_idx_, size_);
 #endif
   }
   explicit TypedMutableCsrConstEdgeIter(const mmap_array<nbr_t>* ma,
@@ -710,8 +664,8 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
  public:
   TypedMutableCsrEdgeIter() : objs_(), cur_idx_(0), size_(0) {}
   explicit TypedMutableCsrEdgeIter(MutableNbrSliceMut<EDATA_T> slice)
-      : cur_idx_(0), size_(slice.size()) {
-    objs_ = slice.get_mmap_array()->get(slice.get_start_idx(), slice.size());
+      : cur_idx_(0), size_(slice.size_) {
+    objs_ = slice.mmap_array_->get(slice.start_idx_, size_);
   }
   explicit TypedMutableCsrEdgeIter(mmap_array<nbr_t>* ma, size_t start_idx,
                                    size_t size)
@@ -786,7 +740,7 @@ class TypedMutableCsrBase : public MutableCsrBase {
   virtual void batch_put_edge(vid_t src, vid_t dst, const EDATA_T& data,
                               timestamp_t ts = 0) = 0;
 
-  virtual slice_t get_edges(vid_t i) const = 0;
+  virtual const slice_t get_edges(vid_t i) const = 0;
 };
 
 // FIXME: 目前是不支持EDATA_T是string的
@@ -1092,8 +1046,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       bool success = false;
       std::tie<bool, size_t>(success, start_idx_new) =
           gbp::atomic_add<size_t>(size_, capacity_new, nbr_list_.size());
-      if (!success)
-        LOG(FATAL) << "fuck";
       assert(success);
 
       // 复制数据到新的位置
@@ -1157,14 +1109,14 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     return nbr_list_.get(adj_list.start_idx_ + i);
   }
 
-  slice_t get_edges(vid_t i) const override {
+  const slice_t get_edges(vid_t i) const override {
     slice_t ret;
     auto item = adj_lists_.get(i);
     auto& adj_list = gbp::BufferBlock::Ref<adjlist_t>(item);
 
-    ret.set_mmap_array(&nbr_list_);
-    ret.set_start_idx(adj_list.start_idx_);
-    ret.set_size(adj_list.size_.load(std::memory_order_acquire));
+    ret.mmap_array_ = &nbr_list_;
+    ret.start_idx_ = adj_list.start_idx_;
+    ret.size_ = adj_list.size_.load(std::memory_order_acquire);
     return ret;
   }
 
@@ -1173,9 +1125,9 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     auto& adj_list = gbp::BufferBlock::Ref<adjlist_t>(item);
 
     mut_slice_t ret;
-    ret.set_mmap_array(&nbr_list_);
-    ret.set_start_idx(adj_list.start_idx_);
-    ret.set_size(adj_list.size_.load());
+    ret.mmap_array_ = &nbr_list_;
+    ret.start_idx_ = adj_list.start_idx_;
+    ret.size_ = adj_list.size_.load();
     return ret;
   }
 
@@ -1382,18 +1334,17 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
   }
   const nbr_t& get_edge(vid_t i) const { return nbr_list_[i]; }
 #else
-  slice_t get_edges(vid_t i) const override {
+  const slice_t get_edges(vid_t i) const override {
     slice_t ret;
     auto item = nbr_list_.get(i);
-    ret.set_size(gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() ==
-                         std::numeric_limits<timestamp_t>::max()
-                     ? 0
-                     : 1);
-    if (ret.size() != 0) {
-      ret.set_mmap_array(&nbr_list_);
-      ret.set_buffer(nullptr);
-      ret.set_start_idx(i);
-      ret.set_size(1);
+    ret.size_ = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() ==
+                        std::numeric_limits<timestamp_t>::max()
+                    ? 0
+                    : 1;
+    if (ret.size_ != 0) {
+      ret.mmap_array_ = &nbr_list_;
+      ret.start_idx_ = i;
+      ret.size_ = 1;
     }
     return ret;
   }
@@ -1401,15 +1352,14 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
   mut_slice_t get_edges_mut(vid_t i) {
     mut_slice_t ret;
     auto item = nbr_list_.get(i);
-    ret.set_size(gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() ==
-                         std::numeric_limits<timestamp_t>::max()
-                     ? 0
-                     : 1);
-    if (ret.size() != 0) {
-      ret.set_mmap_array(&nbr_list_);
-      ret.set_buffer(nullptr);
-      ret.set_start_idx(i);
-      ret.set_size(1);
+    ret.size_ = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() ==
+                        std::numeric_limits<timestamp_t>::max()
+                    ? 0
+                    : 1;
+    if (ret.size_ != 0) {
+      ret.mmap_array_ = &nbr_list_;
+      ret.start_idx_ = i;
+      ret.size_ = 1;
     }
     return ret;
   }
@@ -1475,7 +1425,7 @@ class EmptyCsr : public TypedMutableCsrBase<EDATA_T> {
 
   size_t size() const override { return 0; }
 
-  slice_t get_edges(vid_t i) const override { return slice_t::empty(); }
+  const slice_t get_edges(vid_t i) const override { return slice_t::empty(); }
 
   void put_generic_edge(vid_t src, vid_t dst, const Any& data, timestamp_t ts,
                         MMapAllocator&) override {}

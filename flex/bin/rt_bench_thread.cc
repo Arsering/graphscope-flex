@@ -458,7 +458,7 @@ int main(int argc, char** argv) {
               << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /
                      1000000.0
               << "u/"
-              << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /
+              << (std::get<1>(cpu_cost_after) - std::get<1>(cpu_cost_before)) /
                      1000000.0
               << "s (second)";
     LOG(INFO) << "SSD IO = " << ssd_io_byte << "(Byte)";
