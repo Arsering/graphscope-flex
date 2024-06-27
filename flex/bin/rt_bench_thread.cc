@@ -16,19 +16,19 @@
 #include "grape/util.h"
 
 #include <unistd.h>
-// #include <boost/fiber/all.hpp>
+#include <boost/fiber/all.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <fstream>
-#include <hiactor/core/actor-app.hh>
+// #include <hiactor/core/actor-app.hh>
 #include <iostream>
 #include <thread>
 #include <vector>
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/engines/graph_db/database/graph_db_session.h"
-#include "flex/engines/http_server/executor_group.actg.h"
-#include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
-#include "flex/engines/http_server/graph_db_service.h"
+// #include "flex/engines/http_server/executor_group.actg.h"
+// #include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
+// #include "flex/engines/http_server/graph_db_service.h"
 
 #include <glog/logging.h>
 
@@ -438,7 +438,7 @@ int main(int argc, char** argv) {
   for (size_t idx = 0; idx < 2; idx++) {
     Req::get().init(warmup_num, benchmark_num);
 
-    hiactor::actor_app app;
+    // hiactor::actor_app app;
     gbp::log_enable().store(true);
     sleep(10);
     size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes());
