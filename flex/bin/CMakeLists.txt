@@ -25,6 +25,8 @@ if(Hiactor_FOUND)
         include_directories(../engines/http_server)
         add_executable(rt_bench_thread rt_bench_thread.cc)
         target_link_libraries(rt_bench_thread flex_utils flex_rt_mutable_graph flex_graph_db flex_server)
+        find_library(MIMALLOC_LIBRARY NAMES mimalloc HINTS /usr/local/lib /usr/lib)
+        target_link_libraries(rt_bench_thread mimalloc)
 
         install(TARGETS rt_bench_thread
                 RUNTIME DESTINATION bin

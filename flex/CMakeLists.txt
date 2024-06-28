@@ -82,6 +82,9 @@ else ()
     endif()
 endif ()
 
+#find mimalloc
+find_package(mimalloc REQUIRED)
+
 # Find Doxygen
 # if (BUILD_DOC)
 #     find_package(Doxygen)
