@@ -202,23 +202,35 @@ class LFIndexer {
     }
 #else
     // keys_.set(ind, &oid);
-    auto item1 = keys_.get(ind);
-    gbp::BufferBlock::UpdateContent<int64_t>([&](int64_t& item) { item = oid; },
-                                             item1);
+    {
+      auto item1 = keys_.get(ind);
+      gbp::BufferBlock::UpdateContent<int64_t>(
+          [&](int64_t& item) { item = oid; }, item1);
+    }
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
 
     int mark = 0;
+
+    // TODO: 此处实现未被测试正确性
+    uint32_t num_get =
+        indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    uint32_t start_index = index, end_index = index + num_get;
+    auto items = indices_.get(index, num_get);
     while (true) {
-      item1 = indices_.get(index);
+      if (unlikely(index < start_index || index >= end_index)) {
+        num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        items = indices_.get(index, num_get);
+        start_index = index, end_index = index + num_get;
+      }
+
       gbp::BufferBlock::UpdateContent<INDEX_T>(
           [&](INDEX_T& item) {
             mark = __sync_bool_compare_and_swap(&item, sentinel, ind);
           },
-          item1);
+          items, index - start_index);
       if (mark) {
-        // assert(gbp::BufferBlock::Ref<INDEX_T>(item1) == ind);
         break;
       }
       index = (index + 1) % num_slots_minus_one_;
@@ -231,14 +243,9 @@ class LFIndexer {
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+#if OV
     while (true) {
-#if OV
       INDEX_T ind = indices_.get(index);
-#else
-      auto item = indices_.get(index);
-      INDEX_T ind = gbp::BufferBlock::Ref<INDEX_T>(item);
-#endif
-#if OV
       if (ind == sentinel) {
         LOG(FATAL) << "cannot find " << oid << " in id_indexer";
       } else if (keys_.get(ind) == oid) {
@@ -246,7 +253,20 @@ class LFIndexer {
       } else {
         index = (index + 1) % num_slots_minus_one_;
       }
+    }
 #else
+    uint32_t num_get =
+        indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    uint32_t start_index = index, end_index = index + num_get;
+    auto items = indices_.get(index, num_get);
+    while (true) {
+      if (unlikely(index < start_index || index >= end_index)) {
+        num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        items = indices_.get(index, num_get);
+        start_index = index, end_index = index + num_get;
+      }
+
+      auto ind = gbp::BufferBlock::Ref<INDEX_T>(items, index - start_index);
       if (ind == sentinel) {
         LOG(FATAL) << "cannot find " << oid << " in id_indexer";
       } else {
@@ -255,9 +275,10 @@ class LFIndexer {
           return ind;
         }
       }
+
       index = (index + 1) % num_slots_minus_one_;
-#endif
     }
+#endif
   }
 
 #if OV
@@ -288,9 +309,18 @@ class LFIndexer {
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
 
+    uint32_t num_get =
+        indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    uint32_t start_index = index, end_index = index + num_get;
+    auto items = indices_.get(index, num_get);
     while (true) {
-      auto item = indices_.get(index);
-      auto& ind = gbp::BufferBlock::Ref<INDEX_T>(item);
+      if (unlikely(index < start_index || index >= end_index)) {
+        num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        items = indices_.get(index, num_get);
+        start_index = index, end_index = index + num_get;
+      }
+
+      auto ind = gbp::BufferBlock::Ref<INDEX_T>(items, index - start_index);
       if (ind == sentinel) {
         return false;
       } else {

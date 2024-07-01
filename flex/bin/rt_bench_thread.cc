@@ -444,7 +444,7 @@ int main(int argc, char** argv) {
 
     // hiactor::actor_app app;
     gbp::log_enable().store(true);
-    sleep(10);
+    sleep(1);
     size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes());
     auto cpu_cost_before = gbp::GetCPUTime();
 

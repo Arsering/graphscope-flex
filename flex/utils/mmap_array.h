@@ -486,6 +486,9 @@ class mmap_array {
 #endif
 
   const std::string& filename() const { return filename_; }
+#if !OV
+  constexpr static uint16_t OBJ_NUM_PERPAGE = gbp::PAGE_SIZE_FILE / sizeof(T);
+#endif
 
  private:
   mutable bool mark_used_ = false;
@@ -512,7 +515,6 @@ class mmap_array {
   bool read_only_;
   mutable bool restart_finish_ = false;
 #else
-  constexpr static uint16_t OBJ_NUM_PERPAGE = gbp::PAGE_SIZE_FILE / sizeof(T);
   gbp::BufferPoolManager* buffer_pool_manager_;
   gbp::GBPfile_handle_type fd_gbp_ = gbp::INVALID_FILE_HANDLE;
   std::string filename_;
