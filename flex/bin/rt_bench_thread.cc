@@ -226,7 +226,10 @@ class Req {
         std::cout << " P99: " << ts[i][sz * 99 / 100] << "\n";
       }
     }
-    std::cout << "unit: MICROSECONDS\n";
+
+    size_t sum = std::accumulate(vec.begin(), vec.begin() + 21, (size_t) 0);
+    std::cout << "Latency SUM = " << sum << std::endl;
+    std::cout << "unit: CPU Cycles\n";
   }
   void LoggerStop() { logger_stop_ = true; }
 
@@ -383,6 +386,7 @@ int main(int argc, char** argv) {
   gbp::warmup_mark().store(0);
 #else
   size_t pool_num = 10;
+  size_t io_server_num = 2;
   gbp::warmup_mark().store(0);
 
   if (vm.count("buffer-pool-size")) {
@@ -391,7 +395,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
   gbp::BufferPoolManager::GetGlobalInstance().init(
       pool_num, CEIL(pool_size_Byte, gbp::PAGE_SIZE_MEMORY) / pool_num,
-      pool_num);
+      io_server_num);
 
 #ifdef DEBUG
   gbp::BufferPoolManager::GetGlobalInstance().ReinitBitMap();
