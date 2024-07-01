@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../../flex/engines/bsp/apps.h
+grape/analytical_apps/bfs/bfs.h
+../../flex/engines/bsp/grape/analytical_apps/bfs/bfs.h
+grape/analytical_apps/cdlp/cdlp.h
+../../flex/engines/bsp/grape/analytical_apps/cdlp/cdlp.h
+grape/analytical_apps/lcc/lcc.h
+../../flex/engines/bsp/grape/analytical_apps/lcc/lcc.h
+grape/analytical_apps/pagerank/pagerank.h
+../../flex/engines/bsp/grape/analytical_apps/pagerank/pagerank.h
+grape/analytical_apps/sssp/sssp.h
+../../flex/engines/bsp/grape/analytical_apps/sssp/sssp.h
+grape/analytical_apps/wcc/wcc.h
+../../flex/engines/bsp/grape/analytical_apps/wcc/wcc.h
+
+../../flex/engines/bsp/bsp.h
+
+../../flex/storages/immutable_graph/immutable_graph.h
+grape/fragment/immutable_edgecut_fragment.h
+../../flex/storages/immutable_graph/grape/fragment/immutable_edgecut_fragment.h
+grape/types.h
+../../flex/storages/immutable_graph/grape/types.h
+
+/workspaces/graphscope-flex/flex/engines/bsp/apps.cc
+flex/engines/bsp/apps.h
+/workspaces/graphscope-flex/flex/engines/bsp/flex/engines/bsp/apps.h
+flex/storages/immutable_graph/immutable_graph.h
+/workspaces/graphscope-flex/flex/engines/bsp/flex/storages/immutable_graph/immutable_graph.h
+
+/workspaces/graphscope-flex/flex/engines/bsp/bsp.cc
+flex/engines/bsp/bsp.h
+/workspaces/graphscope-flex/flex/engines/bsp/flex/engines/bsp/bsp.h
+grape/communication/sync_comm.h
+/workspaces/graphscope-flex/flex/engines/bsp/grape/communication/sync_comm.h
+

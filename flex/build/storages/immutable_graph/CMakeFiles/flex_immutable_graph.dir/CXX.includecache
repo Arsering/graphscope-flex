@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../../flex/storages/immutable_graph/immutable_graph.h
+grape/fragment/immutable_edgecut_fragment.h
+../../flex/storages/immutable_graph/grape/fragment/immutable_edgecut_fragment.h
+grape/types.h
+../../flex/storages/immutable_graph/grape/types.h
+
+/workspaces/graphscope-flex/flex/storages/immutable_graph/immutable_graph.cc
+flex/storages/immutable_graph/immutable_graph.h
+/workspaces/graphscope-flex/flex/storages/immutable_graph/flex/storages/immutable_graph/immutable_graph.h
+grape/fragment/partitioner.h
+/workspaces/graphscope-flex/flex/storages/immutable_graph/grape/fragment/partitioner.h
+grape/vertex_map/global_vertex_map.h
+/workspaces/graphscope-flex/flex/storages/immutable_graph/grape/vertex_map/global_vertex_map.h
+
