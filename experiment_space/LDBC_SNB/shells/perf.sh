@@ -1,0 +1,1 @@
+perf script -i perf.data | stackcollapse-perf.pl | flamegraph.pl > perf.svg

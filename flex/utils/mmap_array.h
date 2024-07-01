@@ -423,6 +423,34 @@ class mmap_array {
     return ret;
   }
 
+  const std::future<gbp::BufferBlock> get_async(size_t idx,
+                                                size_t len = 1) const {
+#if ASSERT_ENABLE
+    CHECK_LE(idx + len, size_);
+#endif
+
+    size_t buf_size = 0;
+    // size_t num_page = 0;
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+
+    size_t rest_filelen_firstpage =
+        gbp::PAGE_SIZE_MEMORY - file_offset % gbp::PAGE_SIZE_MEMORY;
+    if (rest_filelen_firstpage / sizeof(T) > len) {
+      buf_size += sizeof(T) * len;
+      // num_page = 1;
+    } else {
+      buf_size += rest_filelen_firstpage;
+      len -= rest_filelen_firstpage / sizeof(T);
+      buf_size += len / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_MEMORY +
+                  len % OBJ_NUM_PERPAGE * sizeof(T);
+      // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
+    }
+    auto ret =
+        buffer_pool_manager_->GetBlockAsync(file_offset, buf_size, fd_gbp_);
+
+    return ret;
+  }
 #endif
 
 #if OV
@@ -554,9 +582,12 @@ class mmap_array<std::string_view> {
   gbp::BufferBlock get(size_t idx) const {
     auto value = items_.get(idx);
     auto& item = gbp::BufferBlock::Ref<gs::string_item>(value);
-    auto ret = data_.get(item.offset, item.length);
-    value.free();
-    return ret;
+    return data_.get(item.offset, item.length);
+  }
+  std::future<gbp::BufferBlock> get_async(size_t idx) const {
+    auto value = items_.get(idx);
+    auto& item = gbp::BufferBlock::Ref<gs::string_item>(value);
+    return data_.get_async(item.offset, item.length);
   }
 #endif
 

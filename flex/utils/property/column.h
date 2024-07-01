@@ -54,6 +54,37 @@ class ColumnBase {
   virtual StorageStrategy storage_strategy() const = 0;
 };
 
+#if !OV
+class ColumnBaseAsync {
+ public:
+  virtual ~ColumnBaseAsync() {}
+
+  virtual void open(const std::string& name, const std::string& snapshot_dir,
+                    const std::string& work_dir) = 0;
+
+  virtual void touch(const std::string& filename) = 0;
+
+  virtual void dump(const std::string& filename) = 0;
+
+  virtual size_t size() const = 0;
+
+  virtual void resize(size_t size) = 0;
+
+  virtual PropertyType type() const = 0;
+
+  virtual void set_any(size_t index, const Any& value) = 0;
+
+  virtual std::future<gbp::BufferBlock> get_async(size_t index) const = 0;
+  virtual void set(size_t index, const gbp::BufferBlock& value) = 0;
+
+  virtual size_t get_size_in_byte() const = 0;
+  virtual void ingest(uint32_t index, grape::OutArchive& arc) = 0;
+
+  virtual StorageStrategy storage_strategy() const = 0;
+};
+
+#endif
+
 template <typename T>
 class TypedColumn : public ColumnBase {
  public:
@@ -245,7 +276,12 @@ using IntColumn = TypedColumn<int>;
 using LongColumn = TypedColumn<int64_t>;
 using DateColumn = TypedColumn<Date>;
 
-class StringColumn : public ColumnBase {
+class StringColumn : public ColumnBase
+#if !OV
+    ,
+                     public ColumnBaseAsync
+#endif
+{
  public:
   StringColumn(StorageStrategy strategy, size_t width = 1024) : width_(width) {}
   ~StringColumn() {}
@@ -404,6 +440,14 @@ class StringColumn : public ColumnBase {
   }
   gbp::BufferBlock get(size_t idx) const override { return get_inner(idx); }
 
+  std::future<gbp::BufferBlock> get_inner_async(size_t idx) const {
+    return idx < basic_size_ ? basic_buffer_.get_async(idx)
+                             : extra_buffer_.get_async(idx - basic_size_);
+  }
+  std::future<gbp::BufferBlock> get_async(size_t idx) const override {
+    return get_inner_async(idx);
+  }
+
   // TODO: 优化掉不必要的copy
   void set(size_t idx, const gbp::BufferBlock& value) override {
     std::string sv(value.Size(), 'a');
@@ -435,7 +479,7 @@ class StringColumn : public ColumnBase {
   std::atomic<size_t> pos_;
   StorageStrategy strategy_;
   size_t width_;
-};
+};  // namespace gs
 
 std::shared_ptr<ColumnBase> CreateColumn(
     PropertyType type, StorageStrategy strategy = StorageStrategy::kMem);
