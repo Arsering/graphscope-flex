@@ -19,7 +19,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "flex/graphscope_bufferpool/include/buffer_obj.h"
+#include "flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h"
 
 namespace gs {
 

@@ -28,9 +28,10 @@ engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o
  ../../flex/engines/http_server/executor.act.h
  ../../flex/engines/http_server/stored_procedure.h
  ../../flex/engines/http_server/types.h
- ../../flex/graphscope_bufferpool/include/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/buffer_pool.h
  ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h

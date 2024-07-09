@@ -10,9 +10,10 @@ bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/engines/graph_db/dat
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/engines/graph_db/database/update_transaction.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/engines/graph_db/database/version_manager.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/engines/http_server/options.h
-bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_obj.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h

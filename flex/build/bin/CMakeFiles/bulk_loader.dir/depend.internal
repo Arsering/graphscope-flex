@@ -11,9 +11,10 @@ bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o
  ../../flex/engines/graph_db/database/update_transaction.h
  ../../flex/engines/graph_db/database/version_manager.h
  ../../flex/engines/http_server/options.h
- ../../flex/graphscope_bufferpool/include/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/buffer_pool.h
  ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h

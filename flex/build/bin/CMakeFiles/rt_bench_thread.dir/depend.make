@@ -10,9 +10,11 @@ bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/engines/grap
 bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/engines/graph_db/database/single_vertex_insert_transaction.h
 bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/engines/graph_db/database/update_transaction.h
 bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/engines/graph_db/database/version_manager.h
-bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/graphscope_bufferpool/include/buffer_obj.h
+bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/engines/hqps_db/database/mutable_csr_interface.h
 bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 bin/CMakeFiles/rt_bench_thread.dir/rt_bench_thread.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h

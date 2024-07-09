@@ -221,7 +221,6 @@ class TypedColumn : public ColumnBase {
 #if ASSERT_ENABLE
     assert(index >= basic_size_ && index < basic_size_ + extra_size_);
 #endif
-    // LOG(INFO) << "cp";
     // 为了防止一个obj跨两个页
     if constexpr (gbp::PAGE_SIZE_FILE / sizeof(T) == 0)
       extra_buffer_.set(index - basic_size_, val);
@@ -229,7 +228,6 @@ class TypedColumn : public ColumnBase {
       auto item_t = extra_buffer_.get(index - basic_size_);
       gbp::BufferBlock::UpdateContent<T>([&](T& item) { item = val; }, item_t);
     }
-    // LOG(INFO) << "cp";
   }
 
   void set_any(size_t index, const Any& value) override {

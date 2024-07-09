@@ -201,7 +201,6 @@ class LFIndexer {
       index = (index + 1) % num_slots_minus_one_;
     }
 #else
-    // keys_.set(ind, &oid);
     {
       auto item1 = keys_.get(ind);
       gbp::BufferBlock::UpdateContent<int64_t>(
@@ -212,7 +211,6 @@ class LFIndexer {
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
 
     int mark = 0;
-
     // TODO: 此处实现未被测试正确性
     uint32_t num_get =
         indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
@@ -224,6 +222,7 @@ class LFIndexer {
         items = indices_.get(index, num_get);
         start_index = index, end_index = index + num_get;
       }
+
       gbp::BufferBlock::UpdateContent<INDEX_T>(
           [&](INDEX_T& item) {
             mark = __sync_bool_compare_and_swap(&item, sentinel, ind);
@@ -264,6 +263,7 @@ class LFIndexer {
         items = indices_.get(index, num_get);
         start_index = index, end_index = index + num_get;
       }
+
       auto ind = gbp::BufferBlock::Ref<INDEX_T>(items, index - start_index);
       if (ind == sentinel) {
         LOG(FATAL) << "cannot find " << oid << " in id_indexer";
@@ -306,6 +306,7 @@ class LFIndexer {
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+
     uint32_t num_get =
         indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
     uint32_t start_index = index, end_index = index + num_get;
@@ -316,8 +317,8 @@ class LFIndexer {
         items = indices_.get(index, num_get);
         start_index = index, end_index = index + num_get;
       }
-      auto ind = gbp::BufferBlock::Ref<INDEX_T>(items, index - start_index);
 
+      auto ind = gbp::BufferBlock::Ref<INDEX_T>(items, index - start_index);
       if (ind == sentinel) {
         return false;
       } else {
@@ -449,9 +450,21 @@ class IdIndexer {
 
     lid = static_cast<INDEX_T>(keys_.size());
     keys_.push_back(oid);
+#if OV
     assert(keys_.size() == num_elements_ + 1);
     emplace_new_value(distance_from_desired, index, lid);
     assert(keys_.size() == num_elements_);
+#else
+
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_ + 1);
+#endif
+    emplace_new_value(distance_from_desired, index, lid);
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_);
+#endif
+
+#endif
     return true;
   }
 
@@ -471,9 +484,19 @@ class IdIndexer {
 
     lid = static_cast<INDEX_T>(keys_.size());
     keys_.push_back(std::move(oid));
+#if OV
     assert(keys_.size() == num_elements_ + 1);
     emplace_new_value(distance_from_desired, index, lid);
     assert(keys_.size() == num_elements_);
+#else
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_ + 1);
+#endif
+    emplace_new_value(distance_from_desired, index, lid);
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_);
+#endif
+#endif
     return true;
   }
 
@@ -493,9 +516,21 @@ class IdIndexer {
 
     lid = static_cast<INDEX_T>(keys_.size());
     keys_.push_back(oid);
+#if OV
     assert(keys_.size() == num_elements_ + 1);
     emplace_new_value(distance_from_desired, index, lid);
     assert(keys_.size() == num_elements_);
+#else
+
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_ + 1);
+#endif
+    emplace_new_value(distance_from_desired, index, lid);
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_);
+#endif
+
+#endif
     return true;
   }
 
@@ -515,9 +550,19 @@ class IdIndexer {
 
     lid = static_cast<INDEX_T>(keys_.size());
     keys_.push_back(std::move(oid));
+#if OV
     assert(keys_.size() == num_elements_ + 1);
     emplace_new_value(distance_from_desired, index, lid);
     assert(keys_.size() == num_elements_);
+#else
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_ + 1);
+#endif
+    emplace_new_value(distance_from_desired, index, lid);
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_);
+#endif
+#endif
     return true;
   }
 
@@ -535,9 +580,19 @@ class IdIndexer {
 
     INDEX_T lid = static_cast<INDEX_T>(keys_.size());
     keys_.push_back(oid);
+#if OV
     assert(keys_.size() == num_elements_ + 1);
     emplace_new_value(distance_from_desired, index, lid);
     assert(keys_.size() == num_elements_);
+#else
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_ + 1);
+#endif
+    emplace_new_value(distance_from_desired, index, lid);
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_);
+#endif
+#endif
   }
 
   void _add(KEY_T&& oid) {
@@ -554,9 +609,19 @@ class IdIndexer {
 
     INDEX_T lid = static_cast<INDEX_T>(keys_.size());
     keys_.push_back(std::move(oid));
+#if OV
     assert(keys_.size() == num_elements_ + 1);
     emplace_new_value(distance_from_desired, index, lid);
     assert(keys_.size() == num_elements_);
+#else
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_ + 1);
+#endif
+    emplace_new_value(distance_from_desired, index, lid);
+#if ASSERT_ENABLE
+    assert(keys_.size() == num_elements_);
+#endif
+#endif
   }
 
   size_t bucket_count() const {

@@ -13,9 +13,10 @@ bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/engines/http_server/acto
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/engines/http_server/graph_db_http_handler.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/engines/http_server/graph_db_service.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/engines/http_server/options.h
-bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/buffer_obj.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h

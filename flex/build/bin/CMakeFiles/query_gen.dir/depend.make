@@ -8,9 +8,10 @@ bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/engines/graph_db/da
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/engines/graph_db/database/single_edge_insert_transaction.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/engines/graph_db/database/single_vertex_insert_transaction.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/engines/graph_db/database/update_transaction.h
-bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/buffer_obj.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h

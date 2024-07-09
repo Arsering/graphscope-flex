@@ -26,6 +26,8 @@
 #include <vector>
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/engines/graph_db/database/graph_db_session.h"
+#include "flex/engines/hqps_db/database/mutable_csr_interface.h"
+
 // #include "flex/engines/http_server/executor_group.actg.h"
 // #include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
 // #include "flex/engines/http_server/graph_db_service.h"
@@ -200,7 +202,9 @@ class Req {
       //                end_[idx] - start_[idx])
       //                .count();
       auto tmp = end_[idx] - start_[idx];
-      // profiling_file << id << " | " << tmp << std::endl;
+      gbp::get_thread_logfile()
+          << idx << " | " << id << " | " << tmp << std::endl;
+
       ts[id].emplace_back(tmp);
       vec[id] += tmp;
       count[id] += 1;
@@ -441,7 +445,7 @@ int main(int argc, char** argv) {
   // Req::get().load_result(req_file);
   for (size_t idx = 0; idx < 2; idx++) {
     Req::get().init(warmup_num, benchmark_num);
-
+    // gbp::BufferPoolManager::GetGlobalInstance().disk_manager_->ResetCount();
     // hiactor::actor_app app;
     gbp::log_enable().store(true);
     sleep(1);
@@ -482,7 +486,6 @@ int main(int argc, char** argv) {
   }
 
   Req::get().LoggerStop();
-
   auto memory_usages =
       gbp::BufferPoolManager::GetGlobalInstance().GetMemoryUsage();
 

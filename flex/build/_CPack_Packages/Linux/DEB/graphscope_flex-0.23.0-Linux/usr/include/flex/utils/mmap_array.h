@@ -428,7 +428,7 @@ class mmap_array {
 #if ASSERT_ENABLE
     CHECK_LE(idx + len, size_);
 #endif
-
+    assert(false);
     size_t buf_size = 0;
     // size_t num_page = 0;
     const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +

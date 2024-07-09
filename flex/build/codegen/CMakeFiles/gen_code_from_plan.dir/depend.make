@@ -47,9 +47,10 @@ codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/co
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/engines/hqps_db/core/params.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/engines/hqps_db/core/utils/hqps_type.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/engines/hqps_db/core/utils/hqps_utils.h
-codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/buffer_obj.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h

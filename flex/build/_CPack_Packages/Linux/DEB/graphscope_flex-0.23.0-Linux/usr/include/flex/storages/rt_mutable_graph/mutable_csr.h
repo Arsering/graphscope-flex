@@ -1092,7 +1092,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
 #if OV
   int degree(vid_t i) const { return adj_lists_[i].size(); }
-  slice_t get_edges(vid_t i) const override {
+  const slice_t get_edges(vid_t i) const override {
     return adj_lists_[i].get_edges();
   }
   mut_slice_t get_edges_mut(vid_t i) { return adj_lists_[i].get_edges_mut(); }
@@ -1309,7 +1309,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
 #endif
 
 #if OV
-  slice_t get_edges(vid_t i) const override {
+  const slice_t get_edges(vid_t i) const override {
     slice_t ret;
     ret.set_size(nbr_list_[i].timestamp.load() ==
                          std::numeric_limits<timestamp_t>::max()
