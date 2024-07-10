@@ -5,6 +5,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../../flex
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/buffer_pool.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/buffer_pool_manager.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/debug.h
@@ -37,6 +38,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphsc
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../../flex/utils/property/types.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/buffer_pool.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/debug.h
@@ -70,6 +72,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: .
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/buffer_pool.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/buffer_pool_manager.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/debug.h

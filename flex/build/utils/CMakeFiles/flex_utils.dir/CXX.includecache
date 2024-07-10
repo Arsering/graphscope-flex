@@ -136,6 +136,40 @@ vector
 ../utils.h
 ../../flex/graphscope_bufferpool/include/utils.h
 
+../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+sys/mman.h
+-
+algorithm
+-
+cstdint
+-
+cstdio
+-
+cstring
+-
+fstream
+-
+functional
+-
+iostream
+-
+memory
+-
+mutex
+-
+string
+-
+vector
+-
+../config.h
+../../flex/graphscope_bufferpool/include/config.h
+../logger.h
+../../flex/graphscope_bufferpool/include/logger.h
+../page_table.h
+../../flex/graphscope_bufferpool/include/page_table.h
+../utils.h
+../../flex/graphscope_bufferpool/include/utils.h
+
 ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 sys/mman.h
 -
@@ -171,6 +205,8 @@ vector
 ../../flex/graphscope_bufferpool/include/utils.h
 buffer_block_imp6.h
 ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+buffer_block_imp8.h
+../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 flex/utils/property/types.h
 ../../flex/graphscope_bufferpool/include/bufferblock/flex/utils/property/types.h
 
@@ -638,16 +674,6 @@ cstring
 config.h
 ../../flex/graphscope_bufferpool/include/config.h
 
-../../flex/utils/app_utils.h
-string
--
-string_view
--
-vector
--
-flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
-../../flex/utils/flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
-
 ../../flex/utils/id_indexer.h
 atomic
 -
@@ -762,12 +788,6 @@ string.h
 string_view
 -
 vector
--
-
-/workspaces/graphscope-flex/flex/utils/app_utils.cc
-flex/utils/app_utils.h
-/workspaces/graphscope-flex/flex/utils/flex/utils/app_utils.h
-string.h
 -
 
 /workspaces/graphscope-flex/flex/utils/property/column.cc

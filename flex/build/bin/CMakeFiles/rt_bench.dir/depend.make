@@ -19,6 +19,7 @@ bin/CMakeFiles/rt_bench.dir/rt_bench.cc.o: ../../flex/engines/http_server/types.
 bin/CMakeFiles/rt_bench.dir/rt_bench.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 bin/CMakeFiles/rt_bench.dir/rt_bench.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 bin/CMakeFiles/rt_bench.dir/rt_bench.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+bin/CMakeFiles/rt_bench.dir/rt_bench.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 bin/CMakeFiles/rt_bench.dir/rt_bench.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/rt_bench.dir/rt_bench.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/rt_bench.dir/rt_bench.cc.o: ../../flex/graphscope_bufferpool/include/debug.h

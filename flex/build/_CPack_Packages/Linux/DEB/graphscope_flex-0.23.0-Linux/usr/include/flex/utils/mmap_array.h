@@ -417,10 +417,7 @@ class mmap_array {
                   len % OBJ_NUM_PERPAGE * sizeof(T);
       // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
     }
-    auto ret =
-        buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
-
-    return ret;
+    return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
   }
 
   const std::future<gbp::BufferBlock> get_async(size_t idx,

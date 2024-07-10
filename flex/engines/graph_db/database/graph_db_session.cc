@@ -133,7 +133,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
                     << gbp::get_results_vec()[gbp::get_query_id().load()];
           LOG(INFO) << "=========";
           LOG(INFO) << "\n" << output;
-          LOG(INFO) << (int) type << " " << gbp::get_query_id().load();
+          LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
         }
         gbp::get_query_file()
             << input << "eor#" << gbp::get_query_id().load() << "eor#";

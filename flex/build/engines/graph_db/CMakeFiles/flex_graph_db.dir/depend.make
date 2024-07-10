@@ -11,6 +11,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/engi
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -68,6 +69,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/en
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -125,6 +127,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -186,6 +189,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -242,6 +246,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -289,6 +294,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -338,6 +344,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transa
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -387,6 +394,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_tran
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -436,6 +444,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -482,6 +491,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/version_manager.cc.o: ../../flex/engines/graph_db/app/app_base.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/version_manager.cc.o: ../../flex/engines/graph_db/database/version_manager.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/version_manager.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/version_manager.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/version_manager.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/version_manager.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/version_manager.cc.o: ../../flex/graphscope_bufferpool/include/debug.h

@@ -13,6 +13,7 @@ bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/engines/http_server/
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/debug.h

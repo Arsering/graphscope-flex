@@ -4,6 +4,7 @@
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -54,6 +55,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragme
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -106,6 +108,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragme
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -160,6 +163,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -203,6 +207,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -243,6 +248,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
@@ -289,6 +295,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
