@@ -4,11 +4,13 @@
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/engines/graph_db/app/app_base.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
+bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/third_party/httplib.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/utils/app_utils.h

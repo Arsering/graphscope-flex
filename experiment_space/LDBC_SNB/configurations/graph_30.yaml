@@ -1,7 +1,7 @@
 name: ldbc_snb
 store_type: mutable_csr
 stored_procedures:
-  directory: /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures
+  directory: /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures
   enable_lists:
     - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic1.so
     - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic2.so

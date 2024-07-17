@@ -80,8 +80,7 @@ def get_fd_filename(dir_path):
     print(count)
     return filenames
 
-def file_name_classification(results):
-    word_suffixs = ['.keys', '.indices', '.nbr', '.adj', '.col_', '.items', '.data']
+def file_name_classification(results, word_suffixs):
     new_results = np.zeros((len(word_suffixs), 3), dtype=int) 
 
     for j in range(0, len(results)):
@@ -102,13 +101,16 @@ def file_name_classification(results):
 
 
 if __name__ == "__main__":
+    word_suffixs = ['.keys', '.indices', '.nbr', '.adj', '.col_', '.items', '.data']
+
     # sieve 50%
     gs_log_path_1 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-07-03-20:13:45/server/gs_log.log'
     gs_log_path_2 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-07-03-21:31:22/server/gs_log.log'
     results = get_fd_filename(gs_log_path_2)
-    new_results = file_name_classification(results)
+    new_results = file_name_classification(results, word_suffixs)
     for i in range(0, new_results.shape[0]):
         # print(new_results[i])
+        print(word_suffixs[i], end='\t')
         print(round(new_results[i][2]*1000/(new_results[i][1]+new_results[i][2]),2), end='\t')
         print(round(new_results[i][0]/1024/1024/1024,2), end='\t')
         print(round((new_results[i][1]+new_results[i][2])/1000000,0), end='\t')

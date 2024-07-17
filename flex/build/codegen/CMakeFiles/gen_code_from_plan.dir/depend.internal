@@ -52,6 +52,7 @@ codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o
  ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h

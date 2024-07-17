@@ -346,6 +346,40 @@ vector
 ../utils.h
 ../../flex/graphscope_bufferpool/include/utils.h
 
+../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
+sys/mman.h
+-
+algorithm
+-
+cstdint
+-
+cstdio
+-
+cstring
+-
+fstream
+-
+functional
+-
+iostream
+-
+memory
+-
+mutex
+-
+string
+-
+vector
+-
+../config.h
+../../flex/graphscope_bufferpool/include/config.h
+../logger.h
+../../flex/graphscope_bufferpool/include/logger.h
+../page_table.h
+../../flex/graphscope_bufferpool/include/page_table.h
+../utils.h
+../../flex/graphscope_bufferpool/include/utils.h
+
 ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 sys/mman.h
 -
@@ -383,6 +417,8 @@ buffer_block_imp6.h
 ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
 buffer_block_imp8.h
 ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+buffer_block_imp9.h
+../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 flex/utils/property/types.h
 ../../flex/graphscope_bufferpool/include/bufferblock/flex/utils/property/types.h
 
@@ -396,6 +432,8 @@ sys/mman.h
 atomic
 -
 chrono
+-
+cmath
 -
 cstdint
 -
@@ -629,6 +667,8 @@ sys/mman.h
 -
 algorithm
 -
+boost/functional/hash.hpp
+-
 cstring
 -
 iostream
@@ -639,10 +679,16 @@ config.h
 ../../flex/graphscope_bufferpool/include/config.h
 debug.h
 ../../flex/graphscope_bufferpool/include/debug.h
+logger.h
+../../flex/graphscope_bufferpool/include/logger.h
+partitioner.h
+../../flex/graphscope_bufferpool/include/partitioner.h
 utils.h
 ../../flex/graphscope_bufferpool/include/utils.h
 
 ../../flex/graphscope_bufferpool/include/partitioner.h
+cmath
+-
 tuple
 -
 config.h

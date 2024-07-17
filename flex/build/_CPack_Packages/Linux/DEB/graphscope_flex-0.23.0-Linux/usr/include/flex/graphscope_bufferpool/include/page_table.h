@@ -12,12 +12,15 @@
 #include <immintrin.h>
 #include <sys/mman.h>
 #include <algorithm>
+#include <boost/functional/hash.hpp>
 #include <cstring>
 #include <iostream>
 #include <optional>
 
 #include "config.h"
 #include "debug.h"
+#include "logger.h"
+#include "partitioner.h"
 #include "utils.h"
 
 namespace gbp {
@@ -397,13 +400,13 @@ class PageMapping {
   ~PageMapping() { Resize(0); }
 
   FORCE_INLINE pair_min<bool, mpage_id_type> FindMapping(
-      fpage_id_type fpage_id) const {
+      fpage_id_type fpage_id_inpool) const {
 #if ASSERT_ENABLE
     assert(fpage_id < size_);
 #endif
 
     std::atomic<mpage_id_type>& atomic_data =
-        as_atomic((mpage_id_type&) mappings_[fpage_id]);
+        as_atomic((mpage_id_type&) mappings_[fpage_id_inpool]);
     mpage_id_type data = atomic_data.load(std::memory_order_relaxed);
 
     auto& unpacked_data = Mapping::FromPacked(data);
@@ -415,12 +418,12 @@ class PageMapping {
       return {true, unpacked_data.mpage_id};
   }
 
-  bool CreateMapping(fpage_id_type fpage_id, mpage_id_type mpage_id) {
+  bool CreateMapping(fpage_id_type fpage_id_inpool, mpage_id_type mpage_id) {
 #if ASSERT_ENABLE
     assert(fpage_id < size_);
 #endif
     std::atomic<mpage_id_type>& atomic_data =
-        as_atomic((mpage_id_type&) mappings_[fpage_id]);
+        as_atomic((mpage_id_type&) mappings_[fpage_id_inpool]);
     mpage_id_type old_data = atomic_data.load(std::memory_order_relaxed),
                   new_data;
 
@@ -438,12 +441,12 @@ class PageMapping {
     return true;
   }
 
-  bool DeleteMapping(fpage_id_type fpage_id) {
+  bool DeleteMapping(fpage_id_type fpage_id_inpool) {
 #if ASSERT_ENABLE
     assert(fpage_id < size_);
 #endif
     std::atomic<mpage_id_type>& atomic_data =
-        as_atomic((mpage_id_type&) mappings_[fpage_id]);
+        as_atomic((mpage_id_type&) mappings_[fpage_id_inpool]);
     mpage_id_type old_data = atomic_data.load(std::memory_order_relaxed),
                   new_data;
 
@@ -462,12 +465,12 @@ class PageMapping {
     return true;
   }
 
-  pair_min<bool, mpage_id_type> LockMapping(fpage_id_type fpage_id) {
+  pair_min<bool, mpage_id_type> LockMapping(fpage_id_type fpage_id_inpool) {
 #if ASSERT_ENABLE
     assert(fpage_id < size_);
 #endif
     std::atomic<mpage_id_type>& atomic_data =
-        as_atomic((mpage_id_type&) mappings_[fpage_id]);
+        as_atomic((mpage_id_type&) mappings_[fpage_id_inpool]);
     mpage_id_type old_data = atomic_data.load(std::memory_order_relaxed),
                   new_data;
 
@@ -528,8 +531,9 @@ class PageMapping {
 
 class PageTable {
  public:
-  PageTable() : mappings_(), page_table_inner_() {}
-  PageTable(mpage_id_type mpage_num) {
+  PageTable() : mappings_(), page_table_inner_(), partitioner_(nullptr) {}
+  PageTable(mpage_id_type mpage_num, RoundRobinPartitioner* partitioner)
+      : partitioner_(partitioner) {
     page_table_inner_ = new PageTableInner(mpage_num);
   }
   ~PageTable() {
@@ -565,7 +569,8 @@ class PageTable {
     assert(fd < mappings_.size());
     assert(mappings_[fd] != nullptr);
 #endif
-    return mappings_[fd]->FindMapping(fpage_id);
+    return mappings_[fd]->FindMapping(
+        partitioner_->GetFPageIdInPartition(fpage_id));
   }
 
   /**
@@ -583,7 +588,8 @@ class PageTable {
     assert(fd < mappings_.size());
     assert(mappings_[fd] != nullptr);
 #endif
-    return mappings_[fd]->CreateMapping(fpage_id, mpage_id);
+    return mappings_[fd]->CreateMapping(
+        partitioner_->GetFPageIdInPartition(fpage_id), mpage_id);
   }
 
   /**
@@ -599,7 +605,8 @@ class PageTable {
     assert(fd < mappings_.size());
     assert(mappings_[fd] != nullptr);
 #endif
-    return mappings_[fd]->DeleteMapping(fpage_id);
+    return mappings_[fd]->DeleteMapping(
+        partitioner_->GetFPageIdInPartition(fpage_id));
   }
 
   /**
@@ -617,7 +624,8 @@ class PageTable {
     assert(fd < mappings_.size());
     assert(mappings_[fd] != nullptr);
 #endif
-    auto [success, mpage_id] = mappings_[fd]->LockMapping(fpage_id);
+    auto fpage_id_inpool = partitioner_->GetFPageIdInPartition(fpage_id);
+    auto [success, mpage_id] = mappings_[fd]->LockMapping(fpage_id_inpool);
 
     if (!success)
       return {false, 0};
@@ -627,8 +635,9 @@ class PageTable {
     auto* tar = FromPageId(mpage_id);
     // 在mapping被锁住之前，有其他正常的访问到达了pte，导致pte的锁住失败
     if (!tar->Lock()) {
-      assert(mappings_[fd]->CreateMapping(
-          fpage_id, mpage_id));  // 一旦锁pte失败，则必须释放
+      assert(
+          mappings_[fd]->CreateMapping(fpage_id_inpool,
+                                       mpage_id));  // 一旦锁pte失败，则必须释放
       return {false, 0};
     }
     // 一旦mapping被锁住，那说明tar->fpage_id != fpage_id && tar->fd ==
@@ -664,7 +673,8 @@ class PageTable {
     assert(mappings_[fd] != nullptr);
 #endif
 
-    if (!mappings_[fd]->CreateMapping(fpage_id, mpage_id))
+    if (!mappings_[fd]->CreateMapping(
+            partitioner_->GetFPageIdInPartition(fpage_id), mpage_id))
       return false;
 
     return true;
@@ -695,6 +705,110 @@ class PageTable {
 
  private:
   std::vector<PageMapping*> mappings_;
+  RoundRobinPartitioner* partitioner_;
   PageTableInner* page_table_inner_;
 };
+
+class DirectCache {
+ public:
+  struct Node {
+    Node(PTE* pte = nullptr) : pte_cur(pte), count(0) {}
+
+    uint32_t count = 0;
+    PTE* pte_cur;
+  };
+#define DirectCache_HASH_FUNC(fd, fpage_id, capacity_) \
+  (((fd << sizeof(fpage_id_type)) + fpage_id) % capacity_)
+
+  DirectCache(size_t capacity = DIRECT_CACHE_SIZE) : capacity_(capacity) {
+    cache_.resize(capacity_);
+  }
+
+  ~DirectCache() {
+    for (auto& page : cache_) {
+      if (page.pte_cur != nullptr) {
+        // if (page.count != 0)
+        //   GBPLOG << page.count << " " << page.pte_cur->fd_cur << " "
+        //          << page.pte_cur->fpage_id_cur;
+        // assert(page.count == 0);
+        page.pte_cur->DecRefCount();
+      }
+    }
+    // GBPLOG << hit << " " << miss;
+    // LOG(INFO) << "cp";
+  }
+  FORCE_INLINE bool Insert(GBPfile_handle_type fd, fpage_id_type fpage_id,
+                           PTE* pte) {
+    size_t index = DirectCache_HASH_FUNC(fd, fpage_id, capacity_);
+    // size_t index = 0;
+    // boost::hash_combine(index, fd);
+    // boost::hash_combine(index, fpage_id);
+    // index = index % capacity_;
+
+    if (cache_[index].pte_cur == nullptr || cache_[index].count == 0) {
+      if (cache_[index].pte_cur != nullptr) {
+        cache_[index].pte_cur->DecRefCount();
+#if ASSERT_ENABLE
+        assert(!(fd == cache_[index].pte_cur->fd_cur &&
+                 fpage_id == cache_[index].pte_cur->fpage_id_cur));
+#endif
+      }
+      cache_[index].pte_cur = pte;
+      cache_[index].count = 1;
+      return true;
+    }
+    return false;
+  }
+  FORCE_INLINE PTE* Find(GBPfile_handle_type fd, fpage_id_type fpage_id) {
+    size_t index = DirectCache_HASH_FUNC(fd, fpage_id, capacity_);
+
+    // size_t index = 0;
+    // boost::hash_combine(index, fd);
+    // boost::hash_combine(index, fpage_id);
+    // index = index % capacity_;
+
+    if (cache_[index].pte_cur != nullptr &&
+        cache_[index].pte_cur->fd_cur == fd &&
+        cache_[index].pte_cur->fpage_id_cur == fpage_id) {
+      cache_[index].count++;
+      // hit++;
+      return cache_[index].pte_cur;
+    }
+    // miss++;
+    return nullptr;
+  }
+  FORCE_INLINE void Erase(GBPfile_handle_type fd, fpage_id_type fpage_id) {
+#if ASSERT_ENABLE
+    assert(cache_[index].pte_cur != nullptr);
+#endif
+    size_t index = DirectCache_HASH_FUNC(fd, fpage_id, capacity_);
+
+    // size_t index = 0;
+    // boost::hash_combine(index, fd);
+    // boost::hash_combine(index, fpage_id);
+    // index = index % capacity_;
+    if (cache_[index].pte_cur != nullptr) {
+      cache_[index].count--;
+    }
+  }
+
+  FORCE_INLINE static DirectCache& GetDirectCache() {
+    // #if ASSERT_ENABLE
+    // assert(get_thread_id() < 40);
+    // #endif
+    // static std::vector<DirectCache> direct_caches(40);
+    // return direct_caches[get_thread_id()];
+
+    static thread_local DirectCache direct_cache{DIRECT_CACHE_SIZE};
+    return direct_cache;
+  }
+
+ private:
+  constexpr static size_t DIRECT_CACHE_SIZE = 256 * 8;
+  std::vector<Node> cache_;
+  size_t capacity_;
+  // size_t hit = 0;
+  // size_t miss = 0;
+};
+
 }  // namespace gbp

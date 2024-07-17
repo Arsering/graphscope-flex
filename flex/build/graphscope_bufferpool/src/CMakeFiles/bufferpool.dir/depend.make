@@ -6,6 +6,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphsc
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/buffer_pool_manager.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/debug.h
@@ -39,6 +40,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../../fle
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/buffer_pool.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/debug.h
@@ -73,6 +75,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: .
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/buffer_pool_manager.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/debug.h
@@ -114,7 +117,9 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../gr
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/debug.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/extendible_hash.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/hash_table.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/logger.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/page_table.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/partitioner.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/utils.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/src/extendible_hash.cpp
 

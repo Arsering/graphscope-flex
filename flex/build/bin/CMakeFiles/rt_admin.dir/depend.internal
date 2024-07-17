@@ -5,11 +5,13 @@ bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o
  ../../flex/engines/graph_db/app/app_base.h
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
  ../../flex/graphscope_bufferpool/include/logger.h
  ../../flex/graphscope_bufferpool/include/page_table.h
+ ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/utils.h
  ../../flex/third_party/httplib.h
  ../../flex/utils/app_utils.h

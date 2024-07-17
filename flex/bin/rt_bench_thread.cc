@@ -53,6 +53,13 @@ class Req {
 
     std::cout << "warmup count: " << warmup_num_
               << "; benchmark count: " << num_of_reqs_ << "\n";
+
+    run_time_req_ids_.resize(num_of_reqs_);
+    std::iota(run_time_req_ids_.begin(), run_time_req_ids_.end(), 0);
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::shuffle(run_time_req_ids_.begin(), run_time_req_ids_.end(), rng);
+
     if (!log_thread_.joinable())
       log_thread_ = std::thread([this]() { logger(); });
   }
@@ -163,12 +170,14 @@ class Req {
       if (id >= num_of_reqs_) {
         return;
       }
+      id = run_time_req_ids_[id];
 
       start_[id] = gbp::GetSystemTime();
       gbp::get_query_id().store(req_ids_[id % num_of_reqs_unique_]);
 
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           reqs_[id % num_of_reqs_unique_]);
+
       end_[id] = gbp::GetSystemTime();
     }
     return;
@@ -296,6 +305,8 @@ class Req {
   size_t num_of_reqs_unique_;
   std::vector<std::string> reqs_;
   std::vector<size_t> req_ids_;
+  std::vector<size_t> run_time_req_ids_;
+
   std::vector<std::string> results_;
   // std::vector<std::chrono::system_clock::time_point> start_;
   // std::vector<std::chrono::system_clock::time_point> end_;
@@ -389,7 +400,7 @@ int main(int argc, char** argv) {
 #if OV
   gbp::warmup_mark().store(0);
 #else
-  size_t pool_num = 10;
+  size_t pool_num = 8;
   size_t io_server_num = 2;
   gbp::warmup_mark().store(0);
 

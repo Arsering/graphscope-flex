@@ -86,7 +86,8 @@ class BufferPoolManager {
 
   std::future<BufferBlock> GetBlockAsync(size_t file_offset, size_t block_size,
                                          GBPfile_handle_type fd = 0) const;
-
+  const BufferBlock GetBlockWithDirectCacheSync(
+      size_t file_offset, size_t block_size, GBPfile_handle_type fd = 0) const;
   int SetBlock(const BufferBlock& buf, size_t file_offset, size_t block_size,
                GBPfile_handle_type fd = 0, bool flush = false);
 
@@ -178,7 +179,7 @@ class BufferPoolManager {
       case async_request_type::Phase::Begin: {
         req.run_time_phase = async_request_type::Phase::End;
 
-        fpage_id_type fpage_id = req.file_offset / PAGE_SIZE_FILE;
+        fpage_id_type fpage_id = req.file_offset >> LOG_PAGE_SIZE_FILE;
         size_t fpage_offset = req.file_offset % PAGE_SIZE_FILE;
 
         size_t page_id = 0;

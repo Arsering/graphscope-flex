@@ -32,6 +32,7 @@
 /usr/include/flex/graphscope_bufferpool/include/hash_table.h
 /usr/include/flex/graphscope_bufferpool/include/eviction_server.h
 /usr/include/flex/graphscope_bufferpool/include/buffer_pool_manager.h
+/usr/include/flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 /usr/include/flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
 /usr/include/flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 /usr/include/flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h

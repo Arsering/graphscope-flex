@@ -101,15 +101,16 @@ int main(int argc, char** argv) {
 
   double t0 = -grape::GetCurrentTime();
 #if !OV
-  size_t pool_num = 10;
+  size_t pool_num = 8;
+  size_t io_server_num = 2;
+
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
   }
   LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
-
   gbp::BufferPoolManager::GetGlobalInstance().init(
-      pool_num, CEIL(CEIL(pool_size_Byte, gbp::PAGE_SIZE_MEMORY), pool_num),
-      pool_num);
+      pool_num, CEIL(pool_size_Byte, gbp::PAGE_SIZE_MEMORY) / pool_num,
+      io_server_num);
 
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished initializing BufferPoolManager, elapsed " << t0
@@ -133,7 +134,7 @@ int main(int argc, char** argv) {
   t0 = -grape::GetCurrentTime();
   gbp::warmup_mark().store(0);
   LOG(INFO) << "Warmup start";
-  gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  // gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
   LOG(INFO) << "Warmup finish";
   gbp::warmup_mark().store(1);
   t0 += grape::GetCurrentTime();
