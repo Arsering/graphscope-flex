@@ -69,6 +69,7 @@ def get_fd_filename(dir_path):
     filenames = []
     line = f.readline()
     count = 0
+    
     while line:
         logs = line.split(" ")
         if len(logs) > 3 and "io_backend.h:30]" in logs[3]:
@@ -93,6 +94,7 @@ def file_name_classification(results, word_suffixs):
             
     return new_results
 
+
 # def read_trace(file_name):
 #     f = open(file_name , 'r')
 #     line = f.readline()
@@ -106,7 +108,7 @@ if __name__ == "__main__":
     # sieve 50%
     gs_log_path_1 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-07-03-20:13:45/server/gs_log.log'
     gs_log_path_2 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-07-03-21:31:22/server/gs_log.log'
-    results = get_fd_filename(gs_log_path_2)
+    results = get_fd_filename(gs_log_path_1)
     new_results = file_name_classification(results, word_suffixs)
     for i in range(0, new_results.shape[0]):
         # print(new_results[i])
@@ -115,6 +117,34 @@ if __name__ == "__main__":
         print(round(new_results[i][0]/1024/1024/1024,2), end='\t')
         print(round((new_results[i][1]+new_results[i][2])/1000000,0), end='\t')
         print(round((new_results[i][2])/1000000,2))
+        
+    cache_hit_ratios = []
+    for item in results:
+        if int(item[2])+int(item[3]) == 0:
+            cache_hit_ratios.append(10000000)
+            continue
+
+        cache_hit_ratios.append(int(item[3])*1000/(int(item[3])+int(item[2])))
+    out = np.argsort(np.array(cache_hit_ratios))
+
+    count1 = [0, 0]
+    count2 = [0, 0]
+    for id in out:
+        if cache_hit_ratios[id] != 10000000:
+            print(results[id][0])
+            print(int(results[id][1])/1024/1024, end='\t')
+            print(int(results[id][2]), end='\t')
+            print(int(results[id][3]), end='\t')
+            print(cache_hit_ratios[id])
+            count1[0] += int(results[id][2]) + int(results[id][3])
+            count2[0] += int(results[id][1])
+
+            if cache_hit_ratios[id] < 100 :
+                count1[1] += int(results[id][2]) + int(results[id][3])
+                count2[1] += int(results[id][1])
+    print(count1[0])
+    print(count1[1]/count1[0])
+    print(count2[1])
     print('work finished\n')
 
 

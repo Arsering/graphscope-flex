@@ -450,6 +450,7 @@ int main(int argc, char** argv) {
   // gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
+  gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load(req_file);
@@ -494,6 +495,8 @@ int main(int argc, char** argv) {
                      .count()
               << "\n";
     Req::get().output();
+
+    gbp::warmup_mark().store(1);
   }
 
   Req::get().LoggerStop();

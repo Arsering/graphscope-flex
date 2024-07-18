@@ -752,11 +752,3 @@ sys/mman.h
 utility
 -
 
-/workspaces/graphscope-flex/flex/graphscope_bufferpool/src/extendible_hash.cpp
-list
--
-../include/extendible_hash.h
-/workspaces/graphscope-flex/flex/graphscope_bufferpool/include/extendible_hash.h
-../include/page_table.h
-/workspaces/graphscope-flex/flex/graphscope_bufferpool/include/page_table.h
-

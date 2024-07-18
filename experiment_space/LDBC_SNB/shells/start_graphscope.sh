@@ -34,19 +34,15 @@ cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
 for thread_num in 30
 do
-    expression="(0.6967 + 0.0131 * $thread_num + 2) * 1024 * 1024 * 1024"
+    expression="(0.6967 + 0.0131 * $thread_num + 25) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression+5))")
     echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
-    # nohup rt_bench_thread -B $[1024*1024*1024*5] -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
+    nohup rt_bench_thread -B $[1024*1024*1024*5] -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
 done
 # cgexec -g memory:yz_variable 
-
-# nohup cgexec -g memory:yz_10g rt_server -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -l ${LOG_DIR}/configurations/bulk_load.yaml -s 48 > ${LOG_DIR}/graphscope_logs/gs_log.log &
-# rt_server -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 50 &> ${LOG_DIR}/gs_log.log
-
-# nohup rt_server -B $[1024*1024*1024*50] -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 30 &> ${LOG_DIR}/gs_log.log &
+# nohup rt_server -B $[1024*1024*1024*100] -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 30 &> ${LOG_DIR}/gs_log.log &
 
 # nohup rt_server -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s 50 &> ${LOG_DIR}/gs_log.log &
 
@@ -60,7 +56,7 @@ done
 # rt_bench -B $[1024*1024*1024*5] -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s 20 -w 0 -b 4000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
 
 
-rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*40] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 1 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
+# rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*100] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 64 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
 
 # sleep 10s
 # start top

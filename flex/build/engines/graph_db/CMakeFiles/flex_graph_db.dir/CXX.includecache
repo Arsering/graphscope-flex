@@ -1290,9 +1290,3 @@ flex/storages/rt_mutable_graph/file_names.h
 flex/storages/rt_mutable_graph/mutable_property_fragment.h
 /workspaces/graphscope-flex/flex/engines/graph_db/database/flex/storages/rt_mutable_graph/mutable_property_fragment.h
 
-/workspaces/graphscope-flex/flex/engines/graph_db/database/version_manager.cc
-flex/engines/graph_db/database/version_manager.h
-/workspaces/graphscope-flex/flex/engines/graph_db/database/flex/engines/graph_db/database/version_manager.h
-flex/engines/graph_db/app/app_base.h
-/workspaces/graphscope-flex/flex/engines/graph_db/database/flex/engines/graph_db/app/app_base.h
-
