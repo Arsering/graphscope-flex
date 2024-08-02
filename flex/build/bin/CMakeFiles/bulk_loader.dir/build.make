@@ -83,7 +83,7 @@ bin/bulk_loader: storages/rt_mutable_graph/libflex_rt_mutable_graph.so
 bin/bulk_loader: utils/libflex_utils.so
 bin/bulk_loader: /usr/lib/x86_64-linux-gnu/libglog.so
 bin/bulk_loader: /usr/lib/x86_64-linux-gnu/libgflags.so
-bin/bulk_loader: /usr/local/lib/libboost_program_options.so.1.84.0
+bin/bulk_loader: /usr/local/lib/libboost_program_options.so
 bin/bulk_loader: /usr/local/lib/libgrape-lite.so
 bin/bulk_loader: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so
 bin/bulk_loader: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so

@@ -363,8 +363,7 @@ int main(int argc, char** argv) {
   pid_file << getpid();
   pid_file.flush();
   pid_file.close();
-  gbp::get_query_file(log_data_path);
-  gbp::get_result_file(log_data_path);
+
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
       log_data_path + "/performance.log", "nvme0n1");
