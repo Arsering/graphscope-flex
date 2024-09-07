@@ -838,14 +838,6 @@ string_view
 vector
 -
 
-/workspaces/graphscope-flex/flex/utils/property/column.cc
-flex/utils/property/column.h
-/workspaces/graphscope-flex/flex/utils/property/flex/utils/property/column.h
-flex/utils/property/types.h
-/workspaces/graphscope-flex/flex/utils/property/flex/utils/property/types.h
-grape/serialization/out_archive.h
-/workspaces/graphscope-flex/flex/utils/property/grape/serialization/out_archive.h
-
 /workspaces/graphscope-flex/flex/utils/property/table.cc
 flex/utils/property/table.h
 /workspaces/graphscope-flex/flex/utils/property/flex/utils/property/table.h

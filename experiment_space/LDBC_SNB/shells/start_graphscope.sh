@@ -6,7 +6,7 @@ export SF=30
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
-export DB_ROOT_DIR=/nvme0n1/lgraph_db/${Scale_Factor}_db
+export DB_ROOT_DIR=/nvme0n1/lgraph_db/${Scale_Factor}_db_t_t
 # export DB_ROOT_DIR=${INPUT_OUTPUT_DIR}/lgraph_db/${Scale_Factor}_db
 export QUERY_FILE=/data/zhengyang/data/offline/${Scale_Factor}
 # export QUERY_FILE=${INPUT_OUTPUT_DIR}/configurations/query.file
@@ -28,6 +28,8 @@ cp ${INPUT_OUTPUT_DIR}/configurations/bulk_load_${SF}.yaml ${LOG_DIR}/configurat
 mkdir ${LOG_DIR}/shells
 cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 
+# rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*100] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 64 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
+
 # start iostat
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
@@ -40,7 +42,7 @@ do
 
     echo 1 > /proc/sys/vm/drop_caches
     memory_capacity=$(python3 -c "print(int(1024*1024*1024*5))")
-    nohup rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 30000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
+    nohup rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
 done
 # cgexec -g memory:yz_variable 
 # nohup rt_server -B $[1024*1024*1024*100] -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 32 &> ${LOG_DIR}/gs_log.log &

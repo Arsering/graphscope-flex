@@ -34,6 +34,12 @@ limitations under the License.
 #include "grape/serialization/out_archive.h"
 
 namespace gs {
+template <typename INDEX_T>
+class index_key_item {
+ public:
+  INDEX_T index;
+  int64_t key;
+};
 
 namespace id_indexer_impl {
 
@@ -264,16 +270,17 @@ class LFIndexer {
         start_index = index, end_index = index + num_get;
       }
 
-      auto ind = gbp::BufferBlock::Ref<INDEX_T>(items, index - start_index);
-      if (ind == sentinel) {
+      auto& ind = gbp::BufferBlock::Ref<index_key_item<INDEX_T>>(
+          items, index - start_index);
+      if (ind.index == sentinel) {
         LOG(FATAL) << "cannot find " << oid << " in id_indexer";
       } else {
-        auto item = keys_.get(ind);
-        if (gbp::BufferBlock::Ref<int64_t>(item) == oid) {
-          return ind;
+        // auto item = keys_.get(ind.index);
+        // assert(gbp::BufferBlock::Ref<int64_t>(item) == ind.key);
+        if (ind.key == oid) {
+          return ind.index;
         }
       }
-
       index = (index + 1) % num_slots_minus_one_;
     }
 #endif
@@ -318,13 +325,15 @@ class LFIndexer {
         start_index = index, end_index = index + num_get;
       }
 
-      auto ind = gbp::BufferBlock::Ref<INDEX_T>(items, index - start_index);
-      if (ind == sentinel) {
+      auto& ind = gbp::BufferBlock::Ref<index_key_item<INDEX_T>>(
+          items, index - start_index);
+      if (ind.index == sentinel) {
         return false;
       } else {
-        auto item = keys_.get(ind);
-        if (gbp::BufferBlock::Ref<int64_t>(item) == oid) {
-          ret = ind;
+        // auto item = keys_.get(ind.index);
+        // assert(gbp::BufferBlock::Ref<int64_t>(item) == ind.key);
+        if (ind.key == oid) {
+          ret = ind.index;
           return true;
         }
       }
@@ -406,10 +415,15 @@ class LFIndexer {
 
  private:
   mmap_array<int64_t> keys_;
+#if OV
   mmap_array<INDEX_T>
       indices_;  // size() == indices_size_ == num_slots_minus_one_
                  // +log(num_slots_minus_one_)
-
+#else
+  mmap_array<index_key_item<INDEX_T>>
+      indices_;  // size() == indices_size_ == num_slots_minus_one_
+                 // +log(num_slots_minus_one_)
+#endif
   std::atomic<size_t> num_elements_;
   size_t num_slots_minus_one_;
   size_t indices_size_;
@@ -961,7 +975,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
   lf.indices_.open(filename + ".indices", false);
   lf.indices_.resize(input.indices_.size());
 
-  INDEX_T empty_value_1 = std::numeric_limits<INDEX_T>::max();
+  index_key_item<INDEX_T> empty_value_1{std::numeric_limits<INDEX_T>::max(), 0};
   for (size_t k = 0; k != input.indices_.size(); ++k) {
     lf.indices_.set(k, &empty_value_1);
   }
@@ -982,7 +996,9 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         if (index >= input.num_slots_minus_one_) {
           extra.emplace_back(oid, ret);
         } else {
-          lf.indices_.set(index, &ret);
+          empty_value_1.index = ret;
+          empty_value_1.key = oid;
+          lf.indices_.set(index, &empty_value_1);
         }
         break;
       }
@@ -995,8 +1011,11 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         input.hasher_(pair.first), input.num_slots_minus_one_);
     while (true) {
       auto item = lf.indices_.get(index);
-      if (gbp::BufferBlock::Ref<INDEX_T>(item) == sentinel) {
-        lf.indices_.set(index, &(pair.second));
+      if (gbp::BufferBlock::Ref<index_key_item<INDEX_T>>(item).index ==
+          sentinel) {
+        empty_value_1.index = pair.second;
+        empty_value_1.key = pair.first;
+        lf.indices_.set(index, &(empty_value_1));
         break;
       }
       index = (index + 1) % input.num_slots_minus_one_;

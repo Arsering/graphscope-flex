@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished initializing BufferPoolManager, elapsed " << t0
             << " s";
-
+  assert(gbp::PERSISTENT);
   t0 = -grape::GetCurrentTime();
 #endif
 
