@@ -20,11 +20,75 @@ utils/CMakeFiles/flex_utils.dir/arrow_utils.cc.o
  ../../flex/utils/property/types.h
  /workspaces/graphscope-flex/flex/utils/arrow_utils.cc
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o
+ ../../flex/graphscope_bufferpool/include/buffer_pool.h
+ ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
+ ../../flex/graphscope_bufferpool/include/config.h
+ ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/eviction_server.h
+ ../../flex/graphscope_bufferpool/include/extendible_hash.h
+ ../../flex/graphscope_bufferpool/include/hash_table.h
+ ../../flex/graphscope_bufferpool/include/io_backend.h
+ ../../flex/graphscope_bufferpool/include/io_server.h
+ ../../flex/graphscope_bufferpool/include/lockfree_queue.h
+ ../../flex/graphscope_bufferpool/include/logger.h
+ ../../flex/graphscope_bufferpool/include/memory_pool.h
+ ../../flex/graphscope_bufferpool/include/page_table.h
+ ../../flex/graphscope_bufferpool/include/partitioner.h
+ ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
+ ../../flex/graphscope_bufferpool/include/replacer/list_array.h
+ ../../flex/graphscope_bufferpool/include/replacer/lru_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/lru_replacer_v2.h
+ ../../flex/graphscope_bufferpool/include/replacer/replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/sieve_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/sieve_replacer_v2.h
+ ../../flex/graphscope_bufferpool/include/replacer/sieve_replacer_v3.h
+ ../../flex/graphscope_bufferpool/include/rw_lock.h
+ ../../flex/graphscope_bufferpool/include/type_traits.h
+ ../../flex/graphscope_bufferpool/include/utils.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/types.h
  /workspaces/graphscope-flex/flex/utils/property/column.cc
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o
+ ../../flex/graphscope_bufferpool/include/buffer_pool.h
+ ../../flex/graphscope_bufferpool/include/buffer_pool_manager.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
+ ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
+ ../../flex/graphscope_bufferpool/include/config.h
+ ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/eviction_server.h
+ ../../flex/graphscope_bufferpool/include/extendible_hash.h
+ ../../flex/graphscope_bufferpool/include/hash_table.h
+ ../../flex/graphscope_bufferpool/include/io_backend.h
+ ../../flex/graphscope_bufferpool/include/io_server.h
+ ../../flex/graphscope_bufferpool/include/lockfree_queue.h
+ ../../flex/graphscope_bufferpool/include/logger.h
+ ../../flex/graphscope_bufferpool/include/memory_pool.h
+ ../../flex/graphscope_bufferpool/include/page_table.h
+ ../../flex/graphscope_bufferpool/include/partitioner.h
+ ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
+ ../../flex/graphscope_bufferpool/include/replacer/list_array.h
+ ../../flex/graphscope_bufferpool/include/replacer/lru_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/lru_replacer_v2.h
+ ../../flex/graphscope_bufferpool/include/replacer/replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/sieve_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/sieve_replacer_v2.h
+ ../../flex/graphscope_bufferpool/include/replacer/sieve_replacer_v3.h
+ ../../flex/graphscope_bufferpool/include/rw_lock.h
+ ../../flex/graphscope_bufferpool/include/type_traits.h
+ ../../flex/graphscope_bufferpool/include/utils.h
  ../../flex/utils/id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h

@@ -23,7 +23,7 @@ def set_mpl():
     mpl.rcParams.update(
         {
             'text.usetex': False,
-            'font.sans-serif': 'Times New Roman',
+            # 'font.sans-serif': 'Times New Roman',
             'mathtext.fontset': 'stix',
             'font.size': 20,
             'figure.figsize': (10.0, 10 * 0.618),
@@ -33,9 +33,9 @@ def set_mpl():
             'xtick.labelsize': 20,
             'ytick.labelsize': 20,
             'legend.loc': 'upper right',
-            'lines.linewidth': 2,
-            'lines.markersize': 5
-
+            'lines.linewidth': 3,
+            'lines.markersize': 5,
+            # 'axes.labelweight': 'bold'
         }
     )
         
@@ -74,11 +74,9 @@ def get_fd_filename(dir_path):
         logs = line.split(" ")
         if len(logs) > 3 and "io_backend.h:30]" in logs[3]:
             logs = line.split("|")
-            filenames.append((logs[1], logs[2], logs[3], logs[4]))
+            filenames.append((logs[1], int(logs[2]), int(logs[3]), int(logs[4])))
             count += 1
-            
         line = f.readline()
-    print(count)
     return filenames
 
 def file_name_classification(results, word_suffixs):
@@ -90,16 +88,37 @@ def file_name_classification(results, word_suffixs):
                 new_results[i][0] += int(results[j][1])
                 new_results[i][1] += int(results[j][2])
                 new_results[i][2] += int(results[j][3])
-
-            
     return new_results
 
+def plot_figure(datas, labels):
+    set_mpl()
+    fig = plt.figure()
+    ax1 = fig.subplots()
+    point_num = 1000
 
-# def read_trace(file_name):
-#     f = open(file_name , 'r')
-#     line = f.readline()
+    print((datas[0]))
+    print((datas[1]))
+    data_num = max(len(datas[0]), len(datas[1]))
+    plt.xlim(0, data_num+1)
+    plt.xticks(range(0, data_num, 10), range(0, data_num, 10))
+    plt.xlabel('File ID')
+    
+    ax1.plot(range(0, len(datas[0]), 1), datas[0]*100, color=plt.get_cmap('tab10')(0))
+    ax1.set_ylabel('File Access CDF (%)', color=plt.get_cmap('tab10')(0))
+    ax1.set_ylim(0, 100)
+    ax1.set_yticks(range(0, 101, 20), range(0, 101, 20))
+    
+    ax2 = ax1.twinx()
+    ax2.plot(range(0, len(datas[1])), datas[1], color=plt.get_cmap('tab10')(2))
+    ax2.set_ylabel('Accumulate File Size (GB)', color=plt.get_cmap('tab10')(2))
+    ax2.set_ylim(0, 17)
+    ax2.set_yticks(range(0, 16, 5), range(0, 16, 5))
 
-#     while line:
+
+    # plt.grid(True, linestyle='--', color='gray', linewidth=0.5)
+    
+    plt.savefig('figs/fig4.pdf', bbox_inches='tight')
+
 
 
 if __name__ == "__main__":
@@ -108,6 +127,7 @@ if __name__ == "__main__":
     # sieve 50%
     gs_log_path_1 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-07-03-20:13:45/server/gs_log.log'
     gs_log_path_2 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-07-03-21:31:22/server/gs_log.log'
+    gs_log_path_3 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-08-13-15:32:12/server/gs_log.log'
     results = get_fd_filename(gs_log_path_1)
     new_results = file_name_classification(results, word_suffixs)
     for i in range(0, new_results.shape[0]):
@@ -117,34 +137,53 @@ if __name__ == "__main__":
         print(round(new_results[i][0]/1024/1024/1024,2), end='\t')
         print(round((new_results[i][1]+new_results[i][2])/1000000,0), end='\t')
         print(round((new_results[i][2])/1000000,2))
-        
-    cache_hit_ratios = []
+
+    ret = [0, 0]
+    for i in [0, 1, 2, 3, 4, 5, 6]:
+        ret[0] += new_results[i][2]
+        ret[1] += new_results[i][1] + new_results[i][2]
+    
+    for i in [0, 1, 2, 3, 4, 5, 6]:
+        print((new_results[i][1] + new_results[i][2])/ret[1])
+
+    print(round(ret[0]*1000/ret[1]))
+
+    hot_ratio = []
+    new_results = []
+
     for item in results:
-        if int(item[2])+int(item[3]) == 0:
-            cache_hit_ratios.append(10000000)
-            continue
+        if item[2] + item[3] > 1:
+            hot_ratio.append((item[3]+item[2]))
+            new_results.append(item)
+    datas = []
+    out = np.argsort(-np.array(hot_ratio), axis=0)
+    datas.append(np.cumsum(np.take_along_axis(np.array(hot_ratio), out, axis=0)/np.sum(hot_ratio)))    
+    
+    new_results_t = np.take_along_axis(np.array([row[1] for row in new_results]), out, axis=0)
+    datas.append(np.cumsum(new_results_t)/1024/1024/1024)
+    
+    new_results_t = np.take_along_axis(np.array([row[0] for row in new_results]), out, axis=0)
+    print(np.take_along_axis(np.array(hot_ratio), out, axis=0)/np.sum(hot_ratio))
+    print(new_results_t)
+    # new_results_t = np.take_along_axis(np.array([row[2]+row[3] for row in new_results]), out, axis=0)
+    # print(np.cumsum(new_results_t)[1]/np.sum(new_results_t))
 
-        cache_hit_ratios.append(int(item[3])*1000/(int(item[3])+int(item[2])))
-    out = np.argsort(np.array(cache_hit_ratios))
+    # plot_figure(datas, [])
 
-    count1 = [0, 0]
-    count2 = [0, 0]
-    for id in out:
-        if cache_hit_ratios[id] != 10000000:
-            print(results[id][0])
-            print(int(results[id][1])/1024/1024, end='\t')
-            print(int(results[id][2]), end='\t')
-            print(int(results[id][3]), end='\t')
-            print(cache_hit_ratios[id])
-            count1[0] += int(results[id][2]) + int(results[id][3])
-            count2[0] += int(results[id][1])
+    count = 0
+    # for id in out:
+    #     count += 1
+    #     # if count == 10:
+    #     #     break
+    #     print(id, end='\t')
+    #     print("{:.15f}".format((new_results[id][2]+new_results[id][3])/np.sum(new_results_t)), end='\t')
+    #     print(new_results[id][3]/(new_results[id][2]+new_results[id][3]), end='\t')
 
-            if cache_hit_ratios[id] < 100 :
-                count1[1] += int(results[id][2]) + int(results[id][3])
-                count2[1] += int(results[id][1])
-    print(count1[0])
-    print(count1[1]/count1[0])
-    print(count2[1])
+    #     print("{:.5f}".format(new_results[id][1]/1024/1024), end='\t')
+    #     print(new_results[id][0])
+
+
+
     print('work finished\n')
 
 

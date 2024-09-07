@@ -421,7 +421,7 @@ int main(int argc, char** argv) {
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load(req_file);
-  Req::get().load_result(req_file);
+  // Req::get().load_result(req_file);
   for (size_t idx = 0; idx < 1; idx++) {
     Req::get().init(warmup_num, benchmark_num);
 

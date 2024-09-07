@@ -617,6 +617,8 @@ cassert
 -
 config.h
 ../../flex/graphscope_bufferpool/include/config.h
+debug.h
+../../flex/graphscope_bufferpool/include/debug.h
 page_table.h
 ../../flex/graphscope_bufferpool/include/page_table.h
 

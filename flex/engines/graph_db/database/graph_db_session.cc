@@ -79,8 +79,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   std::vector<char> result_buffer;
 
   auto query_id_t = gbp::get_query_id().load();
-  if ((int) type > 21)
-    assert(false);
+  // if ((int) type < 15)
+  //   return result_buffer;
   // LOG(INFO) << (int) type << " " << gbp::get_query_id().load();
   static std::atomic<size_t> query_id = 0;
   gbp::get_counter_query().fetch_add(1);
@@ -123,7 +123,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     constexpr bool check_result = false;
 
     if constexpr (store_query) {
-      static const size_t max_query_num = 1000000;
+      static const size_t max_query_num = 30000010;
       size_t cur_query_id = query_id.fetch_add(1);
       static std::atomic<size_t> query_tofile_count = 0;
 

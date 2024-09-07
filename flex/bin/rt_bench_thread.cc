@@ -46,6 +46,7 @@ class Req {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
     num_of_reqs_unique_ = reqs_.size();
+    num_of_reqs_finished_ = 0;
     // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
     end_.resize(num_of_reqs_);
@@ -126,10 +127,13 @@ class Req {
   }
 
   void do_query(size_t thread_id) {
+    size_t id;
     while (true) {
-      auto id = cur_.fetch_add(1);
+      id = cur_.fetch_add(1);
+
       if (id >= num_of_reqs_) {
-        return;
+        // LOG(INFO) << gbp::get_thread_id();
+        break;
       }
       // id = run_time_req_ids_[id];
 
@@ -137,8 +141,11 @@ class Req {
       gbp::get_query_id().store(id % num_of_reqs_unique_);
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           reqs_[id % num_of_reqs_unique_]);
-
       end_[id] = gbp::GetSystemTime();
+      auto num_of_reqs_finished_t = num_of_reqs_finished_.fetch_add(1);
+      // if (num_of_reqs_finished_t >= num_of_reqs_) {
+      //   break;
+      // }
     }
     return;
   }
@@ -171,8 +178,8 @@ class Req {
       //                end_[idx] - start_[idx])
       //                .count();
       auto tmp = end_[idx] - start_[idx];
-      gbp::get_thread_logfile()
-          << idx << " | " << id << " | " << tmp << std::endl;
+      // gbp::get_thread_logfile()
+      //     << idx << " | " << id << " | " << tmp << std::endl;
 
       ts[id].emplace_back(tmp);
       vec[id] += tmp;
@@ -204,7 +211,11 @@ class Req {
     std::cout << "Latency SUM = " << sum << std::endl;
     std::cout << "unit: CPU Cycles\n";
   }
-  void LoggerStop() { logger_stop_ = true; }
+  void LoggerStop() {
+    logger_stop_ = true;
+    if (log_thread_.joinable())
+      log_thread_.join();
+  }
 
  private:
   Req() : cur_(0), warmup_num_(0) {}
@@ -264,6 +275,7 @@ class Req {
   size_t warmup_num_;
   size_t num_of_reqs_;
   size_t num_of_reqs_unique_;
+  std::atomic<size_t> num_of_reqs_finished_;
   std::vector<std::string> reqs_;
   std::vector<size_t> run_time_req_ids_;
 
@@ -405,14 +417,14 @@ int main(int argc, char** argv) {
 #else
   gbp::warmup_mark().store(1);
   LOG(INFO) << "Clean start";
-  // gbp::CleanMAS();
+  gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
   gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);
-  Req::get().load_result(req_file);
+  // Req::get().load_result(req_file);
   for (size_t idx = 0; idx < 2; idx++) {
     Req::get().init(warmup_num, benchmark_num);
     // gbp::BufferPoolManager::GetGlobalInstance().disk_manager_->ResetCount();

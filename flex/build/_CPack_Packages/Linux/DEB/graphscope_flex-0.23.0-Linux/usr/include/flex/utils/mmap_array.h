@@ -420,7 +420,17 @@ class mmap_array {
     // return buffer_pool_manager_->GetBlockWithDirectCacheSync(file_offset,
     //                                                          buf_size,
     //                                                          fd_gbp_);
-    return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
+
+    auto ret =
+        buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
+    return ret;
+    // if (gbp::warmup_mark() == 1 && (fd_gbp_ == 165 || fd_gbp_ == 169)) {
+    //   for (size_t id = 0; id < len; id++)
+    //     gbp::get_thread_logfile()
+    //         << gbp::BufferBlock::Ref<gbp::MutableNbr<int64_t>>(ret,
+    //         id).neighbor
+    //         << std::endl;
+    // }
   }
 
   const std::future<gbp::BufferBlock> get_async(size_t idx,

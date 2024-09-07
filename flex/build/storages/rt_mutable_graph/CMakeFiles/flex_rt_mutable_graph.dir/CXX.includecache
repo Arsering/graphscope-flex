@@ -533,6 +533,8 @@ cassert
 -
 config.h
 ../../flex/graphscope_bufferpool/include/config.h
+debug.h
+../../flex/graphscope_bufferpool/include/debug.h
 page_table.h
 ../../flex/graphscope_bufferpool/include/page_table.h
 
@@ -1009,6 +1011,8 @@ string
 -
 string_view
 -
+flex/graphscope_bufferpool/include/buffer_pool_manager.h
+../../flex/utils/flex/graphscope_bufferpool/include/buffer_pool_manager.h
 glog/logging.h
 ../../flex/utils/glog/logging.h
 

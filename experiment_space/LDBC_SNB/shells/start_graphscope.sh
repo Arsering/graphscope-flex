@@ -8,7 +8,7 @@ export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
 export DB_ROOT_DIR=/nvme0n1/lgraph_db/${Scale_Factor}_db
 # export DB_ROOT_DIR=${INPUT_OUTPUT_DIR}/lgraph_db/${Scale_Factor}_db
-export QUERY_FILE=/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-08-01-22:19:50/server/graphscope_logs
+export QUERY_FILE=/data/zhengyang/data/offline/${Scale_Factor}
 # export QUERY_FILE=${INPUT_OUTPUT_DIR}/configurations/query.file
 
 rm -rf ${DB_ROOT_DIR}/runtime/*
@@ -34,15 +34,16 @@ cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
 for thread_num in 30
 do
-    expression="(0.6967 + 0.0131 * $thread_num + 25) * 1024 * 1024 * 1024"
+    expression="(1.3 + 0.0131 * $thread_num + 5) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression+5))")
     echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
-    # nohup rt_bench_thread -B $[1024*1024*1024*50] -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 1000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*5))")
+    nohup rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 30000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
 done
 # cgexec -g memory:yz_variable 
-nohup rt_server -B $[1024*1024*1024*100] -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 30 &> ${LOG_DIR}/gs_log.log &
+# nohup rt_server -B $[1024*1024*1024*100] -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 32 &> ${LOG_DIR}/gs_log.log &
 
 # nohup rt_server -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s 50 &> ${LOG_DIR}/gs_log.log &
 
@@ -54,7 +55,6 @@ nohup rt_server -B $[1024*1024*1024*100] -l ${LOG_DIR}/graphscope_logs -g ${LOG_
 # 9.348941802978516
 # cgexec -g memory:yz_29.7g
 # rt_bench -B $[1024*1024*1024*5] -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s 20 -w 0 -b 4000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
-
 
 # rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*100] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 64 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
 

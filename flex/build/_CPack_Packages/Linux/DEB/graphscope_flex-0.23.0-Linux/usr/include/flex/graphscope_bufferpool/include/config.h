@@ -38,6 +38,21 @@
 #define LBCalloc(nitems, size) ::calloc(nitems, size)
 
 namespace gbp {
+
+template <typename EDATA_T>
+struct MutableNbr {
+  MutableNbr() = default;
+  MutableNbr(const MutableNbr& rhs)
+      : neighbor(rhs.neighbor),
+        timestamp(rhs.timestamp.load()),
+        data(rhs.data) {}
+  ~MutableNbr() = default;
+
+  uint32_t neighbor;
+  std::atomic<uint32_t> timestamp;
+  EDATA_T data;
+};
+
 using fpage_id_type = uint32_t;
 using mpage_id_type = uint32_t;
 using GBPfile_handle_type = uint32_t;
@@ -58,8 +73,8 @@ constexpr static size_t PAGE_SIZE_MEMORY =
     4096;  // size of a memory page in byte
 constexpr static size_t LOG_PAGE_SIZE_MEMORY =
     12;  // size of a memory page in byte
-constexpr static size_t PAGE_SIZE_FILE = 4096;
-constexpr static size_t LOG_PAGE_SIZE_FILE = 12;
+constexpr static size_t PAGE_SIZE_FILE = PAGE_SIZE_MEMORY;
+constexpr static size_t LOG_PAGE_SIZE_FILE = LOG_PAGE_SIZE_MEMORY;
 
 constexpr static size_t CACHELINE_SIZE = 64;
 
