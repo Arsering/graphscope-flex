@@ -36,7 +36,7 @@ cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
 for thread_num in 30
 do
-    expression="(1.3 + 0.0131 * $thread_num + 5) * 1024 * 1024 * 1024"
+    expression="(1.71 + 0.0131 * $thread_num + 5) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression+5))")
     echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 

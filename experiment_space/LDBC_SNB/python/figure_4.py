@@ -128,6 +128,7 @@ if __name__ == "__main__":
     gs_log_path_1 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-07-03-20:13:45/server/gs_log.log'
     gs_log_path_2 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-07-03-21:31:22/server/gs_log.log'
     gs_log_path_3 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-08-13-15:32:12/server/gs_log.log'
+    gs_log_path_4 = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-09-09-14:11:54/server/gs_log.log'
     results = get_fd_filename(gs_log_path_1)
     new_results = file_name_classification(results, word_suffixs)
     for i in range(0, new_results.shape[0]):

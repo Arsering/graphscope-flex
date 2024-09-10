@@ -1,18 +1,6 @@
-<<<<<<< HEAD
 [submodule "flex_ldbc_snb"]
 	path = flex_ldbc_snb
 	url = https://github.com/Arsering/flex_ldbc_snb.git
 [submodule "flex/graphscope_bufferpool"]
 	path = flex/graphscope_bufferpool
 	url = https://github.com/Arsering/graphscope_bufferpool.git
-=======
-[submodule "swap-benchmarks/gapbs"]
-	path = swap-benchmarks/gapbs
-	url = https://github.com/SepehrDV2/gapbs.git
-[submodule "swap-microbenchmarks/mmapbench"]
-	path = swap-microbenchmarks/mmapbench
-	url = https://github.com/SepehrDV2/mmap-anon-benchmarks.git
-[submodule "linux"]
-	path = linux
-	url = https://github.com/SepehrDV2/linux.git
->>>>>>> 6ffe7ca5b3a6a6ca0746e8bbea9ef0c60e724724
