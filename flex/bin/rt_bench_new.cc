@@ -41,125 +41,96 @@ class Req {
   void init(size_t warmup_num, size_t benchmark_num) {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
-    // num_of_reqs_unique_ = reqs_.size();
-    num_of_reqs_unique_ = 2000000;
+
+    // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
     end_.resize(num_of_reqs_);
     cur_ = 0;
 
-    std::cout << "warmup count: " << warmup_num_
+    LOG(INFO) << "warmup count: " << warmup_num_
               << "; benchmark count: " << num_of_reqs_ << "\n";
-    log_thread_ = std::thread([this]() { logger(); });
-  }
 
-  void load(const std::string& file_path) {
-    LOG(INFO) << "load queries from " << file_path + "query_file.log" << "\n";
-    std::ifstream query_file;
-    query_file.open(file_path + "query_file.log", std::ios::in);
+    run_time_req_ids_.resize(num_of_reqs_);
+    std::iota(run_time_req_ids_.begin(), run_time_req_ids_.end(), 0);
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::shuffle(run_time_req_ids_.begin(), run_time_req_ids_.end(), rng);
 
-    const size_t size = 4096;
-    std::vector<char> buffer(size);
-    std::vector<char> tmp(size);
-    size_t index = 0;
-    size_t log_count = 0;
-    bool mark = true;
-    size_t req_id_cur = 0;
-
-    while (true) {
-      query_file.read(buffer.data(), size);
-      auto len = query_file.gcount();
-      if (len == 0)
-        break;
-      for (size_t i = 0; i < len; ++i) {
-        tmp[index++] = buffer[i];
-        if (index >= 4 && tmp[index - 1] == '#') {
-          if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
-              tmp[index - 2] == 'r') {
-            if (mark) {
-              reqs_.emplace_back(
-                  std::string(tmp.begin(), tmp.begin() + index - 4));
-              mark = false;
-            } else {
-              auto req_id = std::stoull(
-                  std::string(tmp.begin(), tmp.begin() + index - 4));
-              if (req_id != req_id_cur)
-                continue;
-              req_ids_.emplace_back(req_id);
-              mark = true;
-              req_id_cur++;
-            }
-            index = 0;
-          }
-        }
-      }
-
-      buffer.clear();
-    }
-    LOG(INFO) << "Number of query = " << reqs_.size();
-    query_file.close();
-    num_of_reqs_ = reqs_.size();
+    if (!log_thread_.joinable())
+      log_thread_ = std::thread([this]() { logger(); });
   }
 
   void load_result(const std::string& file_path) {
-    LOG(INFO) << "load results from " << file_path + "result_file.log";
-    std::ifstream fi;
-    fi.open(file_path + "result_file.log", std::ios::in);
+    {
+      LOG(INFO) << "load results from " << file_path + "/result_file_string.log"
+                << "\n";
+      FILE* result_file_string =
+          ::fopen((file_path + "/result_file_string.log").c_str(), "r");
+      FILE* result_file_string_view =
+          ::fopen((file_path + "/result_file_string_view.log").c_str(), "r");
+      assert(result_file_string != nullptr);
+      assert(result_file_string_view != nullptr);
+
+      size_t size = 4096 * 64;
+      std::vector<char> buffer(size);
+
+      size_t length = 0;
+      while (true) {
+        auto ret = ::fread(&length, sizeof(size_t), 1, result_file_string_view);
+        if (ret == 0)
+          break;
+        assert(length < size);
+
+        if (length == 0) {
+          gbp::get_results_vec().emplace_back(std::string());
+          continue;
+        }
+        ::fread(buffer.data(), length, 1, result_file_string);
+        gbp::get_results_vec().emplace_back(
+            std::string(buffer.data(), buffer.data() + length));
+      }
+    }
+    LOG(INFO) << "Number of results = " << gbp::get_results_vec().size();
+  }
+
+  void load_query(const std::string& file_path) {
+    LOG(INFO) << "load queries from " << file_path + "/query_file_string.log"
+              << "\n";
+    FILE* query_file_string =
+        ::fopen((file_path + "/query_file_string.log").c_str(), "r");
+    FILE* query_file_string_view =
+        ::fopen((file_path + "/query_file_string_view.log").c_str(), "r");
+    assert(query_file_string != nullptr);
+    assert(query_file_string_view != nullptr);
 
     const size_t size = 4096;
     std::vector<char> buffer(size);
-    std::vector<char> tmp(size * 128);
-    size_t index = 0;
-    bool mark = false;
-    size_t req_id_cur = 0, req_id;
-    size_t last_index = 0;
+    size_t length = 0;
 
     while (true) {
-      fi.read(buffer.data(), size);
-      auto len = fi.gcount();
-      if (len == 0)
+      auto ret = ::fread(&length, sizeof(size_t), 1, query_file_string_view);
+      if (ret == 0)
         break;
-      for (size_t i = 0; i < len; ++i) {
-        tmp[index++] = buffer[i];
-        if (index >= 4 && tmp[index - 1] == '#') {
-          if (tmp[index - 4] == 'e' && tmp[index - 3] == 'o' &&
-              tmp[index - 2] == 'r') {
-            try {
-              auto str_tmp = std::string(tmp.begin() + last_index,
-                                         tmp.begin() + index - 4);
-              req_id = std::stoull(str_tmp);
-            } catch (const std::exception& e) {
-              last_index = index - 1 + 1;
-              continue;
-            }
-            if (req_id != req_id_cur) {
-              last_index = index - 1 + 1;
-              continue;
-            }
 
-            results_.emplace_back(
-                std::string(tmp.begin(), tmp.begin() + last_index - 4));
-            req_id_cur++;
-            index = 0;
-          }
-        }
-      }
-
-      buffer.clear();
+      if (length == 0)
+        assert(false);
+      ::fread(buffer.data(), length, 1, query_file_string);
+      reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
     }
-
-    fi.close();
-    LOG(INFO) << "load result file successfully";
-    gbp::get_results_vec() = results_;
+    num_of_reqs_unique_ = reqs_.size();
+    LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
   }
 
   seastar::future<> do_query(server::executor_ref& ref) {
     auto id = cur_.fetch_add(1);
+
     if (id >= num_of_reqs_) {
       return seastar::make_ready_future<>();
     }
 
     start_[id] = gbp::GetSystemTime();
-    gbp::get_query_id().store(req_ids_[id % num_of_reqs_unique_]);
+    gbp::get_query_id().store(id % num_of_reqs_unique_);
+
     return ref
         .run_graph_db_query(
             server::query_param{reqs_[id % num_of_reqs_unique_]})
@@ -188,7 +159,7 @@ class Req {
     std::vector<long long> vec(29, 0);
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
-    for (size_t idx = num_of_reqs_unique_; idx < num_of_reqs_; idx++) {
+    for (size_t idx = 0; idx < num_of_reqs_; idx++) {
       auto& s = reqs_[idx % num_of_reqs_unique_];
       size_t id = static_cast<size_t>(s.back()) - 1;
       // auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -284,7 +255,8 @@ class Req {
   size_t num_of_reqs_unique_;
   std::vector<std::string> reqs_;
   std::vector<size_t> req_ids_;
-  std::vector<std::string> results_;
+  std::vector<size_t> run_time_req_ids_;
+
   // std::vector<std::chrono::system_clock::time_point> start_;
   // std::vector<std::chrono::system_clock::time_point> end_;
   std::vector<size_t> start_;
@@ -375,7 +347,7 @@ int main(int argc, char** argv) {
 #if OV
   gbp::warmup_mark().store(0);
 #else
-  size_t pool_num = 10;
+  size_t pool_num = 8;
   gbp::warmup_mark().store(0);
 
   if (vm.count("buffer-pool-size")) {
@@ -420,7 +392,7 @@ int main(int argc, char** argv) {
 #endif
 
   std::string req_file = vm["req-file"].as<std::string>();
-  Req::get().load(req_file);
+  Req::get().load_query(req_file);
   // Req::get().load_result(req_file);
   for (size_t idx = 0; idx < 1; idx++) {
     Req::get().init(warmup_num, benchmark_num);

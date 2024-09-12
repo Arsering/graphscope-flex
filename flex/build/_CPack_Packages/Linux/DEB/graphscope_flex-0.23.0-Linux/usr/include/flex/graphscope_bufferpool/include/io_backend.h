@@ -479,7 +479,6 @@ class RWSysCall : public IOBackend {
            disk_manager_
                ->file_size_inBytes_[fd]);  // check if read beyond file length
 #endif
-
     auto ret = ::pread(disk_manager_->fd_oss_[fd].first, data, size, offset);
 
 #if ASSERT_ENABLE

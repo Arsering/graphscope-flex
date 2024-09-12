@@ -42,11 +42,12 @@ class Req {
     static Req r;
     return r;
   }
+
   void init(size_t warmup_num, size_t benchmark_num) {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
     num_of_reqs_unique_ = reqs_.size();
-    num_of_reqs_finished_ = 0;
+
     // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
     end_.resize(num_of_reqs_);
@@ -142,10 +143,6 @@ class Req {
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           reqs_[id % num_of_reqs_unique_]);
       end_[id] = gbp::GetSystemTime();
-      auto num_of_reqs_finished_t = num_of_reqs_finished_.fetch_add(1);
-      // if (num_of_reqs_finished_t >= num_of_reqs_) {
-      //   break;
-      // }
     }
     return;
   }
@@ -275,7 +272,7 @@ class Req {
   size_t warmup_num_;
   size_t num_of_reqs_;
   size_t num_of_reqs_unique_;
-  std::atomic<size_t> num_of_reqs_finished_;
+
   std::vector<std::string> reqs_;
   std::vector<size_t> run_time_req_ids_;
 
