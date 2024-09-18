@@ -141,7 +141,6 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         }
       }
     }
-
     if constexpr (check_result) {
       if (gbp::get_results_vec()[gbp::get_query_id().load()].size() != 0 &&
           gbp::get_results_vec()[gbp::get_query_id().load()] !=

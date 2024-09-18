@@ -417,7 +417,7 @@ int main(int argc, char** argv) {
   gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
-  gbp::warmup_mark().store(0);
+  gbp::warmup_mark().store(1);
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);
@@ -432,8 +432,6 @@ int main(int argc, char** argv) {
     auto cpu_cost_before = gbp::GetCPUTime();
 
     auto begin = std::chrono::system_clock::now();
-    gbp::get_counter_global(10).store(0);
-    gbp::get_counter_global(11).store(0);
 
     Req::get().simulate(shard_num);
     auto end = std::chrono::system_clock::now();
@@ -449,10 +447,6 @@ int main(int argc, char** argv) {
                      1000000.0
               << "s (second)";
     LOG(INFO) << "SSD IO = " << ssd_io_byte << "(Byte)";
-    LOG(INFO) << "Host IO = " << gbp::get_counter_global(10).load() << "(Byte)";
-    LOG(INFO) << "Memory IO = "
-              << gbp::get_counter_global(11).load() * gbp::PAGE_SIZE_MEMORY
-              << "(Byte)";
 
     gbp::warmup_mark().store(0);
 

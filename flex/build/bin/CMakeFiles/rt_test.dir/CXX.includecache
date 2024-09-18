@@ -519,6 +519,8 @@ sys/types.h
 -
 unistd.h
 -
+algorithm
+-
 atomic
 -
 boost/algorithm/string.hpp

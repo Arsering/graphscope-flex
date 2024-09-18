@@ -109,7 +109,6 @@ class mmap_array {
         pages_in_memory++;
       }
     }
-    gbp::get_counter_global(10).fetch_add(pages_in_memory);
     ::free(vec);
   }
 
@@ -417,11 +416,12 @@ class mmap_array {
                   len % OBJ_NUM_PERPAGE * sizeof(T);
       // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
     }
+
+    return buffer_pool_manager_->GetBlockSync1(file_offset, buf_size, fd_gbp_);
+
     // return buffer_pool_manager_->GetBlockWithDirectCacheSync(file_offset,
     //                                                          buf_size,
     //                                                          fd_gbp_);
-
-    return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
 
     // if (gbp::warmup_mark() == 1 && (fd_gbp_ == 165 || fd_gbp_ == 169)) {
     //   for (size_t id = 0; id < len; id++)

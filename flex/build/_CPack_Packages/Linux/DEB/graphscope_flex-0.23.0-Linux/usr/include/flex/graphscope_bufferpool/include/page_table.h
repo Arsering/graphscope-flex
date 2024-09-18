@@ -154,9 +154,26 @@ class PageTableInner {
       auto old_packed = atomic_packed.fetch_add(1);
       PTE& old_unpacked = PTE::FromPacked(old_packed);
 
-      if (old_unpacked.busy || old_unpacked.fpage_id_cur != fpage_id ||
+#if ASSERT_ENABLE
+      assert(old_unpacked.ref_count <
+             (std::numeric_limits<uint16_t>::max() >> 2) - 1);
+#endif
+      /**
+       *  有3种情况使得页处于busy状态：
+       * 1.
+       * 此页正在被load到内存，此时LockMapping会被调用，从而页进入busy状态，当load结束后UnLockMapping会被调用，此函数会将reference
+       * count抹0
+       * 2.
+       * 此页正在被写入到SSD，注意不是eviction，与load到内存时一样，UnLockMapping函数会将refcount抹0
+       * 3. 此页被eviction，那么此页的页表内容会被覆盖写，refcount同样会被抹去
+       *
+       */
+      if (old_unpacked.busy) {
+        return false;
+      }
+      if (old_unpacked.fpage_id_cur != fpage_id ||
           old_unpacked.fd_cur !=
-              fd) {  // 此处表明本页处于busy阶段或本页已用于存储其他文件页的内容
+              fd) {  // 此处表明本页本页已用于存储其他文件页的内容
         atomic_packed.fetch_sub(1);
         return false;
       }
@@ -233,7 +250,6 @@ class PageTableInner {
       std::atomic<uint64_t>& atomic_packed = as_atomic(AsPacked());
       uint64_t old_packed = atomic_packed.load(std::memory_order_acquire),
                new_packed;
-
       do {
         new_packed = old_packed;
         auto& new_header = PTE::FromPacked(new_packed);
@@ -263,7 +279,8 @@ class PageTableInner {
           return false;
 
         new_header.busy = false;
-
+        new_header.ref_count =
+            0;  // 注意一定要把ref_count清0,防止在锁住期间有人加1
       } while (!atomic_packed.compare_exchange_weak(old_packed, new_packed,
                                                     std::memory_order_release,
                                                     std::memory_order_relaxed));
@@ -332,13 +349,6 @@ class PageTableInner {
 
   PTE* FromPageId(mpage_id_type page_id) const {
 #if ASSERT_ENABLE
-    if (page_id >= num_pages_) {
-#ifdef GRAPHSCOPE
-      LOG(FATAL) << page_id << " " << num_pages_;
-#endif
-    }
-    if (page_id >= num_pages_)
-      std::cout << page_id << " " << num_pages_ << std::endl;
     assert(page_id < num_pages_);
 #endif
     return pool_ + page_id;
@@ -636,9 +646,9 @@ class PageTable {
     auto* tar = FromPageId(mpage_id);
     // 在mapping被锁住之前，有其他正常的访问到达了pte，导致pte的锁住失败
     if (!tar->Lock()) {
-      assert(
-          mappings_[fd]->CreateMapping(fpage_id_inpool,
-                                       mpage_id));  // 一旦锁pte失败，则必须释放
+      assert(mappings_[fd]->CreateMapping(
+          fpage_id_inpool,
+          mpage_id));  // 一旦锁pte失败，则必须释放MMAP
       return {false, 0};
     }
     // 一旦mapping被锁住，那说明tar->fpage_id != fpage_id && tar->fd ==
@@ -781,9 +791,9 @@ class DirectCache {
   FORCE_INLINE void Erase(GBPfile_handle_type fd, fpage_id_type fpage_id) {
     size_t index = DirectCache_HASH_FUNC(fd, fpage_id, capacity_);
 
-#if ASSERT_ENABLE
-    assert(cache_[index].pte_cur != nullptr);
-#endif
+    // #if ASSERT_ENABLE
+    //     assert(cache_[index].pte_cur != nullptr);
+    // #endif
 
     // size_t index = 0;
     // boost::hash_combine(index, fd);
@@ -812,7 +822,7 @@ class DirectCache {
   }
 
  private:
-  constexpr static size_t DIRECT_CACHE_SIZE = 256 * 8;
+  constexpr static size_t DIRECT_CACHE_SIZE = 256 * 4;
   std::vector<Node> cache_;
   size_t capacity_;
   // size_t hit = 0;

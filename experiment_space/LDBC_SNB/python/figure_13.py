@@ -60,18 +60,18 @@ def plt_figure_2(file_path):
         ys_1 = [cell.value for cell in wb[exp_type+'_'+ str(memory_size) +'G'][4]][1:]
         ys_2 = [cell.value for cell in wb[exp_type+'_'+ str(memory_size) +'G'][2]][1:]
 
-        ax1.plot(xs, ys_1, linestyle=line_style, color=plt.get_cmap('tab10')(0), label=exp_type+'+'+ str(memory_size*10) +'%')
-        ax2.plot(xs, ys_2, linestyle=line_style, color=plt.get_cmap('tab10')(2), label=exp_type+'+'+ str(memory_size*10) +'%')
+        ax2.plot(xs, ys_1, linestyle=line_style, color=plt.get_cmap('tab10')(0), label=exp_type+'+'+ str(memory_size*10) +'%')
+        ax1.plot(xs, ys_2, linestyle=line_style, color=plt.get_cmap('tab10')(2), label=exp_type+'+'+ str(memory_size*10) +'%')
 
-    ax1.set_ylabel('Latency (us)', color=plt.get_cmap('tab10')(0))
-    ax1.set_ylim(0, 1300)
-    ax1.set_yticks(range(0, 1250, 200), range(0, 1250, 200))
-    ax1.tick_params(axis='y', colors=plt.get_cmap('tab10')(0))
+    ax2.set_ylabel('Query Latency (us)', color=plt.get_cmap('tab10')(0))
+    ax2.set_ylim(0, 1300)
+    ax2.set_yticks(range(0, 1250, 200), range(0, 1250, 200))
+    ax2.tick_params(axis='y', colors=plt.get_cmap('tab10')(0))
     
-    ax2.set_ylabel('Worker Throughput (GB)', color=plt.get_cmap('tab10')(2))
-    ax2.set_ylim(0, 3.25)
-    ax2.set_yticks(np.array(range(0, 31, 5))/10, np.array(range(0, 31, 5))/10)
-    ax2.tick_params(axis='y', colors=plt.get_cmap('tab10')(2))
+    ax1.set_ylabel('Worker Throughput (GB)', color=plt.get_cmap('tab10')(2))
+    ax1.set_ylim(0, 3.25)
+    ax1.set_yticks(np.array(range(0, 31, 5))/10, np.array(range(0, 31, 5))/10)
+    ax1.tick_params(axis='y', colors=plt.get_cmap('tab10')(2))
 
     plt.xlabel('Worker Number')
     plt.legend(loc='upper left')
@@ -96,18 +96,18 @@ def plt_figure_5(file_path):
         ys_1 = [cell.value for cell in wb[exp_type+'_'+ str(memory_size) +'G'][4]][1:]
         ys_2 = [cell.value for cell in wb[exp_type+'_'+ str(memory_size) +'G'][2]][1:]
 
-        ax1.plot(xs, ys_1, linestyle=line_style, color=plt.get_cmap('tab10')(0), label=exp_type+'+'+ str(memory_size*10) +'%')
-        ax2.plot(xs, ys_2, linestyle=line_style, color=plt.get_cmap('tab10')(2), label=exp_type+'+'+ str(memory_size*10) +'%')
+        ax2.plot(xs, ys_1, linestyle=line_style, color=plt.get_cmap('tab10')(0), label=exp_type+'+'+ str(memory_size*10) +'%')
+        ax1.plot(xs, ys_2, linestyle=line_style, color=plt.get_cmap('tab10')(2), label=exp_type+'+'+ str(memory_size*10) +'%')
 
-    ax1.set_ylabel('Latency (us)', color=plt.get_cmap('tab10')(0))
-    ax1.set_ylim(0, 975)
-    ax1.set_yticks(range(0, 910, 150), range(0, 910, 150))
-    ax1.tick_params(axis='y', colors=plt.get_cmap('tab10')(0))
+    ax2.set_ylabel('Query Latency (us)', color=plt.get_cmap('tab10')(0))
+    ax2.set_ylim(0, 975)
+    ax2.set_yticks(range(0, 910, 150), range(0, 910, 150))
+    ax2.tick_params(axis='y', colors=plt.get_cmap('tab10')(0))
     
-    ax2.set_ylabel('Worker Throughput (GB)', color=plt.get_cmap('tab10')(2))
-    ax2.set_ylim(0, 16.25)
-    ax2.set_yticks(np.array(range(0, 160, 25))/10, np.array(range(0, 160, 25))/10)
-    ax2.tick_params(axis='y', colors=plt.get_cmap('tab10')(2))
+    ax1.set_ylabel('Worker Throughput (GB)', color=plt.get_cmap('tab10')(2))
+    ax1.set_ylim(0, 16.25)
+    ax1.set_yticks(np.array(range(0, 160, 25))/10, np.array(range(0, 160, 25))/10)
+    ax1.tick_params(axis='y', colors=plt.get_cmap('tab10')(2))
 
     plt.xlabel('Worker Number')
     plt.legend(loc='upper left')
@@ -135,7 +135,7 @@ def plt_figure_8(file_path):
         ax1.plot(xs, ys_1, linestyle=line_style, color=plt.get_cmap('tab10')(0), label=exp_type+'+'+ str(memory_size*10) +'%')
         ax2.plot(xs, ys_2, linestyle=line_style, color=plt.get_cmap('tab10')(2), label=exp_type+'+'+ str(memory_size*10) +'%')
 
-    ax1.set_ylabel('Latency (us)', color=plt.get_cmap('tab10')(0))
+    ax1.set_ylabel('Query Latency (us)', color=plt.get_cmap('tab10')(0))
     ax1.set_ylim(0, 325)
     ax1.set_yticks(range(0, 350, 50), range(0, 350, 50))
     ax1.tick_params(axis='y', colors=plt.get_cmap('tab10')(0))
