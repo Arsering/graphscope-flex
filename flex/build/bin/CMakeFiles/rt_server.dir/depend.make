@@ -21,6 +21,10 @@ bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/in
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
+bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/extendible_hash.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -33,6 +37,7 @@ bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/in
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 bin/CMakeFiles/rt_server.dir/rt_server.cc.o: ../../flex/graphscope_bufferpool/include/replacer/list_array.h

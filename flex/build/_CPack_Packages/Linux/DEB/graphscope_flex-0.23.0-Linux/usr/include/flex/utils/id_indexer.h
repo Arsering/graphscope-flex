@@ -16,6 +16,7 @@ limitations under the License.
 #ifndef GRAPHSCOPE_GRAPH_ID_INDEXER_H_
 #define GRAPHSCOPE_GRAPH_ID_INDEXER_H_
 
+#include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <cmath>
@@ -259,13 +260,14 @@ class LFIndexer {
       }
     }
 #else
-    uint32_t num_get =
-        indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    auto num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    num_get = std::min(num_get, indices_.size() - index);
     uint32_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
       if (unlikely(index < start_index || index >= end_index)) {
         num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        num_get = std::min(num_get, indices_.size() - index);
         items = indices_.get(index, num_get);
         start_index = index, end_index = index + num_get;
       }
@@ -316,11 +318,15 @@ class LFIndexer {
 
     uint32_t num_get =
         indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    num_get =
+        num_get > indices_.size() - index ? indices_.size() - index : num_get;
     uint32_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
       if (unlikely(index < start_index || index >= end_index)) {
         num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        num_get = num_get > indices_.size() - index ? indices_.size() - index
+                                                    : num_get;
         items = indices_.get(index, num_get);
         start_index = index, end_index = index + num_get;
       }

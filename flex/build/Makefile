@@ -400,6 +400,19 @@ query_gen/fast:
 .PHONY : query_gen/fast
 
 #=============================================================================
+# Target rules for targets named rt_test1
+
+# Build rule for target.
+rt_test1: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 rt_test1
+.PHONY : rt_test1
+
+# fast build rule for target.
+rt_test1/fast:
+	$(MAKE) -f bin/CMakeFiles/rt_test1.dir/build.make bin/CMakeFiles/rt_test1.dir/build
+.PHONY : rt_test1/fast
+
+#=============================================================================
 # Target rules for targets named rt_bench_new
 
 # Build rule for target.
@@ -482,6 +495,7 @@ help:
 	@echo "... rt_bench"
 	@echo "... rt_bench_thread"
 	@echo "... query_gen"
+	@echo "... rt_test1"
 	@echo "... rt_bench_new"
 	@echo "... rt_test"
 	@echo "... rt_admin"

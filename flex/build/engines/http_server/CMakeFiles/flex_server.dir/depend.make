@@ -35,6 +35,10 @@ engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/gra
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
+engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/extendible_hash.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -47,6 +51,7 @@ engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/gra
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/graphscope_bufferpool/include/replacer/list_array.h

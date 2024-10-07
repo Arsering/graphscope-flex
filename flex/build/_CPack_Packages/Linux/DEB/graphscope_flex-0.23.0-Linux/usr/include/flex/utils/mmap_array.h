@@ -396,6 +396,10 @@ class mmap_array {
 
   const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
 #if ASSERT_ENABLE
+    if (idx + len > size_) {
+      LOG(INFO) << idx << " " << len << " " << size_;
+      LOG(INFO) << gbp::get_stack_trace();
+    }
     CHECK_LE(idx + len, size_);
 #endif
 
@@ -417,7 +421,7 @@ class mmap_array {
       // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
     }
 
-    return buffer_pool_manager_->GetBlockSync1(file_offset, buf_size, fd_gbp_);
+    return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
 
     // return buffer_pool_manager_->GetBlockWithDirectCacheSync(file_offset,
     //                                                          buf_size,
@@ -430,6 +434,11 @@ class mmap_array {
     //         id).neighbor
     //         << std::endl;
     // }
+    // if (gbp::warmup_mark() == 1 && (fd_gbp_ == 165 || fd_gbp_ == 169)) {
+    //   for (size_t id = 0; id < len; id++)
+    //     gbp::get_thread_logfile() << idx << std::endl;
+    // }
+    // return ret;
   }
 
   const std::future<gbp::BufferBlock> get_async(size_t idx,

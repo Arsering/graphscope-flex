@@ -147,6 +147,8 @@ vector
 -
 ../config.h
 ../../flex/graphscope_bufferpool/include/config.h
+../directcache/direct_cache.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 ../logger.h
 ../../flex/graphscope_bufferpool/include/logger.h
 ../page_table.h
@@ -199,6 +201,26 @@ config.h
 ../../flex/graphscope_bufferpool/include/config.h
 utils.h
 ../../flex/graphscope_bufferpool/include/utils.h
+
+../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+direct_cache_impl1.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+direct_cache_impl2.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+direct_cache_impl3.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
+
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+../page_table.h
+../../flex/graphscope_bufferpool/include/page_table.h
+
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+../page_table.h
+../../flex/graphscope_bufferpool/include/page_table.h
+
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
+../page_table.h
+../../flex/graphscope_bufferpool/include/page_table.h
 
 ../../flex/graphscope_bufferpool/include/logger.h
 fcntl.h

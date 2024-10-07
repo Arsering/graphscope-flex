@@ -80,6 +80,16 @@ int main(int argc, char** argv) {
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 
+  // LOG(INFO) << "Launch Performance Logger";
+  // if (!vm.count("log-data-path")) {
+  //   LOG(ERROR) << "log-data-path is required";
+  //   return -1;
+  // }
+  // auto log_data_path = vm["log-data-path"].as<std::string>();
+  // gbp::PerformanceLogServer::GetPerformanceLogger().Start(
+  //     log_data_path + "/performance.log", "nvme0n1");
+  // gbp::get_log_dir() = log_data_path;
+
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
   auto loading_config =
       gs::LoadingConfig::ParseFromYaml(schema, bulk_load_config_path);
@@ -100,6 +110,7 @@ int main(int argc, char** argv) {
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
   }
+
   LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
 
   gbp::BufferPoolManager::GetGlobalInstance().init(

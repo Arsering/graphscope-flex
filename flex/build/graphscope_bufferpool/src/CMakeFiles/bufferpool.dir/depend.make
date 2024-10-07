@@ -10,6 +10,10 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphsc
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/debug.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/eviction_server.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/extendible_hash.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/hash_table.h
@@ -22,6 +26,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphsc
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/partitioner.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/replacer/clock_replacer.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/replacer/fifo_replacer.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/replacer/list_array.h
@@ -44,6 +49,10 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphs
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/debug.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/eviction_server.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/extendible_hash.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/hash_table.h
@@ -56,6 +65,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphs
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/partitioner.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/replacer/clock_replacer.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/replacer/fifo_replacer.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o: ../graphscope_bufferpool/include/replacer/list_array.h
@@ -79,6 +89,10 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: .
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/debug.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/eviction_server.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/extendible_hash.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/hash_table.h
@@ -91,6 +105,7 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: .
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/partitioner.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/replacer/clock_replacer.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/replacer/fifo_replacer.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/replacer/list_array.h
@@ -112,6 +127,18 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/debug.cpp.o: ../graphscope_b
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/debug.cpp.o: ../graphscope_bufferpool/include/debug.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/debug.cpp.o: ../graphscope_bufferpool/include/utils.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/debug.cpp.o: ../graphscope_bufferpool/src/debug.cpp
+
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/config.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/debug.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl3.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/logger.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/page_table.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/partitioner.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/include/utils.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: ../graphscope_bufferpool/src/direct_cache.cpp
 
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/config.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: ../graphscope_bufferpool/include/debug.h

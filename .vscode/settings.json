@@ -83,5 +83,5 @@
         "scoped_allocator": "cpp",
         "charconv": "cpp"
     },
-    "cmake.sourceDirectory": "/workspaces/graphscope-flex/flex/graphscope_bufferpool"
+    "cmake.sourceDirectory": "/data/zhengyang/data/graphscope-flex/flex"
 }

@@ -372,11 +372,9 @@ void CSVFragmentLoader::addVertexBatch(
   for (auto j = 0; j < property_cols.size(); ++j) {
     auto array = property_cols[j];
     auto chunked_array = std::make_shared<arrow::ChunkedArray>(array);
-    // LOG(INFO) << "cp";
     set_vertex_properties(
         basic_fragment_loader_.GetVertexTable(v_label_id).column_ptrs()[j],
         chunked_array, vids);
-    // LOG(INFO) << "cp";
   }
 
   VLOG(10) << "Insert rows: " << row_num;

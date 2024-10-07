@@ -53,15 +53,15 @@ CMAKE_BINARY_DIR = /workspaces/graphscope-flex/flex/build
 # Include the progress variables for this target.
 include engines/http_server/CMakeFiles/installed_libclang.dir/progress.make
 
-engines/http_server/CMakeFiles/installed_libclang: /usr/lib/python3/dist-packages/clang/native/libclang.so
+engines/http_server/CMakeFiles/installed_libclang: /usr/local/bin/hiactor_codegen/clang/native/libclang.so
 
 
-/usr/lib/python3/dist-packages/clang/native/libclang.so:
+/usr/local/bin/hiactor_codegen/clang/native/libclang.so:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/workspaces/graphscope-flex/flex/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Installing libclang ..."
-	cd /workspaces/graphscope-flex/flex/build/engines/http_server && pip3 install --upgrade libclang
+	cd /workspaces/graphscope-flex/flex/build/engines/http_server && pip3 install -t /usr/local/bin/hiactor_codegen --upgrade libclang==14.0.6
 
 installed_libclang: engines/http_server/CMakeFiles/installed_libclang
-installed_libclang: /usr/lib/python3/dist-packages/clang/native/libclang.so
+installed_libclang: /usr/local/bin/hiactor_codegen/clang/native/libclang.so
 installed_libclang: engines/http_server/CMakeFiles/installed_libclang.dir/build.make
 
 .PHONY : installed_libclang

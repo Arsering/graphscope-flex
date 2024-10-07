@@ -55,6 +55,10 @@ codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/gr
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/extendible_hash.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -67,6 +71,7 @@ codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/gr
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/replacer/list_array.h

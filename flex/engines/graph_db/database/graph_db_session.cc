@@ -81,6 +81,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   auto query_id_t = gbp::get_query_id().load();
   // if ((int) type < 15)
   //   return result_buffer;
+  if ((int) type == 1)
+    assert(false);
   // LOG(INFO) << (int) type << " " << gbp::get_query_id().load();
   static std::atomic<size_t> query_id = 0;
   gbp::get_counter_query().fetch_add(1);
@@ -141,6 +143,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         }
       }
     }
+    // LOG(INFO) << std::string_view{result_buffer.data(),
+    // result_buffer.size()};
     if constexpr (check_result) {
       if (gbp::get_results_vec()[gbp::get_query_id().load()].size() != 0 &&
           gbp::get_results_vec()[gbp::get_query_id().load()] !=

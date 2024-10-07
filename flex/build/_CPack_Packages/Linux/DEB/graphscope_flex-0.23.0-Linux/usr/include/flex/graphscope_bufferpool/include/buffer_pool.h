@@ -23,6 +23,7 @@
 #include "extendible_hash.h"
 #include "replacer/TwoQLRU_replacer.h"
 #include "replacer/clock_replacer.h"
+#include "replacer/clock_replacer_v2.h"
 #include "replacer/fifo_replacer.h"
 #include "replacer/fifo_replacer_v2.h"
 
@@ -153,7 +154,8 @@ class BufferPool {
 
   bool ReleasePage(PageTableInner::PTE* tar);
 
-  bool FlushPage(fpage_id_type page_id, GBPfile_handle_type fd = 0);
+  bool FlushPage(fpage_id_type fpage_id, GBPfile_handle_type fd = 0,
+                 bool delete_from_memory = false);
   // bool FlushPage(PTE* pte);
 
   PageTableInner::PTE* NewPage(mpage_id_type& page_id,
@@ -228,13 +230,13 @@ class BufferPool {
     // 1.1
     auto [success, mpage_id] = page_table_->FindMapping(fd, fpage_id);
     if (success) {
-      auto tar = page_table_->FromPageId(mpage_id);
+      auto pte = page_table_->FromPageId(mpage_id);
       // auto [has_inc, pre_ref_count] = tar->IncRefCount(fpage_id_inpool, fd);
-      auto has_inc = tar->IncRefCount1(fpage_id, fd);
+      auto has_inc = pte->IncRefCount1(fpage_id, fd);
 
       if (has_inc) {
-        assert(replacer_->Promote(page_table_->ToPageId(tar)));
-        return {tar, (char*) memory_pool_.FromPageId(mpage_id)};
+        assert(replacer_->Promote(page_table_->ToPageId(pte)));
+        return {pte, (char*) memory_pool_.FromPageId(mpage_id)};
       }
     }
     return {nullptr, nullptr};

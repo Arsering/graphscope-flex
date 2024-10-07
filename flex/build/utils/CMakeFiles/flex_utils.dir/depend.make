@@ -7,6 +7,10 @@ utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool
 utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
+utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 utils/CMakeFiles/flex_utils.dir/app_utils.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
@@ -27,6 +31,10 @@ utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_buff
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
+utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/extendible_hash.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -39,6 +47,7 @@ utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_buff
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/replacer/list_array.h
@@ -64,6 +73,10 @@ utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_buffe
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/eviction_server.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/extendible_hash.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -76,6 +89,7 @@ utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_buffe
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/replacer/list_array.h

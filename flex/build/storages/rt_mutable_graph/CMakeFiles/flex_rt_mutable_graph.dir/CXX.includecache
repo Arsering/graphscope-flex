@@ -89,6 +89,8 @@ replacer/TwoQLRU_replacer.h
 ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
 replacer/clock_replacer.h
 ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+replacer/clock_replacer_v2.h
+../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 replacer/fifo_replacer.h
 ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
 replacer/fifo_replacer_v2.h
@@ -145,6 +147,8 @@ config.h
 ../../flex/graphscope_bufferpool/include/config.h
 debug.h
 ../../flex/graphscope_bufferpool/include/debug.h
+directcache/direct_cache.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 extendible_hash.h
 ../../flex/graphscope_bufferpool/include/extendible_hash.h
 io_backend.h
@@ -285,6 +289,8 @@ vector
 -
 ../config.h
 ../../flex/graphscope_bufferpool/include/config.h
+../directcache/direct_cache.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 ../logger.h
 ../../flex/graphscope_bufferpool/include/logger.h
 ../page_table.h
@@ -337,6 +343,26 @@ config.h
 ../../flex/graphscope_bufferpool/include/config.h
 utils.h
 ../../flex/graphscope_bufferpool/include/utils.h
+
+../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+direct_cache_impl1.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+direct_cache_impl2.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+direct_cache_impl3.h
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
+
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+../page_table.h
+../../flex/graphscope_bufferpool/include/page_table.h
+
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+../page_table.h
+../../flex/graphscope_bufferpool/include/page_table.h
+
+../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
+../page_table.h
+../../flex/graphscope_bufferpool/include/page_table.h
 
 ../../flex/graphscope_bufferpool/include/eviction_server.h
 numa.h
@@ -591,6 +617,22 @@ replacer.h
 ../../flex/graphscope_bufferpool/include/replacer/replacer.h
 
 ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+assert.h
+-
+iostream
+-
+map
+-
+memory
+-
+mutex
+-
+unordered_map
+-
+replacer.h
+../../flex/graphscope_bufferpool/include/replacer/replacer.h
+
+../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 assert.h
 -
 iostream
@@ -869,6 +911,8 @@ boost/algorithm/string.hpp
 ../../flex/storages/rt_mutable_graph/boost/algorithm/string.hpp
 
 ../../flex/storages/rt_mutable_graph/mutable_csr.h
+algorithm
+-
 atomic
 -
 filesystem
@@ -955,6 +999,8 @@ flex/utils/property/types.h
 ../../flex/utils/flex/utils/property/types.h
 
 ../../flex/utils/id_indexer.h
+algorithm
+-
 atomic
 -
 cassert
@@ -1115,14 +1161,6 @@ tuple
 -
 flex/engines/hqps_db/core/utils/hqps_utils.h
 /workspaces/graphscope-flex/flex/storages/rt_mutable_graph/flex/engines/hqps_db/core/utils/hqps_utils.h
-
-/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/mutable_csr.cc
-flex/storages/rt_mutable_graph/mutable_csr.h
-/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/flex/storages/rt_mutable_graph/mutable_csr.h
-grape/serialization/in_archive.h
-/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/grape/serialization/in_archive.h
-grape/serialization/out_archive.h
-/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/grape/serialization/out_archive.h
 
 /workspaces/graphscope-flex/flex/storages/rt_mutable_graph/mutable_property_fragment.cc
 grape/util.h

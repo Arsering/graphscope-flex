@@ -254,6 +254,21 @@ query_gen/fast:
 .PHONY : query_gen/fast
 
 # Convenience name for target.
+bin/CMakeFiles/rt_test1.dir/rule:
+	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f CMakeFiles/Makefile2 bin/CMakeFiles/rt_test1.dir/rule
+.PHONY : bin/CMakeFiles/rt_test1.dir/rule
+
+# Convenience name for target.
+rt_test1: bin/CMakeFiles/rt_test1.dir/rule
+
+.PHONY : rt_test1
+
+# fast build rule for target.
+rt_test1/fast:
+	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f bin/CMakeFiles/rt_test1.dir/build.make bin/CMakeFiles/rt_test1.dir/build
+.PHONY : rt_test1/fast
+
+# Convenience name for target.
 bin/CMakeFiles/rt_bench_new.dir/rule:
 	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f CMakeFiles/Makefile2 bin/CMakeFiles/rt_bench_new.dir/rule
 .PHONY : bin/CMakeFiles/rt_bench_new.dir/rule
@@ -556,6 +571,33 @@ rt_test.cc.s:
 	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f bin/CMakeFiles/rt_test.dir/build.make bin/CMakeFiles/rt_test.dir/rt_test.cc.s
 .PHONY : rt_test.cc.s
 
+rt_test1.o: rt_test1.cc.o
+
+.PHONY : rt_test1.o
+
+# target to build an object file
+rt_test1.cc.o:
+	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f bin/CMakeFiles/rt_test1.dir/build.make bin/CMakeFiles/rt_test1.dir/rt_test1.cc.o
+.PHONY : rt_test1.cc.o
+
+rt_test1.i: rt_test1.cc.i
+
+.PHONY : rt_test1.i
+
+# target to preprocess a source file
+rt_test1.cc.i:
+	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f bin/CMakeFiles/rt_test1.dir/build.make bin/CMakeFiles/rt_test1.dir/rt_test1.cc.i
+.PHONY : rt_test1.cc.i
+
+rt_test1.s: rt_test1.cc.s
+
+.PHONY : rt_test1.s
+
+# target to generate assembly for a file
+rt_test1.cc.s:
+	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f bin/CMakeFiles/rt_test1.dir/build.make bin/CMakeFiles/rt_test1.dir/rt_test1.cc.s
+.PHONY : rt_test1.cc.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -569,8 +611,9 @@ help:
 	@echo "... flex_analytical_engine"
 	@echo "... rt_bench"
 	@echo "... rt_bench_thread"
-	@echo "... query_gen"
 	@echo "... package_source"
+	@echo "... query_gen"
+	@echo "... rt_test1"
 	@echo "... install"
 	@echo "... rt_bench_new"
 	@echo "... package"
@@ -606,6 +649,9 @@ help:
 	@echo "... rt_test.o"
 	@echo "... rt_test.i"
 	@echo "... rt_test.s"
+	@echo "... rt_test1.o"
+	@echo "... rt_test1.i"
+	@echo "... rt_test1.s"
 .PHONY : help
 
 

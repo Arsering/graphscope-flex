@@ -166,6 +166,7 @@ inline void fill_vertex_reader_meta(
     // for example, schema is : (name,age)
     // file header is (id,name,age), the primary key is id.
     // so, the mapped_property_names are: (id,name,age)
+
     CHECK(property_names.size() + 1 == read_options.column_names.size());
     // insert primary_key to property_names
     property_names.insert(property_names.begin() + primary_key_ind,

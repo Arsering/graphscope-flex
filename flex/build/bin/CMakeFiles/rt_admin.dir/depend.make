@@ -8,6 +8,10 @@ bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/incl
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/config.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
+bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h

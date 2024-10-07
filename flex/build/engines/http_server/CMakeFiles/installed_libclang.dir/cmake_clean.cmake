@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "/usr/lib/python3/dist-packages/clang/native/libclang.so"
+  "/usr/local/bin/hiactor_codegen/clang/native/libclang.so"
   "CMakeFiles/installed_libclang"
 )
 

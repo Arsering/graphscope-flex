@@ -7,6 +7,10 @@
 /usr/local/include/flex/graphscope_bufferpool/include/orgin_mmap.h
 /usr/local/include/flex/graphscope_bufferpool/include/partitioner.h
 /usr/local/include/flex/graphscope_bufferpool/include/rwmutex.h
+/usr/local/include/flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+/usr/local/include/flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
+/usr/local/include/flex/graphscope_bufferpool/include/directcache/direct_cache.h
+/usr/local/include/flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
 /usr/local/include/flex/graphscope_bufferpool/include/extendible_hash.h
 /usr/local/include/flex/graphscope_bufferpool/include/rw_lock.h
 /usr/local/include/flex/graphscope_bufferpool/include/value.h
@@ -16,6 +20,7 @@
 /usr/local/include/flex/graphscope_bufferpool/include/debug.h
 /usr/local/include/flex/graphscope_bufferpool/include/atomic_ops.h
 /usr/local/include/flex/graphscope_bufferpool/include/type_traits.h
+/usr/local/include/flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 /usr/local/include/flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
 /usr/local/include/flex/graphscope_bufferpool/include/replacer/LFU_replacer.h
 /usr/local/include/flex/graphscope_bufferpool/include/replacer/sieve_replacer_v2.h
@@ -113,6 +118,7 @@
 /usr/local/bin/rt_server
 /usr/local/bin/rt_bench
 /usr/local/bin/rt_bench_thread
+/usr/local/bin/rt_test1
 /usr/local/bin/rt_bench_new
 /usr/local/bin/rt_test
 /usr/local/bin/query_gen

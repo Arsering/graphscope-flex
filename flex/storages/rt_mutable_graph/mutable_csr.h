@@ -16,6 +16,7 @@
 #ifndef GRAPHSCOPE_GRAPH_MUTABLE_CSR_H_
 #define GRAPHSCOPE_GRAPH_MUTABLE_CSR_H_
 
+#include <algorithm>
 #include <atomic>
 #include <filesystem>
 #include <type_traits>
@@ -782,13 +783,19 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     }
 #else
     // FIXME: 此处的实现未经验证，需要检查其实现正确性
-    auto items_tmp = adj_lists_.get(0, vnum);
-
+    gbp::BufferBlock items_tmp;
     size_t offset = 0;
+    size_t idx_offset = 0;
     for (vid_t i = 0; i < vnum; ++i) {
+      if (i % adj_lists_.OBJ_NUM_PERPAGE == 0) {
+        items_tmp = adj_lists_.get(
+            i, std::min((size_t) adj_lists_.OBJ_NUM_PERPAGE, vnum - i));
+        idx_offset = i;
+      }
       int deg = degree[i];
       gbp::BufferBlock::UpdateContent<adjlist_t>(
-          [&](adjlist_t& item) { item.init(offset, deg, 0); }, items_tmp, i);
+          [&](adjlist_t& item) { item.init(offset, deg, 0); }, items_tmp,
+          i - idx_offset);
       offset += deg;
     }
 #endif
@@ -979,10 +986,19 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
         adj_lists_[k].init(NULL, 0, 0);
       }
 #else
-      auto items_tmp = adj_lists_.get(old_size, vnum - old_size);
-      for (size_t i = 0; i < vnum - old_size; i++) {
+      gbp::BufferBlock items_tmp;
+      size_t idx_offset = 0;
+      for (size_t k = old_size; k != vnum; k++) {
+        if (k % adj_lists_.OBJ_NUM_PERPAGE == 0 || k == old_size) {
+          items_tmp =
+              adj_lists_.get(k, std::min(adj_lists_.OBJ_NUM_PERPAGE -
+                                             k % adj_lists_.OBJ_NUM_PERPAGE,
+                                         vnum - k));
+          idx_offset = k;
+        }
         gbp::BufferBlock::UpdateContent<adjlist_t>(
-            [&](adjlist_t& item) { item.init(0, 0, 0); }, items_tmp, i);
+            [&](adjlist_t& item) { item.init(0, 0, 0); }, items_tmp,
+            k - idx_offset);
       }
 #endif
       delete[] locks_;
@@ -1236,13 +1252,21 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
         nbr_list_[k].timestamp.store(std::numeric_limits<timestamp_t>::max());
       }
 #else
-      auto nbr_list_old = nbr_list_.get(old_size, (vnum - old_size));
-      for (size_t k = 0; k != vnum - old_size; ++k) {
+      size_t idx_offset = 0;
+      gbp::BufferBlock nbr_list_old;
+      for (size_t k = old_size; k != vnum; ++k) {
+        if (k % nbr_list_.OBJ_NUM_PERPAGE == 0 || k == old_size) {
+          nbr_list_old =
+              nbr_list_.get(k, std::min(nbr_list_.OBJ_NUM_PERPAGE -
+                                            k % nbr_list_.OBJ_NUM_PERPAGE,
+                                        vnum - k));
+          idx_offset = k;
+        }
         gbp::BufferBlock::UpdateContent<nbr_t>(
             [&](nbr_t& item) {
               item.timestamp.store(std::numeric_limits<timestamp_t>::max());
             },
-            nbr_list_old, k);
+            nbr_list_old, k - idx_offset);
       }
 #endif
     } else {

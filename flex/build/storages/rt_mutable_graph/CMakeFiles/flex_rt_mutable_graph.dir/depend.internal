@@ -10,6 +10,10 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_frag
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h
  ../../flex/graphscope_bufferpool/include/extendible_hash.h
  ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -22,6 +26,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_frag
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/list_array.h
@@ -62,6 +67,10 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragme
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h
  ../../flex/graphscope_bufferpool/include/extendible_hash.h
  ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -74,6 +83,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragme
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/list_array.h
@@ -116,6 +126,10 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_fac
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h
  ../../flex/graphscope_bufferpool/include/extendible_hash.h
  ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -128,6 +142,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_fac
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/list_array.h
@@ -172,6 +187,10 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h
  ../../flex/graphscope_bufferpool/include/extendible_hash.h
  ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -184,6 +203,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/list_array.h
@@ -217,6 +237,10 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h
  ../../flex/graphscope_bufferpool/include/extendible_hash.h
  ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -229,6 +253,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_csr.cc.o
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/list_array.h
@@ -259,6 +284,10 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h
  ../../flex/graphscope_bufferpool/include/extendible_hash.h
  ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -271,6 +300,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/list_array.h
@@ -307,6 +337,10 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
  ../../flex/graphscope_bufferpool/include/eviction_server.h
  ../../flex/graphscope_bufferpool/include/extendible_hash.h
  ../../flex/graphscope_bufferpool/include/hash_table.h
@@ -319,6 +353,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/clock_replacer.h
+ ../../flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer.h
  ../../flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
  ../../flex/graphscope_bufferpool/include/replacer/list_array.h

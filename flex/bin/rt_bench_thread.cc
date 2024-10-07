@@ -129,6 +129,7 @@ class Req {
 
   void do_query(size_t thread_id) {
     size_t id;
+
     while (true) {
       id = cur_.fetch_add(1);
 
@@ -343,6 +344,7 @@ int main(int argc, char** argv) {
     return -1;
   }
   data_path = vm["data-path"].as<std::string>();
+
   if (!vm.count("log-data-path")) {
     LOG(ERROR) << "log-data-path is required";
     return -1;
@@ -417,11 +419,13 @@ int main(int argc, char** argv) {
   gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
-  gbp::warmup_mark().store(1);
+  gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);
   // Req::get().load_result(req_file);
+  gbp::DirectCache::CleanAllCache();
+
   for (size_t idx = 0; idx < 2; idx++) {
     Req::get().init(warmup_num, benchmark_num);
     // gbp::BufferPoolManager::GetGlobalInstance().disk_manager_->ResetCount();
@@ -438,7 +442,6 @@ int main(int argc, char** argv) {
     auto cpu_cost_after = gbp::GetCPUTime();
 
     ssd_io_byte = std::get<0>(gbp::SSD_io_bytes()) - ssd_io_byte;
-
     LOG(INFO) << "CPU Cost = "
               << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /
                      1000000.0
@@ -449,7 +452,6 @@ int main(int argc, char** argv) {
     LOG(INFO) << "SSD IO = " << ssd_io_byte << "(Byte)";
 
     gbp::warmup_mark().store(0);
-
     std::cout << "cost time:"
               << std::chrono::duration_cast<std::chrono::milliseconds>(end -
                                                                        begin)
@@ -458,6 +460,7 @@ int main(int argc, char** argv) {
     Req::get().output();
 
     gbp::warmup_mark().store(1);
+    gbp::DirectCache::CleanAllCache();
   }
 
   Req::get().LoggerStop();

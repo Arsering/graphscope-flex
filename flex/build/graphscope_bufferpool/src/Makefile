@@ -328,6 +328,33 @@ debug.cpp.s:
 	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/build.make graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/debug.cpp.s
 .PHONY : debug.cpp.s
 
+direct_cache.o: direct_cache.cpp.o
+
+.PHONY : direct_cache.o
+
+# target to build an object file
+direct_cache.cpp.o:
+	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/build.make graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o
+.PHONY : direct_cache.cpp.o
+
+direct_cache.i: direct_cache.cpp.i
+
+.PHONY : direct_cache.i
+
+# target to preprocess a source file
+direct_cache.cpp.i:
+	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/build.make graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.i
+.PHONY : direct_cache.cpp.i
+
+direct_cache.s: direct_cache.cpp.s
+
+.PHONY : direct_cache.s
+
+# target to generate assembly for a file
+direct_cache.cpp.s:
+	cd /workspaces/graphscope-flex/flex/build && $(MAKE) -f graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/build.make graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.s
+.PHONY : direct_cache.cpp.s
+
 extendible_hash.o: extendible_hash.cpp.o
 
 .PHONY : extendible_hash.o
@@ -439,6 +466,9 @@ help:
 	@echo "... debug.o"
 	@echo "... debug.i"
 	@echo "... debug.s"
+	@echo "... direct_cache.o"
+	@echo "... direct_cache.i"
+	@echo "... direct_cache.s"
 	@echo "... extendible_hash.o"
 	@echo "... extendible_hash.i"
 	@echo "... extendible_hash.s"

@@ -9,6 +9,10 @@ bin/CMakeFiles/rt_admin.dir/rt_admin.cc.o
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
  ../../flex/graphscope_bufferpool/include/debug.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl2.h
+ ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl3.h
  ../../flex/graphscope_bufferpool/include/logger.h
  ../../flex/graphscope_bufferpool/include/page_table.h
  ../../flex/graphscope_bufferpool/include/partitioner.h

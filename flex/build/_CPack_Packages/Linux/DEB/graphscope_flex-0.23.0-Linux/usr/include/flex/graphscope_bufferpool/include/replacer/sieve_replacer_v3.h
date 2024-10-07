@@ -75,6 +75,10 @@ class SieveReplacer_v3 : public Replacer<mpage_id_type> {
       pte = page_table_->FromPageId(to_evict);
       if (pte->ref_count != 0) {  // FIXME: 可能对cache hit ratio有一定的损伤
         count--;
+
+        // TODO:可能效果不好
+        list_.getValue(to_evict) = 1;
+
         to_evict = list_.getPrevNodeIndex(to_evict) == list_.head_
                        ? list_.GetTail()
                        : list_.getPrevNodeIndex(to_evict);
@@ -93,6 +97,8 @@ class SieveReplacer_v3 : public Replacer<mpage_id_type> {
         assert(page_table_->UnLockMapping(pte->fd_cur, pte->fpage_id_cur,
                                           mpage_id));
       count--;
+      // TODO:可能效果不好
+      list_.getValue(to_evict) = 1;
       to_evict = list_.getPrevNodeIndex(to_evict) == list_.head_
                      ? list_.GetTail()
                      : list_.getPrevNodeIndex(to_evict);
@@ -211,8 +217,8 @@ class SieveReplacer_v3 : public Replacer<mpage_id_type> {
 
         if (locked && pte->ref_count == 0 && !pte->dirty &&
             mpage_id != PageMapping::Mapping::EMPTY_VALUE) {
-          assert(page_table_->DeleteMapping(pte_unpacked.fd_cur,
-                                            pte_unpacked.fpage_id_cur));
+          assert(page_table_->DeleteMapping(
+              pte_unpacked.fd_cur, pte_unpacked.fpage_id_cur, to_evict));
           break;
         }
 
@@ -233,7 +239,10 @@ class SieveReplacer_v3 : public Replacer<mpage_id_type> {
 
     return true;
   }
-
+  bool Clean() override {
+    list_.Clean();
+    return true;
+  }
   bool Erase(mpage_id_type value) override {
 #if EVICTION_SYNC_ENABLE
     std::lock_guard<std::mutex> lck(latch_);

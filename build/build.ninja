@@ -247,6 +247,14 @@ build src/CMakeFiles/bufferpool.dir/debug.cpp.o: CXX_COMPILER__bufferpool /works
   OBJECT_DIR = src/CMakeFiles/bufferpool.dir
   OBJECT_FILE_DIR = src/CMakeFiles/bufferpool.dir
 
+build src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o: CXX_COMPILER__bufferpool /workspaces/graphscope-flex/flex/graphscope_bufferpool/src/direct_cache.cpp || cmake_object_order_depends_target_bufferpool
+  DEFINES = -Dbufferpool_EXPORTS
+  DEP_FILE = src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o.d
+  FLAGS = -std=c++17 -fPIC -rdynamic -pthread -Wextra -g3 -O0 -fPIC
+  INCLUDES = -I/workspaces/graphscope-flex/flex/graphscope_bufferpool/include
+  OBJECT_DIR = src/CMakeFiles/bufferpool.dir
+  OBJECT_FILE_DIR = src/CMakeFiles/bufferpool.dir
+
 build src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o: CXX_COMPILER__bufferpool /workspaces/graphscope-flex/flex/graphscope_bufferpool/src/extendible_hash.cpp || cmake_object_order_depends_target_bufferpool
   DEFINES = -Dbufferpool_EXPORTS
   DEP_FILE = src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o.d
@@ -279,7 +287,7 @@ build src/CMakeFiles/bufferpool.dir/utils.cpp.o: CXX_COMPILER__bufferpool /works
 #############################################
 # Link the shared library /workspaces/graphscope-flex/flex/graphscope_bufferpool/lib/libbufferpool.so
 
-build /workspaces/graphscope-flex/flex/graphscope_bufferpool/lib/libbufferpool.so: CXX_SHARED_LIBRARY_LINKER__bufferpool src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o src/CMakeFiles/bufferpool.dir/config.cpp.o src/CMakeFiles/bufferpool.dir/debug.cpp.o src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o src/CMakeFiles/bufferpool.dir/logger.cc.o src/CMakeFiles/bufferpool.dir/utils.cpp.o
+build /workspaces/graphscope-flex/flex/graphscope_bufferpool/lib/libbufferpool.so: CXX_SHARED_LIBRARY_LINKER__bufferpool src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o src/CMakeFiles/bufferpool.dir/buffer_pool.cpp.o src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o src/CMakeFiles/bufferpool.dir/config.cpp.o src/CMakeFiles/bufferpool.dir/debug.cpp.o src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o src/CMakeFiles/bufferpool.dir/logger.cc.o src/CMakeFiles/bufferpool.dir/utils.cpp.o
   LANGUAGE_COMPILE_FLAGS = -std=c++17 -fPIC -rdynamic -pthread -Wextra -g3 -O0
   LINK_LIBRARIES = -luring
   OBJECT_DIR = src/CMakeFiles/bufferpool.dir
@@ -377,6 +385,14 @@ build tests/CMakeFiles/tests.dir/fiber_test.cc.o: CXX_COMPILER__tests /workspace
   OBJECT_DIR = tests/CMakeFiles/tests.dir
   OBJECT_FILE_DIR = tests/CMakeFiles/tests.dir
 
+build tests/CMakeFiles/tests.dir/graph_test.cpp.o: CXX_COMPILER__tests /workspaces/graphscope-flex/flex/graphscope_bufferpool/tests/graph_test.cpp || cmake_object_order_depends_target_tests
+  DEFINES = -Dtests_EXPORTS
+  DEP_FILE = tests/CMakeFiles/tests.dir/graph_test.cpp.o.d
+  FLAGS = -std=c++17 -fPIC -rdynamic -pthread -Wextra -g3 -O0 -fPIC
+  INCLUDES = -I/workspaces/graphscope-flex/flex/graphscope_bufferpool/include
+  OBJECT_DIR = tests/CMakeFiles/tests.dir
+  OBJECT_FILE_DIR = tests/CMakeFiles/tests.dir
+
 build tests/CMakeFiles/tests.dir/tests.cc.o: CXX_COMPILER__tests /workspaces/graphscope-flex/flex/graphscope_bufferpool/tests/tests.cc || cmake_object_order_depends_target_tests
   DEFINES = -Dtests_EXPORTS
   DEP_FILE = tests/CMakeFiles/tests.dir/tests.cc.o.d
@@ -393,7 +409,7 @@ build tests/CMakeFiles/tests.dir/tests.cc.o: CXX_COMPILER__tests /workspaces/gra
 #############################################
 # Link the shared library /workspaces/graphscope-flex/flex/graphscope_bufferpool/lib/libtests.so
 
-build /workspaces/graphscope-flex/flex/graphscope_bufferpool/lib/libtests.so: CXX_SHARED_LIBRARY_LINKER__tests tests/CMakeFiles/tests.dir/fiber_test.cc.o tests/CMakeFiles/tests.dir/tests.cc.o
+build /workspaces/graphscope-flex/flex/graphscope_bufferpool/lib/libtests.so: CXX_SHARED_LIBRARY_LINKER__tests tests/CMakeFiles/tests.dir/fiber_test.cc.o tests/CMakeFiles/tests.dir/graph_test.cpp.o tests/CMakeFiles/tests.dir/tests.cc.o
   LANGUAGE_COMPILE_FLAGS = -std=c++17 -fPIC -rdynamic -pthread -Wextra -g3 -O0
   OBJECT_DIR = tests/CMakeFiles/tests.dir
   POST_BUILD = :

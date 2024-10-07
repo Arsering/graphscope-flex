@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/workspaces/graphscope-flex/flex/graphscope_bufferpool/src/buffer_pool_manager.cpp" "/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o"
   "/workspaces/graphscope-flex/flex/graphscope_bufferpool/src/config.cpp" "/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/config.cpp.o"
   "/workspaces/graphscope-flex/flex/graphscope_bufferpool/src/debug.cpp" "/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/debug.cpp.o"
+  "/workspaces/graphscope-flex/flex/graphscope_bufferpool/src/direct_cache.cpp" "/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/direct_cache.cpp.o"
   "/workspaces/graphscope-flex/flex/graphscope_bufferpool/src/extendible_hash.cpp" "/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/extendible_hash.cpp.o"
   "/workspaces/graphscope-flex/flex/graphscope_bufferpool/src/logger.cc" "/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/logger.cc.o"
   "/workspaces/graphscope-flex/flex/graphscope_bufferpool/src/utils.cpp" "/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/utils.cpp.o"
