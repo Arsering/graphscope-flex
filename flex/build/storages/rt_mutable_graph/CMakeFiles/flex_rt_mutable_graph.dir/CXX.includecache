@@ -1162,6 +1162,14 @@ tuple
 flex/engines/hqps_db/core/utils/hqps_utils.h
 /workspaces/graphscope-flex/flex/storages/rt_mutable_graph/flex/engines/hqps_db/core/utils/hqps_utils.h
 
+/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/mutable_csr.cc
+flex/storages/rt_mutable_graph/mutable_csr.h
+/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/flex/storages/rt_mutable_graph/mutable_csr.h
+grape/serialization/in_archive.h
+/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/grape/serialization/in_archive.h
+grape/serialization/out_archive.h
+/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/grape/serialization/out_archive.h
+
 /workspaces/graphscope-flex/flex/storages/rt_mutable_graph/mutable_property_fragment.cc
 grape/util.h
 /workspaces/graphscope-flex/flex/storages/rt_mutable_graph/grape/util.h

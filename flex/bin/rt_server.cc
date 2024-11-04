@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "vdc");
+      log_data_path + "/performance.log", "nvme0n1");
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
@@ -139,6 +139,25 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 #endif
 
+#if !OV
+  t0 = -grape::GetCurrentTime();
+
+  LOG(INFO) << "Warmup start";
+  // gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
+  LOG(INFO) << "Warmup finish";
+  t0 += grape::GetCurrentTime();
+  LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
+
+  LOG(INFO) << "Clean start";
+  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  LOG(INFO) << "Clean finish";
+#else
+  LOG(INFO) << "Clean start";
+  gbp::CleanMAS();
+  LOG(INFO) << "Clean finish";
+#endif
+
+  gbp::PerformanceLogServer::GetPerformanceLogger().SetStartPoint();
   // start service
   LOG(INFO) << "GraphScope http server start to listen on port " << http_port;
   server::GraphDBService::get().init(shard_num, http_port, enable_dpdk);

@@ -367,11 +367,9 @@ int main(int argc, char** argv) {
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 #if OV
-  gbp::warmup_mark().store(0);
 #else
   size_t pool_num = 8;
   size_t io_server_num = 2;
-  gbp::warmup_mark().store(0);
 
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
@@ -402,11 +400,10 @@ int main(int argc, char** argv) {
 
 #if !OV
   t0 = -grape::GetCurrentTime();
-  gbp::warmup_mark().store(0);
+
   LOG(INFO) << "Warmup start";
   // gbp::BufferPoolManager::GetGlobalInstance().WarmUp();
   LOG(INFO) << "Warmup finish";
-  gbp::warmup_mark().store(1);
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
@@ -414,7 +411,6 @@ int main(int argc, char** argv) {
   // gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
-  gbp::warmup_mark().store(1);
   LOG(INFO) << "Clean start";
   gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
@@ -427,6 +423,8 @@ int main(int argc, char** argv) {
   gbp::DirectCache::CleanAllCache();
 
   for (size_t idx = 0; idx < 2; idx++) {
+    gbp::PerformanceLogServer::GetPerformanceLogger().SetStartPoint();
+
     Req::get().init(warmup_num, benchmark_num);
     // gbp::BufferPoolManager::GetGlobalInstance().disk_manager_->ResetCount();
     // hiactor::actor_app app;
@@ -459,6 +457,11 @@ int main(int argc, char** argv) {
               << "\n";
     Req::get().output();
 
+    LOG(INFO) << "10 = " << gbp::get_counter_global(10);
+    LOG(INFO) << "11 = " << gbp::get_counter_global(11);
+
+    gbp::get_counter_global(10) = 0;
+    gbp::get_counter_global(11) = 0;
     gbp::warmup_mark().store(1);
     gbp::DirectCache::CleanAllCache();
   }

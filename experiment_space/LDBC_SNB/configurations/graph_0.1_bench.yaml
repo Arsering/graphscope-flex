@@ -32,7 +32,6 @@ stored_procedures:
     - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins6.so
     - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins7.so
     - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins8.so
-    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libtest_query.so
 
 schema:
   vertex_types:

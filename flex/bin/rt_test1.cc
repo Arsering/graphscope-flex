@@ -141,7 +141,7 @@ class Req {
     std::uniform_int_distribution<uint64_t> rnd(0, oids_.size());
 
     std::vector<char> request_char(sizeof(int64_t) + 1);
-    request_char[sizeof(int64_t)] = static_cast<char>(30);
+    request_char[sizeof(int64_t)] = static_cast<char>(31);
 
     size_t person_object_id;
     // size_t person_ids[9] = {19791209384079, 30786325760991, 32985348965767,
@@ -166,7 +166,7 @@ class Req {
       start_[id] = gbp::GetSystemTime();
       // if (gbp::warmup_mark() == 1)
       //   gbp::get_thread_logfile() << gbp::GetSystemTime() << " start "
-      // << person_object_id << std::endl;
+      //                             << person_object_id << std::endl;
 
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(request_str);
       // LOG(INFO) << person_object_id;

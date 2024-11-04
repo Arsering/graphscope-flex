@@ -1,0 +1,86 @@
+{
+    "2": {
+        "Avg Message Size": 853599.8541666666,
+        " Avg Other Size": 0,
+        "Proportion of Message Size": 1.0,
+        "Count": 96
+    },
+    "8": {
+        "Avg Message Size": 641032.3958333334,
+        " Avg Other Size": 0,
+        "Proportion of Message Size": 1.0,
+        "Count": 96
+    },
+    "7": {
+        "Avg Message Size": 4533.083333333333,
+        " Avg Other Size": 0,
+        "Proportion of Message Size": 1.0,
+        "Count": 96
+    },
+    "14": {
+        "Avg Message Size": 1200227.957894737,
+        " Avg Other Size": 0,
+        "Proportion of Message Size": 1.0,
+        "Count": 95
+    },
+    "9": {
+        "Avg Message Size": 109693673.2736842,
+        " Avg Other Size": 0,
+        "Proportion of Message Size": 1.0,
+        "Count": 95
+    },
+    "4": {
+        "Avg Message Size": 244542.4,
+        " Avg Other Size": 1240.5697674418604,
+        "Proportion of Message Size": 0.9954285710857861,
+        "Count": 95
+    },
+    "3": {
+        "Avg Message Size": 2902565.8333333335,
+        " Avg Other Size": 96788.91666666667,
+        "Proportion of Message Size": 0.9677300870573357,
+        "Count": 96
+    },
+    "6": {
+        "Avg Message Size": 229475.16666666666,
+        " Avg Other Size": 88565.03125,
+        "Proportion of Message Size": 0.7215288135583228,
+        "Count": 96
+    },
+    "10": {
+        "Avg Message Size": 3942107.452631579,
+        " Avg Other Size": 453.8333333333333,
+        "Proportion of Message Size": 0.9998836771485958,
+        "Count": 95
+    },
+    "11": {
+        "Avg Message Size": 0,
+        " Avg Other Size": 14475.166666666666,
+        "Proportion of Message Size": 0.0,
+        "Count": 96
+    },
+    "5": {
+        "Avg Message Size": 22725129.14285714,
+        " Avg Other Size": 91020587.0,
+        "Proportion of Message Size": 0.1808388565320724,
+        "Count": 84
+    },
+    "12": {
+        "Avg Message Size": 1832631.3333333333,
+        " Avg Other Size": 669643.375,
+        "Proportion of Message Size": 0.7323861473842642,
+        "Count": 96
+    },
+    "1": {
+        "Avg Message Size": 0,
+        " Avg Other Size": 5041.041666666667,
+        "Proportion of Message Size": 0.0,
+        "Count": 96
+    },
+    "13": {
+        "Avg Message Size": 0,
+        " Avg Other Size": 0,
+        "Proportion of Message Size": 0,
+        "Count": 0
+    }
+}

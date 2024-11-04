@@ -82,35 +82,7 @@ class mmap_array {
 #endif
   mmap_array(mmap_array&& rhs) : mmap_array() { swap(rhs); }
 #if OV
-  ~mmap_array() {
-    if (fd_ != -1) {
-      std::vector<std::tuple<void**, int, size_t>>& mas_ = gbp::GetMAS();
-      bool mark = true;
-      for (size_t i = 0; i < mas_.size(); i++) {
-        if (std::get<1>(mas_[i]) == fd_) {
-          std::get<1>(mas_[i]) = -1;
-          mark = false;
-          break;
-        }
-      }
-      if (mark)
-        assert(false);
-    }
-    if (fd_ == -1)
-      return;
-    size_t file_len = std::filesystem::file_size(filename_);
-
-    size_t total_pages = (file_len + 4095) / 4096;
-    unsigned char* vec = (unsigned char*) malloc(total_pages);
-    assert(::mincore(data_, file_len, vec) != -1);
-    size_t pages_in_memory = 0;
-    for (size_t i = 0; i < total_pages; i++) {
-      if (vec[i] & 1) {
-        pages_in_memory++;
-      }
-    }
-    ::free(vec);
-  }
+  ~mmap_array() {}
 
   void reset() {
     filename_ = "";
@@ -191,8 +163,6 @@ class mmap_array {
         assert(data_ != MAP_FAILED);
       }
     }
-    gbp::GetMAS().push_back(std::tuple((void**) (&data_), fd_,
-                                       std::filesystem::file_size(filename)));
   }
 
 #else
@@ -295,20 +265,6 @@ class mmap_array {
                   MMAP_ADVICE_l);  // Turn off readahead
       }
       size_ = size;
-    }
-
-    if (fd_ != -1) {
-      bool mark = true;
-      std::vector<std::tuple<void**, int, size_t>>& mas_ = gbp::GetMAS();
-      for (size_t i = 0; i < mas_.size(); i++) {
-        if (std::get<1>(mas_[i]) == fd_) {
-          std::get<2>(mas_[i]) = size_ * sizeof(T);
-          mark = false;
-          break;
-        }
-      }
-      if (mark)
-        assert(false);
     }
   }
 #else
@@ -422,7 +378,6 @@ class mmap_array {
     }
 
     return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
-
     // return buffer_pool_manager_->GetBlockWithDirectCacheSync(file_offset,
     //                                                          buf_size,
     //                                                          fd_gbp_);

@@ -67,9 +67,9 @@ def plot_figure(data):
     ax1 = fig.subplots()
     
     # data = np.random.rand(5, 10)
-    for fig_id in [0]:
+    for fig_id in [10]:
         plt.plot(range(0, data.shape[1]), data[fig_id, :])
-
+    print(sum(x > 1 for x in data[fig_id, :]))
     # plt.yticks(range(0, 13, 2))
     # plt.set_xlim(0, data.shape[1])
     # plt.xticks(range(0, 1500, 300), range(0, 1500, 300))
@@ -114,10 +114,8 @@ def process_file(file_path, time_stamps, slot_num, fd_to_minfd, max_file_page_id
 
 def process_wrapper(args):
     return process_file(*args)
-    
-if __name__ == "__main__":
-    dir_path = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-09-28-19:10:06/server/graphscope_logs'
-    
+
+def compute(dir_path):
     data = []
     file_paths = []
     for root, dirs, files in os.walk(dir_path):
@@ -130,7 +128,6 @@ if __name__ == "__main__":
                 file_path = os.path.join(root, file)
                 file_paths.append(file_path)
 
-    
     fd_count = 0
     fd_to_minfd = {}
     max_file_page_ids = []
@@ -168,22 +165,33 @@ if __name__ == "__main__":
     with ProcessPoolExecutor() as executor:
         results = list(executor.map(process_wrapper, tasks[0:20]))
 
-    # results_final = results[0]
-    # for id in range(1, len(results)):
-    #     results_final += results[id]
+    results_final = results[0]
+    for id in range(1, len(results)):
+        results_final += results[id]
     
-    # data = {
-    #     'results_final': results_final,
-    #     'fd_to_minfd': fd_to_minfd,
-    #     'max_file_page_ids': max_file_page_ids
-    # }
-    # os.makedirs(f'figs/fig_16/data.pkl', exist_ok=True)
-    # with open(f'figs/fig_16/data.pkl','wb') as f:
-    #     pickle.dump(data, f)
-    # file_page_nums = [0] + list(np.cumsum(np.array(max_file_page_ids)+1))
+    data = {
+        'results_final': results_final,
+        'fd_to_minfd': fd_to_minfd,
+        'max_file_page_ids': max_file_page_ids
+    }
+    os.makedirs(f'figs/fig_16', exist_ok=True)
+    with open(f'figs/fig_16/data.pkl','wb') as f:
+        pickle.dump(data, f)
+        
+        
+if __name__ == "__main__":
+    dir_path = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-09-28-19:10:06/server/graphscope_logs'
+    
+    with open(f'figs/fig_16/data.pkl','rb') as f:
+        data = pickle.load(f)
+    results_final = data['results_final']
+    fd_to_minfd = data['fd_to_minfd']
+    max_file_page_ids = data['max_file_page_ids']
 
-    # print(sum(results_final[:, file_page_nums[fd_to_minfd[169]]:file_page_nums[fd_to_minfd[169]+1]]))
-    # plot_figure(results_final[:, file_page_nums[fd_to_minfd[169]]:file_page_nums[fd_to_minfd[169]+1]])
+    file_page_nums = [0] + list(np.cumsum(np.array(max_file_page_ids)+1))
+
+    print(sum(results_final[:, file_page_nums[fd_to_minfd[169]]:file_page_nums[fd_to_minfd[169]+1]]))
+    plot_figure(results_final[:, file_page_nums[fd_to_minfd[169]]:file_page_nums[fd_to_minfd[169]+1]])
     print('\nwork finished')
 
 

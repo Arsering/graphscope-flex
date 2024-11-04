@@ -216,7 +216,7 @@ def reorder_csv(bulk_load_file, new_db_path, data_set_name):
         for input_file in vertex_mapping['inputs']:
             input_path = os.path.join(base_location, input_file)
             print(input_path, end='\t')
-            df = pd.read_csv(input_path, delimiter='|')
+            df = pd.read_csv(input_path, delimiter='|', low_memory=False)
             
             output_path = os.path.join(new_db_path, input_file)
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -229,6 +229,8 @@ def reorder_csv(bulk_load_file, new_db_path, data_set_name):
                 degree_sub[item_id] += degrees[vertex_mapping['type_name']]['in_degrees'][id_column[item_id]]
 
             sorted_indices = np.argsort(degree_sub)
+            # sorted_indices = random.sample(range(0, id_column.size), id_column.size)
+
             order_map = {name: i for i, name in enumerate(id_column[sorted_indices[::-1]])}
             df['order_key'] = df['id'].map(order_map)
             sorted_df = df.sort_values(by='order_key')
@@ -245,26 +247,25 @@ def reorder_csv_single(bulk_load_file, new_db_path, data_set_name):
         config = yaml.safe_load(file)
         
     base_location = config['loading_config']['data_source']['location']
-    vertex_name = 'PERSON'
+    vertex_name = 'POST'
     
-
     for vertex_mapping in config['vertex_mappings']:
         if vertex_mapping['type_name'] != vertex_name:
             continue
         for input_file in vertex_mapping['inputs']:
             input_path = os.path.join(base_location, input_file)
             print(input_path, end='\t')
-            df = pd.read_csv(input_path, delimiter='|')
+            df = pd.read_csv(input_path, delimiter='|', low_memory=False)
             
             output_path = os.path.join(new_db_path, input_file)
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             id_column = df['id']
             
             # 计算每一行的degree            
-            degree_sub = np.zeros(id_column.size)
-            for item_id in range(0, id_column.size):
-                degree_sub[item_id] = out_degrees[id_column[item_id]]
-                degree_sub[item_id] += in_degrees[id_column[item_id]]
+            # degree_sub = np.zeros(id_column.size)
+            # for item_id in range(0, id_column.size):
+            #     degree_sub[item_id] = out_degrees[id_column[item_id]]
+            #     degree_sub[item_id] += in_degrees[id_column[item_id]]
 
             # sorted_indices = np.argsort(degree_sub)
             sorted_indices = random.sample(range(0, id_column.size), id_column.size)
@@ -280,9 +281,10 @@ if __name__ == "__main__":
     data_set_name = '30'
     bulk_load_file = f'/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/configurations/bulk_load_{data_set_name}.yaml'
 
-    new_db_path = f'/nvme0n1/Bnew_db/sf{data_set_name}/social_network'
+    new_db_path = f'/nvme0n1/Cnew_db/sf{data_set_name}/social_network'
     # compute_degree(bulk_load_file, data_set_name)
     # reorder_csv(bulk_load_file, new_db_path, data_set_name)
     reorder_csv_single(bulk_load_file, new_db_path, data_set_name)
+
 
     

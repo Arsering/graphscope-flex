@@ -230,9 +230,12 @@ class LFIndexer {
         start_index = index, end_index = index + num_get;
       }
 
-      gbp::BufferBlock::UpdateContent<INDEX_T>(
-          [&](INDEX_T& item) {
-            mark = __sync_bool_compare_and_swap(&item, sentinel, ind);
+      gbp::BufferBlock::UpdateContent<index_key_item<INDEX_T>>(
+          [&](index_key_item<INDEX_T>& item) {
+            mark = __sync_bool_compare_and_swap(&(item.index), sentinel, ind);
+            if (mark) {
+              item.key = oid;
+            }
           },
           items, index - start_index);
       if (mark) {

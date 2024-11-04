@@ -176,6 +176,8 @@ class MutableAdjlist {
                 MMapAllocator& allocator) {
     if (size_ == capacity_) {
       capacity_ += ((capacity_) >> 1);
+      // capacity_ += capacity_;
+
       capacity_ = std::max(capacity_, 8);
       nbr_t* new_buffer =
           static_cast<nbr_t*>(allocator.allocate(capacity_ * sizeof(nbr_t)));
@@ -803,7 +805,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 #if OV
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) override {
-    // LOG(INFO) << "MutableCsr";
     mmap_array<int> degree_list;
     degree_list.open(snapshot_dir + "/" + name + ".deg", true);
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
@@ -828,8 +829,8 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
     size_ = nbr_list_.size();
     nbr_list_.touch(work_dir + "/" + name + ".nbr");
-    // nbr_list_.resize(nbr_list_.size() * 2.5);  // 原子操作
-    nbr_list_.resize(nbr_list_.size() * 1);
+    nbr_list_.resize(nbr_list_.size() * 2.5);  // 原子操作
+    // nbr_list_.resize(nbr_list_.size() * 1);
     capacity_ = nbr_list_.size();
 
     adj_lists_.open(work_dir + "/" + name + ".adj", false);
@@ -876,16 +877,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       degree_list[i] = adj_lists_[i].size();
       offset += degree_list[i];
     }
-    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
-    // {
-    //   for (size_t i = 0; i < nbr_list_.size(); i++) {
-    //     LOG(INFO) << vnum << " " << nbr_list_[i].neighbor << " "
-    //               << nbr_list_[i].data << " " << nbr_list_[i].timestamp
-    //               << "
-    //               "
-    //               << i;
-    //   }
-    // }
 
     if (reuse_nbr_list && !nbr_list_.filename().empty() &&
         std::filesystem::exists(nbr_list_.filename())) {
@@ -928,16 +919,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
       degree_list.set(i, &size_tmp);
       offset += item_tmp.size_;
     }
-    // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
-    // {
-    //   auto tmp_values = nbr_list_.get(0, nbr_list_.size());
-    //   for (size_t i = 0; i < nbr_list_.size(); i++) {
-    //     auto& aa = gbp::BufferBlock::Ref<nbr_t>(tmp_values, i);
-    //     LOG(INFO) << vnum << " | " << aa.neighbor << " " << aa.data << "
-    //     "
-    //               << aa.timestamp << " " << i;
-    //   }
-    // }
 
     if (reuse_nbr_list && !nbr_list_.filename().empty() &&
         std::filesystem::exists(nbr_list_.filename())) {

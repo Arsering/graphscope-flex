@@ -53,6 +53,7 @@ void WalWriter::close() {
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
 void WalWriter::append(const char* data, size_t length) {
+  return;
   if (unlikely(fd_ == -1)) {
     return;
   }
