@@ -1,9 +1,0 @@
-Architecture: amd64
-Description: Flex module of GraphScope
-Maintainer: graphscope
-Package: graphscope_flex
-Priority: optional
-Section: devel
-Version: 0.23.0
-Installed-Size: 34011
-
