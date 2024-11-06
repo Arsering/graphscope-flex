@@ -1,37 +1,37 @@
 name: ldbc_snb
 store_type: mutable_csr
 stored_procedures:
-  directory: /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures
+  directory: /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only
   enable_lists:
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic1.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic2.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic3.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic4.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic5.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic6.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic7.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic8.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic9.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic10.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic11.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic12.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic13.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic14.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis1.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis2.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis3.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis4.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis5.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis6.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis7.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins1.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins2.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins3.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins4.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins5.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins6.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins7.so
-    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins8.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic1.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic2.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic4.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic5.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic6.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic7.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic8.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic9.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic10.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic11.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic12.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic13.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic14.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is1.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is2.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is4.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is5.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is6.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is7.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins1.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins2.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins4.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins5.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins6.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins7.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins8.so
   
 schema:
   vertex_types:

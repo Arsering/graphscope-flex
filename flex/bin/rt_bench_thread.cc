@@ -127,6 +127,50 @@ class Req {
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
   }
 
+  void load_query_with_timestamp(const std::string& file_path) {
+    LOG(INFO) << "load queries from " << file_path + "/query_file_string.log"
+              << "\n";
+    FILE* query_file_string =
+        ::fopen((file_path + "/query_file_string.log").c_str(), "r");
+    FILE* query_file_string_view =
+        ::fopen((file_path + "/query_file_string_view.log").c_str(), "r");
+    assert(query_file_string != nullptr);
+    assert(query_file_string_view != nullptr);
+
+    const size_t size = 4096;
+    std::vector<char> buffer(size);
+    size_t length = 0;
+    auto test_count=0;
+    while (true) {
+      auto ret = ::fread(&length, sizeof(size_t), 1, query_file_string_view);
+      if (ret == 0)
+        break;
+
+      if (length == 0)
+        assert(false);
+      size_t timestamp=0;
+      ::fread(&timestamp, sizeof(size_t), 1,query_file_string);
+      // std::cout<<timestamp<<std::endl;
+      size_t data_len=length-sizeof(size_t);
+      ::fread(buffer.data(), data_len, 1, query_file_string);
+      auto req=std::string(buffer.data(), buffer.data() + data_len);
+      // reqs_.emplace_back(std::string(buffer.data(), buffer.data() + data_len));
+      if(req.back()>21){
+        reqs_.emplace_back(req);
+      }
+      // test_count++;
+      // if (test_count>10) {
+      //   break;
+      // }
+    }
+    // for(auto req:reqs_){
+    //   std::cout<<req<<std::endl;
+    //   std::cout<<(int)req.back()<<std::endl;
+    // }
+    num_of_reqs_unique_ = reqs_.size();
+    LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
+  }
+
   void do_query(size_t thread_id) {
     size_t id;
 
@@ -418,7 +462,7 @@ int main(int argc, char** argv) {
   gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
-  Req::get().load_query(req_file);
+  Req::get().load_query_with_timestamp(req_file);
   // Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
 

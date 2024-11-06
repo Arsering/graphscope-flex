@@ -1,17 +1,15 @@
 #!/bin/bash
 DISK_DEVICE=/dev/vdb
-CUR_DIR=/data/zhengyang/data/graphscope-flex
+CUR_DIR=/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/
 
-export SF=300
+export SF=30
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
-export DB_ROOT_DIR=/nvme0n1/lgraph_db/${Scale_Factor}_db_BP
-# export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
-
-# export QUERY_FILE=/data/zhengyang/data/offline/${Scale_Factor}
-export QUERY_FILE=/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-11-04-14:34:11/server/graphscope_logs
-
+# export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/person_degree_db/${Scale_Factor}_db
+export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/filter_db/${Scale_Factor}_db
+# export DB_ROOT_DIR=${INPUT_OUTPUT_DIR}/lgraph_db/${Scale_Factor}_db
+export QUERY_FILE=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/query_file/read_with_update
 # export QUERY_FILE=${INPUT_OUTPUT_DIR}/configurations/query.file
 
 rm -rf ${DB_ROOT_DIR}/runtime/tmp/*
@@ -25,34 +23,38 @@ mkdir ${LOG_DIR}/graphscope_logs
 
 # generate and save configuration file
 # bash gen_bulk_load_yaml.sh
-cp ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml ${LOG_DIR}/configurations/graph.yaml
+# cp ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml ${LOG_DIR}/configurations/graph.yaml
+cp ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}.yaml ${LOG_DIR}/configurations/graph.yaml
 cp ${INPUT_OUTPUT_DIR}/configurations/bulk_load_${SF}.yaml ${LOG_DIR}/configurations/bulk_load.yaml
 
 # store shell file
 mkdir ${LOG_DIR}/shells
 cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 
-rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
+# rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
 
 # start iostat
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
-for thread_num in 30
+for thread_num in 1
 do
-    expression="(1.5 + 0.0131 * $thread_num + 60) * 1024 * 1024 * 1024"
-    memory_capacity=$(python3 -c "print(int($expression))")
-    echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
+    expression="(1.51 + 0.0131 * $thread_num + 5) * 1024 * 1024 * 1024"
+    memory_capacity=$(python3 -c "print(int($expression+5))")
+    # echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 
-    echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*1))")
-    # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
+    echo 1 > /proc/sys/vm/drop_cache
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*50))")
+    # rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log 
     
-    # nohup rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 100 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
+    # gdb --args 
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
 done
 
 # cgexec -g memory:yz_variable 
-# nohup cgexec -g memory:yz_variable  rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log & 
+# nohup
+# rt_server -B $[1024*1024*1024*60] -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 1 &> ${LOG_DIR}/gs_log.log
+# &> ${LOG_DIR}/gs_log.log &
 
 # nohup rt_server -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s 50 &> ${LOG_DIR}/gs_log.log &
 
