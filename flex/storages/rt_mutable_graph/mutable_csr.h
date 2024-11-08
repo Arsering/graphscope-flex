@@ -829,7 +829,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
     size_ = nbr_list_.size();
     nbr_list_.touch(work_dir + "/" + name + ".nbr");
-    nbr_list_.resize(nbr_list_.size() * 2.5);  // 原子操作
+    nbr_list_.resize(nbr_list_.size() * 8);  // 原子操作
     // nbr_list_.resize(nbr_list_.size() * 1);
     capacity_ = nbr_list_.size();
 

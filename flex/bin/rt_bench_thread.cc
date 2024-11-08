@@ -16,12 +16,15 @@
 #include "grape/util.h"
 
 #include <unistd.h>
+#include <atomic>
 #include <boost/fiber/all.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
+#include <cstddef>
 #include <fstream>
 // #include <hiactor/core/actor-app.hh>
 #include <iostream>
+#include <string>
 #include <thread>
 #include <vector>
 #include "flex/engines/graph_db/database/graph_db.h"
@@ -33,6 +36,8 @@
 // #include "flex/engines/http_server/graph_db_service.h"
 
 #include <glog/logging.h>
+
+#define READ_LIMIT 4000000
 
 namespace bpo = boost::program_options;
 // using namespace std::chrono_literals;
@@ -46,7 +51,8 @@ class Req {
   void init(size_t warmup_num, size_t benchmark_num) {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
-    num_of_reqs_unique_ = reqs_.size();
+    // num_of_reqs_unique_ = reqs_.size();
+    num_of_reqs_unique_=num_of_read_reqs_unique_+num_of_update_reqs_unique_;
 
     // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
@@ -155,20 +161,21 @@ class Req {
       ::fread(buffer.data(), data_len, 1, query_file_string);
       auto req=std::string(buffer.data(), buffer.data() + data_len);
       // reqs_.emplace_back(std::string(buffer.data(), buffer.data() + data_len));
-      if(req.back()>21){
-        reqs_.emplace_back(req);
+      if(req.back()<=21){
+        assert(req.back()!=0);
+        if(read_list.size()>=200000){
+          continue;
+        }
+        read_list.emplace_back(req);
+      }else{
+        update_list.emplace_back(req);
       }
-      // test_count++;
-      // if (test_count>10) {
-      //   break;
-      // }
     }
-    // for(auto req:reqs_){
-    //   std::cout<<req<<std::endl;
-    //   std::cout<<(int)req.back()<<std::endl;
-    // }
-    num_of_reqs_unique_ = reqs_.size();
-    LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
+    num_of_reqs_unique_ = update_list.size()+read_list.size();
+    num_of_read_reqs_unique_=read_list.size();
+    num_of_update_reqs_unique_=update_list.size();
+    LOG(INFO) << "Number of query = " << num_of_reqs_unique_<<" \nNumber of read query = "<<num_of_read_reqs_unique_<<" \nNumber of update query = "<<num_of_update_reqs_unique_;
+
   }
 
   void do_query(size_t thread_id) {
@@ -192,11 +199,96 @@ class Req {
     return;
   }
 
+  void do_update_query(size_t thread_id) {
+    size_t id;
+    gbp::get_thread_logfile();
+    while (true) {
+      id = update_cur_.fetch_add(1);
+      while (read_cur_.load()<READ_LIMIT) {}
+      if(id>=num_of_update_reqs_unique_){
+        break;
+      }
+      if (read_cur_.load() >= num_of_reqs_) {
+        // LOG(INFO) << gbp::get_thread_id();
+        return;
+      }
+      while(id>(read_cur_.load()-READ_LIMIT)/3){
+        if (read_cur_.load() >= num_of_reqs_) {
+          // LOG(INFO) << gbp::get_thread_id();
+          return;
+        }
+      }
+      // id = run_time_req_ids_[id];
+      // std::cout<<"begin update "<<id<<std::endl;
+      start_[id] = gbp::GetSystemTime();
+      gbp::get_query_id().store(id % num_of_update_reqs_unique_);
+      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
+          update_list[id % num_of_update_reqs_unique_]);
+      end_[id] = gbp::GetSystemTime();
+      auto latency=end_[id]-start_[id];
+      auto type=read_list[id % num_of_read_reqs_unique_].back();
+      // if (id%10000==0) {
+      //   std::cout<<"10000 update"<<std::endl;
+      // }
+      // gbp::get_thread_logfile()<<type<<"|"<<latency<<std::endl;
+    }
+    return;
+  }
+
+  void do_read_query(size_t thread_id) {
+    size_t id;
+    gbp::get_thread_logfile();
+    bool has_updated_in_current_epoch = false;  
+    while (true) {
+      id = read_cur_.fetch_add(1);
+
+      if (id >= num_of_reqs_) {
+        // LOG(INFO) << gbp::get_thread_id();
+        break;
+      }
+      while (id>READ_LIMIT && (id-READ_LIMIT)>update_cur_.load()*4) {
+      }
+      // id = run_time_req_ids_[id];
+      // std::cout<<"begin read "<<id<<std::endl;
+      start_[id] = gbp::GetSystemTime();
+      gbp::get_query_id().store(id % num_of_read_reqs_unique_);
+      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
+          read_list[id % num_of_read_reqs_unique_]);
+      end_[id] = gbp::GetSystemTime();
+      auto latency=end_[id]-start_[id];
+      auto type=read_list[id % num_of_read_reqs_unique_].back();
+      // if (id%10000==0) {
+      //   std::cout<<"10000 read"<<std::endl;
+      // }
+      // std::cout<<"read "<<(int)type<<std::endl;
+              // 检查更新周期标记
+        // 检查更新周期标记，并确保只增加一次计数
+    }
+    return;
+  }
+
   bool simulate(size_t thread_num = 10) {
     std::vector<std::thread> workers;
     assert(cur_ == 0);
     for (size_t i = 0; i < thread_num; i++) {
       workers.emplace_back([this, i]() { do_query(i); });
+    }
+
+    for (auto& worker : workers) {
+      worker.join();
+    }
+    return true;
+  }
+
+  bool simulate_with_update_and_read(size_t thread_num = 10) {
+    shard_num=thread_num-1;
+    std::vector<std::thread> workers;
+    assert(cur_ == 0);
+    
+    workers.emplace_back([this](){do_update_query(0);});
+
+    for (size_t i = 1; i < thread_num; i++) {
+      workers.emplace_back([this, i]() { do_read_query(i); });
     }
 
     for (auto& worker : workers) {
@@ -314,11 +406,20 @@ class Req {
   }
 
   std::atomic<size_t> cur_;
+  std::atomic<size_t> update_cur_;
+  std::atomic<size_t> read_cur_;
+  std::atomic<bool> update_epoch_flag{false};  // 更新周期标记
+  std::atomic<size_t> read_epoch_counter{0};   // 读操作的计数器
   size_t warmup_num_;
   size_t num_of_reqs_;
   size_t num_of_reqs_unique_;
+  size_t num_of_read_reqs_unique_;
+  size_t num_of_update_reqs_unique_;
+  size_t shard_num;
 
   std::vector<std::string> reqs_;
+  std::vector<std::string> update_list;
+  std::vector<std::string> read_list;
   std::vector<size_t> run_time_req_ids_;
 
   // std::vector<std::chrono::system_clock::time_point> start_;
@@ -479,7 +580,7 @@ int main(int argc, char** argv) {
 
     auto begin = std::chrono::system_clock::now();
 
-    Req::get().simulate(shard_num);
+    Req::get().simulate_with_update_and_read(shard_num);
     auto end = std::chrono::system_clock::now();
     auto cpu_cost_after = gbp::GetCPUTime();
 
@@ -499,7 +600,7 @@ int main(int argc, char** argv) {
                                                                        begin)
                      .count()
               << "\n";
-    Req::get().output();
+    // Req::get().output();
 
     LOG(INFO) << "10 = " << gbp::get_counter_global(10);
     LOG(INFO) << "11 = " << gbp::get_counter_global(11);

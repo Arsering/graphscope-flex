@@ -14,6 +14,7 @@
  */
 
 #include "flex/engines/graph_db/database/graph_db_session.h"
+#include <flex/graphscope_bufferpool/include/utils.h>
 #include "flex/engines/graph_db/app/app_base.h"
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/utils/app_utils.h"
@@ -74,7 +75,7 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
   static thread_local size_t query_id_a = 0;
 
-  auto ts1 = gbp::GetSystemTime();
+  // auto ts1 = gbp::GetSystemTime();
   uint8_t type = input.back();
   const char* str_data = input.data();
   size_t str_len = input.size() - 1;
@@ -83,19 +84,6 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 
   auto query_id_t = gbp::get_query_id().load();
 
-  // assert((int) type == 31);
-  // if ((int) type > 14)
-  //   return result_buffer;
-  // // if (gbp::get_query_id() != 477)
-  // //   return result_buffer;
-  // static size_t count = 0;
-  // count++;
-
-  // if (count > 3)
-  //   return result_buffer;
-  // // if ((int) type == 1)
-  // //   assert(false);
-  // LOG(INFO) << (int) type << " " << gbp::get_query_id().load();
   static std::atomic<size_t> query_id = 0;
   gbp::get_counter_query().fetch_add(1);
 
@@ -172,15 +160,22 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
       }
     }
-    auto ts2 = gbp::GetSystemTime();
-    gbp::get_thread_logfile()
-        << ts2 << " " << ts1 << " " << (int) type << std::endl;
+    // auto ts2 = gbp::GetSystemTime();
+    // gbp::get_thread_logfile()
+    //     << (int) type<<"|" << ts2 - ts1 << std::endl;
     if (query_id_a++ % 1000 == 0)
       gbp::get_thread_logfile().flush();
     // return result_buffer;
   }
-  if (app->Query(decoder, encoder))
+  auto ts1 = gbp::GetSystemTime();
+  if (app->Query(decoder, encoder)){
+    auto ts2=gbp::GetSystemTime();
+    gbp::get_thread_logfile()<<(int)type<<"|"<<ts2<<"|"<<ts1<<std::endl;
     return result_buffer;
+  }else {
+    gbp::get_thread_logfile()<<(int)type<<" fail"<<std::endl;
+    return result_buffer;
+  }
   assert(false);
   LOG(INFO) << "[Query-" << (int) type << "][Thread-" << thread_id_
             << "] retry - 1 / 3";
