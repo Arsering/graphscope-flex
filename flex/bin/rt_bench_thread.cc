@@ -36,6 +36,13 @@
 
 namespace bpo = boost::program_options;
 // using namespace std::chrono_literals;
+
+void pre_compute_person() {
+  gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+  auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
+  auto vertex_num = graph.vertex_num(person_label_id);
+}
+
 class Req {
  public:
   static Req& get() {

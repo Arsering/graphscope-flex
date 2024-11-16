@@ -124,7 +124,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   size_t ts = gbp::GetSystemTime();
 #endif
   // LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
-  if (true) {
+  if (app->Query(decoder, encoder)) {
 #ifdef DEBUG_1
     ts = gbp::GetSystemTime() - ts;
     LOG(INFO) << "profiling: [" << gbp::get_query_id().load() << "][" << ts
@@ -136,16 +136,16 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     constexpr bool check_result = false;
 
     if constexpr (store_query) {
-      static const size_t max_query_num = 300100;
+      static const size_t max_query_num = 200000100;
       size_t cur_query_id = query_id.fetch_add(1);
       static std::atomic<size_t> query_tofile_count = 0;
 
       if (cur_query_id < max_query_num) {
         std::lock_guard lock(gbp::get_log_lock());
 
-        gbp::write_to_query_file(input, true);
-        gbp::write_to_result_file({result_buffer.data(), result_buffer.size()},
-                                  true);
+        gbp::write_to_query_file(input);
+        // gbp::write_to_result_file({result_buffer.data(),
+        // result_buffer.size()});
         query_tofile_count.fetch_add(1);
         if (query_tofile_count == max_query_num) {
           gbp::write_to_query_file(input, true);
@@ -177,11 +177,12 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         << ts2 << " " << ts1 << " " << (int) type << std::endl;
     if (query_id_a++ % 1000 == 0)
       gbp::get_thread_logfile().flush();
-    // return result_buffer;
-  }
-  if (app->Query(decoder, encoder))
     return result_buffer;
-  assert(false);
+  }
+  if ((int) type > 14) {
+    return result_buffer;
+  }
+
   LOG(INFO) << "[Query-" << (int) type << "][Thread-" << thread_id_
             << "] retry - 1 / 3";
   std::this_thread::sleep_for(std::chrono::milliseconds(1));
