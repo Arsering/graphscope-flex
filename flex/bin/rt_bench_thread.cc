@@ -37,10 +37,121 @@
 namespace bpo = boost::program_options;
 // using namespace std::chrono_literals;
 
-void pre_compute_person() {
+void pre_compute_comment(const std::string dir_path) {
   gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
-  auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
-  auto vertex_num = graph.vertex_num(person_label_id);
+  auto comment_label_id = graph.schema().get_vertex_label_id("COMMENT");
+  auto replyOf_label_id = graph.schema().get_edge_label_id("REPLYOF");
+  auto comment_replyOf_comment_in =
+      dynamic_cast<gs::MutableCsr<grape::EmptyType>*>(graph.get_ie_csr(
+          comment_label_id, comment_label_id, replyOf_label_id));
+  gs::vid_t vertex_id;
+  for (size_t range = 0; range < 10; range += 2) {
+    std::string file_path = dir_path + "/filtered_sets/comment/comment_" +
+                            std::to_string(range) + "_" +
+                            std::to_string(range + 2);
+    LOG(INFO) << file_path;
+    std::ifstream file(file_path);  // 打开文件
+    if (!file.is_open()) {
+      LOG(INFO) << "Unable to open file" << std::endl;
+      assert(false);
+    }
+
+    std::string line;
+    gs::oid_t comment_id = 0;
+
+    // 按行读取文件
+    while (std::getline(file, line)) {
+      std::istringstream iss(line);
+      size_t number;
+      if (!(iss >> number)) {  // 尝试将行内容转换为整数
+        std::cerr << "Invalid number in file" << std::endl;
+        continue;  // 如果转换失败，跳过当前行
+      }
+      comment_id = number;
+
+      graph.get_lid(comment_label_id, comment_id, vertex_id);
+      // comment_replyOf_comment_in->copy_before_insert(vertex_id);
+    }
+    file.close();  // 关闭文件
+  }
+}
+
+void pre_compute_post(const std::string dir_path) {
+  gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+  auto comment_label_id = graph.schema().get_vertex_label_id("COMMENT");
+  auto post_label_id = graph.schema().get_vertex_label_id("POST");
+  auto replyOf_label_id = graph.schema().get_edge_label_id("REPLYOF");
+  auto comment_replyOf_post_in =
+      dynamic_cast<gs::MutableCsr<grape::EmptyType>*>(
+          graph.get_ie_csr(post_label_id, comment_label_id, replyOf_label_id));
+
+  gs::vid_t vertex_id = 120;
+  for (size_t range = 0; range < 10; range += 2) {
+    std::string file_path = dir_path + "/filtered_sets/post/post_" +
+                            std::to_string(range) + "_" +
+                            std::to_string(range + 2);
+    LOG(INFO) << file_path;
+    std::ifstream file(file_path);  // 打开文件
+    if (!file.is_open()) {
+      LOG(INFO) << "Unable to open file" << std::endl;
+      assert(false);
+    }
+
+    std::string line;
+    gs::oid_t post_id;
+    // 按行读取文件
+    while (std::getline(file, line)) {
+      std::istringstream iss(line);
+      size_t number;
+      if (!(iss >> number)) {  // 尝试将行内容转换为整数
+        std::cerr << "Invalid number in file" << std::endl;
+        continue;  // 如果转换失败，跳过当前行
+      }
+      post_id = number;
+      graph.get_lid(post_label_id, post_id, vertex_id);
+      // comment_replyOf_post_in->copy_before_insert(vertex_id);
+    }
+    file.close();  // 关闭文件
+  }
+}
+
+void pre_compute_forum(const std::string dir_path) {
+  gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+  auto comment_label_id = graph.schema().get_vertex_label_id("FORUM");
+  auto post_label_id = graph.schema().get_vertex_label_id("POST");
+  auto replyOf_label_id = graph.schema().get_edge_label_id("REPLYOF");
+  auto comment_replyOf_post_in =
+      dynamic_cast<gs::MutableCsr<grape::EmptyType>*>(
+          graph.get_ie_csr(post_label_id, comment_label_id, replyOf_label_id));
+
+  gs::vid_t vertex_id = 120;
+  for (size_t range = 0; range < 2; range += 2) {
+    std::string file_path = dir_path + "/filtered_sets/post/post_" +
+                            std::to_string(range) + "_" +
+                            std::to_string(range + 2);
+    LOG(INFO) << file_path;
+    std::ifstream file(file_path);  // 打开文件
+    if (!file.is_open()) {
+      LOG(INFO) << "Unable to open file" << std::endl;
+      assert(false);
+    }
+
+    std::string line;
+    gs::oid_t post_id;
+    // 按行读取文件
+    while (std::getline(file, line)) {
+      std::istringstream iss(line);
+      size_t number;
+      if (!(iss >> number)) {  // 尝试将行内容转换为整数
+        std::cerr << "Invalid number in file" << std::endl;
+        continue;  // 如果转换失败，跳过当前行
+      }
+      post_id = number;
+      graph.get_lid(post_label_id, post_id, vertex_id);
+      // comment_replyOf_post_in->copy_before_insert(vertex_id);
+    }
+    file.close();  // 关闭文件
+  }
 }
 
 class Req {
@@ -148,8 +259,10 @@ class Req {
 
       start_[id] = gbp::GetSystemTime();
       gbp::get_query_id().store(id % num_of_reqs_unique_);
+
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           reqs_[id % num_of_reqs_unique_]);
+
       end_[id] = gbp::GetSystemTime();
     }
     return;
@@ -426,8 +539,10 @@ int main(int argc, char** argv) {
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);
-  // Req::get().load_result(req_file);
+  Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
+  // pre_compute_post(data_path);
+  // pre_compute_comment(data_path);
 
   for (size_t idx = 0; idx < 2; idx++) {
     gbp::PerformanceLogServer::GetPerformanceLogger().SetStartPoint();
@@ -437,7 +552,9 @@ int main(int argc, char** argv) {
     // hiactor::actor_app app;
     gbp::log_enable().store(true);
     sleep(1);
-    size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes());
+    size_t ssd_io_r_byte = std::get<0>(gbp::SSD_io_bytes());
+    size_t ssd_io_w_byte = std::get<1>(gbp::SSD_io_bytes());
+
     auto cpu_cost_before = gbp::GetCPUTime();
 
     auto begin = std::chrono::system_clock::now();
@@ -446,7 +563,9 @@ int main(int argc, char** argv) {
     auto end = std::chrono::system_clock::now();
     auto cpu_cost_after = gbp::GetCPUTime();
 
-    ssd_io_byte = std::get<0>(gbp::SSD_io_bytes()) - ssd_io_byte;
+    ssd_io_r_byte = std::get<0>(gbp::SSD_io_bytes()) - ssd_io_r_byte;
+    ssd_io_w_byte = std::get<1>(gbp::SSD_io_bytes()) - ssd_io_w_byte;
+
     LOG(INFO) << "CPU Cost = "
               << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /
                      1000000.0
@@ -454,7 +573,8 @@ int main(int argc, char** argv) {
               << (std::get<1>(cpu_cost_after) - std::get<1>(cpu_cost_before)) /
                      1000000.0
               << "s (second)";
-    LOG(INFO) << "SSD IO = " << ssd_io_byte << "(Byte)";
+    LOG(INFO) << "SSD IO(r/w) = " << ssd_io_r_byte << "/" << ssd_io_w_byte
+              << "(Byte)";
 
     gbp::warmup_mark().store(0);
     std::cout << "cost time:"

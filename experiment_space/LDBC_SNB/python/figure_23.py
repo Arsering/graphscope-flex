@@ -58,20 +58,20 @@ def plot_figure(datas, labels):
     ax1 = fig.subplots()
 
     for fig_id in [0, 1]:
-        ax1.plot(range(datas.shape[0]), datas[:, fig_id], color=plt.get_cmap('tab10')(fig_id), label=labels[fig_id])
+        ax1.plot(range(datas.shape[0]), np.array(datas[:, fig_id])/1000, color=plt.get_cmap('tab10')(fig_id), label=labels[fig_id])
     plt.legend(loc='upper right')
     plt.grid(True, linestyle='--', color='gray', linewidth=0.5)
 
     
-    ax1.set_xlim(-5, 105)
-    plt.xticks(range(0, 105, 20), range(0, 105, 20))
-    ax1.set_ylim(0, 120000)
-    plt.yticks(range(0, 120000, 20000), range(0, 120, 20))
+    # ax1.set_xlim(-5, 105)
+    # plt.xticks(range(0, 105, 20), range(0, 105, 20))
+    # ax1.set_ylim(0, 120000)
+    # plt.yticks(range(0, 120000, 20000), range(0, 120, 20))
     
-    plt.xlabel('Time Line')
-    plt.ylabel('KQPS')
+    plt.xlabel('Time Slot')
+    plt.ylabel('Query Number (K)')
     
-    plt.savefig('figs/fig23-3.pdf', bbox_inches='tight')
+    plt.savefig('figs/fig23-4.pdf', bbox_inches='tight')
 
 def data_analysis_inner(file_path, datas, count):
     f = open(file_path , 'r')
@@ -111,10 +111,10 @@ if __name__ == "__main__":
     data_dir_paths_3 = ['/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-10-26-15:32:18/server/graphscope_logs',
                         '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-10-26-14:19:00/server/graphscope_logs',
                         '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-10-26-17:24:26/server/graphscope_logs']
-    
-    datas, count = data_analysis(data_dir_paths_3[2])
+    tmp_path = '/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-11-20-20:23:58/server/graphscope_logs'
+    datas, count = data_analysis(tmp_path)
     max_min_ts = [datas[0][1], datas[0][1]]
-    range_num = 10
+    range_num = 100
     for id in range(count):
         item = datas[id]
         if item[1] == 0:
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     print(counts[:, 0:2])
     datas = counts[:, 0:2]
     labels = ['Write', 'Read']
-    # plot_figure(datas, labels)
+    plot_figure(datas, labels)
     
     print('\nwork finished')
 

@@ -510,6 +510,7 @@ class MutableCsrBase {
   virtual size_t get_index_size_in_byte() const = 0;
 
   virtual size_t get_data_size_in_byte() const = 0;
+  virtual void copy_before_insert(vid_t v) { assert(false); }
 };
 
 #if OV
@@ -829,7 +830,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
     size_ = nbr_list_.size();
     nbr_list_.touch(work_dir + "/" + name + ".nbr");
-    nbr_list_.resize(nbr_list_.size() * 2.5);  // 原子操作
+    nbr_list_.resize(nbr_list_.size() * 5.5);  // 原子操作
     // nbr_list_.resize(nbr_list_.size() * 1);
     capacity_ = nbr_list_.size();
 
@@ -854,6 +855,44 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
         offset += degree;
       }
     }
+  }
+
+  void copy_before_insert(vid_t v) override {
+    CHECK_LT(v, adj_lists_.size());
+    locks_[v].lock();
+    auto adj_list_item = adj_lists_.get(v);
+    auto& adj_list = gbp::BufferBlock::Ref<adjlist_t>(adj_list_item);
+
+    auto capacity_new = adj_list.capacity_;
+    size_t start_idx_new;
+    capacity_new += ((capacity_new) >> 1);
+    capacity_new = capacity_new > 8 ? capacity_new : 8;
+
+    bool success = false;
+    std::tie<bool, size_t>(success, start_idx_new) =
+        gbp::atomic_add<size_t>(size_, capacity_new, nbr_list_.size());
+    assert(success);
+
+    // 复制数据到新的位置
+    auto nbr_slice_old = nbr_list_.get(adj_list.start_idx_, adj_list.size_);
+    auto nbr_slice_new = nbr_list_.get(start_idx_new, adj_list.size_);
+    for (size_t i = 0; i < adj_list.size_; i++)
+      gbp::BufferBlock::UpdateContent<nbr_t>(
+          [&](nbr_t& item) {
+            auto& item_old = gbp::BufferBlock::Ref<nbr_t>(nbr_slice_old, i);
+            item.data = item_old.data;
+            item.neighbor = item_old.neighbor;
+            item.timestamp = item_old.timestamp.load();
+          },
+          nbr_slice_new, i);
+
+    gbp::BufferBlock::UpdateContent<adjlist_t>(
+        [&](adjlist_t& item) {
+          item.capacity_ = capacity_new;
+          item.start_idx_ = start_idx_new;
+        },
+        adj_list_item);
+    locks_[v].unlock();
   }
 #endif
 

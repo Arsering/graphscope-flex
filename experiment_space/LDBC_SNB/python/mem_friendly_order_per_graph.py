@@ -480,7 +480,7 @@ def reorder_and_write_csv_duck_1(conn, original_csv, new_csv, ordered_ids_csv):
     df_combined.to_csv(new_csv, index=False, sep='|')
 
 # PREFIX='/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/lgraph_db/sf0.1/social_network/dynamic/'
-PREFIX = '/nvme0n1/Anew_db/sf30/social_network/dynamic/'
+PREFIX = '/nvme0n1/100new_db/sf100/social_network/dynamic/'
 person_csv = PREFIX + 'person_0_0.csv'
 comment_csv = PREFIX + 'comment_0_0.csv'
 post_csv = PREFIX + 'post_0_0.csv'
@@ -512,16 +512,15 @@ forum_list_file = NEW_PREFIX + 'forum_file.csv'
 
 
 # 生成person_list
-person_list = person_ordering_creationDate(person_csv)
-person_list = person_ordering_bfs(person_knows_person_csv)
+# person_list = person_ordering_creationDate(person_csv)
+# person_list = person_ordering_bfs(person_knows_person_csv)
 # person_list = person_ordering_random(person_csv)
 # person_list = person_ordering_degree(person_csv, person_knows_person_csv)
-# person_list = person_ordering_ldbc(person_csv)
+person_list = person_ordering_ldbc(person_csv)
 print('begin write person order')
 with open(person_list_file, 'w') as ids_file:
     pd.DataFrame(person_list, columns=["id"]).to_csv(ids_file, index=False)
 
-person_list = person_ordering_creationDate(person_csv)
 # 生成comment_list
 comment_list = order_item_by_person(person_list, comment_hasCreator_person_csv)
 print('begin write comment order')
@@ -545,7 +544,6 @@ del forum_list
 
 # reorder_and_write_csv_from_file(comment_csv, new_comment_csv, comment_list_file)
 # reorder_and_write_csv_from_file(post_csv, new_post_csv, post_list_file)
-person_list = person_ordering_bfs(person_knows_person_csv)
 conn = duckdb.connect()
 conn.execute("SET enable_progress_bar = true")
 # conn.execute("CREATE FUNCTION pandas_read_csv(varchar, varchar) -> table(...) external('python-pandas')")

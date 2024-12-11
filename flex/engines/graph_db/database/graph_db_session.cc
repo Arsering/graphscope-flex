@@ -72,8 +72,6 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
 // #define likely(x) __builtin_expect(!!(x), 1)
 
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
-  static thread_local size_t query_id_a = 0;
-
   auto ts1 = gbp::GetSystemTime();
   uint8_t type = input.back();
   const char* str_data = input.data();
@@ -84,7 +82,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   auto query_id_t = gbp::get_query_id().load();
 
   // assert((int) type == 31);
-  // if ((int) type > 14)
+  // if ((int) type != 8)
   //   return result_buffer;
   // // if (gbp::get_query_id() != 477)
   // //   return result_buffer;
@@ -133,7 +131,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << "]";
 #endif
     constexpr bool store_query = false;
-    constexpr bool check_result = false;
+    constexpr bool check_result = true;
 
     if constexpr (store_query) {
       static const size_t max_query_num = 200000100;
@@ -147,6 +145,14 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         // gbp::write_to_result_file({result_buffer.data(),
         // result_buffer.size()});
         query_tofile_count.fetch_add(1);
+        if (query_tofile_count % 1000 == 0) {
+          gbp::write_to_query_file(input, true);
+          gbp::write_to_result_file(
+              {result_buffer.data(), result_buffer.size()}, true);
+        }
+        if (query_tofile_count % 1000000 == 0) {
+          LOG(INFO) << query_tofile_count / 1000000 << "M";
+        }
         if (query_tofile_count == max_query_num) {
           gbp::write_to_query_file(input, true);
           gbp::write_to_result_file(
@@ -173,10 +179,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       }
     }
     auto ts2 = gbp::GetSystemTime();
-    gbp::get_thread_logfile()
-        << ts2 << " " << ts1 << " " << (int) type << std::endl;
-    if (query_id_a++ % 1000 == 0)
-      gbp::get_thread_logfile().flush();
+    // gbp::get_thread_logfile()
+    //     << ts2 << " " << ts1 << " " << (int) type << std::endl;
+
     return result_buffer;
   }
   if ((int) type > 14) {
