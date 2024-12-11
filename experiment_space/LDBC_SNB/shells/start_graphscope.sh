@@ -2,14 +2,15 @@
 DISK_DEVICE=/dev/vdb
 CUR_DIR=/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/
 
-export SF=30
+export SF=100
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
 # export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/without_person_db/${Scale_Factor}_db
-export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/filter_db/${Scale_Factor}_db
+# export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/filter_db/${Scale_Factor}_db
 # export DB_ROOT_DIR=${INPUT_OUTPUT_DIR}/lgraph_db/${Scale_Factor}_db
-export QUERY_FILE=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/query_file/read_with_update
+export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/full_order/${Scale_Factor}_db
+export QUERY_FILE=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/sf100_trace
 # export QUERY_FILE=${INPUT_OUTPUT_DIR}/configurations/query.file
 
 rm -rf ${DB_ROOT_DIR}/runtime/tmp/*
@@ -44,16 +45,17 @@ do
     # echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*50))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*6))")
     # rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log 
     
     # gdb --args 
-    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 1000000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 200000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+
 done
 
 # cgexec -g memory:yz_variable 
 # nohup
-# rt_server -B $[1024*1024*1024*60] -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 1 &> ${LOG_DIR}/gs_log.log
+# rt_server -B $[1024*1024*1024*60] -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s 30 &> ${LOG_DIR}/gs_log.log
 # &> ${LOG_DIR}/gs_log.log &
 
 # nohup rt_server -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s 50 &> ${LOG_DIR}/gs_log.log &

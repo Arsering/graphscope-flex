@@ -34,7 +34,8 @@ class Schema {
       const std::vector<std::string>& property_names,
       const std::vector<std::tuple<PropertyType, std::string, size_t>>&
           primary_key,
-      const std::vector<StorageStrategy>& strategies = {},
+      const std::vector<StorageStrategy>& strategies,
+      const std::vector<std::vector<int>>& column_families,
       size_t max_vnum = static_cast<size_t>(1) << 32);
 
   void add_edge_label(const std::string& src_label,
@@ -148,6 +149,16 @@ class Schema {
 
   void EmplacePlugin(const std::string& plugin_name);
 
+  const std::vector<std::vector<int>>& get_vertex_column_families(label_t label) const {
+    return vprop_column_families_[label];
+  }
+
+  const std::vector<std::vector<int>>& get_vertex_column_families(const std::string& label) const {
+    label_t index;
+    CHECK(vlabel_indexer_.get_index(label, index));
+    return vprop_column_families_[index];
+  }
+
  private:
   label_t vertex_label_to_index(const std::string& label);
 
@@ -169,7 +180,29 @@ class Schema {
   std::map<uint32_t, EdgeStrategy> ie_strategy_;
   std::vector<size_t> max_vnum_;
   std::vector<std::string> plugin_list_;
+  std::vector<std::vector<std::vector<int>>> vprop_column_families_;
+  std::map<uint32_t, std::vector<std::vector<int>>> eprop_column_families_;
+
+  void init_column_families(label_t label_id, size_t prop_size) {
+    if (vprop_column_families_.size() <= label_id) {
+      vprop_column_families_.resize(label_id + 1);
+    }
+    vprop_column_families_[label_id].resize(1);
+    vprop_column_families_[label_id][0].resize(prop_size);
+    for (size_t i = 0; i < prop_size; ++i) {
+      vprop_column_families_[label_id][0][i] = i;
+    }
+  }
 };
+
+namespace config_parsing {
+static bool parse_vertex_properties(
+    YAML::Node node, const std::string& label_name,
+    std::vector<PropertyType>& types,
+    std::vector<std::string>& names,
+    std::vector<StorageStrategy>& strategies,
+    std::vector<std::vector<int>>& column_families);
+}  // namespace config_parsing
 
 }  // namespace gs
 

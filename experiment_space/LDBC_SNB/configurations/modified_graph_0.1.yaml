@@ -1,37 +1,37 @@
 name: ldbc_snb
 store_type: mutable_csr
 stored_procedures:
-  directory: /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only
+  directory: /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures
   enable_lists:
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic1.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic3.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic4.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic6.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic7.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic8.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic9.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic10.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic11.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic12.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic13.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ic14.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is1.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is3.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is4.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is6.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_is7.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins1.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins3.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins4.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins6.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins7.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/libn_ins8.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic1.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic2.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic3.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic4.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic5.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic6.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic7.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic8.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic9.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic10.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic11.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic12.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic13.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libic14.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis1.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis2.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis3.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis4.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis5.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis6.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libis7.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins1.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins2.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins3.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins4.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins5.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins6.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins7.so
+    - /data-1/zhengyang/data/graphscope-flex/flex_ldbc_snb/stored_procedures/libins8.so
   
 schema:
   vertex_types:
@@ -44,154 +44,185 @@ schema:
           property_name: id
           property_type:
             primitive_type: DT_SIGNED_INT64
+          column_family: 0
         - property_id: 1
           property_name: name
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 2
           property_name: url
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 3
           property_name: type
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
       primary_keys:
         - id
     - type_id: 1
       type_name: PERSON
       x_csr_params:
-        max_vertex_num: 3820000
+        max_vertex_num: 1254000
       properties:
         - property_id: 0 
           property_name: id
           property_type:
             primitive_type: DT_SIGNED_INT64
+          column_family: 0
         - property_id: 1
           property_name: firstName
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 2
           property_name: lastName
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 3
           property_name: gender
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 4
           property_name: birthday
           property_type:
             date: "date"
+          column_family: 0
         - property_id: 5
           property_name: creationDate
           property_type:
             date: "date"
+          column_family: 0
         - property_id: 6
           property_name: locationIP
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 7
           property_name: browserUsed
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 8
           property_name: language
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 9
           property_name: email
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
       primary_keys:
         - id
     - type_id: 2
       type_name: COMMENT
       x_csr_params:
-        max_vertex_num: 2775551146
+        max_vertex_num: 762949871
       properties:
         - property_id: 0
           property_name: id
           property_type:
             primitive_type: DT_SIGNED_INT64
+          column_family: 0
         - property_id: 1
           property_name: creationDate
           property_type:
             date: "date"
+          column_family: 0
         - property_id: 2
           property_name: locationIP
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 3
           property_name: browserUsed
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 4
           property_name: content
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 5
           property_name: length
           property_type:
             primitive_type: DT_SIGNED_INT32
+          column_family: 0
       primary_keys:
         - id
     - type_id: 3
       type_name: POST
       x_csr_params:
-        max_vertex_num: 598389287
+        max_vertex_num: 187893047
       properties:
         - property_id: 0
           property_name: id
           property_type:
             primitive_type: DT_SIGNED_INT64
+          column_family: 0
         - property_id: 1
           property_name: imageFile
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 2
           property_name: creationDate
           property_type:
             date: "date"
+          column_family: 0
         - property_id: 3
           property_name: locationIP
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 4
           property_name: browserUsed
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 5
           property_name: language
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 6
           property_name: content
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 7
           property_name: length
           property_type:
             primitive_type: DT_SIGNED_INT32
+          column_family: 0
       primary_keys:
         - id
     - type_id: 4
       type_name: FORUM
       x_csr_params:
-        max_vertex_num: 36100000
+        max_vertex_num: 12549398
       properties:
         - property_id: 0
           property_name: id
           property_type:
             primitive_type: DT_SIGNED_INT64
+          column_family: 0
         - property_id: 1
           property_name: title
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 2
           property_name: creationDate
           property_type:
             date: "date"
+          column_family: 0
       primary_keys:
         - id
     - type_id: 5
@@ -203,18 +234,22 @@ schema:
           property_name: id
           property_type:
             primitive_type: DT_SIGNED_INT64
+          column_family: 0
         - property_id: 1
           property_name: type
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 2
           property_name: name
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 3
           property_name: url
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
       primary_keys:
         - id
     - type_id: 6
@@ -226,14 +261,17 @@ schema:
           property_name: id
           property_type:
             primitive_type: DT_SIGNED_INT64
+          column_family: 0
         - property_id: 1
           property_name: name
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 2
           property_name: url
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
       primary_keys:
         - id
     - type_id: 7
@@ -245,14 +283,17 @@ schema:
           property_name: id
           property_type:
             primitive_type: DT_SIGNED_INT64
+          column_family: 0
         - property_id: 1
           property_name: name
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
         - property_id: 2
           property_name: url
           property_type:
             primitive_type: DT_STRING
+          column_family: 0
       primary_keys:
         - id
   edge_types:

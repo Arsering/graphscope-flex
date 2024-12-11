@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <fcntl.h>
+#include <flex/graphscope_bufferpool/include/logger.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -38,6 +39,7 @@ namespace gs {
 #define OV false
 #define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
+// #define WRITE_ACCESS_LOG
 
 inline void copy_file(const std::string& src, const std::string& dst) {
   if (!std::filesystem::exists(src)) {
@@ -169,6 +171,10 @@ class mmap_array {
   void open(const std::string& filename, bool read_only) {
     reset();
     filename_ = filename;
+//    'PERSON_KNOWS_PERSON',
+    // 'vertex_map_PERSON',
+    // 'vertex_table_PERSON'
+
     read_only_ = read_only;
     if (read_only) {
       if (!std::filesystem::exists(filename)) {
@@ -184,6 +190,18 @@ class mmap_array {
       fd_gbp_ = buffer_pool_manager_->OpenFile(filename,
                                                O_RDWR | O_CREAT | FILE_FLAG);
     }
+#ifdef WRITE_ACCESS_LOG
+    // if(filename.find("PERSON_KNOWS_PERSON")!= std::string::npos || filename.find("vertex_map_PERSON")!= std::string::npos || filename.find("vertex_table_PERSON")!= std::string::npos){
+    //   is_not_person=true;
+    // }
+    // if (filename.find("COMMENT") != std::string::npos || filename.find("POST") != std::string::npos) {
+    //     is_message = true;
+    // }else{
+    //   is_message=false;
+    // }
+    std::ofstream outfile("/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/experiment_space/LDBC_SNB/logs/file_name_map.txt", std::ios::app);
+    outfile<<fd_gbp_<<"|"<<filename<<std::endl;
+#endif
     size_t file_size = std::filesystem::file_size(filename);
     size_ = (file_size / gbp::PAGE_SIZE_FILE) * OBJ_NUM_PERPAGE +
             (file_size % gbp::PAGE_SIZE_FILE) / sizeof(T);
@@ -376,7 +394,22 @@ class mmap_array {
                   len % OBJ_NUM_PERPAGE * sizeof(T);
       // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
     }
-
+#ifdef WRITE_ACCESS_LOG
+    if(gbp::warmup_mark()==1){
+      // std::ofstream outfile("/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/experiment_space/LDBC_SNB/logs/file_output.txt", std::ios::app);
+      // std::ofstream outfile;
+      // if(is_not_person){
+      //   if(is_message){
+      //     outfile.open("/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/experiment_space/LDBC_SNB/query_access_log/with_filter_message_log",std::ios::app);
+      //   }else{
+      //     outfile.open("/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/experiment_space/LDBC_SNB/query_access_log/with_filter_other_log",std::ios::app);
+      //   }
+        // outfile<<fd_gbp_<<"|"<<file_offset<<"|"<<buf_size<<std::endl;
+        // outfile.close();
+        gbp::get_thread_logfile()<<fd_gbp_<<"|"<<file_offset<<"|"<<buf_size<<std::endl;
+      }
+    // }
+#endif
     return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
     // return buffer_pool_manager_->GetBlockWithDirectCacheSync(file_offset,
     //                                                          buf_size,
@@ -494,6 +527,8 @@ class mmap_array {
   size_t size_;
   bool read_only_;
   mutable bool restart_finish_ = false;
+  bool is_message=false;
+  bool is_not_person=true;
 #endif
 };
 

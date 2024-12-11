@@ -81,6 +81,7 @@ class GraphDBSession {
   std::shared_ptr<RefColumnBase> get_vertex_id_column(uint8_t label) const;
 
   std::vector<char> Eval(const std::string& input);
+  std::vector<char> Eval1(const std::string& input,std::ofstream &outfile);
 
   void GetAppInfo(Encoder& result);
 

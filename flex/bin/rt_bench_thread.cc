@@ -15,10 +15,14 @@
 
 #include "grape/util.h"
 
+#include <flex/graphscope_bufferpool/include/logger.h>
+#include <flex/storages/rt_mutable_graph/types.h>
+#include <flex/utils/app_utils.h>
 #include <unistd.h>
 #include <atomic>
 #include <boost/fiber/all.hpp>
 #include <boost/program_options.hpp>
+#include <cassert>
 #include <chrono>
 #include <cstddef>
 #include <fstream>
@@ -35,9 +39,11 @@
 // #include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
 // #include "flex/engines/http_server/graph_db_service.h"
 
+#define WITH_UPDATE
+
 #include <glog/logging.h>
 
-#define READ_LIMIT 4000000
+#define READ_LIMIT 2000000
 
 namespace bpo = boost::program_options;
 // using namespace std::chrono_literals;
@@ -51,8 +57,12 @@ class Req {
   void init(size_t warmup_num, size_t benchmark_num) {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
-    // num_of_reqs_unique_ = reqs_.size();
+#ifdef WITH_UPDATE
     num_of_reqs_unique_=num_of_read_reqs_unique_+num_of_update_reqs_unique_;
+    read_cur_.store(0);
+#else
+    num_of_reqs_unique_ = reqs_.size();
+#endif
 
     // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
@@ -127,7 +137,11 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-      reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      auto req=std::string(buffer.data(), buffer.data() + length);
+      if(req.back()<=14) 
+      {
+        reqs_.emplace_back(req);
+      }
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
@@ -147,6 +161,7 @@ class Req {
     std::vector<char> buffer(size);
     size_t length = 0;
     auto test_count=0;
+    auto read_req_count=0;
     while (true) {
       auto ret = ::fread(&length, sizeof(size_t), 1, query_file_string_view);
       if (ret == 0)
@@ -162,13 +177,15 @@ class Req {
       auto req=std::string(buffer.data(), buffer.data() + data_len);
       // reqs_.emplace_back(std::string(buffer.data(), buffer.data() + data_len));
       if(req.back()<=21){
+        read_req_count++;
         assert(req.back()!=0);
-        if(read_list.size()>=200000){
+        if(read_req_count>=2000000){
           continue;
         }
-        read_list.emplace_back(req);
+        if(req.back()<=14)
+          read_list.emplace_back(req);
       }else{
-        update_list.emplace_back(req);
+        // update_list.emplace_back(req);
       }
     }
     num_of_reqs_unique_ = update_list.size()+read_list.size();
@@ -176,6 +193,26 @@ class Req {
     num_of_update_reqs_unique_=update_list.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_<<" \nNumber of read query = "<<num_of_read_reqs_unique_<<" \nNumber of update query = "<<num_of_update_reqs_unique_;
 
+  }
+
+  void gen_ic8(){
+    gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+    auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
+    auto vertex_num = graph.vertex_num(person_label_id);
+    std::vector<gs::oid_t> oids_;
+    oids_.resize(vertex_num);
+    for (auto idx = 0; idx < vertex_num; idx++) {
+      oids_[idx] = graph.get_oid(person_label_id, idx);
+    }
+    for(auto idx=0;idx<vertex_num;idx++){
+      std::vector<char> tmp;
+      gs::Encoder encoder(tmp);
+      encoder.put_long(oids_[idx]);
+      encoder.put_byte(8);
+      read_list.emplace_back(std::string(tmp.begin(),tmp.end()));
+    }
+    std::cout<<"ic8 num is "<<read_list.size()<<std::endl;
+    num_of_read_reqs_unique_=read_list.size();
   }
 
   void do_query(size_t thread_id) {
@@ -191,9 +228,10 @@ class Req {
       // id = run_time_req_ids_[id];
 
       start_[id] = gbp::GetSystemTime();
+      // LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
       gbp::get_query_id().store(id % num_of_reqs_unique_);
-      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
-          reqs_[id % num_of_reqs_unique_]);
+      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval1(
+          reqs_[id % num_of_reqs_unique_],gbp::get_thread_logfile());
       end_[id] = gbp::GetSystemTime();
     }
     return;
@@ -237,7 +275,11 @@ class Req {
 
   void do_read_query(size_t thread_id) {
     size_t id;
-    gbp::get_thread_logfile();
+    if (gbp::warmup_mark()==1) {
+      // gbp::get_thread_logfile()<<"begin iter 2"<<std::endl;
+    }else{
+      // gbp::get_thread_logfile()<<"begin iter 1"<<std::endl;
+    }
     bool has_updated_in_current_epoch = false;  
     while (true) {
       id = read_cur_.fetch_add(1);
@@ -246,16 +288,15 @@ class Req {
         // LOG(INFO) << gbp::get_thread_id();
         break;
       }
-      while (id>READ_LIMIT && (id-READ_LIMIT)>update_cur_.load()*4) {
-      }
+
+      // while (id>READ_LIMIT && (id-READ_LIMIT)>update_cur_.load()*4) {
+      // }
+
       // id = run_time_req_ids_[id];
       // std::cout<<"begin read "<<id<<std::endl;
-      start_[id] = gbp::GetSystemTime();
       gbp::get_query_id().store(id % num_of_read_reqs_unique_);
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           read_list[id % num_of_read_reqs_unique_]);
-      end_[id] = gbp::GetSystemTime();
-      auto latency=end_[id]-start_[id];
       auto type=read_list[id % num_of_read_reqs_unique_].back();
       // if (id%10000==0) {
       //   std::cout<<"10000 read"<<std::endl;
@@ -285,9 +326,9 @@ class Req {
     std::vector<std::thread> workers;
     assert(cur_ == 0);
     
-    workers.emplace_back([this](){do_update_query(0);});
-
-    for (size_t i = 1; i < thread_num; i++) {
+    // workers.emplace_back([this](){do_update_query(0);});
+    sleep(2);
+    for (size_t i = 0; i < thread_num; i++) {
       workers.emplace_back([this, i]() { do_read_query(i); });
     }
 
@@ -560,14 +601,18 @@ int main(int argc, char** argv) {
   gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
-  gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query_with_timestamp(req_file);
+  // Req::get().gen_ic8();
+
+  gbp::warmup_mark().store(0);
+  // Req::get().load_query(req_file);
   // Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
 
   for (size_t idx = 0; idx < 2; idx++) {
+    std::cout<<"iter "<<idx<<std::endl;
     gbp::PerformanceLogServer::GetPerformanceLogger().SetStartPoint();
 
     Req::get().init(warmup_num, benchmark_num);
@@ -581,6 +626,7 @@ int main(int argc, char** argv) {
     auto begin = std::chrono::system_clock::now();
 
     Req::get().simulate_with_update_and_read(shard_num);
+    // Req::get().simulate(shard_num);
     auto end = std::chrono::system_clock::now();
     auto cpu_cost_after = gbp::GetCPUTime();
 
@@ -609,6 +655,8 @@ int main(int argc, char** argv) {
     gbp::get_counter_global(11) = 0;
     gbp::warmup_mark().store(1);
     gbp::DirectCache::CleanAllCache();
+    assert(gbp::warmup_mark()==1);
+    // break;
   }
 
   Req::get().LoggerStop();

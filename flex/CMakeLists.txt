@@ -27,6 +27,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 add_compile_definitions(FLEX_VERSION="${FLEX_VERSION}")
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
 else ()

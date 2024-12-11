@@ -27,7 +27,9 @@ void Schema::add_vertex_label(
     const std::vector<std::string>& property_names,
     const std::vector<std::tuple<PropertyType, std::string, size_t>>&
         primary_key,
-    const std::vector<StorageStrategy>& strategies, size_t max_vnum) {
+    const std::vector<StorageStrategy>& strategies,
+    const std::vector<std::vector<int>>& column_families,
+    size_t max_vnum) {
   label_t v_label_id = vertex_label_to_index(label);
   vproperties_[v_label_id] = property_types;
   vprop_names_[v_label_id] = property_names;
@@ -35,6 +37,10 @@ void Schema::add_vertex_label(
   vprop_storage_[v_label_id].resize(vproperties_[v_label_id].size(),
                                     StorageStrategy::kMem);
   v_primary_keys_[v_label_id] = primary_key;
+  if (vprop_column_families_.size() <= v_label_id) {
+    vprop_column_families_.resize(v_label_id + 1);
+  }
+  vprop_column_families_[v_label_id] = column_families;
   max_vnum_[v_label_id] = max_vnum;
 }
 
@@ -248,7 +254,7 @@ void Schema::Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) const {
   grape::InArchive arc;
   arc << vproperties_ << vprop_names_ << v_primary_keys_ << vprop_storage_
       << eproperties_ << eprop_names_ << ie_strategy_ << oe_strategy_
-      << max_vnum_ << plugin_list_;
+      << max_vnum_ << plugin_list_ << vprop_column_families_ << eprop_column_families_;
   CHECK(writer->WriteArchive(arc));
 }
 
@@ -259,7 +265,7 @@ void Schema::Deserialize(std::unique_ptr<grape::LocalIOAdaptor>& reader) {
   CHECK(reader->ReadArchive(arc));
   arc >> vproperties_ >> vprop_names_ >> v_primary_keys_ >> vprop_storage_ >>
       eproperties_ >> eprop_names_ >> ie_strategy_ >> oe_strategy_ >>
-      max_vnum_ >> plugin_list_;
+      max_vnum_ >> plugin_list_ >> vprop_column_families_ >> eprop_column_families_;
 }
 
 label_t Schema::vertex_label_to_index(const std::string& label) {
@@ -412,7 +418,8 @@ static bool parse_vertex_properties(YAML::Node node,
                                     const std::string& label_name,
                                     std::vector<PropertyType>& types,
                                     std::vector<std::string>& names,
-                                    std::vector<StorageStrategy>& strategies) {
+                                    std::vector<StorageStrategy>& strategies,
+                                    std::vector<std::vector<int>>& column_families) {
   if (!node || !node.IsSequence()) {
     LOG(ERROR) << "Expect properties for " << label_name << " to be a sequence";
     return false;
@@ -424,6 +431,8 @@ static bool parse_vertex_properties(YAML::Node node,
     return false;
   }
 
+  std::map<int, std::vector<int>> cf_map;
+  
   for (int i = 0; i < prop_num; ++i) {
     std::string prop_type_str, strategy_str, prop_name_str;
     if (!get_scalar(node[i], "property_name", prop_name_str)) {
@@ -461,6 +470,17 @@ static bool parse_vertex_properties(YAML::Node node,
     VLOG(10) << "prop-" << i - 1 << " name: " << prop_name_str
              << " type: " << prop_type_str << " strategy: " << strategy_str;
     names.push_back(prop_name_str);
+
+    int column_family = 0;
+    if (node[i]["column_family"]) {
+      column_family = node[i]["column_family"].as<int>();
+    }
+    cf_map[column_family].push_back(i);
+  }
+
+  column_families.clear();
+  for (const auto& [cf_id, prop_indices] : cf_map) {
+    column_families.push_back(prop_indices);
   }
 
   return true;
@@ -532,8 +552,9 @@ static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
   std::vector<PropertyType> property_types;
   std::vector<std::string> property_names;
   std::vector<StorageStrategy> strategies;
+  std::vector<std::vector<int>> column_families;
   if (!parse_vertex_properties(node["properties"], label_name, property_types,
-                               property_names, strategies)) {
+                               property_names, strategies, column_families)) {
     return false;
   }
   if (!node["primary_keys"]) {
@@ -576,7 +597,7 @@ static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
   }
 
   schema.add_vertex_label(label_name, property_types, property_names,
-                          primary_keys, strategies, max_num);
+                          primary_keys, strategies, column_families, max_num);
   // check the type_id equals to storage's label_id
   int32_t type_id;
   if (!get_scalar(node, "type_id", type_id)) {
