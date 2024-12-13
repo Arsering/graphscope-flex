@@ -179,6 +179,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       gbp::get_thread_logfile().flush();
     // return result_buffer;
   }
+  LOG(INFO)<<"query id = "<<query_id.load()<<" | "<<(int)type;
   if (app->Query(decoder, encoder))
     return result_buffer;
   assert(false);

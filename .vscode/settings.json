@@ -83,5 +83,10 @@
         "scoped_allocator": "cpp",
         "charconv": "cpp"
     },
-    "cmake.sourceDirectory": "/data/zhengyang/data/graphscope-flex/flex"
+    "clangd.arguments": [
+        "--compile-commands-dir=/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex/build"
+    ],
+    "clangd.fallbackFlags": [
+        "--std=c++20"
+    ]
 }

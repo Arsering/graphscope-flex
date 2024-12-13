@@ -26,6 +26,7 @@
 #include "flex/storages/rt_mutable_graph/types.h"
 #include "flex/utils/arrow_utils.h"
 #include "flex/utils/id_indexer.h"
+#include "flex/utils/message_id_indexer.h"
 #include "flex/utils/property/table.h"
 #include "flex/utils/yaml_utils.h"
 #include "grape/io/local_io_adaptor.h"
@@ -60,6 +61,9 @@ class MutablePropertyFragment {
   oid_t get_oid(label_t label, vid_t lid) const;
 
   vid_t add_vertex(label_t label, oid_t id);
+
+  vid_t add_vertex(label_t label, oid_t id, label_t creator_label, oid_t creator_id);
+
   std::shared_ptr<MutableCsrConstEdgeIterBase> get_outgoing_edges(
       label_t label, vid_t u, label_t neighbor_label, label_t edge_label) const;
 
@@ -96,6 +100,7 @@ class MutablePropertyFragment {
 
   Schema schema_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;
+  MessageIdAllocator<oid_t, vid_t> message_id_allocator_;
   std::vector<MutableCsrBase*> ie_, oe_;
   std::vector<Table> vertex_data_;
 

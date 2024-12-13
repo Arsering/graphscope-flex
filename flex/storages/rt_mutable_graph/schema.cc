@@ -248,7 +248,7 @@ void Schema::Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) const {
   grape::InArchive arc;
   arc << vproperties_ << vprop_names_ << v_primary_keys_ << vprop_storage_
       << eproperties_ << eprop_names_ << ie_strategy_ << oe_strategy_
-      << max_vnum_ << plugin_list_;
+      << max_vnum_ << plugin_list_<<comment_label_id_<<person_label_id_<<creator_edge_label_id_;
   CHECK(writer->WriteArchive(arc));
 }
 
@@ -259,12 +259,18 @@ void Schema::Deserialize(std::unique_ptr<grape::LocalIOAdaptor>& reader) {
   CHECK(reader->ReadArchive(arc));
   arc >> vproperties_ >> vprop_names_ >> v_primary_keys_ >> vprop_storage_ >>
       eproperties_ >> eprop_names_ >> ie_strategy_ >> oe_strategy_ >>
-      max_vnum_ >> plugin_list_;
+      max_vnum_ >> plugin_list_>>comment_label_id_>>person_label_id_>>creator_edge_label_id_;
 }
 
 label_t Schema::vertex_label_to_index(const std::string& label) {
   label_t ret;
   vlabel_indexer_.add(label, ret);
+  if (label == "COMMENT") {
+    comment_label_id_ = ret;
+  }
+  if (label == "PERSON") {
+    person_label_id_ = ret;
+  }
   if (vproperties_.size() <= ret) {
     vproperties_.resize(ret + 1);
     vprop_storage_.resize(ret + 1);
@@ -278,6 +284,9 @@ label_t Schema::vertex_label_to_index(const std::string& label) {
 label_t Schema::edge_label_to_index(const std::string& label) {
   label_t ret;
   elabel_indexer_.add(label, ret);
+  if (label == "HASCREATOR") {
+    creator_edge_label_id_ = ret;
+  }
   return ret;
 }
 
@@ -828,6 +837,18 @@ Schema Schema::LoadFromYaml(const std::string& schema_config) {
     }
   }
   return schema;
+}
+
+label_t Schema::get_comment_label_id() const {
+  return comment_label_id_;
+} 
+
+label_t Schema::get_person_label_id() const {
+  return person_label_id_;
+}
+
+label_t Schema::get_creator_edge_label_id() const {
+  return creator_edge_label_id_;
 }
 
 }  // namespace gs

@@ -148,6 +148,12 @@ class Schema {
 
   void EmplacePlugin(const std::string& plugin_name);
 
+  label_t get_comment_label_id() const;
+
+  label_t get_person_label_id() const;
+
+  label_t get_creator_edge_label_id() const;
+
  private:
   label_t vertex_label_to_index(const std::string& label);
 
@@ -169,6 +175,9 @@ class Schema {
   std::map<uint32_t, EdgeStrategy> ie_strategy_;
   std::vector<size_t> max_vnum_;
   std::vector<std::string> plugin_list_;
+  label_t comment_label_id_;
+  label_t person_label_id_;
+  label_t creator_edge_label_id_;
 };
 
 }  // namespace gs

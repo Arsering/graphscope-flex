@@ -1,4 +1,3 @@
-
 /** Copyright 2020 Alibaba Group Holding Limited.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +15,8 @@
 
 #include "flex/storages/rt_mutable_graph/loader/basic_fragment_loader.h"
 #include "flex/storages/rt_mutable_graph/file_names.h"
+#include "flex/storages/rt_mutable_graph/types.h"
+#include "flex/utils/base_indexer.h"
 
 namespace gs {
 
@@ -64,7 +65,10 @@ void BasicFragmentLoader::LoadFragment() {
   for (label_t v_label = 0; v_label < vertex_label_num_; v_label++) {
     auto& v_data = vertex_data_[v_label];
     auto label_name = schema_.get_vertex_label_name(v_label);
-    v_data.resize(lf_indexers_[v_label].size());
+    if(v_label == schema_.get_comment_label_id())
+      v_data.resize(msg_allocator_->size());
+    else
+      v_data.resize(lf_indexers_[v_label].size());
     v_data.dump(vertex_table_prefix(label_name), snapshot_dir(work_dir_, 0));
   }
 
@@ -147,10 +151,41 @@ void BasicFragmentLoader::FinishAddingVertex(
   build_lf_indexer(indexer, prefix, lf_indexers_[v_label]);
 }
 
+void BasicFragmentLoader::FinishAddingVertex(
+    label_t v_label) {
+  CHECK(v_label < vertex_label_num_);
+  std::string prefix =
+      snapshot_dir(work_dir_, 0) +
+      vertex_map_prefix(schema_.get_vertex_label_name(v_label));
+
+  msg_allocator_->dump(prefix+".msg_allocator");
+}
+
+const BaseIndexer<vid_t>& BasicFragmentLoader::GetBaseIndexer(
+    label_t v_label) const {
+  CHECK(v_label < vertex_label_num_);
+  if(v_label == schema_.get_comment_label_id())
+    return *msg_allocator_;
+  else
+    return lf_indexers_[v_label];
+}
+
 const LFIndexer<vid_t>& BasicFragmentLoader::GetLFIndexer(
     label_t v_label) const {
   CHECK(v_label < vertex_label_num_);
   return lf_indexers_[v_label];
+}
+
+const MessageIdAllocator<oid_t, vid_t>& BasicFragmentLoader::GetMsgAllocator() const {
+  return *msg_allocator_;
+}
+
+void BasicFragmentLoader::SetMsgAllocator(MessageIdAllocator<oid_t, vid_t>& msg_allocator){
+  msg_allocator_ = &msg_allocator;
+}
+
+MessageIdAllocator<oid_t, vid_t>& BasicFragmentLoader::GetMsgAllocator(){
+  return *msg_allocator_;
 }
 
 }  // namespace gs

@@ -19,6 +19,7 @@
 #include "flex/storages/rt_mutable_graph/file_names.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/storages/rt_mutable_graph/schema.h"
+#include "flex/utils/message_id_indexer.h"
 
 namespace gs {
 
@@ -72,6 +73,8 @@ class BasicFragmentLoader {
   void FinishAddingVertex(label_t v_label,
                           const IdIndexer<oid_t, vid_t>& indexer);
 
+  void FinishAddingVertex(label_t v_label);
+
   template <typename EDATA_T>
   void AddNoPropEdgeBatch(label_t src_label_id, label_t dst_label_id,
                           label_t edge_label_id) {
@@ -104,8 +107,9 @@ class BasicFragmentLoader {
                 const std::vector<int32_t>& oe_degree) {
     size_t index = src_label_id * vertex_label_num_ * edge_label_num_ +
                    dst_label_id * edge_label_num_ + edge_label_id;
-    auto& src_indexer = lf_indexers_[src_label_id];
-    auto& dst_indexer = lf_indexers_[dst_label_id];
+    auto& src_indexer = GetBaseIndexer(src_label_id);
+    auto& dst_indexer = GetBaseIndexer(dst_label_id);
+    
     CHECK(ie_[index] == NULL);
     CHECK(oe_[index] == NULL);
     auto src_label_name = schema_.get_vertex_label_name(src_label_id);
@@ -143,8 +147,13 @@ class BasicFragmentLoader {
     return vertex_data_[ind];
   }
 
+  void SetMsgAllocator(MessageIdAllocator<oid_t, vid_t>& msg_allocator);
+  MessageIdAllocator<oid_t, vid_t>& GetMsgAllocator();
+
   // get lf_indexer
   const LFIndexer<vid_t>& GetLFIndexer(label_t v_label) const;
+  const BaseIndexer<vid_t>& GetBaseIndexer(label_t v_label) const;
+  const MessageIdAllocator<oid_t, vid_t>& GetMsgAllocator() const;  
 
  private:
   void init_vertex_data();
@@ -152,6 +161,7 @@ class BasicFragmentLoader {
   std::string work_dir_;
   size_t vertex_label_num_, edge_label_num_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;
+  MessageIdAllocator<oid_t, vid_t>* msg_allocator_;
   std::vector<MutableCsrBase*> ie_, oe_;
   std::vector<Table> vertex_data_;
 };

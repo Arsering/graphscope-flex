@@ -33,6 +33,7 @@ limitations under the License.
 #include "grape/io/local_io_adaptor.h"
 #include "grape/serialization/in_archive.h"
 #include "grape/serialization/out_archive.h"
+#include "flex/utils/base_indexer.h"
 
 namespace gs {
 template <typename INDEX_T>
@@ -177,7 +178,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
                       double rate = 0.8);
 
 template <typename INDEX_T>
-class LFIndexer {
+class LFIndexer : public BaseIndexer<INDEX_T> {
  public:
   LFIndexer() : num_elements_(0), hasher_() {}
   LFIndexer(LFIndexer&& rhs)
@@ -190,7 +191,7 @@ class LFIndexer {
         rhs.hash_policy_.get_mod_function_index());
   }
 
-  size_t size() const { return num_elements_.load(); }
+  size_t size() const override { return num_elements_.load(); }
 
   INDEX_T insert(int64_t oid) {
     INDEX_T ind = static_cast<INDEX_T>(num_elements_.fetch_add(1));
@@ -292,7 +293,7 @@ class LFIndexer {
   }
 
 #if OV
-  bool get_index(int64_t oid, INDEX_T& ret) const {
+  bool get_index(int64_t oid, INDEX_T& ret) const override{
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
 
@@ -312,9 +313,9 @@ class LFIndexer {
 
     return false;
   }
-  int64_t get_key(const INDEX_T& index) const { return keys_.get(index); }
+  int64_t get_key(const INDEX_T& index) const override { return keys_.get(index); }
 #else
-  bool get_index(int64_t oid, INDEX_T& ret) const {
+  bool get_index(int64_t oid, INDEX_T& ret) const override{
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
@@ -352,14 +353,14 @@ class LFIndexer {
     return false;
   }
 
-  int64_t get_key(const INDEX_T& index) const {
+  int64_t get_key(const INDEX_T& index) const override {
     auto item = keys_.get(index);
     return gbp::BufferBlock::Ref<int64_t>(item);
   }
 #endif
 
   void open(const std::string& name, const std::string& snapshot_dir,
-            const std::string& work_dir) {
+            const std::string& work_dir) override {
     keys_.open(snapshot_dir + "/" + name + ".keys", true);
     keys_.touch(work_dir + "/" + name + ".keys");
     indices_.open(snapshot_dir + "/" + name + ".indices", true);
@@ -389,7 +390,7 @@ class LFIndexer {
     return keys_.get_size_in_byte() + indices_.get_size_in_byte();
   }
 
-  void dump(const std::string& name, const std::string& snapshot_dir) {
+  void dump(const std::string& name, const std::string& snapshot_dir) override {
     keys_.dump(snapshot_dir + "/" + name + ".keys");
     indices_.dump(snapshot_dir + "/" + name + ".indices");
     dump_meta(snapshot_dir + "/" + name + ".meta");

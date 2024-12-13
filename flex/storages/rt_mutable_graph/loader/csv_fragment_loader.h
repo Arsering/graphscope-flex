@@ -28,6 +28,8 @@
 #include "arrow/util/value_parsing.h"
 
 #include "grape/util.h"
+#include "flex/storages/rt_mutable_graph/loader/edge_reader.h"
+#include "flex/utils/message_id_indexer.h"
 
 namespace gs {
 
@@ -63,8 +65,17 @@ class CSVFragmentLoader : public IFragmentLoader {
                        const std::vector<std::string> v_file,
                        IdIndexer<oid_t, vid_t>& indexer);
 
+  void addVerticesImpl(label_t v_label_id, const std::string& v_label_name,
+                       const std::vector<std::string> v_file,
+                       MessageIdAllocator<oid_t,vid_t>& msg_allocator);
+
   void addVertexBatch(
       label_t v_label_id, IdIndexer<oid_t, vid_t>& indexer,
+      std::shared_ptr<arrow::Array>& primary_key_col,
+      const std::vector<std::shared_ptr<arrow::Array>>& property_cols);
+
+  void addVertexBatch(
+      label_t v_label_id, MessageIdAllocator<oid_t,vid_t>& msg_allocator,
       std::shared_ptr<arrow::Array>& primary_key_col,
       const std::vector<std::shared_ptr<arrow::Array>>& property_cols);
 
@@ -75,11 +86,14 @@ class CSVFragmentLoader : public IFragmentLoader {
   void addEdgesImpl(label_t src_label_id, label_t dst_label_id,
                     label_t e_label_id,
                     const std::vector<std::string>& e_files);
+  
+  void loadCreatorEdges();
 
   const LoadingConfig& loading_config_;
   const Schema& schema_;
   size_t vertex_label_num_, edge_label_num_;
   int32_t thread_num_;
+  std::unordered_map<int64_t, int64_t> comment_to_person_map_;
 
   mutable BasicFragmentLoader basic_fragment_loader_;
 };
