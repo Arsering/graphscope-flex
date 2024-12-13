@@ -29,11 +29,12 @@ MutablePropertyFragment::MutablePropertyFragment() {}
 MutablePropertyFragment::~MutablePropertyFragment() {
   std::vector<size_t> degree_list(vertex_label_num_, 0);
   for (size_t i = 0; i < vertex_label_num_; ++i) {
-    if(i==schema_.get_comment_label_id()){
-      degree_list[i] = message_id_allocator_.size();
-    }else{
-      degree_list[i] = lf_indexers_[i].size();
-    }
+    // if(i==schema_.get_comment_label_id()){
+    //   degree_list[i] = message_id_allocator_.size();
+    // }else{
+    //   degree_list[i] = lf_indexers_[i].size();
+    // }
+    degree_list[i] = base_indexers_[i]->size();
     vertex_data_[i].resize(degree_list[i]);
   }
   for (size_t src_label = 0; src_label != vertex_label_num_; ++src_label) {
@@ -131,7 +132,15 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   vertex_label_num_ = schema_.vertex_label_num();
   edge_label_num_ = schema_.edge_label_num();
 
-  lf_indexers_.resize(vertex_label_num_);
+  // lf_indexers_.resize(vertex_label_num_);
+  base_indexers_.resize(vertex_label_num_);
+  for(size_t i=0;i<vertex_label_num_;i++){
+    if(i!=schema_.get_comment_label_id()){
+      base_indexers_[i]=new LFIndexer<vid_t>();
+    }else{
+      base_indexers_[i]=new MessageIdAllocator<oid_t, vid_t>();
+    }
+  }
   vertex_data_.resize(vertex_label_num_);
   std::string snapshot_dir = get_latest_snapshot(work_dir);
   std::string tmp_dir_path = tmp_dir(work_dir);
@@ -143,14 +152,21 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   size_t size_in_byte_vertex_data = 0;
   for (size_t i = 0; i < vertex_label_num_; ++i) {
     std::string v_label_name = schema_.get_vertex_label_name(i);
+    // if(i==schema_.get_comment_label_id()){
+    //   message_id_allocator_.open(vertex_map_prefix(v_label_name)+".msg_allocator", snapshot_dir, 
+    //                              tmp_dir_path);
+    // }else{
+    //   lf_indexers_[i].open(vertex_map_prefix(v_label_name), snapshot_dir,
+    //                      tmp_dir_path);
+    // }
     if(i==schema_.get_comment_label_id()){
-      message_id_allocator_.open(vertex_map_prefix(v_label_name)+".msg_allocator", snapshot_dir, 
-                                 tmp_dir_path);
+      dynamic_cast<MessageIdAllocator<oid_t, vid_t>*>(base_indexers_[i])->open(vertex_map_prefix(v_label_name)+".msg_allocator", snapshot_dir,
+                              tmp_dir_path);
     }else{
-      lf_indexers_[i].open(vertex_map_prefix(v_label_name), snapshot_dir,
-                         tmp_dir_path);
+      base_indexers_[i]->open(vertex_map_prefix(v_label_name), snapshot_dir,
+                      tmp_dir_path);
     }
-    size_in_byte_lf_indexer += lf_indexers_[i].get_size_in_byte();
+    // size_in_byte_lf_indexer += lf_indexers_[i].get_size_in_byte();
     vertex_data_[i].open(vertex_table_prefix(v_label_name), snapshot_dir,
                          tmp_dir_path, schema_.get_vertex_property_names(i),
                          schema_.get_vertex_properties(i),
@@ -159,11 +175,12 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
     size_in_byte_vertex_data += vertex_data_[i].get_size_in_byte();
 
     size_t vertex_num;
-    if(i==schema_.get_comment_label_id()){
-      vertex_num = message_id_allocator_.size();
-    }else{
-      vertex_num = lf_indexers_[i].size();
-    }
+    // if(i==schema_.get_comment_label_id()){
+    //   vertex_num = message_id_allocator_.size();
+    // }else{
+    //   vertex_num = lf_indexers_[i].size();
+    // }
+    vertex_num = base_indexers_[i]->size();
     size_t vertex_capacity = vertex_num;
     // TODO:
     vertex_capacity += vertex_capacity >> 2;
@@ -173,9 +190,9 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   t0 += grape::GetCurrentTime();
   LOG(INFO) << "Time used = " << t0;
   size_t MB_in_byte = 1024LU * 1024;
-  LOG(INFO) << "size_in_MB_lf_indexer=" << size_in_byte_lf_indexer / MB_in_byte
-            << " | size_in_MB_vertex_data="
-            << size_in_byte_vertex_data / MB_in_byte;
+  // LOG(INFO) << "size_in_MB_lf_indexer=" << size_in_byte_lf_indexer / MB_in_byte
+  //           << " | size_in_MB_vertex_data="
+  //           << size_in_byte_vertex_data / MB_in_byte;
 
   ie_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   oe_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
@@ -234,18 +251,21 @@ void MutablePropertyFragment::Dump(const std::string& work_dir,
   std::filesystem::create_directories(snapshot_dir_path);
   std::vector<size_t> vertex_num(vertex_label_num_, 0);
   for (size_t i = 0; i < vertex_label_num_; ++i) {
-    if(i==schema_.get_comment_label_id()){
-      vertex_num[i] = message_id_allocator_.size();
-    }else{
-      vertex_num[i] = lf_indexers_[i].size();
-    }
-    if(i==schema_.get_comment_label_id()){
-      message_id_allocator_.dump(vertex_map_prefix(schema_.get_vertex_label_name(i)),
+    // if(i==schema_.get_comment_label_id()){
+    //   vertex_num[i] = message_id_allocator_.size();
+    // }else{
+    //   vertex_num[i] = lf_indexers_[i].size();
+    // }
+    vertex_num[i] = base_indexers_[i]->size();
+    // if(i==schema_.get_comment_label_id()){
+    //   message_id_allocator_.dump(vertex_map_prefix(schema_.get_vertex_label_name(i)),
+    //                      snapshot_dir_path);
+    // }else{
+    //   lf_indexers_[i].dump(vertex_map_prefix(schema_.get_vertex_label_name(i)),
+    //                      snapshot_dir_path);
+    // }
+    base_indexers_[i]->dump(vertex_map_prefix(schema_.get_vertex_label_name(i)),
                          snapshot_dir_path);
-    }else{
-      lf_indexers_[i].dump(vertex_map_prefix(schema_.get_vertex_label_name(i)),
-                         snapshot_dir_path);
-    }
     vertex_data_[i].resize(vertex_num[i]);
     vertex_data_[i].dump(vertex_table_prefix(schema_.get_vertex_label_name(i)),
                          snapshot_dir_path);
@@ -306,31 +326,34 @@ const Table& MutablePropertyFragment::get_vertex_table(
 }
 
 vid_t MutablePropertyFragment::vertex_num(label_t vertex_label) const {
-  if(vertex_label==schema_.get_comment_label_id()){
-    return message_id_allocator_.size();
-  }else{
-    return static_cast<vid_t>(lf_indexers_[vertex_label].size());
-  }
+  // if(vertex_label==schema_.get_comment_label_id()){
+  //   return message_id_allocator_.size();
+  // }else{
+  //   return static_cast<vid_t>(lf_indexers_[vertex_label].size());
+  // }
+  return static_cast<vid_t>(base_indexers_[vertex_label]->size());
 }
 
 bool MutablePropertyFragment::get_lid(label_t label, oid_t oid,
                                       vid_t& lid) const {
-  if(label!=schema_.get_comment_label_id()){
-    return lf_indexers_[label].get_index(oid, lid);
-  }else{
-    return message_id_allocator_.get_lid_by_oid(oid, lid);
-  }
+  // if(label!=schema_.get_comment_label_id()){
+  //   return lf_indexers_[label].get_index(oid, lid);
+  // }else{
+  //   return message_id_allocator_.get_lid_by_oid(oid, lid);
+  // }
+  return base_indexers_[label]->get_index(oid, lid);
 }
 
 oid_t MutablePropertyFragment::get_oid(label_t label, vid_t lid) const {
-  if(label!=schema_.get_comment_label_id()){
-    return lf_indexers_[label].get_key(lid);
-  }else{
-    oid_t oid;
-    if(message_id_allocator_.get_oid_by_lid(lid, oid)){
-      return oid;
-    }
-  }
+  // if(label!=schema_.get_comment_label_id()){
+  //   return lf_indexers_[label].get_key(lid);
+  // }else{
+  //   oid_t oid;
+  //   if(message_id_allocator_.get_oid_by_lid(lid, oid)){
+  //     return oid;
+  //   }
+  // }
+  return base_indexers_[label]->get_key(lid);
   assert(false);
 }
 
@@ -341,7 +364,8 @@ vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id) {
 vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id, label_t creator_label, oid_t creator_id) {
   vid_t creator_lid;
   get_lid(creator_label, creator_id, creator_lid);
-  return message_id_allocator_.get_message_id(creator_lid, id);
+  // return message_id_allocator_.get_message_id(creator_lid, id);
+  return dynamic_cast<MessageIdAllocator<oid_t, vid_t>*>(base_indexers_[label])->get_message_id(creator_lid, id);
 }
 
 std::shared_ptr<MutableCsrConstEdgeIterBase>

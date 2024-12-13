@@ -107,8 +107,8 @@ class BasicFragmentLoader {
                 const std::vector<int32_t>& oe_degree) {
     size_t index = src_label_id * vertex_label_num_ * edge_label_num_ +
                    dst_label_id * edge_label_num_ + edge_label_id;
-    auto& src_indexer = GetBaseIndexer(src_label_id);
-    auto& dst_indexer = GetBaseIndexer(dst_label_id);
+    auto src_indexer = GetBaseIndexer(src_label_id);
+    auto dst_indexer = GetBaseIndexer(dst_label_id);
     
     CHECK(ie_[index] == NULL);
     CHECK(oe_[index] == NULL);
@@ -121,8 +121,8 @@ class BasicFragmentLoader {
         src_label_name, dst_label_name, edge_label_name);
     auto ie_csr = create_typed_csr<EDATA_T>(ie_strategy);
     auto oe_csr = create_typed_csr<EDATA_T>(oe_strategy);
-    CHECK(ie_degree.size() == dst_indexer.size());
-    CHECK(oe_degree.size() == src_indexer.size());
+    CHECK(ie_degree.size() == dst_indexer->size());
+    CHECK(oe_degree.size() == src_indexer->size());
 
     ie_csr->batch_init(
         ie_prefix(src_label_name, dst_label_name, edge_label_name),
@@ -152,8 +152,9 @@ class BasicFragmentLoader {
 
   // get lf_indexer
   const LFIndexer<vid_t>& GetLFIndexer(label_t v_label) const;
-  const BaseIndexer<vid_t>& GetBaseIndexer(label_t v_label) const;
+  const BaseIndexer<vid_t>* GetBaseIndexer(label_t v_label) const;
   const MessageIdAllocator<oid_t, vid_t>& GetMsgAllocator() const;  
+  void SetBasicIndexer(label_t v_label,MessageIdAllocator<oid_t, vid_t>* msg_allocator);
 
  private:
   void init_vertex_data();
@@ -161,6 +162,7 @@ class BasicFragmentLoader {
   std::string work_dir_;
   size_t vertex_label_num_, edge_label_num_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;
+  std::vector<BaseIndexer<vid_t>*> base_indexers_;
   MessageIdAllocator<oid_t, vid_t>* msg_allocator_;
   std::vector<MutableCsrBase*> ie_, oe_;
   std::vector<Table> vertex_data_;

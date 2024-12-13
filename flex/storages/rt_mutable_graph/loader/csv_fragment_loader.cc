@@ -406,8 +406,9 @@ void CSVFragmentLoader::addVertexBatch(
   for (auto i = 0; i < row_num; ++i) {
     auto oid=casted_array->Value(i);
     auto person_id=comment_to_person_map_[oid];
-    auto &person_indexer=basic_fragment_loader_.GetLFIndexer(schema_.get_person_label_id());
-    auto person_lid=person_indexer.get_index(person_id);
+    auto person_indexer=const_cast<LFIndexer<vid_t>*>(dynamic_cast<const LFIndexer<vid_t>*>(basic_fragment_loader_.GetBaseIndexer(schema_.get_person_label_id())));
+    vid_t person_lid;
+    person_indexer->get_index(person_id, person_lid);
     auto vid=msg_allocator.get_message_id(person_lid, oid);
     // if (!vid) {
     //   LOG(FATAL) << "Duplicate vertex id: " << casted_array->Value(i) << " for "
@@ -543,9 +544,11 @@ void CSVFragmentLoader::addVertices(label_t v_label_id,
     loadCreatorEdges();
     auto msg_allocator=new MessageIdAllocator<oid_t,vid_t>();
 
-    basic_fragment_loader_.SetMsgAllocator(*msg_allocator);
+    // basic_fragment_loader_.SetMsgAllocator(*msg_allocator);
+    basic_fragment_loader_.SetBasicIndexer(v_label_id,msg_allocator);
 
-    addVerticesImpl(v_label_id, v_label_name, v_files, basic_fragment_loader_.GetMsgAllocator()); 
+    addVerticesImpl(v_label_id, v_label_name, v_files, 
+        const_cast<MessageIdAllocator<oid_t, vid_t>&>(*dynamic_cast<const MessageIdAllocator<oid_t, vid_t>*>(basic_fragment_loader_.GetBaseIndexer(v_label_id)))); 
     
     basic_fragment_loader_.FinishAddingVertex(v_label_id);
   }else{
@@ -585,12 +588,12 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
 
   std::vector<std::tuple<vid_t, vid_t, EDATA_T>> parsed_edges;
   std::vector<int32_t> ie_degree, oe_degree;
-  const auto& src_indexer = basic_fragment_loader_.GetBaseIndexer(src_label_id);
-  const auto& dst_indexer = basic_fragment_loader_.GetBaseIndexer(dst_label_id);
-  ie_degree.resize(dst_indexer.size());
-  oe_degree.resize(src_indexer.size());
-  VLOG(10) << "src indexer size: " << src_indexer.size()
-           << " dst indexer size: " << dst_indexer.size();
+  const auto src_indexer = basic_fragment_loader_.GetBaseIndexer(src_label_id);
+  const auto dst_indexer = basic_fragment_loader_.GetBaseIndexer(dst_label_id);
+  ie_degree.resize(dst_indexer->size());
+  oe_degree.resize(src_indexer->size());
+  VLOG(10) << "src indexer size: " << src_indexer->size()
+           << " dst indexer size: " << dst_indexer->size();
 
   for (auto filename : e_files) {
     VLOG(10) << "processing " << filename << " with src_col_id " << src_col_ind
@@ -600,8 +603,8 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
         create_edge_reader(schema_, loading_config_, src_label_id, dst_label_id,
                            e_label_id, filename, is_stream);
 
-    const auto& src_indexer = basic_fragment_loader_.GetBaseIndexer(src_label_id);
-    const auto& dst_indexer = basic_fragment_loader_.GetBaseIndexer(dst_label_id);
+    const auto src_indexer = basic_fragment_loader_.GetBaseIndexer(src_label_id);
+    const auto dst_indexer = basic_fragment_loader_.GetBaseIndexer(dst_label_id);
 
     while (true) {
       std::shared_ptr<arrow::RecordBatch> record_batch = reader->Read();
@@ -632,8 +635,8 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
             std::static_pointer_cast<arrow::Int64Array>(src_col);
         auto dst_casted_array =
             std::static_pointer_cast<arrow::Int64Array>(dst_col);
-        append_edges(src_casted_array, dst_casted_array, src_indexer,
-                     dst_indexer, property_cols, parsed_edges, ie_degree,
+        append_edges(src_casted_array, dst_casted_array, *src_indexer,
+                     *dst_indexer, property_cols, parsed_edges, ie_degree,
                      oe_degree);
       }
     }
@@ -723,11 +726,17 @@ void CSVFragmentLoader::loadVertices() {
     LOG(INFO) << "Skip loading vertices since no vertex source is specified.";
     return;
   }
-
+  // first process person information
+  auto person_label_id=schema_.get_person_label_id();
+  auto person_files=vertex_sources[person_label_id];
+  addVertices(person_label_id, person_files);
   if (thread_num_ == 1) {
     LOG(INFO) << "Loading vertices with single thread...";
     for (auto iter = vertex_sources.begin(); iter != vertex_sources.end();
          ++iter) {
+      if(iter->first==person_label_id){
+        continue;
+      }
       auto v_label_id = iter->first;
       auto v_files = iter->second;
       addVertices(v_label_id, v_files);
@@ -738,6 +747,9 @@ void CSVFragmentLoader::loadVertices() {
     std::vector<std::pair<label_t, std::vector<std::string>>> vertex_files;
     for (auto iter = vertex_sources.begin(); iter != vertex_sources.end();
          ++iter) {
+      if(iter->first==person_label_id){
+        continue;
+      }
       vertex_files.emplace_back(iter->first, iter->second);
     }
     LOG(INFO) << "Parallel loading with " << thread_num_ << " threads, " << " "

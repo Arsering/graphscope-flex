@@ -17,6 +17,7 @@
 #include "flex/storages/rt_mutable_graph/file_names.h"
 #include "flex/storages/rt_mutable_graph/types.h"
 #include "flex/utils/base_indexer.h"
+#include "flex/utils/id_indexer.h"
 
 namespace gs {
 
@@ -30,7 +31,7 @@ BasicFragmentLoader::BasicFragmentLoader(const Schema& schema,
   ie_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   oe_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   lf_indexers_.resize(vertex_label_num_);
-
+  base_indexers_.resize(vertex_label_num_);
   std::filesystem::create_directories(runtime_dir(prefix));
   std::filesystem::create_directories(snapshot_dir(prefix, 0));
   std::filesystem::create_directories(wal_dir(prefix));
@@ -65,10 +66,11 @@ void BasicFragmentLoader::LoadFragment() {
   for (label_t v_label = 0; v_label < vertex_label_num_; v_label++) {
     auto& v_data = vertex_data_[v_label];
     auto label_name = schema_.get_vertex_label_name(v_label);
-    if(v_label == schema_.get_comment_label_id())
-      v_data.resize(msg_allocator_->size());
-    else
-      v_data.resize(lf_indexers_[v_label].size());
+    // if(v_label == schema_.get_comment_label_id())
+    //   v_data.resize(msg_allocator_->size());
+    // else
+    //   v_data.resize(lf_indexers_[v_label].size());
+    v_data.resize(base_indexers_[v_label]->size());
     v_data.dump(vertex_table_prefix(label_name), snapshot_dir(work_dir_, 0));
   }
 
@@ -147,8 +149,10 @@ void BasicFragmentLoader::FinishAddingVertex(
   std::string prefix =
       snapshot_dir(work_dir_, 0) +
       vertex_map_prefix(schema_.get_vertex_label_name(v_label));
-
-  build_lf_indexer(indexer, prefix, lf_indexers_[v_label]);
+  // build_lf_indexer(indexer, prefix, lf_indexers_[v_label]);
+  auto lf_indexer=new LFIndexer<vid_t>();
+  base_indexers_[v_label]=lf_indexer;
+  build_lf_indexer(indexer, prefix, dynamic_cast<LFIndexer<vid_t>&>(*base_indexers_[v_label]));
 }
 
 void BasicFragmentLoader::FinishAddingVertex(
@@ -158,16 +162,14 @@ void BasicFragmentLoader::FinishAddingVertex(
       snapshot_dir(work_dir_, 0) +
       vertex_map_prefix(schema_.get_vertex_label_name(v_label));
 
-  msg_allocator_->dump(prefix+".msg_allocator");
+  // msg_allocator_->dump(prefix+".msg_allocator");
+  dynamic_cast<MessageIdAllocator<oid_t, vid_t>*>(base_indexers_[v_label])->dump(prefix+".msg_allocator");
 }
 
-const BaseIndexer<vid_t>& BasicFragmentLoader::GetBaseIndexer(
+const BaseIndexer<vid_t>* BasicFragmentLoader::GetBaseIndexer(
     label_t v_label) const {
   CHECK(v_label < vertex_label_num_);
-  if(v_label == schema_.get_comment_label_id())
-    return *msg_allocator_;
-  else
-    return lf_indexers_[v_label];
+  return base_indexers_[v_label];
 }
 
 const LFIndexer<vid_t>& BasicFragmentLoader::GetLFIndexer(
@@ -186,6 +188,10 @@ void BasicFragmentLoader::SetMsgAllocator(MessageIdAllocator<oid_t, vid_t>& msg_
 
 MessageIdAllocator<oid_t, vid_t>& BasicFragmentLoader::GetMsgAllocator(){
   return *msg_allocator_;
+}
+
+void BasicFragmentLoader::SetBasicIndexer(label_t v_label,MessageIdAllocator<oid_t, vid_t>* msg_allocator){
+  base_indexers_[v_label] = msg_allocator;
 }
 
 }  // namespace gs

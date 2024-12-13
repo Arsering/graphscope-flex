@@ -100,6 +100,7 @@ class MutablePropertyFragment {
 
   Schema schema_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;
+  std::vector<BaseIndexer<vid_t>*> base_indexers_;
   MessageIdAllocator<oid_t, vid_t> message_id_allocator_;
   std::vector<MutableCsrBase*> ie_, oe_;
   std::vector<Table> vertex_data_;
