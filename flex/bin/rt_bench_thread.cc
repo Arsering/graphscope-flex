@@ -143,6 +143,10 @@ class Req {
       gbp::get_query_id().store(id % num_of_reqs_unique_);
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           reqs_[id % num_of_reqs_unique_]);
+      std::ofstream result_file(gbp::get_log_dir() + "/results.log", std::ios::app);
+      result_file.write(ret.data(), ret.size());
+      result_file.write("\n", 1);
+      result_file.close();
       end_[id] = gbp::GetSystemTime();
     }
     return;

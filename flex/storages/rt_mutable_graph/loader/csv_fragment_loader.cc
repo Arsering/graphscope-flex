@@ -524,7 +524,7 @@ void CSVFragmentLoader::addVerticesImpl(label_t v_label_id,
 
 void CSVFragmentLoader::addVertices(label_t v_label_id,
                                     const std::vector<std::string>& v_files) {
-  LOG(INFO)<<"add vertices "<<v_label_id;
+  LOG(INFO)<<"add vertices "<<(int)v_label_id<<schema_.get_vertex_label_name(v_label_id);
   auto primary_keys = schema_.get_vertex_primary_key(v_label_id);
 
   if (primary_keys.size() != 1) {
