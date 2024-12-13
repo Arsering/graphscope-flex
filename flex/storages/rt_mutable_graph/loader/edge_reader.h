@@ -17,6 +17,9 @@ public:
     static std::vector<Edge> read_edges_from_csv(const std::string& file_path);
     
     // 构建comment_id到person_id的映射
-    static std::unordered_map<int64_t, int64_t> build_comment_to_person_map(
-        const std::vector<Edge>& edges);
+    void build_comment_to_person_map(
+        const std::vector<Edge>& edges,std::unordered_map<int64_t, int64_t>* message_to_person_map);
+
+    void build_comment_to_person_map(
+        const std::string& file_path,std::unordered_map<int64_t, int64_t>* message_to_person_map);
 };

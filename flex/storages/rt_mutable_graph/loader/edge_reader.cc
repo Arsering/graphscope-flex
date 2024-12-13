@@ -41,13 +41,16 @@ std::vector<Edge> EdgeReader::read_edges_from_csv(const std::string& file_path) 
     return edges;
 }
 
-std::unordered_map<int64_t, int64_t> EdgeReader::build_comment_to_person_map(
-    const std::vector<Edge>& edges) {
-    std::unordered_map<int64_t, int64_t> comment_to_person;
+void EdgeReader::build_comment_to_person_map(
+    const std::vector<Edge>& edges,std::unordered_map<int64_t, int64_t>* message_to_person_map) {
+    // std::unordered_map<int64_t, int64_t> comment_to_person;
     
     for (const auto& edge : edges) {
-        comment_to_person[edge.comment_id] = edge.person_id;
+        (*message_to_person_map)[edge.comment_id] = edge.person_id;
     }
-    
-    return comment_to_person;
 } 
+
+void EdgeReader::build_comment_to_person_map(const std::string& file_path,std::unordered_map<int64_t, int64_t>* message_to_person_map){
+    auto edges=read_edges_from_csv(file_path);
+    build_comment_to_person_map(edges,message_to_person_map);
+}

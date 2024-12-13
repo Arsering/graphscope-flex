@@ -154,6 +154,8 @@ class Schema {
 
   label_t get_creator_edge_label_id() const;
 
+  label_t get_post_label_id() const;
+
  private:
   label_t vertex_label_to_index(const std::string& label);
 
@@ -178,6 +180,7 @@ class Schema {
   label_t comment_label_id_;
   label_t person_label_id_;
   label_t creator_edge_label_id_;
+  label_t post_label_id_;
 };
 
 }  // namespace gs
