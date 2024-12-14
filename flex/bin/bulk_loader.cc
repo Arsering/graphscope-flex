@@ -91,6 +91,10 @@ int main(int argc, char** argv) {
   // gbp::get_log_dir() = log_data_path;
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
+  auto message_label_ids = schema.get_message_label_ids();
+  for (auto label_id : message_label_ids) {
+    LOG(INFO) << "message_label_ids: " << schema.get_vertex_label_name(label_id);
+  }
   auto loading_config =
       gs::LoadingConfig::ParseFromYaml(schema, bulk_load_config_path);
 

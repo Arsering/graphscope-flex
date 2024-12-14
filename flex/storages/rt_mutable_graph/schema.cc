@@ -600,6 +600,18 @@ static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
     LOG(ERROR) << "type_id is not equal to label_id for type: " << label_name;
     return false;
   }
+
+  // 检查是否有 is_message 字段且为 true
+  bool is_message = false;
+  if(node["is_message"]) {
+    is_message = node["is_message"].as<bool>();
+  }
+
+  // 如果是 message 类型，添加到 message_label_ids_
+  if(is_message) {
+    schema.add_message_label_id(label_id);
+  }
+
   return true;
 }
 

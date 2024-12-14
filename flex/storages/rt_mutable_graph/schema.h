@@ -156,6 +156,18 @@ class Schema {
 
   label_t get_post_label_id() const;
 
+  void add_message_label_id(label_t label) {
+    message_label_ids_.push_back(label);
+  }
+
+  const std::vector<label_t>& get_message_label_ids() const {
+    return message_label_ids_;
+  }
+
+  bool is_message_vertex(label_t label) const {
+    return std::find(message_label_ids_.begin(), message_label_ids_.end(), label) != message_label_ids_.end();
+  }
+
  private:
   label_t vertex_label_to_index(const std::string& label);
 
@@ -181,6 +193,7 @@ class Schema {
   label_t person_label_id_;
   label_t creator_edge_label_id_;
   label_t post_label_id_;
+  std::vector<label_t> message_label_ids_;
 };
 
 }  // namespace gs
