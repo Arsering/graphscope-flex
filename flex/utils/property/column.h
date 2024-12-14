@@ -95,7 +95,7 @@ class TypedColumn : public ColumnBase {
             const std::string& work_dir) {
     std::string basic_path = snapshot_dir + "/" + name;
     if (std::filesystem::exists(basic_path)) {
-      basic_buffer_.open(basic_path, true);
+      basic_buffer_.open(basic_path, false);
       basic_size_ = basic_buffer_.size();
     } else {
       basic_size_ = 0;
@@ -200,8 +200,14 @@ class TypedColumn : public ColumnBase {
 
 #if OV
   void set_value(size_t index, const T& val) {
-    assert(index >= basic_size_ && index < basic_size_ + extra_size_);
-    extra_buffer_.set(index - basic_size_, val);
+    // assert(index >= basic_size_ && index < basic_size_ + extra_size_);
+    if(index >= basic_size_){
+      assert(index < basic_size_ + extra_size_);
+      extra_buffer_.set(index - basic_size_, val);
+    }else{
+      basic_buffer_.set(index, val);
+    }
+    // extra_buffer_.set(index - basic_size_, val);
   }
 
   void set_any(size_t index, const Any& value) override {
@@ -288,7 +294,7 @@ class StringColumn : public ColumnBase
             const std::string& work_dir) {
     std::string basic_path = snapshot_dir + "/" + name;
     if (std::filesystem::exists(basic_path + ".items")) {
-      basic_buffer_.open(basic_path, true);
+      basic_buffer_.open(basic_path, false);
       basic_size_ = basic_buffer_.size();
     } else {
       basic_size_ = 0;

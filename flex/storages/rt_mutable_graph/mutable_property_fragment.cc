@@ -358,7 +358,8 @@ oid_t MutablePropertyFragment::get_oid(label_t label, vid_t lid) const {
 }
 
 vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id) {
-  return lf_indexers_[label].insert(id);
+  // return lf_indexers_[label].insert(id);
+  return dynamic_cast<LFIndexer<vid_t>*>(base_indexers_[label])->insert(id);
 }
 
 vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id, label_t creator_label, oid_t creator_id) {
