@@ -1,7 +1,5 @@
 #pragma once
 #include <bits/stdint-intn.h>
-#include <mutex>
-#include <unordered_map>
 #include <atomic>
 #include <string>
 #include <fstream>
@@ -9,6 +7,7 @@
 #include <iostream>
 #include <iomanip>
 #include "base_indexer.h"
+#include <tbb/concurrent_unordered_map.h>
 
 // 泛型类，OID是外部ID类型，LID是本地ID类型
 template<typename OID = int64_t, typename LID=int64_t>
@@ -20,26 +19,23 @@ class MessageIdAllocator : public gs::BaseIndexer<LID> {
 private:
     static constexpr int MESSAGE_IN_BLOCK = 3;  // 每个block中可以存放的消息数量
     
-    mutable std::mutex mtx;  // 用于保护map的互斥锁
-    std::unordered_map<OID, int> person_counters;  // 每个person的当前计数器
+    tbb::concurrent_unordered_map<OID, int> person_counters;  // 每个person的当前计数器
     std::atomic<int> global_block_count{0};  // 全局block计数器
     
     // 存储每个message id对应的person
-    std::unordered_map<LID, OID> message_owners;
+    tbb::concurrent_unordered_map<LID, OID> message_owners;
     
     // 存储外部消息ID到内部消息ID的映射
-    std::unordered_map<OID, LID> oid_to_lid_map;
+    tbb::concurrent_unordered_map<OID, LID> oid_to_lid_map;
 
     // 存储内部消息ID到外部消息ID的映射
-    std::unordered_map<LID, OID> lid_to_oid_map;
+    tbb::concurrent_unordered_map<LID, OID> lid_to_oid_map;
 
 public:
     MessageIdAllocator() = default;
     
     // 获取下一个消息ID，现在需要传入外部消息ID
     LID get_message_id(OID person, OID message_oid) {
-        std::lock_guard<std::mutex> lock(mtx);
-        
         // 检查这个oid是否已经分配过lid
         auto oid_it = oid_to_lid_map.find(message_oid);
         if (oid_it != oid_to_lid_map.end()) {
@@ -50,7 +46,7 @@ public:
         auto it = person_counters.find(person);
         if (it == person_counters.end()) {
             // 新的person，分配一个新的block
-            person_counters[person] = global_block_count.fetch_add(1) * MESSAGE_IN_BLOCK;
+            person_counters.insert({person, global_block_count.fetch_add(1) * MESSAGE_IN_BLOCK});
             it = person_counters.find(person);
         }
         
@@ -58,19 +54,20 @@ public:
         LID current_offset = static_cast<LID>(it->second);
         
         // 记录message id的所有者
-        message_owners[current_offset] = person;
+        message_owners.insert({current_offset, person});
         
         // 记录oid到lid的映射
-        oid_to_lid_map[message_oid] = current_offset;
-        lid_to_oid_map[current_offset] = message_oid;
+        oid_to_lid_map.insert({message_oid, current_offset});
+        lid_to_oid_map.insert({current_offset, message_oid});
         
         // 增加计数器
-        it->second++;
+        int new_counter = it->second + 1;
+        person_counters[person] = new_counter;
         
         // 检查是否需要分配新的block
-        if (it->second % MESSAGE_IN_BLOCK == 0) {
+        if (new_counter % MESSAGE_IN_BLOCK == 0) {
             // 分配新的block
-            it->second = global_block_count.fetch_add(1) * MESSAGE_IN_BLOCK;
+            person_counters[person] = global_block_count.fetch_add(1) * MESSAGE_IN_BLOCK;
         }
         
         return current_offset;
@@ -78,7 +75,6 @@ public:
     
     // 根据外部消息ID获取内部消息ID
     bool get_lid_by_oid(OID message_oid, LID& lid) const {
-        std::lock_guard<std::mutex> lock(mtx);
         auto it = oid_to_lid_map.find(message_oid);
         if (it == oid_to_lid_map.end()) {
             return false;
@@ -89,7 +85,6 @@ public:
     
     // 根据内部消息ID获取外部消息ID
     bool get_oid_by_lid(LID message_lid, OID& oid) const {
-        std::lock_guard<std::mutex> lock(mtx);
         auto it = lid_to_oid_map.find(message_lid);
         if (it == lid_to_oid_map.end()) {
             return false;
@@ -103,8 +98,6 @@ public:
     
     // 打印block分配情况
     void print_block_allocation() const {
-        std::lock_guard<std::mutex> lock(mtx);
-        
         std::cout << "\n=== Block Allocation Status ===\n";
         
         int total_blocks = get_block_count();
@@ -138,7 +131,6 @@ public:
     }
         // 将当前状态保存到文件
     void dump(const std::string& file_path) const {
-        std::lock_guard<std::mutex> lock(mtx);
         std::ofstream file(file_path, std::ios::binary);
         if (!file) {
             throw std::runtime_error("Cannot open file for writing: " + file_path);
@@ -183,7 +175,6 @@ public:
 
     // 从文件加载状态
     void load(const std::string& file_path) {
-        std::lock_guard<std::mutex> lock(mtx);
         std::ifstream file(file_path, std::ios::binary);
         if (!file) {
             throw std::runtime_error("Cannot open file for reading: " + file_path);

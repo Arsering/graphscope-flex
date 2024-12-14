@@ -40,7 +40,7 @@ cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
-for thread_num in 1
+for thread_num in 30
 do
     expression="(1.5 + 0.0131 * $thread_num + 60) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression))")
