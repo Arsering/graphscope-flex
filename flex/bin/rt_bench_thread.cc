@@ -394,6 +394,11 @@ int main(int argc, char** argv) {
   auto& db = gs::GraphDB::get();
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
+  auto message_ids=schema.get_message_label_ids();
+  LOG(INFO) << "message_ids = " << message_ids.size();
+  for (auto id:message_ids) {
+    LOG(INFO) << "message is = " << schema.get_vertex_label_name(id);
+  }
   LOG(INFO) << "Start loading graph";
   db.Init(schema, data_path, shard_num);
 

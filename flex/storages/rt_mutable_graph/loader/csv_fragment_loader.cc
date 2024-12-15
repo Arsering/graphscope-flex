@@ -541,7 +541,8 @@ void CSVFragmentLoader::addVertices(label_t v_label_id,
   VLOG(10) << "Start init vertices for label " << v_label_name << " with "
            << v_files.size() << " files.";
 
-  if(v_label_id==schema_.get_comment_label_id() || v_label_id==schema_.get_post_label_id()){
+  // if(v_label_id==schema_.get_comment_label_id() || v_label_id==schema_.get_post_label_id()){
+  if(schema_.is_message_vertex(v_label_id)){
     LOG(INFO)<<"load verices" << schema_.get_vertex_label_name(v_label_id);
     std::unordered_map<int64_t, int64_t> message_to_person_map;
     loadCreatorEdges(v_label_id,&message_to_person_map);

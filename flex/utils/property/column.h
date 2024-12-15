@@ -224,16 +224,26 @@ class TypedColumn : public ColumnBase {
   }
 #else
   void set_value(size_t index, const T& val) {
-#if ASSERT_ENABLE
-    assert(index >= basic_size_ && index < basic_size_ + extra_size_);
-#endif
+// #if ASSERT_ENABLE
+//     assert(index >= basic_size_ && index < basic_size_ + extra_size_);
+// #endif
     // 为了防止一个obj跨两个页
-    if constexpr (gbp::PAGE_SIZE_FILE / sizeof(T) == 0)
-      extra_buffer_.set(index - basic_size_, val);
-    else {
-      auto item_t = extra_buffer_.get(index - basic_size_);
-      gbp::BufferBlock::UpdateContent<T>([&](T& item) { item = val; }, item_t);
+    if(index >= basic_size_){
+      if constexpr (gbp::PAGE_SIZE_FILE / sizeof(T) == 0)
+        extra_buffer_.set(index - basic_size_, val);
+      else {
+        auto item_t = extra_buffer_.get(index - basic_size_);
+        gbp::BufferBlock::UpdateContent<T>([&](T& item) { item = val; }, item_t);
+      }
+    }else{
+      if constexpr (gbp::PAGE_SIZE_FILE / sizeof(T) == 0)
+        basic_buffer_.set(index, val);
+      else {
+        auto item_t = basic_buffer_.get(index);
+        gbp::BufferBlock::UpdateContent<T>([&](T& item) { item = val; }, item_t);
+      }
     }
+
   }
 
   void set_any(size_t index, const Any& value) override {

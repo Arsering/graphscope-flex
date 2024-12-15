@@ -135,7 +135,8 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
   // lf_indexers_.resize(vertex_label_num_);
   base_indexers_.resize(vertex_label_num_);
   for(size_t i=0;i<vertex_label_num_;i++){
-    if(i!=schema_.get_comment_label_id()&&i!=schema_.get_post_label_id()){
+    // if(i!=schema_.get_comment_label_id()&&i!=schema_.get_post_label_id()){
+    if(!schema_.is_message_vertex(i)){
       base_indexers_[i]=new LFIndexer<vid_t>();
     }else{
       base_indexers_[i]=new MessageIdAllocator<oid_t, vid_t>();
@@ -159,7 +160,8 @@ void MutablePropertyFragment::Open(const std::string& work_dir) {
     //   lf_indexers_[i].open(vertex_map_prefix(v_label_name), snapshot_dir,
     //                      tmp_dir_path);
     // }
-    if(i==schema_.get_comment_label_id()||i==schema_.get_post_label_id()){
+    // if(i==schema_.get_comment_label_id()||i==schema_.get_post_label_id()){
+    if(schema_.is_message_vertex(i)){
       dynamic_cast<MessageIdAllocator<oid_t, vid_t>*>(base_indexers_[i])->open(vertex_map_prefix(v_label_name)+".msg_allocator", snapshot_dir,
                               tmp_dir_path);
     }else{
