@@ -444,6 +444,18 @@ grape::InArchive& operator<<(grape::InArchive& in_archive,
 grape::OutArchive& operator>>(grape::OutArchive& out_archive,
                               std::string_view& value);
 
+// 添加 to_string 函数
+template<typename T, size_t N>
+std::string to_string(const std::array<T, N>& arr) {
+    std::string result = "[";
+    for (size_t i = 0; i < N; ++i) {
+        if (i > 0) result += ", ";
+        result += std::to_string(arr[i]); 
+    }
+    result += "]";
+    return result;
+}
+
 }  // namespace gs
 
 namespace std {

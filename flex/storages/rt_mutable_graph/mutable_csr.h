@@ -451,7 +451,7 @@ class MutableCsrConstEdgeIterBase {
   virtual ~MutableCsrConstEdgeIterBase() = default;
 
   virtual vid_t get_neighbor() const = 0;
-  virtual const void* get_data() const = 0;
+  virtual Any get_data() const = 0;
   virtual timestamp_t get_timestamp() const = 0;
   virtual size_t size() const = 0;
 
@@ -465,7 +465,7 @@ class MutableCsrEdgeIterBase {
   virtual ~MutableCsrEdgeIterBase() = default;
 
   virtual vid_t get_neighbor() const = 0;
-  virtual const void* get_data() const = 0;
+  virtual Any get_data() const = 0;
   virtual timestamp_t get_timestamp() const = 0;
   // virtual void set_data(const gbp::BufferBlock& value, timestamp_t ts) = 0;
   virtual void set_data(const Any& value, timestamp_t ts) = 0;
@@ -599,7 +599,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 #endif
   }
 
-  FORCE_INLINE const void* get_data() const {
+  FORCE_INLINE Any get_data() const {
 #if ASSERT_ENABLE
     assert(is_valid());
 #endif
@@ -611,9 +611,9 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 //          sizeof(EDATA_T));
 // return ret;
 #ifdef USING_EDGE_ITER
-    return &(objs_.current()->data);
+    return AnyConverter<EDATA_T>::to_any(objs_.current()->data);
 #else
-    return &(gbp::BufferBlock::Ref<nbr_t>(objs_, cur_idx_).data);
+    return AnyConverter<EDATA_T>::to_any(gbp::BufferBlock::Ref<nbr_t>(objs_, cur_idx_).data);
 #endif
   }
 
@@ -685,7 +685,7 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
     return gbp::BufferBlock::Ref<nbr_t>(objs_, cur_idx_).neighbor;
   }
 
-  FORCE_INLINE const void* get_data() const {
+  FORCE_INLINE Any get_data() const {
 #if ASSERT_ENABLE
     assert(is_valid());
 #endif
@@ -698,7 +698,7 @@ class TypedMutableCsrEdgeIter : public MutableCsrEdgeIterBase {
     // cur_idx_).data),
     //          sizeof(EDATA_T));
     // return ret;
-    return &(gbp::BufferBlock::Ref<nbr_t>(objs_, cur_idx_).data);
+    return AnyConverter<EDATA_T>::to_any(gbp::BufferBlock::Ref<nbr_t>(objs_, cur_idx_).data);
   }
 
   FORCE_INLINE timestamp_t get_timestamp() const {
