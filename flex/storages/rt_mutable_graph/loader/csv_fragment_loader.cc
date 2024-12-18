@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "flex/storages/rt_mutable_graph/loader/csv_fragment_loader.h"
 #include "flex/engines/hqps_db/core/utils/hqps_utils.h"
 #include "flex/storages/rt_mutable_graph/loader/csv_reader_factory.h"
@@ -699,7 +698,394 @@ void CSVFragmentLoader::loadEdges() {
   }
 }
 
+void CSVFragmentLoader::InitCGraph() {}
+void CSVFragmentLoader::loadVertices_cgraph() {
+  auto vertex_sources = loading_config_.GetVertexLoadingMeta();
+  LOG(INFO) << schema_.vprop_column_family_nums_.size();
+  basic_fragment_loader_.vertices_.reserve(schema_.vprop_names_.size());
+  std::filesystem::create_directories(basic_fragment_loader_.work_dir_ +
+                                      "/snapshots/" + std::to_string(1));
+  for (size_t vertex_id = 0;
+       vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
+    LOG(INFO) << schema_.get_vertex_label_name(vertex_id);
+
+    // create vertex
+    basic_fragment_loader_.vertices_.emplace_back(
+        schema_.vprop_column_family_nums_[vertex_id],
+        basic_fragment_loader_.work_dir_ + "/snapshots/" + std::to_string(1));
+
+    std::vector<std::vector<cgraph::Vertex::ColumnConfiguration>>
+        column_configurations;
+    column_configurations.resize(schema_.vprop_column_family_nums_[vertex_id]);
+
+    for (size_t column_id = 0;
+         column_id < schema_.vproperties_[vertex_id].size(); column_id++) {
+      column_configurations[schema_
+                                .vprop_column_family_ids_[vertex_id][column_id]]
+          .emplace_back(schema_.vprop_ids_[vertex_id][column_id],
+                        schema_.vprop_column_family_ids_[vertex_id][column_id],
+                        schema_.vproperties_[vertex_id][column_id],
+                        PropertyType::kNone);
+    }
+    // 初始化vertex
+    basic_fragment_loader_.vertices_[vertex_id].Init(
+        column_configurations, schema_.get_vertex_label_name(vertex_id));
+    // 初始化vertex的大小
+    basic_fragment_loader_.vertices_[vertex_id].Resize(
+        schema_.get_max_vnum(schema_.get_vertex_label_name(vertex_id)));
+
+    // bulk load
+    auto v_files = vertex_sources[vertex_id];
+    assert(v_files.size() == 1);
+    csv::CSVLoader loader(v_files[0]);
+    lf_indexers_.emplace_back();
+    IdIndexer<oid_t, vid_t> indexer;  // 创建
+    auto value = loader.get_column(0);
+    vid_t vid = 0;
+    for (int i = 0; i < value.size(); i++) {
+      oid_t obj_id = std::stol(value[i]);
+      indexer.add(obj_id, vid);
+      vid++;
+    }
+
+    std::string prefix = basic_fragment_loader_.work_dir_ + "/snapshots/" +
+                         std::to_string(1) + "/" +
+                         schema_.get_vertex_label_name(vertex_id) + "/hash_map";
+    build_lf_indexer(indexer, prefix, lf_indexers_.back());
+
+    for (auto column_family_id = 0;
+         column_family_id < column_configurations.size(); column_family_id++) {
+      for (auto column_id = 0;
+           column_id < column_configurations[column_family_id].size();
+           column_id++) {
+        auto column_configuration =
+            column_configurations[column_family_id][column_id];
+        auto value = loader.get_column(column_configuration.property_id);
+
+        LOG(INFO) << "property_id: " << column_configuration.property_id << " "
+                  << column_configuration.column_type;
+        switch (column_configuration.column_type) {
+        case PropertyType::kInt32: {
+          for (int k = 0; k < value.size(); k++) {
+            int32_t data = std::stoi(value[k]);
+            basic_fragment_loader_.vertices_[vertex_id].InsertColumn(
+                k, {column_configuration.property_id,
+                    {reinterpret_cast<char*>(&data), sizeof(int32_t)}});
+            auto result =
+                basic_fragment_loader_.vertices_[vertex_id].ReadColumn(
+                    k, column_configuration.property_id);
+            assert(gbp::BufferBlock::Ref<int32_t>(result) == data);
+          }
+          break;
+        }
+        case PropertyType::kInt64: {
+          for (int k = 0; k < value.size(); k++) {
+            int64_t data = std::stoi(value[k]);
+            basic_fragment_loader_.vertices_[vertex_id].InsertColumn(
+                k, {column_configuration.property_id,
+                    {reinterpret_cast<char*>(&data), sizeof(int64_t)}});
+            auto result =
+                basic_fragment_loader_.vertices_[vertex_id].ReadColumn(
+                    k, column_configuration.property_id);
+            assert(gbp::BufferBlock::Ref<int64_t>(result) == data);
+          }
+          break;
+        }
+        case PropertyType::kDouble: {
+          for (int k = 0; k < value.size(); k++) {
+            double data = std::stod(value[k]);
+            basic_fragment_loader_.vertices_[vertex_id].InsertColumn(
+                k, {column_configuration.property_id,
+                    {reinterpret_cast<char*>(&data), sizeof(double)}});
+            auto result =
+                basic_fragment_loader_.vertices_[vertex_id].ReadColumn(
+                    k, column_configuration.property_id);
+            assert(gbp::BufferBlock::Ref<double>(result) == data);
+          }
+          break;
+        }
+        case PropertyType::kDate: {
+          for (int k = 0; k < value.size(); k++) {
+            gs::Date data;
+            data.milli_second = gbp::parseDateTimeToMilliseconds(value[k]);
+            basic_fragment_loader_.vertices_[vertex_id].InsertColumn(
+                k, {column_configuration.property_id,
+                    {reinterpret_cast<char*>(&data), sizeof(gs::Date)}});
+            auto result =
+                basic_fragment_loader_.vertices_[vertex_id].ReadColumn(
+                    k, column_configuration.property_id);
+            assert(gbp::BufferBlock::Ref<uint64_t>(result) ==
+                   data.milli_second);
+          }
+          break;
+        }
+        case PropertyType::kString:
+        case PropertyType::kDynamicString: {
+          for (int k = 0; k < value.size(); k++) {
+            std::string data = value[k];
+            basic_fragment_loader_.vertices_[vertex_id].InsertColumn(
+                k, {column_configuration.property_id, data});
+            auto result =
+                basic_fragment_loader_.vertices_[vertex_id].ReadColumn(
+                    k, column_configuration.property_id);
+            if (!(result == data)) {
+              LOG(INFO) << data;
+            }
+            assert(result == data);
+          }
+          break;
+        }
+        default: {
+          LOG(FATAL)
+              << "Unsupported property type."
+              << column_configurations[column_family_id][column_id].column_type;
+        }
+        }
+      }
+    }
+  }
+  LOG(INFO) << "load vertices done";
+}
+
+void CSVFragmentLoader::loadEdges_cgraph() {
+  basic_fragment_loader_.vertices_.reserve(schema_.vprop_names_.size());
+  std::filesystem::create_directories(basic_fragment_loader_.work_dir_ +
+                                      "/snapshots/" + std::to_string(1));
+
+  std::vector<size_t> property_ids;
+  std::vector<std::vector<std::vector<cgraph::Vertex::ColumnConfiguration>>>
+      column_configurations;
+  std::vector<std::vector<std::vector<std::string>>> edge_files;
+  property_ids.resize(schema_.vprop_names_.size());
+  column_configurations.resize(schema_.vprop_names_.size());
+  for (size_t i = 0; i < schema_.vprop_column_family_nums_.size(); i++) {
+    column_configurations[i].resize(schema_.vprop_column_family_nums_[i]);
+    edge_files;
+    property_ids[i] = *std::max_element(schema_.vprop_ids_[i].begin(),
+                                        schema_.vprop_ids_[i].end()) +
+                      1;
+  }
+  const auto& edge_sources = loading_config_.GetEdgeLoadingMeta();
+  std::unordered_map<gs::LoadingConfig::edge_triplet_type,
+                     std::pair<size_t, size_t>,
+                     boost::hash<gs::LoadingConfig::edge_triplet_type>>
+      edge_property_ids;
+  edge_property_ids.reserve(edge_sources.size());
+  for (auto iter = edge_sources.begin(); iter != edge_sources.end(); ++iter) {
+    LOG(INFO) << "src_vertex_name: "
+              << schema_.get_vertex_label_name(std::get<0>(iter->first)) << " "
+              << "dst_vertex_name: "
+              << schema_.get_vertex_label_name(std::get<1>(iter->first)) << " "
+              << "e_label_name: "
+              << schema_.get_edge_label_name(std::get<2>(iter->first));
+    auto& src_label_id = std::get<0>(iter->first);
+    auto& dst_label_id = std::get<1>(iter->first);
+    auto& e_label_id = std::get<2>(iter->first);
+    auto label_id =
+        schema_.generate_edge_label(src_label_id, dst_label_id, e_label_id);
+
+    // 获得ie的配置
+    {
+      auto ie_column_family_id = schema_.ie_column_family_.at(label_id);
+      auto ie_column_type = PropertyType::kDynamicEdgeList;
+      if (schema_.ie_strategy_.at(label_id) == EdgeStrategy::kMultiple) {
+        ie_column_type = PropertyType::kDynamicEdgeList;
+      } else if (schema_.ie_strategy_.at(label_id) == EdgeStrategy::kSingle) {
+        ie_column_type = PropertyType::kEdge;
+      }
+      if (schema_.ie_strategy_.at(label_id) != EdgeStrategy::kNone) {
+        assert(schema_.eproperties_.at(label_id).size() <= 1);
+        auto e_property_type = schema_.eproperties_.at(label_id).size() == 0
+                                   ? PropertyType::kEmpty
+                                   : schema_.eproperties_.at(label_id)[0];
+
+        column_configurations[dst_label_id][ie_column_family_id].emplace_back(
+            property_ids[dst_label_id], ie_column_family_id, ie_column_type,
+            e_property_type);
+        edge_property_ids[iter->first].first = property_ids[dst_label_id]++;
+      }
+    }
+
+    // 获得oe的配置
+    {
+      auto oe_column_family_id = schema_.oe_column_family_.at(label_id);
+      auto oe_column_type = PropertyType::kDynamicEdgeList;
+      if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kMultiple) {
+        oe_column_type = PropertyType::kDynamicEdgeList;
+      } else if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kSingle) {
+        oe_column_type = PropertyType::kEdge;
+      }
+      if (schema_.oe_strategy_.at(label_id) != EdgeStrategy::kNone) {
+        assert(schema_.eproperties_.at(label_id).size() <= 1);
+        auto e_property_type = schema_.eproperties_.at(label_id).size() == 0
+                                   ? PropertyType::kEmpty
+                                   : schema_.eproperties_.at(label_id)[0];
+        column_configurations[src_label_id][oe_column_family_id].emplace_back(
+            property_ids[src_label_id], oe_column_family_id, oe_column_type,
+            e_property_type);
+        edge_property_ids[iter->first].second = property_ids[src_label_id]++;
+      }
+    }
+  }
+
+  // 初始化column family
+  for (auto vertex_id = 0; vertex_id < column_configurations.size();
+       vertex_id++) {
+    LOG(INFO) << schema_.get_vertex_label_name(vertex_id);
+    auto& column_configuration = column_configurations[vertex_id];
+    basic_fragment_loader_.vertices_.emplace_back(
+        column_configuration.size(),
+        basic_fragment_loader_.work_dir_ + "/snapshots/" + std::to_string(1));
+    basic_fragment_loader_.vertices_.back().Init(
+        column_configuration, schema_.get_vertex_label_name(vertex_id));
+
+    basic_fragment_loader_.vertices_.back().Resize(
+        schema_.get_max_vnum(schema_.get_vertex_label_name(vertex_id)));
+  }
+
+  for (auto iter = edge_sources.begin(); iter != edge_sources.end(); ++iter) {
+    LOG(INFO) << "src_vertex_name: "
+              << schema_.get_vertex_label_name(std::get<0>(iter->first)) << " "
+              << "dst_vertex_name: "
+              << schema_.get_vertex_label_name(std::get<1>(iter->first)) << " "
+              << "e_label_name: "
+              << schema_.get_edge_label_name(std::get<2>(iter->first));
+    auto& src_label_id = std::get<0>(iter->first);
+    auto& dst_label_id = std::get<1>(iter->first);
+    auto& e_label_id = std::get<2>(iter->first);
+    auto label_id =
+        schema_.generate_edge_label(src_label_id, dst_label_id, e_label_id);
+    auto& e_files = iter->second;
+
+    // csv::CSVLoader loader(e_files[0]);
+    // std::map<size_t, size_t> counts;
+    // auto value = loader.get_column(0);
+    // for (auto i = 0; i < value.size(); i++) {
+    //   oid_t obj_id = std::stol(value[i]);
+    //   auto it = counts.find(obj_id);
+    //   if (it == counts.end()) {
+    //     counts[obj_id] = 1;
+    //   } else {
+    //     it->second++;
+    //   }
+    // }
+    auto vertex_num = 10;
+    auto ie_property_id = edge_property_ids[iter->first].first;
+    auto oe_property_id = edge_property_ids[iter->first].second;
+    auto e_property_type = schema_.eproperties_.at(label_id).size() == 0
+                               ? PropertyType::kEmpty
+                               : schema_.eproperties_.at(label_id)[0];
+    std::array<uint64_t, 3> edge_list = {10, 100, 299};  // 假数据
+    // 插入ie
+    if (schema_.ie_strategy_.at(label_id) == EdgeStrategy::kMultiple) {
+      std::vector<std::pair<size_t, size_t>> edge_list_len;
+      for (auto vertex_id = 0; vertex_id < vertex_num; vertex_id++) {
+        edge_list_len.push_back({vertex_id, edge_list.size()});
+      }
+
+      basic_fragment_loader_.vertices_[dst_label_id].EdgeListInitBatch(
+          ie_property_id, edge_list_len);
+
+      std::vector<char> edge;
+
+      assert(ConstructEdge(edge, std::string(), edge_list[0], e_property_type));
+
+      basic_fragment_loader_.vertices_[dst_label_id].InsertEdge(
+          0, {ie_property_id, {edge.data(), edge.size()}});
+
+    } else if (schema_.ie_strategy_.at(label_id) == EdgeStrategy::kSingle) {
+      std::vector<char> edge;
+      assert(ConstructEdge(edge, std::string(), edge_list[0], e_property_type));
+      basic_fragment_loader_.vertices_[dst_label_id].InsertColumn(
+          0, {ie_property_id, {edge.data(), edge.size()}});
+    } else {
+      assert(ie_property_id == 0);
+    }
+
+    // 插入oe
+    if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kMultiple) {
+      std::vector<std::pair<size_t, size_t>> edge_list_len;
+      for (auto vertex_id = 0; vertex_id < vertex_num; vertex_id++) {
+        edge_list_len.push_back({vertex_id, edge_list.size()});
+      }
+
+      basic_fragment_loader_.vertices_[src_label_id].EdgeListInitBatch(
+          oe_property_id, edge_list_len);
+      std::vector<char> edge;
+
+      assert(ConstructEdge(edge, std::string(), edge_list[0], e_property_type));
+
+      basic_fragment_loader_.vertices_[src_label_id].InsertEdge(
+          0, {oe_property_id, {edge.data(), edge.size()}});
+
+    } else if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kSingle) {
+      std::vector<char> edge;
+      assert(ConstructEdge(edge, std::string(), edge_list[0], e_property_type));
+      basic_fragment_loader_.vertices_[src_label_id].InsertColumn(
+          0, {oe_property_id, {edge.data(), edge.size()}});
+    } else {
+      assert(oe_property_id == 0);
+    }
+  }
+  LOG(INFO) << "load edges done";
+}
+
+bool CSVFragmentLoader::ConstructEdge(std::vector<char>& edge,
+                                      const std::string& e_property,
+                                      size_t e_neighbor,
+                                      PropertyType e_property_type) {
+  switch (e_property_type) {
+  case PropertyType::kEmpty: {
+    edge.resize(sizeof(MutableNbr<grape::EmptyType>));
+    auto item = reinterpret_cast<MutableNbr<grape::EmptyType>*>(edge.data());
+    item->neighbor = e_neighbor;
+    item->timestamp = 0;
+    break;
+  }
+  case PropertyType::kDate: {
+    edge.resize(sizeof(MutableNbr<gs::Date>));
+    auto item = reinterpret_cast<MutableNbr<gs::Date>*>(edge.data());
+    item->neighbor = e_neighbor;
+    item->timestamp = 0;
+    item->data = 0;
+    break;
+  }
+  case PropertyType::kInt32: {
+    edge.resize(sizeof(MutableNbr<int32_t>));
+    auto item = reinterpret_cast<MutableNbr<int32_t>*>(edge.data());
+    item->neighbor = e_neighbor;
+    item->timestamp = 0;
+    item->data = 0;
+    break;
+  }
+  case PropertyType::kInt64: {
+    edge.resize(sizeof(MutableNbr<int64_t>));
+    auto item = reinterpret_cast<MutableNbr<int64_t>*>(edge.data());
+    item->neighbor = e_neighbor;
+    item->timestamp = 0;
+    item->data = 0;
+    break;
+  }
+  case PropertyType::kDouble: {
+    edge.resize(sizeof(MutableNbr<double>));
+    auto item = reinterpret_cast<MutableNbr<double>*>(edge.data());
+    item->neighbor = e_neighbor;
+    item->timestamp = 0;
+    item->data = 0;
+    break;
+  }
+  default:
+    assert(false);
+  }
+
+  return true;
+}
+
 void CSVFragmentLoader::LoadFragment() {
+  // InitCGraph();
+  loadVertices_cgraph();
+  // loadEdges_cgraph();
+  return;
   loadVertices();
   loadEdges();
 

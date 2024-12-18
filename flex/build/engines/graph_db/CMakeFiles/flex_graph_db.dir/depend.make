@@ -15,6 +15,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/grap
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -28,6 +30,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/grap
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/lockfree_queue.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/memory_pool.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -45,10 +48,13 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/grap
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/storages/rt_mutable_graph/column_family.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/app_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/arrow_utils.h
@@ -79,6 +85,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/gr
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -92,6 +100,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/gr
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/lockfree_queue.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/memory_pool.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -109,10 +118,13 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/gr
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/storages/rt_mutable_graph/column_family.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/app_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/arrow_utils.h
@@ -143,6 +155,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -156,6 +170,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/lockfree_queue.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/memory_pool.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -173,6 +188,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/column_family.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/file_names.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/loader/basic_fragment_loader.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/loader/csv_fragment_loader.h
@@ -180,9 +196,11 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/loader/loader_factory.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/loading_config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/app_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/arrow_utils.h
@@ -211,6 +229,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -224,6 +244,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/lockfree_queue.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/memory_pool.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -241,6 +262,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/column_family.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/file_names.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/loader/basic_fragment_loader.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/loader/csv_fragment_loader.h
@@ -248,9 +270,11 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/loader/loader_factory.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/loading_config.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/app_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/arrow_utils.h
@@ -274,6 +298,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -305,6 +331,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h
@@ -328,6 +355,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -341,6 +370,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/lockfree_queue.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/memory_pool.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -358,10 +388,13 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/storages/rt_mutable_graph/column_family.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/arrow_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/id_indexer.h
@@ -384,6 +417,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transa
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -415,6 +450,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transa
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h
@@ -440,6 +476,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_tran
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -471,6 +509,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_tran
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h
@@ -496,6 +535,8 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -528,6 +569,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/storages/rt_mutable_graph/file_names.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h

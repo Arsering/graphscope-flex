@@ -40,6 +40,10 @@ enum class PropertyType {
   kInt64,
   kDouble,
   kBufferObject,
+  kEdge,
+  kDynamicString,
+  kDynamicEdgeList,
+  kNone,
 };
 
 struct Date {

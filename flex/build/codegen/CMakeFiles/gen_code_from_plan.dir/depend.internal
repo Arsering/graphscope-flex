@@ -55,6 +55,8 @@ codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
  ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
  ../../flex/graphscope_bufferpool/include/config.h
+ ../../flex/graphscope_bufferpool/include/csv_reader.h
+ ../../flex/graphscope_bufferpool/include/data_parse.h
  ../../flex/graphscope_bufferpool/include/debug.h
  ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
  ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h

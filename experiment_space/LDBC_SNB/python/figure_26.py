@@ -112,6 +112,7 @@ def plot_figure(datas, percentile_number, query_id):
     bottom = base_latency[0, :]
     for stack, color, label in zip(datas, colors, labels):
         plt.bar(np.array(percentiles)/20, stack, bottom=bottom, width=0.5, color=plt.get_cmap('tab10')(color), label=label, zorder=100)
+        print(stack)
         bottom += np.array(stack)
 
     # Add labels and title
@@ -168,7 +169,7 @@ if __name__ == "__main__":
     exp_date_new = ['2024-11-15-20:50:33', '2024-11-16-08:51:44', '2024-11-16-06:51:19', '2024-11-16-01:39:26', '2024-11-17-19:35:25', '2024-11-17-22:23:28']
     exp_date_partial = ['2024-11-15-20:50:33', '2024-11-16-10:31:28', '2024-11-16-13:41:19', '2024-11-16-11:10:17', '2024-11-15-23:40:25', '2024-11-17-17:04:26']
     exp_date_CBI = ['2024-11-15-20:50:33', '2024-11-17-07:45:46', '2024-11-17-10:28:03', '2024-11-17-11:33:13', '2024-11-17-20:31:20', '2024-11-17-23:22:29']
-    query_id = 8
+    query_id = 14
     percentile_number = 50
     
     data_for_fig = np.ones([3, 6])

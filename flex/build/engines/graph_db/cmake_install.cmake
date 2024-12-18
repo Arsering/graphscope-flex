@@ -49,7 +49,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libflex_graph_db.so")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libflex_graph_db.so"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/utils:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libflex_graph_db.so")

@@ -15,6 +15,8 @@ bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpo
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -28,6 +30,7 @@ bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpo
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/lockfree_queue.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/memory_pool.h
+bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/mmap_array.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -45,10 +48,13 @@ bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpo
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/storages/rt_mutable_graph/column_family.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/utils/allocators.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/utils/app_utils.h
 bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o: ../../flex/utils/arrow_utils.h

@@ -75,6 +75,13 @@ class CSVFragmentLoader : public IFragmentLoader {
   void addEdgesImpl(label_t src_label_id, label_t dst_label_id,
                     label_t e_label_id,
                     const std::vector<std::string>& e_files);
+  void InitCGraph();
+  void loadVertices_cgraph();
+
+  void loadEdges_cgraph();
+
+  bool ConstructEdge(std::vector<char>& edge, const std::string& e_property,
+                     size_t e_neighbour, PropertyType e_property_type);
 
   const LoadingConfig& loading_config_;
   const Schema& schema_;
@@ -82,6 +89,8 @@ class CSVFragmentLoader : public IFragmentLoader {
   int32_t thread_num_;
 
   mutable BasicFragmentLoader basic_fragment_loader_;
+
+  std::vector<LFIndexer<vid_t>> lf_indexers_;
 };
 
 }  // namespace gs

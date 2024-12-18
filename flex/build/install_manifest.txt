@@ -16,8 +16,10 @@
 /usr/local/include/flex/graphscope_bufferpool/include/logger.h
 /usr/local/include/flex/graphscope_bufferpool/include/io_server.h
 /usr/local/include/flex/graphscope_bufferpool/include/page_table.h
+/usr/local/include/flex/graphscope_bufferpool/include/data_parse.h
 /usr/local/include/flex/graphscope_bufferpool/include/debug.h
 /usr/local/include/flex/graphscope_bufferpool/include/atomic_ops.h
+/usr/local/include/flex/graphscope_bufferpool/include/mmap_array.h
 /usr/local/include/flex/graphscope_bufferpool/include/type_traits.h
 /usr/local/include/flex/graphscope_bufferpool/include/replacer/clock_replacer_v2.h
 /usr/local/include/flex/graphscope_bufferpool/include/replacer/fifo_replacer_v2.h
@@ -40,6 +42,7 @@
 /usr/local/include/flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp6.h
 /usr/local/include/flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp8.h
 /usr/local/include/flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
+/usr/local/include/flex/graphscope_bufferpool/include/csv_reader.h
 /usr/local/include/flex/graphscope_bufferpool/include/lockfree_queue.h
 /usr/local/lib/libflex_utils.so
 /usr/local/include/flex/utils/property/types.h
@@ -56,6 +59,9 @@
 /usr/local/lib/libflex_rt_mutable_graph.so
 /usr/local/include/flex/storages/rt_mutable_graph/mutable_property_fragment.h
 /usr/local/include/flex/storages/rt_mutable_graph/schema.h
+/usr/local/include/flex/storages/rt_mutable_graph/vertex.h
+/usr/local/include/flex/storages/rt_mutable_graph/column_family.h
+/usr/local/include/flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 /usr/local/include/flex/storages/rt_mutable_graph/mutable_csr.h
 /usr/local/include/flex/storages/rt_mutable_graph/types.h
 /usr/local/lib/libflex_immutable_graph.so

@@ -19,7 +19,7 @@
 #include "flex/storages/rt_mutable_graph/file_names.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 #include "flex/storages/rt_mutable_graph/schema.h"
-
+#include "flex/storages/rt_mutable_graph/vertex.h"
 namespace gs {
 
 template <typename EDATA_T>
@@ -146,7 +146,7 @@ class BasicFragmentLoader {
   // get lf_indexer
   const LFIndexer<vid_t>& GetLFIndexer(label_t v_label) const;
 
- private:
+  //  private:
   void init_vertex_data();
   const Schema& schema_;
   std::string work_dir_;
@@ -154,6 +154,8 @@ class BasicFragmentLoader {
   std::vector<LFIndexer<vid_t>> lf_indexers_;
   std::vector<MutableCsrBase*> ie_, oe_;
   std::vector<Table> vertex_data_;
+
+  std::vector<cgraph::Vertex> vertices_;
 };
 }  // namespace gs
 

@@ -54,6 +54,8 @@ codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/gr
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 codegen/CMakeFiles/gen_code_from_plan.dir/gen_code_from_plan.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h

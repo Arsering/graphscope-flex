@@ -64,6 +64,9 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/flex/storages/rt_mutable_graph" TYPE FILE FILES
     "/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/mutable_property_fragment.h"
     "/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/schema.h"
+    "/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/vertex.h"
+    "/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/column_family.h"
+    "/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/mutable_csr_cgraph.h"
     "/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/mutable_csr.h"
     "/workspaces/graphscope-flex/flex/storages/rt_mutable_graph/types.h"
     )

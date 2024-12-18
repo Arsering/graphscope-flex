@@ -23,15 +23,24 @@ Schema::Schema() = default;
 Schema::~Schema() = default;
 
 void Schema::add_vertex_label(
-    const std::string& label, const std::vector<PropertyType>& property_types,
+    const std::string& label, size_t column_family_num,
+    const std::vector<size_t>& vprop_ids,
+    const std::vector<PropertyType>& property_types,
     const std::vector<std::string>& property_names,
+    const std::vector<size_t>& column_families,
     const std::vector<std::tuple<PropertyType, std::string, size_t>>&
         primary_key,
     const std::vector<StorageStrategy>& strategies, size_t max_vnum) {
   label_t v_label_id = vertex_label_to_index(label);
+
+  vprop_ids_[v_label_id] = vprop_ids;
   vproperties_[v_label_id] = property_types;
   vprop_names_[v_label_id] = property_names;
+  vprop_column_family_nums_[v_label_id] = column_family_num;
+  vprop_column_family_ids_[v_label_id] = column_families;
+
   vprop_storage_[v_label_id] = strategies;
+
   vprop_storage_[v_label_id].resize(vproperties_[v_label_id].size(),
                                     StorageStrategy::kMem);
   v_primary_keys_[v_label_id] = primary_key;
@@ -43,7 +52,8 @@ void Schema::add_edge_label(const std::string& src_label,
                             const std::string& edge_label,
                             const std::vector<PropertyType>& properties,
                             const std::vector<std::string>& prop_names,
-                            EdgeStrategy oe, EdgeStrategy ie) {
+                            EdgeStrategy oe, EdgeStrategy ie,
+                            size_t oe_column_family, size_t ie_column_family) {
   label_t src_label_id = vertex_label_to_index(src_label);
   label_t dst_label_id = vertex_label_to_index(dst_label);
   label_t edge_label_id = edge_label_to_index(edge_label);
@@ -53,6 +63,8 @@ void Schema::add_edge_label(const std::string& src_label,
   eproperties_[label_id] = properties;
   oe_strategy_[label_id] = oe;
   ie_strategy_[label_id] = ie;
+  oe_column_family_[label_id] = oe_column_family;
+  ie_column_family_[label_id] = ie_column_family;
   eprop_names_[label_id] = prop_names;
 }
 
@@ -248,7 +260,7 @@ void Schema::Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) const {
   grape::InArchive arc;
   arc << vproperties_ << vprop_names_ << v_primary_keys_ << vprop_storage_
       << eproperties_ << eprop_names_ << ie_strategy_ << oe_strategy_
-      << max_vnum_ << plugin_list_;
+      << ie_column_family_ << oe_column_family_ << max_vnum_ << plugin_list_;
   CHECK(writer->WriteArchive(arc));
 }
 
@@ -259,17 +271,20 @@ void Schema::Deserialize(std::unique_ptr<grape::LocalIOAdaptor>& reader) {
   CHECK(reader->ReadArchive(arc));
   arc >> vproperties_ >> vprop_names_ >> v_primary_keys_ >> vprop_storage_ >>
       eproperties_ >> eprop_names_ >> ie_strategy_ >> oe_strategy_ >>
-      max_vnum_ >> plugin_list_;
+      ie_column_family_ >> oe_column_family_ >> max_vnum_ >> plugin_list_;
 }
 
 label_t Schema::vertex_label_to_index(const std::string& label) {
   label_t ret;
   vlabel_indexer_.add(label, ret);
   if (vproperties_.size() <= ret) {
+    vprop_ids_.resize(ret + 1);
     vproperties_.resize(ret + 1);
     vprop_storage_.resize(ret + 1);
     max_vnum_.resize(ret + 1);
     vprop_names_.resize(ret + 1);
+    vprop_column_family_nums_.resize(ret + 1);
+    vprop_column_family_ids_.resize(ret + 1);
     v_primary_keys_.resize(ret + 1);
   }
   return ret;
@@ -410,9 +425,11 @@ StorageStrategy StringToStorageStrategy(const std::string& str) {
 
 static bool parse_vertex_properties(YAML::Node node,
                                     const std::string& label_name,
+                                    std::vector<size_t>& vprop_ids,
                                     std::vector<PropertyType>& types,
                                     std::vector<std::string>& names,
-                                    std::vector<StorageStrategy>& strategies) {
+                                    std::vector<StorageStrategy>& strategies,
+                                    std::vector<size_t>& column_families) {
   if (!node || !node.IsSequence()) {
     LOG(ERROR) << "Expect properties for " << label_name << " to be a sequence";
     return false;
@@ -423,9 +440,14 @@ static bool parse_vertex_properties(YAML::Node node,
     LOG(ERROR) << "At least one property is needed for " << label_name;
     return false;
   }
-
   for (int i = 0; i < prop_num; ++i) {
     std::string prop_type_str, strategy_str, prop_name_str;
+    size_t column_family, property_id;
+    if (!get_scalar(node[i], "property_id", property_id)) {
+      LOG(ERROR) << "name of vertex-" << label_name << " prop-" << i - 1
+                 << " is not specified...";
+      return false;
+    }
     if (!get_scalar(node[i], "property_name", prop_name_str)) {
       LOG(ERROR) << "name of vertex-" << label_name << " prop-" << i - 1
                  << " is not specified...";
@@ -456,11 +478,19 @@ static bool parse_vertex_properties(YAML::Node node,
         get_scalar(node[i]["x_csr_params"], "storage_strategy", strategy_str);
       }
     }
+
+    if (!get_scalar(node[i], "column_family", column_family)) {
+      LOG(ERROR) << "column_family of vertex-" << label_name << " prop-"
+                 << i - 1 << " is not specified...";
+      return false;
+    }
+    vprop_ids.push_back(property_id);
     types.push_back(StringToPropertyType(prop_type_str));
     strategies.push_back(StringToStorageStrategy(strategy_str));
     VLOG(10) << "prop-" << i - 1 << " name: " << prop_name_str
              << " type: " << prop_type_str << " strategy: " << strategy_str;
     names.push_back(prop_name_str);
+    column_families.push_back(column_family);
   }
 
   return true;
@@ -515,12 +545,18 @@ static bool parse_edge_properties(YAML::Node node,
 
 static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
   std::string label_name;
+  size_t column_family_num = 0;
+
   if (!get_scalar(node, "type_name", label_name)) {
     return false;
   }
+
   // Can not add two vertex label with same name
   if (schema.has_vertex_label(label_name)) {
     LOG(ERROR) << "Vertex label " << label_name << " already exists";
+    return false;
+  }
+  if (!get_scalar(node, "column_family_num", column_family_num)) {
     return false;
   }
 
@@ -529,17 +565,21 @@ static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
     auto csr_node = node["x_csr_params"];
     get_scalar(csr_node, "max_vertex_num", max_num);
   }
+  std::vector<size_t> vprop_ids;
   std::vector<PropertyType> property_types;
   std::vector<std::string> property_names;
   std::vector<StorageStrategy> strategies;
-  if (!parse_vertex_properties(node["properties"], label_name, property_types,
-                               property_names, strategies)) {
+  std::vector<size_t> column_families;
+  if (!parse_vertex_properties(node["properties"], label_name, vprop_ids,
+                               property_types, property_names, strategies,
+                               column_families)) {
     return false;
   }
   if (!node["primary_keys"]) {
     LOG(ERROR) << "Expect field primary_keys for " << label_name;
     return false;
   }
+
   auto primary_key_node = node["primary_keys"];
   if (!primary_key_node.IsSequence()) {
     LOG(ERROR) << "[Primary_keys] should be sequence";
@@ -571,18 +611,23 @@ static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
                               property_names[primary_key_inds[i]],
                               primary_key_inds[i]);
     // remove primary key from properties.
+    vprop_ids.erase(vprop_ids.begin() + primary_key_inds[i]);
     property_names.erase(property_names.begin() + primary_key_inds[i]);
     property_types.erase(property_types.begin() + primary_key_inds[i]);
+    column_families.erase(column_families.begin() + primary_key_inds[i]);
   }
 
-  schema.add_vertex_label(label_name, property_types, property_names,
+  schema.add_vertex_label(label_name, column_family_num, vprop_ids,
+                          property_types, property_names, column_families,
                           primary_keys, strategies, max_num);
   // check the type_id equals to storage's label_id
   int32_t type_id;
+
   if (!get_scalar(node, "type_id", type_id)) {
     LOG(ERROR) << "type_id is not set properly for type: " << label_name;
     return false;
   }
+
   auto label_id = schema.get_vertex_label_id(label_name);
   if (label_id != type_id) {
     LOG(ERROR) << "type_id is not equal to label_id for type: " << label_name;
@@ -596,6 +641,7 @@ static bool parse_vertices_schema(YAML::Node node, Schema& schema) {
     LOG(ERROR) << "vertex is not set properly";
     return false;
   }
+
   int num = node.size();
   for (int i = 0; i < num; ++i) {
     if (!parse_vertex_schema(node[i], schema)) {
@@ -653,20 +699,25 @@ static bool parse_edge_schema(YAML::Node node, Schema& schema) {
     }
     EdgeStrategy ie = EdgeStrategy::kMultiple;
     EdgeStrategy oe = EdgeStrategy::kMultiple;
+    size_t ie_column_family = 0;  // default column family
+    size_t oe_column_family = 0;  // default column family
     {
       std::string ie_str, oe_str;
       if (get_scalar(cur_node, "outgoing_edge_strategy", oe_str)) {
         oe = StringToEdgeStrategy(oe_str);
+        get_scalar(cur_node, "outgoing_edge_column_family", oe_column_family);
       }
       if (get_scalar(cur_node, "incoming_edge_strategy", ie_str)) {
         ie = StringToEdgeStrategy(ie_str);
+        get_scalar(cur_node, "incoming_edge_column_family", ie_column_family);
       }
     }
     VLOG(10) << "edge " << edge_label_name << " from " << src_label_name
              << " to " << dst_label_name << " with " << property_types.size()
              << " properties";
     schema.add_edge_label(src_label_name, dst_label_name, edge_label_name,
-                          property_types, prop_names, oe, ie);
+                          property_types, prop_names, oe, ie, oe_column_family,
+                          ie_column_family);
   }
 
   // check the type_id equals to storage's label_id

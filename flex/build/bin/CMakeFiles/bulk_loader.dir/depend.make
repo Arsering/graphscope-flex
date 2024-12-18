@@ -17,6 +17,8 @@ bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpoo
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -30,6 +32,7 @@ bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpoo
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/lockfree_queue.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/memory_pool.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/mmap_array.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -47,6 +50,7 @@ bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpoo
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/column_family.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/file_names.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/loader/basic_fragment_loader.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/loader/csv_fragment_loader.h
@@ -54,9 +58,11 @@ bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/loader/loader_factory.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/loading_config.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/allocators.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/app_utils.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/arrow_utils.h

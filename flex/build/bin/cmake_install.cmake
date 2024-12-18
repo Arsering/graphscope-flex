@@ -49,7 +49,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_server")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_server"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/engines/hqps_db:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/engines/hqps_db:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_server")
@@ -69,7 +69,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/engines/hqps_db:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/engines/hqps_db:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench")
@@ -89,7 +89,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench_thread")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench_thread"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/engines/hqps_db:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/engines/hqps_db:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench_thread")
@@ -109,7 +109,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_test1")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_test1"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/engines/hqps_db:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/engines/hqps_db:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_test1")
@@ -129,7 +129,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench_new")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench_new"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/engines/hqps_db:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/engines/hqps_db:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_bench_new")
@@ -149,7 +149,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_test")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_test"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/engines/hqps_db:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/engines/hqps_db:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/rt_test")
@@ -169,7 +169,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/query_gen")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/query_gen"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/engines/hqps_db:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/engines/graph_db:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/engines/hqps_db:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/query_gen")
@@ -229,7 +229,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/bulk_loader")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/bulk_loader"
-         OLD_RPATH "/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/utils:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:"
+         OLD_RPATH "/workspaces/graphscope-flex/flex/build/storages/rt_mutable_graph:/workspaces/graphscope-flex/flex/build/utils:/workspaces/graphscope-flex/flex/build/graphscope_bufferpool/src:/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/bulk_loader")

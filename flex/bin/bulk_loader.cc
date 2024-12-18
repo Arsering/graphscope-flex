@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
       "size of buffer pool");
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
+  FLAGS_minloglevel = google::INFO;
 
   bpo::variables_map vm;
   bpo::store(bpo::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -91,6 +92,7 @@ int main(int argc, char** argv) {
   // gbp::get_log_dir() = log_data_path;
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
+
   auto loading_config =
       gs::LoadingConfig::ParseFromYaml(schema, bulk_load_config_path);
 

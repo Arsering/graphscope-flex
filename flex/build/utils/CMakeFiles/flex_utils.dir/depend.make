@@ -30,6 +30,8 @@ utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_buff
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 utils/CMakeFiles/flex_utils.dir/property/column.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -72,6 +74,8 @@ utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_buffe
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/config.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/csv_reader.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/data_parse.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/debug.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/directcache/direct_cache_impl1.h

@@ -63,8 +63,24 @@ inline void copy_file(const std::string& src, const std::string& dst) {
   ::close(dst_fd);
 }
 
+class mmap_array_base {
+ public:
+  mmap_array_base() {};
+
+  virtual void close() = 0;
+  virtual void reset() = 0;
+  virtual void dump(const std::string& filename) = 0;
+  virtual void resize(size_t size) = 0;
+  virtual bool read_only() const = 0;
+  virtual const std::string& filename() const = 0;
+  virtual size_t size() const = 0;
+  virtual void set(size_t idx, std::string_view val, size_t len = 1) = 0;
+  virtual void set_single_obj(size_t idx, std::string_view val) = 0;
+  virtual const gbp::BufferBlock get(size_t idx, size_t len = 1) const = 0;
+};
+
 template <typename T>
-class mmap_array {
+class mmap_array : public mmap_array_base {
  public:
 #if OV
   mmap_array()
@@ -332,30 +348,36 @@ class mmap_array {
                                    false);
   }
 
-  // // FIXME: 无法保证atomic
-  // void set(size_t idx, const gbp::BufferBlock& val) {
-  //   const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
-  //                              (idx % OBJ_NUM_PERPAGE) * sizeof(T);
-  //   buffer_pool_manager_->SetObject(val, file_offset, val.Size(), fd_gbp_,
-  //                                   false);
-  // }
+  // FIXME: 无法保证atomic，也无法保证单个obj不跨页
+  void set(size_t idx, std::string_view val, size_t len = 1) {
+#if ASSERT_ENABLE
+    assert(idx + len <= size_);
+    if (sizeof(T) * len != val.size()) {
+      LOG(INFO) << "val.size(): " << val.size() << " " << sizeof(T) << " "
+                << len;
+    }
+    assert(sizeof(T) * len == val.size());
+#endif
 
-  // const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
-  //   CHECK_LE(idx + len, size_);
-  //   size_t object_size = sizeof(T) * len;
-  //   gbp::BufferBlock ret(object_size);
+    buffer_pool_manager_->SetBlock(reinterpret_cast<const char*>(val.data()),
+                                   idx * sizeof(T), len * sizeof(T), fd_gbp_,
+                                   false);
+  }
 
-  //   buffer_pool_manager_->GetObject(ret.Data(), idx * sizeof(T),
-  //                                   len * sizeof(T), fd_gbp_);
-  //   return ret;
-  // }
+  // FIXME: 无法保证atomic
+  void set_single_obj(size_t idx, std::string_view val) {
+#if ASSERT_ENABLE
+    assert(idx < size_);
+    assert(sizeof(T) == val.size());
+#endif
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+    buffer_pool_manager_->SetBlock(reinterpret_cast<const char*>(val.data()),
+                                   file_offset, sizeof(T), fd_gbp_, false);
+  }
 
   const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
 #if ASSERT_ENABLE
-    if (idx + len > size_) {
-      LOG(INFO) << idx << " " << len << " " << size_;
-      LOG(INFO) << gbp::get_stack_trace();
-    }
     CHECK_LE(idx + len, size_);
 #endif
 

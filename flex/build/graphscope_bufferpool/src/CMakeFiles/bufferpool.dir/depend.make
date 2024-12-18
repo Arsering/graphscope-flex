@@ -9,6 +9,8 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphsc
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/config.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/csv_reader.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/data_parse.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/debug.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_obj.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl1.h
@@ -88,6 +90,8 @@ graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: .
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_block_imp9.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/bufferblock/buffer_obj.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/config.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/csv_reader.h
+graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/data_parse.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/debug.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache.h
 graphscope_bufferpool/src/CMakeFiles/bufferpool.dir/buffer_pool_manager.cpp.o: ../graphscope_bufferpool/include/directcache/direct_cache_impl1.h

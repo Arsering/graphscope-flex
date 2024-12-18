@@ -30,8 +30,11 @@ class Schema {
   ~Schema();
 
   void add_vertex_label(
-      const std::string& label, const std::vector<PropertyType>& property_types,
+      const std::string& label, size_t column_family_num,
+      const std::vector<size_t>& vprop_ids,
+      const std::vector<PropertyType>& property_types,
       const std::vector<std::string>& property_names,
+      const std::vector<size_t>& column_families,
       const std::vector<std::tuple<PropertyType, std::string, size_t>>&
           primary_key,
       const std::vector<StorageStrategy>& strategies = {},
@@ -43,7 +46,8 @@ class Schema {
                       const std::vector<PropertyType>& properties,
                       const std::vector<std::string>& prop_names,
                       EdgeStrategy oe = EdgeStrategy::kMultiple,
-                      EdgeStrategy ie = EdgeStrategy::kMultiple);
+                      EdgeStrategy ie = EdgeStrategy::kMultiple,
+                      size_t oe_column_family = 0, size_t ie_column_family = 0);
 
   label_t vertex_label_num() const;
 
@@ -148,7 +152,7 @@ class Schema {
 
   void EmplacePlugin(const std::string& plugin_name);
 
- private:
+  //  private:
   label_t vertex_label_to_index(const std::string& label);
 
   label_t edge_label_to_index(const std::string& label);
@@ -157,8 +161,11 @@ class Schema {
 
   IdIndexer<std::string, label_t> vlabel_indexer_;
   IdIndexer<std::string, label_t> elabel_indexer_;
+  std::vector<std::vector<size_t>> vprop_ids_;
   std::vector<std::vector<PropertyType>> vproperties_;
   std::vector<std::vector<std::string>> vprop_names_;
+  std::vector<size_t> vprop_column_family_nums_;
+  std::vector<std::vector<size_t>> vprop_column_family_ids_;
   std::vector<std::vector<std::tuple<PropertyType, std::string, size_t>>>
       v_primary_keys_;  // the third element is the index of the property in the
                         // vertex property list
@@ -167,6 +174,8 @@ class Schema {
   std::map<uint32_t, std::vector<std::string>> eprop_names_;
   std::map<uint32_t, EdgeStrategy> oe_strategy_;
   std::map<uint32_t, EdgeStrategy> ie_strategy_;
+  std::map<uint32_t, size_t> oe_column_family_;
+  std::map<uint32_t, size_t> ie_column_family_;
   std::vector<size_t> max_vnum_;
   std::vector<std::string> plugin_list_;
 };
