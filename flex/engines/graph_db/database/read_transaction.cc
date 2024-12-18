@@ -16,6 +16,7 @@
 #include "flex/engines/graph_db/database/read_transaction.h"
 #include "flex/engines/graph_db/database/version_manager.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
+#include "flex/storages/rt_mutable_graph/types.h"
 
 namespace gs {
 
@@ -144,5 +145,119 @@ void ReadTransaction::release() {
     timestamp_ = std::numeric_limits<timestamp_t>::max();
   }
 }
+
+std::vector<oid_t> ReadTransaction::BatchGetVertexIds(
+    label_t label, const std::vector<vid_t>& indices) const {
+  std::vector<oid_t> oids(indices.size());
+  for (size_t i = 0; i < indices.size(); ++i) {
+    oids[i] = graph_.get_oid(label, indices[i]);
+  }
+  return oids;
+}
+
+std::pair<std::vector<vid_t>, std::vector<bool>>
+ReadTransaction::BatchGetVertexIndices(label_t label,
+                                       const std::vector<oid_t>& oids) const {
+  std::vector<vid_t> indices(oids.size());
+  std::vector<bool> exists(oids.size());
+  for (size_t i = 0; i < oids.size(); ++i) {
+    exists[i] = graph_.get_lid(label, oids[i], indices[i]);
+  }
+  return {indices, exists};
+}
+
+template <typename EDATA_T>
+std::vector<AdjListView<EDATA_T>> ReadTransaction::BatchGetOutgoingEdges(
+    label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
+    label_t edge_label) const {
+  std::vector<AdjListView<EDATA_T>> results;
+  results.reserve(vids.size());
+  for (auto v : vids) {
+    results.push_back(
+        GetOutgoingEdges<EDATA_T>(v_label, v, neighbor_label, edge_label));
+  }
+  return results;
+}
+
+template <typename EDATA_T>
+std::vector<AdjListView<EDATA_T>> ReadTransaction::BatchGetIncomingEdges(
+    label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
+    label_t edge_label) const {
+  std::vector<AdjListView<EDATA_T>> results;
+  results.reserve(vids.size());
+  for (auto v : vids) {
+    results.push_back(
+        GetIncomingEdges<EDATA_T>(v_label, v, neighbor_label, edge_label));
+  }
+  return results;
+}
+
+std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
+    const label_t& src_label_id, const label_t& dst_label_id,
+    const label_t& edge_label_id, const std::vector<vid_t>& vids,
+    const std::string& direction_str) const {
+
+  std::vector<std::vector<vid_t>> ret;
+  ret.resize(vids.size());
+  if (direction_str == "out" || direction_str == "Out" ||
+      direction_str == "OUT") {
+    auto csr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
+    ret.resize(vids.size());
+    for (size_t i = 0; i < vids.size(); ++i) {
+      auto v = vids[i];
+      auto iter = csr->edge_iter(v);
+      auto& vec = ret[i];
+      while (iter->is_valid()) {
+        vec.push_back(iter->get_neighbor());
+        iter->next();
+      }
+    }
+  } else if (direction_str == "in" || direction_str == "In" ||
+             direction_str == "IN") {
+    auto csr = graph_.get_ie_csr(dst_label_id, src_label_id, edge_label_id);
+    ret.resize(vids.size());
+    for (size_t i = 0; i < vids.size(); ++i) {
+      auto v = vids[i];
+      auto iter = csr->edge_iter(v);
+      auto& vec = ret[i];
+      while (iter->is_valid()) {
+        vec.push_back(iter->get_neighbor());
+        iter->next();
+      }
+    }
+  } else if (direction_str == "both" || direction_str == "Both" ||
+             direction_str == "BOTH") {
+    ret.resize(vids.size());
+    auto ocsr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
+    auto icsr = graph_.get_ie_csr(dst_label_id, src_label_id, edge_label_id);
+    for (size_t i = 0; i < vids.size(); ++i) {
+      auto v = vids[i];
+      auto& vec = ret[i];
+      auto iter = ocsr->edge_iter(v);
+      while (iter->is_valid()) {
+        vec.push_back(iter->get_neighbor());
+        iter->next();
+      }
+      iter = icsr->edge_iter(v);
+      while (iter->is_valid()) {
+        vec.push_back(iter->get_neighbor());
+        iter->next();
+      }
+    }
+  } else {
+    LOG(FATAL) << "Not implemented - " << direction_str;
+  }
+  return ret;
+}
+
+template std::vector<AdjListView<Date>> ReadTransaction::BatchGetOutgoingEdges<Date>(
+    label_t, const std::vector<vid_t>&, label_t, label_t) const;
+
+template std::vector<AdjListView<Date>> ReadTransaction::BatchGetIncomingEdges<Date>(
+    label_t, const std::vector<vid_t>&, label_t, label_t) const;
+
+template std::vector<AdjListView<grape::EmptyType>> ReadTransaction::BatchGetIncomingEdges<grape::EmptyType>(
+    label_t, const std::vector<vid_t>&, label_t, label_t) const;
+
 
 }  // namespace gs

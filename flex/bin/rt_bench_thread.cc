@@ -121,7 +121,11 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-      reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      auto query=std::string(buffer.data(), buffer.data() + length);
+      auto type=int(query.back());
+      if(type==9){
+        reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      }
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
