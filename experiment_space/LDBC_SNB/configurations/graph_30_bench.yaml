@@ -107,7 +107,7 @@ schema:
         - id
     - type_id: 2
       type_name: COMMENT
-      is_message: true
+      # is_message: true
       x_csr_params:
         max_vertex_num: 2775551146
       properties:

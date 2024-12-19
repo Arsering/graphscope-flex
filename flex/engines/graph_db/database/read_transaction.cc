@@ -196,7 +196,6 @@ std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
     const label_t& src_label_id, const label_t& dst_label_id,
     const label_t& edge_label_id, const std::vector<vid_t>& vids,
     const std::string& direction_str) const {
-
   std::vector<std::vector<vid_t>> ret;
   ret.resize(vids.size());
   if (direction_str == "out" || direction_str == "Out" ||
@@ -214,7 +213,7 @@ std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
     }
   } else if (direction_str == "in" || direction_str == "In" ||
              direction_str == "IN") {
-    auto csr = graph_.get_ie_csr(dst_label_id, src_label_id, edge_label_id);
+    auto csr = graph_.get_ie_csr(src_label_id, dst_label_id, edge_label_id);
     ret.resize(vids.size());
     for (size_t i = 0; i < vids.size(); ++i) {
       auto v = vids[i];
@@ -229,7 +228,7 @@ std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
              direction_str == "BOTH") {
     ret.resize(vids.size());
     auto ocsr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
-    auto icsr = graph_.get_ie_csr(dst_label_id, src_label_id, edge_label_id);
+    auto icsr = graph_.get_ie_csr(src_label_id, dst_label_id, edge_label_id);
     for (size_t i = 0; i < vids.size(); ++i) {
       auto v = vids[i];
       auto& vec = ret[i];
@@ -250,14 +249,62 @@ std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
   return ret;
 }
 
-template std::vector<AdjListView<Date>> ReadTransaction::BatchGetOutgoingEdges<Date>(
-    label_t, const std::vector<vid_t>&, label_t, label_t) const;
+std::vector<gbp::BufferBlock> ReadTransaction::BatchGetVertexPropsFromVid(
+    label_t label_id, const std::vector<vid_t>& vids,
+    const std::vector<std::string>& prop_names) const {
+  std::vector<gbp::BufferBlock> results;
+  results.reserve(vids.size() * prop_names.size());  // 预分配空间
+  auto& table = graph_.get_vertex_table(label_id);
 
-template std::vector<AdjListView<Date>> ReadTransaction::BatchGetIncomingEdges<Date>(
-    label_t, const std::vector<vid_t>&, label_t, label_t) const;
+  // 获取所有列
+  std::vector<std::shared_ptr<ColumnBase>> columns;
+  columns.reserve(prop_names.size());
+  for (const auto& prop_name : prop_names) {
+    auto column = table.get_column(prop_name);
+    CHECK(column != nullptr) << "Column " << prop_name << " not found";
+    columns.push_back(column);
+  }
 
-template std::vector<AdjListView<grape::EmptyType>> ReadTransaction::BatchGetIncomingEdges<grape::EmptyType>(
-    label_t, const std::vector<vid_t>&, label_t, label_t) const;
+  // 为每个顶点获取属性值
+  for (size_t i = 0; i < vids.size(); i++) {
+    auto vid = vids[i];
+    for (const auto& column : columns) {
+      auto type = column->type();
+      if (type == PropertyType::kString) {
+        auto string_column = std::dynamic_pointer_cast<StringColumn>(column);
+        CHECK(string_column != nullptr);
+        results.push_back(string_column->get(vid));
+      } else if (type == PropertyType::kDate) {
+        auto date_column = std::dynamic_pointer_cast<TypedColumn<Date>>(column);
+        CHECK(date_column != nullptr);
+        results.push_back(date_column->get(vid));
+      } else if (type == PropertyType::kInt32) {
+        auto int_column = std::dynamic_pointer_cast<TypedColumn<int>>(column);
+        CHECK(int_column != nullptr);
+        results.push_back(int_column->get(vid));
+      } else if (type == PropertyType::kInt64) {
+        auto int64_column =
+            std::dynamic_pointer_cast<TypedColumn<int64_t>>(column);
+        CHECK(int64_column != nullptr);
+        results.push_back(int64_column->get(vid));
+      } else {
+        LOG(FATAL) << "Unsupported property type: " << static_cast<int>(type);
+      }
+    }
+  }
+  return results;
+}
 
+template std::vector<AdjListView<Date>>
+ReadTransaction::BatchGetOutgoingEdges<Date>(label_t, const std::vector<vid_t>&,
+                                             label_t, label_t) const;
+
+template std::vector<AdjListView<Date>>
+ReadTransaction::BatchGetIncomingEdges<Date>(label_t, const std::vector<vid_t>&,
+                                             label_t, label_t) const;
+
+template std::vector<AdjListView<grape::EmptyType>>
+ReadTransaction::BatchGetIncomingEdges<grape::EmptyType>(
+    label_t, const std::vector<vid_t>&, label_t, label_t) const;
 
 }  // namespace gs
