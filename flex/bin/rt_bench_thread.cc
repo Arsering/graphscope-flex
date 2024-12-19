@@ -123,7 +123,7 @@ class Req {
       ::fread(buffer.data(), length, 1, query_file_string);
       auto query=std::string(buffer.data(), buffer.data() + length);
       auto type=int(query.back());
-      if(type==9){
+      if(type==8){
         reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
       }
       if (reqs_.size() > 100) {

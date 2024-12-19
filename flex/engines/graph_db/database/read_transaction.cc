@@ -201,6 +201,7 @@ std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
   if (direction_str == "out" || direction_str == "Out" ||
       direction_str == "OUT") {
     auto csr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
+    assert(csr != nullptr);
     ret.resize(vids.size());
     for (size_t i = 0; i < vids.size(); ++i) {
       auto v = vids[i];
@@ -214,6 +215,7 @@ std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
   } else if (direction_str == "in" || direction_str == "In" ||
              direction_str == "IN") {
     auto csr = graph_.get_ie_csr(src_label_id, dst_label_id, edge_label_id);
+    assert(csr != nullptr);
     ret.resize(vids.size());
     for (size_t i = 0; i < vids.size(); ++i) {
       auto v = vids[i];
@@ -229,6 +231,8 @@ std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
     ret.resize(vids.size());
     auto ocsr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
     auto icsr = graph_.get_ie_csr(src_label_id, dst_label_id, edge_label_id);
+    assert(ocsr != nullptr);
+    assert(icsr != nullptr);
     for (size_t i = 0; i < vids.size(); ++i) {
       auto v = vids[i];
       auto& vec = ret[i];
