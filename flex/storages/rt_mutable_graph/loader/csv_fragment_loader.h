@@ -82,6 +82,7 @@ class CSVFragmentLoader : public IFragmentLoader {
 
   bool ConstructEdge(std::vector<char>& edge, const std::string& e_property,
                      size_t e_neighbour, PropertyType e_property_type);
+  void OpenCGraph();
 
   const LoadingConfig& loading_config_;
   const Schema& schema_;

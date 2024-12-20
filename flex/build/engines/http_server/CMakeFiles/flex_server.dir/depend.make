@@ -83,7 +83,9 @@ engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/sto
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/allocators.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/app_utils.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/arrow_utils.h
+engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/base_indexer.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/id_indexer.h
+engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/message_id_indexer.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/mmap_array.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/property/column.h
 engines/http_server/CMakeFiles/flex_server.dir/executor.act.cc.o: ../../flex/utils/property/table.h

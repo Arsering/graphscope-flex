@@ -66,7 +66,9 @@ bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/storages/rt_mutable_
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/allocators.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/app_utils.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/arrow_utils.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/base_indexer.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/id_indexer.h
+bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/message_id_indexer.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/mmap_array.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/property/column.h
 bin/CMakeFiles/bulk_loader.dir/bulk_loader.cc.o: ../../flex/utils/property/table.h

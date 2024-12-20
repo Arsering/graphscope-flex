@@ -25,17 +25,17 @@ BasicFragmentLoader::BasicFragmentLoader(const Schema& schema,
       work_dir_(prefix),
       vertex_label_num_(schema_.vertex_label_num()),
       edge_label_num_(schema_.edge_label_num()) {
-  vertex_data_.resize(vertex_label_num_);
-  ie_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
-  oe_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
-  lf_indexers_.resize(vertex_label_num_);
+  // vertex_data_.resize(vertex_label_num_);
+  // ie_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
+  // oe_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
+  // lf_indexers_.resize(vertex_label_num_);
 
-  std::filesystem::create_directories(runtime_dir(prefix));
-  std::filesystem::create_directories(snapshot_dir(prefix, 0));
-  std::filesystem::create_directories(wal_dir(prefix));
-  std::filesystem::create_directories(tmp_dir(prefix));
+  // std::filesystem::create_directories(runtime_dir(prefix));
+  // std::filesystem::create_directories(snapshot_dir(prefix, 0));
+  // std::filesystem::create_directories(wal_dir(prefix));
+  // std::filesystem::create_directories(tmp_dir(prefix));
 
-  init_vertex_data();
+  // init_vertex_data();
 }
 
 void BasicFragmentLoader::init_vertex_data() {

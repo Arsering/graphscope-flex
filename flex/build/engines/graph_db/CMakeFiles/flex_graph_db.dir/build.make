@@ -252,6 +252,7 @@ engines/graph_db/libflex_graph_db.so: /usr/lib/x86_64-linux-gnu/openmpi/lib/libm
 engines/graph_db/libflex_graph_db.so: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so
 engines/graph_db/libflex_graph_db.so: /usr/lib/x86_64-linux-gnu/libglog.so
 engines/graph_db/libflex_graph_db.so: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
+engines/graph_db/libflex_graph_db.so: /usr/lib/x86_64-linux-gnu/libtbb.so.2
 engines/graph_db/libflex_graph_db.so: /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0
 engines/graph_db/libflex_graph_db.so: graphscope_bufferpool/src/libbufferpool.so
 engines/graph_db/libflex_graph_db.so: engines/graph_db/CMakeFiles/flex_graph_db.dir/link.txt

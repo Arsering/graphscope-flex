@@ -59,7 +59,9 @@ bin/CMakeFiles/query_gen.dir/gen_query_file.cc.o
  ../../flex/utils/allocators.h
  ../../flex/utils/app_utils.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h

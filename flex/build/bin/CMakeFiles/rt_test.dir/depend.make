@@ -70,7 +70,9 @@ bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/storages/rt_mutable_graph/ve
 bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/allocators.h
 bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/app_utils.h
 bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/arrow_utils.h
+bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/base_indexer.h
 bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/id_indexer.h
+bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/message_id_indexer.h
 bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/mmap_array.h
 bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/property/column.h
 bin/CMakeFiles/rt_test.dir/rt_test.cc.o: ../../flex/utils/property/table.h

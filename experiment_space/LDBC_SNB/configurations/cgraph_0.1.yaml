@@ -126,6 +126,9 @@ schema:
       x_csr_params:
         max_vertex_num: 6000000
       column_family_num: 2
+      group_foreign_key:
+        edge_type: HASCREATOR
+        foreign_key_type: dst
       properties:
         - property_id: 0
           property_name: id
@@ -164,6 +167,9 @@ schema:
       x_csr_params:
         max_vertex_num: 2000000
       column_family_num: 2
+      group_foreign_key:
+        edge_type: HASCREATOR
+        foreign_key_type: dst
       properties:
         - property_id: 0
           property_name: id

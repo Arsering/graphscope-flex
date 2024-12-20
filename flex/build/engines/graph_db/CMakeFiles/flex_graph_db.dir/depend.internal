@@ -59,7 +59,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o
  ../../flex/utils/allocators.h
  ../../flex/utils/app_utils.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h
@@ -129,7 +131,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o
  ../../flex/utils/allocators.h
  ../../flex/utils/app_utils.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h
@@ -205,7 +209,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o
  ../../flex/utils/allocators.h
  ../../flex/utils/app_utils.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h
@@ -279,7 +285,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o
  ../../flex/utils/allocators.h
  ../../flex/utils/app_utils.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h
@@ -338,7 +346,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o
  ../../flex/storages/rt_mutable_graph/types.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h
@@ -398,7 +408,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o
  ../../flex/storages/rt_mutable_graph/vertex.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h
@@ -457,7 +469,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transa
  ../../flex/storages/rt_mutable_graph/types.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h
@@ -516,7 +530,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_tran
  ../../flex/storages/rt_mutable_graph/types.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h
@@ -576,7 +592,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o
  ../../flex/storages/rt_mutable_graph/types.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
+ ../../flex/utils/base_indexer.h
  ../../flex/utils/id_indexer.h
+ ../../flex/utils/message_id_indexer.h
  ../../flex/utils/mmap_array.h
  ../../flex/utils/property/column.h
  ../../flex/utils/property/table.h

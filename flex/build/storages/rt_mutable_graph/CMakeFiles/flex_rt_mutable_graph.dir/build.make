@@ -171,6 +171,7 @@ storages/rt_mutable_graph/libflex_rt_mutable_graph.so: storages/rt_mutable_graph
 storages/rt_mutable_graph/libflex_rt_mutable_graph.so: storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/build.make
 storages/rt_mutable_graph/libflex_rt_mutable_graph.so: /usr/local/lib/libgrape-lite.so
 storages/rt_mutable_graph/libflex_rt_mutable_graph.so: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
+storages/rt_mutable_graph/libflex_rt_mutable_graph.so: /usr/lib/x86_64-linux-gnu/libtbb.so.2
 storages/rt_mutable_graph/libflex_rt_mutable_graph.so: /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0
 storages/rt_mutable_graph/libflex_rt_mutable_graph.so: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so
 storages/rt_mutable_graph/libflex_rt_mutable_graph.so: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so

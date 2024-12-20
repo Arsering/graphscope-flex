@@ -166,6 +166,8 @@ class Schema {
   std::vector<std::vector<std::string>> vprop_names_;
   std::vector<size_t> vprop_column_family_nums_;
   std::vector<std::vector<size_t>> vprop_column_family_ids_;
+  std::map<size_t, std::pair<std::string, std::string>> group_foreign_keys_;
+
   std::vector<std::vector<std::tuple<PropertyType, std::string, size_t>>>
       v_primary_keys_;  // the third element is the index of the property in the
                         // vertex property list

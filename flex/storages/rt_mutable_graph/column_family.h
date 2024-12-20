@@ -12,7 +12,6 @@ namespace cgraph {
 class FixedLengthColumnFamily {
  private:
   gbp::mmap_array property_buffer_;
-  size_t row_num_;
   size_t row_capacity_;
   std::vector<size_t> offsets_;  // 记录column family中各个column的偏移量
   std::vector<size_t> columnLengths_;
@@ -21,7 +20,7 @@ class FixedLengthColumnFamily {
   FixedLengthColumnFamily() = default;
   ~FixedLengthColumnFamily() = default;
 
-  void init(const std::vector<size_t>& ColumnLengths,
+  void Open(const std::vector<size_t>& ColumnLengths,
             const std::string& filename) {
     columnLengths_ = ColumnLengths;
     // 计算column family中各个column的偏移量
@@ -32,6 +31,7 @@ class FixedLengthColumnFamily {
     }
     offsets_.push_back(offset);
     property_buffer_.open(filename, false, offset);
+    row_capacity_ = property_buffer_.size();
   }
 
   // 设置单个column的值 (注意修改是非atomic的)
@@ -63,10 +63,6 @@ class FixedLengthColumnFamily {
   // 若要实现atomic，则需要使用gbp::BufferBlock
   gbp::BufferBlock getColumn(size_t rowId, size_t columnId) const {
 #if ASSERT_ENABLE
-    if (rowId >= row_capacity_) {
-      LOG(INFO) << "columnId: " << rowId
-                << " offsets_.size(): " << row_capacity_;
-    }
     assert(rowId < row_capacity_);
     assert(columnId < offsets_.size());
 #endif
@@ -79,7 +75,6 @@ class FixedLengthColumnFamily {
     return columnLengths_[columnId];
   }
   // 获取column的长度
-  size_t getRowNum() const { return row_num_; }
   size_t getSizeInByte() const { return property_buffer_.get_size_in_byte(); }
   // size的单位为byte
   void resize(size_t size) {

@@ -113,8 +113,6 @@ class mmap_array : public mmap_array_base {
     read_only_ = true;
   }
 #else
-  // mmap_array(const mmap_array&) = delete;             // 阻止拷贝
-  // mmap_array& operator=(const mmap_array&) = delete;  // 阻止赋值
   ~mmap_array() { close(); }
 
   void close() {
@@ -367,6 +365,9 @@ class mmap_array : public mmap_array_base {
   // FIXME: 无法保证atomic
   void set_single_obj(size_t idx, std::string_view val) {
 #if ASSERT_ENABLE
+    if (idx >= size_) {
+      LOG(INFO) << "idx: " << idx << " size_: " << size_;
+    }
     assert(idx < size_);
     assert(sizeof(T) == val.size());
 #endif

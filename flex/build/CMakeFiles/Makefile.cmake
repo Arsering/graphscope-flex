@@ -7,6 +7,8 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 # The top level Makefile was generated from the following files:
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
+  "/usr/lib/x86_64-linux-gnu/cmake/TBB/TBBConfig.cmake"
+  "/usr/lib/x86_64-linux-gnu/cmake/TBB/TBBConfigVersion.cmake"
   "/usr/lib/x86_64-linux-gnu/cmake/arrow/ArrowConfig.cmake"
   "/usr/lib/x86_64-linux-gnu/cmake/arrow/ArrowConfigVersion.cmake"
   "/usr/lib/x86_64-linux-gnu/cmake/arrow/ArrowOptions.cmake"
@@ -77,6 +79,10 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/local/lib/cmake/boost_regex-1.84.0/boost_regex-config.cmake"
   "/usr/local/lib/cmake/boost_regex-1.84.0/libboost_regex-variant-shared.cmake"
   "/usr/local/lib/cmake/boost_regex-1.84.0/libboost_regex-variant-static.cmake"
+  "/usr/local/lib/cmake/boost_serialization-1.84.0/boost_serialization-config-version.cmake"
+  "/usr/local/lib/cmake/boost_serialization-1.84.0/boost_serialization-config.cmake"
+  "/usr/local/lib/cmake/boost_serialization-1.84.0/libboost_serialization-variant-shared.cmake"
+  "/usr/local/lib/cmake/boost_serialization-1.84.0/libboost_serialization-variant-static.cmake"
   "/usr/local/lib/cmake/boost_system-1.84.0/boost_system-config-version.cmake"
   "/usr/local/lib/cmake/boost_system-1.84.0/boost_system-config.cmake"
   "/usr/local/lib/cmake/boost_system-1.84.0/libboost_system-variant-shared.cmake"

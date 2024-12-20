@@ -106,7 +106,9 @@ utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_buffe
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/utils/base_indexer.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/utils/id_indexer.h
+utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/utils/message_id_indexer.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/utils/mmap_array.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/utils/property/column.h
 utils/CMakeFiles/flex_utils.dir/property/table.cc.o: ../../flex/utils/property/table.h

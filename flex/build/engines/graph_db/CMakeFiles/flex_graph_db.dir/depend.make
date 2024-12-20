@@ -58,7 +58,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/stor
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/app_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/app_base.cc.o: ../../flex/utils/property/table.h
@@ -128,7 +130,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/st
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/app_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/app/server_app.cc.o: ../../flex/utils/property/table.h
@@ -204,7 +208,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/app_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db.cc.o: ../../flex/utils/property/table.h
@@ -278,7 +284,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/app_utils.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/graph_db_session.cc.o: ../../flex/utils/property/table.h
@@ -337,7 +345,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o: ../../flex/utils/property/table.h
@@ -397,7 +407,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ..
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/read_transaction.cc.o: ../../flex/utils/property/table.h
@@ -456,7 +468,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transa
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transaction.cc.o: ../../flex/utils/property/table.h
@@ -515,7 +529,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_tran
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_transaction.cc.o: ../../flex/utils/property/table.h
@@ -575,7 +591,9 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: 
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/storages/rt_mutable_graph/types.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/utils/allocators.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/utils/arrow_utils.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/utils/base_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/utils/id_indexer.h
+engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/utils/message_id_indexer.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/utils/mmap_array.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/utils/property/column.h
 engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o: ../../flex/utils/property/table.h

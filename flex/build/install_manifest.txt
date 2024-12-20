@@ -48,8 +48,10 @@
 /usr/local/include/flex/utils/property/types.h
 /usr/local/include/flex/utils/property/table.h
 /usr/local/include/flex/utils/property/column.h
+/usr/local/include/flex/utils/message_id_indexer.h
 /usr/local/include/flex/utils/arrow_utils.h
 /usr/local/include/flex/utils/string_view_vector.h
+/usr/local/include/flex/utils/base_indexer.h
 /usr/local/include/flex/utils/yaml_utils.h
 /usr/local/include/flex/utils/mmap_array.h
 /usr/local/include/flex/utils/allocators.h

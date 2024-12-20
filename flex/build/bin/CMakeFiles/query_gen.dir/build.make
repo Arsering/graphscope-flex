@@ -85,6 +85,7 @@ bin/query_gen: utils/libflex_utils.so
 bin/query_gen: graphscope_bufferpool/src/libbufferpool.so
 bin/query_gen: storages/rt_mutable_graph/libflex_rt_mutable_graph.so
 bin/query_gen: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
+bin/query_gen: /usr/lib/x86_64-linux-gnu/libtbb.so.2
 bin/query_gen: /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0
 bin/query_gen: /usr/local/lib/libgrape-lite.so
 bin/query_gen: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so

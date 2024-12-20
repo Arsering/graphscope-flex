@@ -27,6 +27,8 @@ limitations under the License.
 #include <vector>
 
 #include "flat_hash_map/flat_hash_map.hpp"
+#include "flex/utils/base_indexer.h"
+#include "flex/utils/message_id_indexer.h"
 #include "flex/utils/mmap_array.h"
 #include "flex/utils/string_view_vector.h"
 #include "glog/logging.h"

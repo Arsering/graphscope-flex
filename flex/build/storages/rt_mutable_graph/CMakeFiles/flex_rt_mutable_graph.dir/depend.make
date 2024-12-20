@@ -52,7 +52,9 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_frag
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/utils/allocators.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/utils/arrow_utils.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/utils/base_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/utils/id_indexer.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/utils/message_id_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/utils/mmap_array.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/utils/property/column.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/basic_fragment_loader.cc.o: ../../flex/utils/property/table.h
@@ -120,7 +122,9 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragme
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/utils/allocators.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/utils/arrow_utils.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/utils/base_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/utils/id_indexer.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/utils/message_id_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/utils/mmap_array.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/utils/property/column.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/csv_fragment_loader.cc.o: ../../flex/utils/property/table.h
@@ -184,7 +188,9 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_fac
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/utils/allocators.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/utils/arrow_utils.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/utils/base_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/utils/id_indexer.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/utils/message_id_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/utils/mmap_array.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/utils/property/column.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loader/loader_factory.cc.o: ../../flex/utils/property/table.h
@@ -239,7 +245,9 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/storages/rt_mutable_graph/types.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/utils/arrow_utils.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/utils/base_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/utils/id_indexer.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/utils/message_id_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/utils/mmap_array.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/utils/property/column.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/loading_config.cc.o: ../../flex/utils/property/table.h
@@ -345,7 +353,9 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/types.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/allocators.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/arrow_utils.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/base_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/id_indexer.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/message_id_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/mmap_array.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/property/column.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/property/table.h
@@ -395,7 +405,9 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../.
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/utils/base_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/utils/id_indexer.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/utils/message_id_indexer.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/utils/mmap_array.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/utils/property/column.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/schema.cc.o: ../../flex/utils/property/table.h

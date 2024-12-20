@@ -90,6 +90,8 @@ Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE:STRING=/usr/local/lib/libboost_program_opt
 
 Boost_REGEX_LIBRARY_RELEASE:STRING=/usr/local/lib/libboost_regex.so.1.84.0
 
+Boost_SERIALIZATION_LIBRARY_RELEASE:STRING=/usr/local/lib/libboost_serialization.so.1.84.0
+
 Boost_SYSTEM_LIBRARY_RELEASE:STRING=/usr/local/lib/libboost_system.so.1.84.0
 
 //Boost thread library (debug)
@@ -436,6 +438,9 @@ Snappy_INCLUDE_DIR:PATH=/usr/include
 //Path to a library.
 Snappy_LIB:FILEPATH=/usr/lib/x86_64-linux-gnu/libsnappy.so
 
+//The directory containing a CMake configuration file for TBB.
+TBB_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/TBB
+
 //Path to a file.
 ZLIB_INCLUDE_DIR:PATH=/usr/include
 
@@ -468,6 +473,9 @@ boost_program_options_DIR:PATH=/usr/local/lib/cmake/boost_program_options-1.84.0
 
 //The directory containing a CMake configuration file for boost_regex.
 boost_regex_DIR:PATH=/usr/local/lib/cmake/boost_regex-1.84.0
+
+//The directory containing a CMake configuration file for boost_serialization.
+boost_serialization_DIR:PATH=/usr/local/lib/cmake/boost_serialization-1.84.0
 
 //The directory containing a CMake configuration file for boost_system.
 boost_system_DIR:PATH=/usr/local/lib/cmake/boost_system-1.84.0
@@ -593,7 +601,7 @@ flex_graph_db_LIB_DEPENDS:STATIC=general;flex_rt_mutable_graph;general;flex_util
 flex_immutable_graph_LIB_DEPENDS:STATIC=general;grape-lite;
 
 //Dependencies for the target
-flex_rt_mutable_graph_LIB_DEPENDS:STATIC=general;grape-lite;general;yaml-cpp;general;arrow_shared;
+flex_rt_mutable_graph_LIB_DEPENDS:STATIC=general;grape-lite;general;yaml-cpp;general;TBB::tbb;general;arrow_shared;
 
 //Dependencies for the target
 flex_server_LIB_DEPENDS:STATIC=general;Hiactor::hiactor;general;hqps_plan_proto;
@@ -1302,6 +1310,8 @@ boost_headers_DIR-ADVANCED:INTERNAL=1
 boost_program_options_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_regex_DIR
 boost_regex_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: boost_serialization_DIR
+boost_serialization_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_system_DIR
 boost_system_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_thread_DIR

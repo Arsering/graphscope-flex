@@ -85,6 +85,7 @@ bin/rt_test: utils/libflex_utils.so
 bin/rt_test: graphscope_bufferpool/src/libbufferpool.so
 bin/rt_test: storages/rt_mutable_graph/libflex_rt_mutable_graph.so
 bin/rt_test: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
+bin/rt_test: /usr/lib/x86_64-linux-gnu/libtbb.so.2
 bin/rt_test: /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0
 bin/rt_test: /usr/local/lib/libgrape-lite.so
 bin/rt_test: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so

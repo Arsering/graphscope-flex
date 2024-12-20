@@ -633,6 +633,15 @@ static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
     LOG(ERROR) << "type_id is not equal to label_id for type: " << label_name;
     return false;
   }
+
+  if (node["group_foreign_key"]) {
+    std::string edge_type;
+    std::string foreign_key_type;
+    get_scalar(node["group_foreign_key"], "edge_type", edge_type);
+    get_scalar(node["group_foreign_key"], "foreign_key_type", foreign_key_type);
+    schema.group_foreign_keys_[schema.get_vertex_label_id(label_name)] =
+        std::make_pair(edge_type, foreign_key_type);
+  }
   return true;
 }
 
