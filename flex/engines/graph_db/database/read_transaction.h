@@ -391,6 +391,22 @@ class ReadTransaction {
       const label_t& edge_label_id, const std::vector<vid_t>& vids,
       const std::string& direction_str) const;
 
+  /* 批量获取边属性
+  @param src_label_id: 源顶点标签
+  @param dst_label_id: 目标顶点标签  
+  @param edge_label_id: 边标签
+  @param vids: 顶点ID列表
+  @param direction: 方向("in"/"out")
+  @return: vector<vector<pair<vid_t, EDATA_T>>> - 每个顶点的邻居及对应的边属性
+  */
+  template <typename EDATA_T>
+  std::vector<std::vector<std::pair<vid_t, EDATA_T>>> BatchGetEdgeProps(
+      const label_t& src_label_id,
+      const label_t& dst_label_id, 
+      const label_t& edge_label_id,
+      const std::vector<vid_t>& vids,
+      const std::string& direction) const;
+
  private:
   void release();
 

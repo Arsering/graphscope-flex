@@ -311,4 +311,63 @@ template std::vector<AdjListView<grape::EmptyType>>
 ReadTransaction::BatchGetIncomingEdges<grape::EmptyType>(
     label_t, const std::vector<vid_t>&, label_t, label_t) const;
 
+template <typename EDATA_T>
+std::vector<std::vector<std::pair<vid_t, EDATA_T>>> ReadTransaction::BatchGetEdgeProps(
+    const label_t& src_label_id,
+    const label_t& dst_label_id,
+    const label_t& edge_label_id,
+    const std::vector<vid_t>& vids,
+    const std::string& direction) const {
+
+    std::vector<std::vector<std::pair<vid_t, EDATA_T>>> ret;
+    ret.resize(vids.size());
+
+    if (direction == "out" || direction == "Out" || direction == "OUT") {
+        auto csr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
+        assert(csr != nullptr);
+        for (size_t i = 0; i < vids.size(); ++i) {
+            auto v = vids[i];
+            auto iter = csr->edge_iter(v);
+            auto& vec = ret[i];
+            while (iter->is_valid()) {
+                vec.emplace_back(iter->get_neighbor(), 
+                    *static_cast<const EDATA_T*>(iter->get_data()));
+                iter->next();
+            }
+        }
+    } else if (direction == "in" || direction == "In" || direction == "IN") {
+        auto csr = graph_.get_ie_csr(src_label_id, dst_label_id, edge_label_id);
+        assert(csr != nullptr);
+        for (size_t i = 0; i < vids.size(); ++i) {
+            auto v = vids[i];
+            auto iter = csr->edge_iter(v);
+            auto& vec = ret[i];
+            while (iter->is_valid()) {
+                vec.emplace_back(iter->get_neighbor(),
+                    *static_cast<const EDATA_T*>(iter->get_data()));
+                iter->next();
+            }
+        }
+    } else {
+        LOG(FATAL) << "Not implemented - " << direction;
+    }
+    return ret;
+}
+
+// 添加常用类型的模板实例化
+template std::vector<std::vector<std::pair<vid_t, Date>>> 
+ReadTransaction::BatchGetEdgeProps<Date>(
+    const label_t&, const label_t&, const label_t&,
+    const std::vector<vid_t>&, const std::string&) const;
+
+template std::vector<std::vector<std::pair<vid_t, int>>> 
+ReadTransaction::BatchGetEdgeProps<int>(
+    const label_t&, const label_t&, const label_t&,
+    const std::vector<vid_t>&, const std::string&) const;
+
+template std::vector<std::vector<std::pair<vid_t, grape::EmptyType>>> 
+ReadTransaction::BatchGetEdgeProps<grape::EmptyType>(
+    const label_t&, const label_t&, const label_t&,
+    const std::vector<vid_t>&, const std::string&) const;
+
 }  // namespace gs

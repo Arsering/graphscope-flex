@@ -106,6 +106,7 @@ class Req {
         ::fopen((file_path + "/query_file_string.log").c_str(), "r");
     FILE* query_file_string_view =
         ::fopen((file_path + "/query_file_string_view.log").c_str(), "r");
+    LOG(INFO) << "test query_type = " << query_type_;
     assert(query_file_string != nullptr);
     assert(query_file_string_view != nullptr);
 
@@ -123,7 +124,7 @@ class Req {
       ::fread(buffer.data(), length, 1, query_file_string);
       auto query=std::string(buffer.data(), buffer.data() + length);
       auto type=int(query.back());
-      if(type==8){
+      if(type==query_type_){
         reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
       }
       if (reqs_.size() > 100) {
@@ -226,6 +227,7 @@ class Req {
       log_thread_.join();
   }
 
+  int query_type_;
  private:
   Req() : cur_(0), warmup_num_(0) {}
   ~Req() {
@@ -284,7 +286,6 @@ class Req {
   size_t warmup_num_;
   size_t num_of_reqs_;
   size_t num_of_reqs_unique_;
-
   std::vector<std::string> reqs_;
   std::vector<size_t> run_time_req_ids_;
 
@@ -298,28 +299,26 @@ class Req {
   // std::vector<executor_ref> executor_refs_;
 };
 
+int query_type = 0;
+
 int main(int argc, char** argv) {
   gbp::warmup_mark().store(0);
 
   size_t pool_size_Byte = 1024LU * 1024LU * 1024LU * 10;
   bpo::options_description desc("Usage:");
-  desc.add_options()("help", "Display help message")(
-      "version,v", "Display version")("shard-num,s",
-                                      bpo::value<uint32_t>()->default_value(1),
-                                      "shard number of actor system")(
-      "http-port,p", bpo::value<uint16_t>()->default_value(10000),
-      "http port of query handler")("graph-config,g", bpo::value<std::string>(),
-                                    "graph schema config file")(
-      "data-path,d", bpo::value<std::string>(), "data directory path")(
-      "warmup-num,w", bpo::value<uint32_t>()->default_value(0),
-      "num of warmup reqs")("benchmark-num,b",
-                            bpo::value<uint32_t>()->default_value(0),
-                            "num of benchmark reqs")(
-      "req-file,r", bpo::value<std::string>(), "requests file")(
-      "log-data-path,l", bpo::value<std::string>(), "log data directory path")(
-      "buffer-pool-size,B",
-      bpo::value<uint64_t>()->default_value(pool_size_Byte),
-      "size of buffer pool");
+  desc.add_options()
+      ("help", "Display help message")
+      ("version,v", "Display version")
+      ("shard-num,s",bpo::value<uint32_t>()->default_value(1),"shard number of actor system")
+      ("http-port,p", bpo::value<uint16_t>()->default_value(10000),"http port of query handler")
+      ("graph-config,g", bpo::value<std::string>(),"graph schema config file")
+      ("data-path,d", bpo::value<std::string>(), "data directory path")
+      ("warmup-num,w", bpo::value<uint32_t>()->default_value(0),"num of warmup reqs")
+      ("benchmark-num,b",bpo::value<uint32_t>()->default_value(0),"num of benchmark reqs")
+      ("req-file,r", bpo::value<std::string>(), "requests file")
+      ("log-data-path,l", bpo::value<std::string>(), "log data directory path")
+      ("buffer-pool-size,B",bpo::value<uint64_t>()->default_value(pool_size_Byte),"size of buffer pool")
+      ("query-type,q",bpo::value<uint32_t>()->default_value(0),"query type");
 
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
@@ -434,6 +433,13 @@ int main(int argc, char** argv) {
   gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
+
+
+  if (vm.count("query-type")) {
+    Req::get().query_type_ = vm["query-type"].as<uint32_t>();
+  }
+  LOG(INFO) << "test query_type = " << Req::get().query_type_;
+
   Req::get().load_query(req_file);
   // Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
