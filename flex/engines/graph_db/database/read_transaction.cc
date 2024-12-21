@@ -146,228 +146,33 @@ void ReadTransaction::release() {
   }
 }
 
-std::vector<oid_t> ReadTransaction::BatchGetVertexIds(
-    label_t label, const std::vector<vid_t>& indices) const {
-  std::vector<oid_t> oids(indices.size());
-  for (size_t i = 0; i < indices.size(); ++i) {
-    oids[i] = graph_.get_oid(label, indices[i]);
-  }
-  return oids;
-}
-
-std::pair<std::vector<vid_t>, std::vector<bool>>
-ReadTransaction::BatchGetVertexIndices(label_t label,
-                                       const std::vector<oid_t>& oids) const {
-  std::vector<vid_t> indices(oids.size());
-  std::vector<bool> exists(oids.size());
-  for (size_t i = 0; i < oids.size(); ++i) {
-    exists[i] = graph_.get_lid(label, oids[i], indices[i]);
-  }
-  return {indices, exists};
-}
-
-template <typename EDATA_T>
-std::vector<AdjListView<EDATA_T>> ReadTransaction::BatchGetOutgoingEdges(
-    label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
-    label_t edge_label) const {
-  std::vector<AdjListView<EDATA_T>> results;
-  results.reserve(vids.size());
-  for (auto v : vids) {
-    results.push_back(
-        GetOutgoingEdges<EDATA_T>(v_label, v, neighbor_label, edge_label));
-  }
-  return results;
-}
-
-template <typename EDATA_T>
-std::vector<AdjListView<EDATA_T>> ReadTransaction::BatchGetIncomingEdges(
-    label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
-    label_t edge_label) const {
-  std::vector<AdjListView<EDATA_T>> results;
-  results.reserve(vids.size());
-  for (auto v : vids) {
-    results.push_back(
-        GetIncomingEdges<EDATA_T>(v_label, v, neighbor_label, edge_label));
-  }
-  return results;
-}
-
-std::vector<std::vector<vid_t>> ReadTransaction::GetOtherVertices(
-    const label_t& src_label_id, const label_t& dst_label_id,
-    const label_t& edge_label_id, const std::vector<vid_t>& vids,
-    const std::string& direction_str) const {
-  std::vector<std::vector<vid_t>> ret;
-  ret.resize(vids.size());
-  if (direction_str == "out" || direction_str == "Out" ||
-      direction_str == "OUT") {
-    auto csr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
-    assert(csr != nullptr);
-    ret.resize(vids.size());
-    for (size_t i = 0; i < vids.size(); ++i) {
-      auto v = vids[i];
-      auto iter = csr->edge_iter(v);
-      auto& vec = ret[i];
-      while (iter->is_valid()) {
-        vec.push_back(iter->get_neighbor());
-        iter->next();
-      }
-    }
-  } else if (direction_str == "in" || direction_str == "In" ||
-             direction_str == "IN") {
-    auto csr = graph_.get_ie_csr(src_label_id, dst_label_id, edge_label_id);
-    assert(csr != nullptr);
-    ret.resize(vids.size());
-    for (size_t i = 0; i < vids.size(); ++i) {
-      auto v = vids[i];
-      auto iter = csr->edge_iter(v);
-      auto& vec = ret[i];
-      while (iter->is_valid()) {
-        vec.push_back(iter->get_neighbor());
-        iter->next();
-      }
-    }
-  } else if (direction_str == "both" || direction_str == "Both" ||
-             direction_str == "BOTH") {
-    ret.resize(vids.size());
-    auto ocsr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
-    auto icsr = graph_.get_ie_csr(src_label_id, dst_label_id, edge_label_id);
-    assert(ocsr != nullptr);
-    assert(icsr != nullptr);
-    for (size_t i = 0; i < vids.size(); ++i) {
-      auto v = vids[i];
-      auto& vec = ret[i];
-      auto iter = ocsr->edge_iter(v);
-      while (iter->is_valid()) {
-        vec.push_back(iter->get_neighbor());
-        iter->next();
-      }
-      iter = icsr->edge_iter(v);
-      while (iter->is_valid()) {
-        vec.push_back(iter->get_neighbor());
-        iter->next();
-      }
-    }
+gbp::BufferBlock ReadTransaction::GetVertexProp(label_t label, vid_t vid,
+                                                vid_t col_id) const {
+  auto& table = graph_.get_vertex_table(label);
+  gbp::BufferBlock results;
+  auto column = table.get_column_by_id(col_id);
+  auto type = column->type();
+  if (type == PropertyType::kString) {
+    auto string_column = std::dynamic_pointer_cast<StringColumn>(column);
+    CHECK(string_column != nullptr);
+    results=string_column->get(vid);
+  } else if (type == PropertyType::kDate) {
+    auto date_column = std::dynamic_pointer_cast<TypedColumn<Date>>(column);
+    CHECK(date_column != nullptr);
+    results=date_column->get(vid);
+  } else if (type == PropertyType::kInt32) {
+    auto int_column = std::dynamic_pointer_cast<TypedColumn<int>>(column);
+    CHECK(int_column != nullptr);
+    results=int_column->get(vid);
+  } else if (type == PropertyType::kInt64) {
+    auto int64_column = std::dynamic_pointer_cast<TypedColumn<int64_t>>(column);
+    CHECK(int64_column != nullptr);
+    results=int64_column->get(vid);
   } else {
-    LOG(FATAL) << "Not implemented - " << direction_str;
-  }
-  return ret;
-}
-
-std::vector<gbp::BufferBlock> ReadTransaction::BatchGetVertexPropsFromVid(
-    label_t label_id, const std::vector<vid_t>& vids,
-    const std::vector<std::string>& prop_names) const {
-  std::vector<gbp::BufferBlock> results;
-  results.reserve(vids.size() * prop_names.size());  // 预分配空间
-  auto& table = graph_.get_vertex_table(label_id);
-
-  // 获取所有列
-  std::vector<std::shared_ptr<ColumnBase>> columns;
-  columns.reserve(prop_names.size());
-  for (const auto& prop_name : prop_names) {
-    auto column = table.get_column(prop_name);
-    CHECK(column != nullptr) << "Column " << prop_name << " not found";
-    columns.push_back(column);
-  }
-
-  // 为每个顶点获取属性值
-  for (size_t i = 0; i < vids.size(); i++) {
-    auto vid = vids[i];
-    for (const auto& column : columns) {
-      auto type = column->type();
-      if (type == PropertyType::kString) {
-        auto string_column = std::dynamic_pointer_cast<StringColumn>(column);
-        CHECK(string_column != nullptr);
-        results.push_back(string_column->get(vid));
-      } else if (type == PropertyType::kDate) {
-        auto date_column = std::dynamic_pointer_cast<TypedColumn<Date>>(column);
-        CHECK(date_column != nullptr);
-        results.push_back(date_column->get(vid));
-      } else if (type == PropertyType::kInt32) {
-        auto int_column = std::dynamic_pointer_cast<TypedColumn<int>>(column);
-        CHECK(int_column != nullptr);
-        results.push_back(int_column->get(vid));
-      } else if (type == PropertyType::kInt64) {
-        auto int64_column =
-            std::dynamic_pointer_cast<TypedColumn<int64_t>>(column);
-        CHECK(int64_column != nullptr);
-        results.push_back(int64_column->get(vid));
-      } else {
-        LOG(FATAL) << "Unsupported property type: " << static_cast<int>(type);
-      }
-    }
+    LOG(FATAL) << "Unsupported property type: " << static_cast<int>(type);
   }
   return results;
 }
 
-template std::vector<AdjListView<Date>>
-ReadTransaction::BatchGetOutgoingEdges<Date>(label_t, const std::vector<vid_t>&,
-                                             label_t, label_t) const;
-
-template std::vector<AdjListView<Date>>
-ReadTransaction::BatchGetIncomingEdges<Date>(label_t, const std::vector<vid_t>&,
-                                             label_t, label_t) const;
-
-template std::vector<AdjListView<grape::EmptyType>>
-ReadTransaction::BatchGetIncomingEdges<grape::EmptyType>(
-    label_t, const std::vector<vid_t>&, label_t, label_t) const;
-
-template <typename EDATA_T>
-std::vector<std::vector<std::pair<vid_t, EDATA_T>>> ReadTransaction::BatchGetEdgeProps(
-    const label_t& src_label_id,
-    const label_t& dst_label_id,
-    const label_t& edge_label_id,
-    const std::vector<vid_t>& vids,
-    const std::string& direction) const {
-
-    std::vector<std::vector<std::pair<vid_t, EDATA_T>>> ret;
-    ret.resize(vids.size());
-
-    if (direction == "out" || direction == "Out" || direction == "OUT") {
-        auto csr = graph_.get_oe_csr(src_label_id, dst_label_id, edge_label_id);
-        assert(csr != nullptr);
-        for (size_t i = 0; i < vids.size(); ++i) {
-            auto v = vids[i];
-            auto iter = csr->edge_iter(v);
-            auto& vec = ret[i];
-            while (iter->is_valid()) {
-                vec.emplace_back(iter->get_neighbor(), 
-                    *static_cast<const EDATA_T*>(iter->get_data()));
-                iter->next();
-            }
-        }
-    } else if (direction == "in" || direction == "In" || direction == "IN") {
-        auto csr = graph_.get_ie_csr(src_label_id, dst_label_id, edge_label_id);
-        assert(csr != nullptr);
-        for (size_t i = 0; i < vids.size(); ++i) {
-            auto v = vids[i];
-            auto iter = csr->edge_iter(v);
-            auto& vec = ret[i];
-            while (iter->is_valid()) {
-                vec.emplace_back(iter->get_neighbor(),
-                    *static_cast<const EDATA_T*>(iter->get_data()));
-                iter->next();
-            }
-        }
-    } else {
-        LOG(FATAL) << "Not implemented - " << direction;
-    }
-    return ret;
-}
-
-// 添加常用类型的模板实例化
-template std::vector<std::vector<std::pair<vid_t, Date>>> 
-ReadTransaction::BatchGetEdgeProps<Date>(
-    const label_t&, const label_t&, const label_t&,
-    const std::vector<vid_t>&, const std::string&) const;
-
-template std::vector<std::vector<std::pair<vid_t, int>>> 
-ReadTransaction::BatchGetEdgeProps<int>(
-    const label_t&, const label_t&, const label_t&,
-    const std::vector<vid_t>&, const std::string&) const;
-
-template std::vector<std::vector<std::pair<vid_t, grape::EmptyType>>> 
-ReadTransaction::BatchGetEdgeProps<grape::EmptyType>(
-    const label_t&, const label_t&, const label_t&,
-    const std::vector<vid_t>&, const std::string&) const;
 
 }  // namespace gs

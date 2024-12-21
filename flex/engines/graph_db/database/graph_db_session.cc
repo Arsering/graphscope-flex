@@ -63,6 +63,11 @@ std::shared_ptr<ColumnBase> GraphDBSession::get_vertex_property_column(
   return db_.get_vertex_property_column(label, col_name);
 }
 
+int GraphDBSession::get_vertex_property_column_id(
+    uint8_t label, const std::string& col_name) const {
+  return db_.get_vertex_property_column_id(label, col_name);
+}
+
 std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
     uint8_t label) const {
       assert(false);

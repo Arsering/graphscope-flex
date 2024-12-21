@@ -149,6 +149,11 @@ std::shared_ptr<ColumnBase> GraphDB::get_vertex_property_column(
   return graph_.get_vertex_table(label).get_column(col_name);
 }
 
+int GraphDB::get_vertex_property_column_id(
+    uint8_t label, const std::string& col_name) const {
+  return graph_.get_vertex_table(label).get_column_id(col_name);
+}
+
 AppWrapper GraphDB::CreateApp(uint8_t app_type, int thread_id) {
   if (app_factories_[app_type] == nullptr) {
     LOG(ERROR) << "Stored procedure " << static_cast<int>(app_type)

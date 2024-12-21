@@ -153,6 +153,16 @@ const std::shared_ptr<ColumnBase> Table::get_column(
 
   return nullptr;
 }
+
+int Table::get_column_id(const std::string& name) const {
+  int col_id;
+  if (col_id_indexer_.get_index(name, col_id)) {
+    return col_id;
+  }
+  LOG(ERROR) << "Column " << name << " not found in table";
+  return -1;
+}
+
 #if OV
 std::vector<Any> Table::get_row(size_t row_id) const {
   std::vector<Any> ret;

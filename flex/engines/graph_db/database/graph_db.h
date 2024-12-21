@@ -97,6 +97,9 @@ class GraphDB {
   std::shared_ptr<ColumnBase> get_vertex_property_column(
       uint8_t label, const std::string& col_name) const;
 
+  int get_vertex_property_column_id(
+      uint8_t label, const std::string& col_name) const;
+
   AppWrapper CreateApp(uint8_t app_type, int thread_id);
 
   void GetAppInfo(Encoder& result);

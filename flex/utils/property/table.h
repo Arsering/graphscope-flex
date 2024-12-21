@@ -60,6 +60,7 @@ class Table {
   std::shared_ptr<ColumnBase> get_column(const std::string& name);
 
   const std::shared_ptr<ColumnBase> get_column(const std::string& name) const;
+  int get_column_id(const std::string& name) const;
 #if OV
   std::vector<Any> get_row(size_t row_id) const;
 #else
