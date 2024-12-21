@@ -328,6 +328,7 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/lockfree_queue.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/logger.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/memory_pool.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/mmap_array.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/page_table.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/partitioner.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -345,12 +346,14 @@ storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/rw_lock.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/type_traits.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/graphscope_bufferpool/include/utils.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/column_family.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/file_names.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/schema.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/types.h
+storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/storages/rt_mutable_graph/vertex.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/allocators.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/arrow_utils.h
 storages/rt_mutable_graph/CMakeFiles/flex_rt_mutable_graph.dir/mutable_property_fragment.cc.o: ../../flex/utils/base_indexer.h

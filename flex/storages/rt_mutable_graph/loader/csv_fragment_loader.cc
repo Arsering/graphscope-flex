@@ -1054,6 +1054,17 @@ void CSVFragmentLoader::InitCGraph() {
       }
     }
   }
+
+  {  // 保存schema
+    std::string schema_filename =
+        schema_path(basic_fragment_loader_.work_dir_ + "/snapshots/" +
+                    std::to_string(1) + "/");
+    auto io_adaptor = std::unique_ptr<grape::LocalIOAdaptor>(
+        new grape::LocalIOAdaptor(schema_filename));
+    io_adaptor->Open("wb");
+    schema_.Serialize(io_adaptor);
+    io_adaptor->Close();
+  }
   LOG(INFO) << "load vertices done";
 }
 
@@ -1341,8 +1352,8 @@ void CSVFragmentLoader::OpenCGraph() {  // 创建vertex
 }
 
 void CSVFragmentLoader::LoadFragment() {
-  // InitCGraph();
-  OpenCGraph();
+  InitCGraph();
+  // OpenCGraph();
   // loadEdges_cgraph();
   return;
   loadVertices();

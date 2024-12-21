@@ -322,6 +322,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o
  ../../flex/graphscope_bufferpool/include/lockfree_queue.h
  ../../flex/graphscope_bufferpool/include/logger.h
  ../../flex/graphscope_bufferpool/include/memory_pool.h
+ ../../flex/graphscope_bufferpool/include/mmap_array.h
  ../../flex/graphscope_bufferpool/include/page_table.h
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -339,11 +340,13 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/insert_transaction.cc.o
  ../../flex/graphscope_bufferpool/include/rw_lock.h
  ../../flex/graphscope_bufferpool/include/type_traits.h
  ../../flex/graphscope_bufferpool/include/utils.h
+ ../../flex/storages/rt_mutable_graph/column_family.h
  ../../flex/storages/rt_mutable_graph/mutable_csr.h
  ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
  ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
  ../../flex/storages/rt_mutable_graph/schema.h
  ../../flex/storages/rt_mutable_graph/types.h
+ ../../flex/storages/rt_mutable_graph/vertex.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
  ../../flex/utils/base_indexer.h
@@ -445,6 +448,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transa
  ../../flex/graphscope_bufferpool/include/lockfree_queue.h
  ../../flex/graphscope_bufferpool/include/logger.h
  ../../flex/graphscope_bufferpool/include/memory_pool.h
+ ../../flex/graphscope_bufferpool/include/mmap_array.h
  ../../flex/graphscope_bufferpool/include/page_table.h
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -462,11 +466,13 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_edge_insert_transa
  ../../flex/graphscope_bufferpool/include/rw_lock.h
  ../../flex/graphscope_bufferpool/include/type_traits.h
  ../../flex/graphscope_bufferpool/include/utils.h
+ ../../flex/storages/rt_mutable_graph/column_family.h
  ../../flex/storages/rt_mutable_graph/mutable_csr.h
  ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
  ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
  ../../flex/storages/rt_mutable_graph/schema.h
  ../../flex/storages/rt_mutable_graph/types.h
+ ../../flex/storages/rt_mutable_graph/vertex.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
  ../../flex/utils/base_indexer.h
@@ -506,6 +512,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_tran
  ../../flex/graphscope_bufferpool/include/lockfree_queue.h
  ../../flex/graphscope_bufferpool/include/logger.h
  ../../flex/graphscope_bufferpool/include/memory_pool.h
+ ../../flex/graphscope_bufferpool/include/mmap_array.h
  ../../flex/graphscope_bufferpool/include/page_table.h
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -523,11 +530,13 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/single_vertex_insert_tran
  ../../flex/graphscope_bufferpool/include/rw_lock.h
  ../../flex/graphscope_bufferpool/include/type_traits.h
  ../../flex/graphscope_bufferpool/include/utils.h
+ ../../flex/storages/rt_mutable_graph/column_family.h
  ../../flex/storages/rt_mutable_graph/mutable_csr.h
  ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
  ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
  ../../flex/storages/rt_mutable_graph/schema.h
  ../../flex/storages/rt_mutable_graph/types.h
+ ../../flex/storages/rt_mutable_graph/vertex.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
  ../../flex/utils/base_indexer.h
@@ -567,6 +576,7 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o
  ../../flex/graphscope_bufferpool/include/lockfree_queue.h
  ../../flex/graphscope_bufferpool/include/logger.h
  ../../flex/graphscope_bufferpool/include/memory_pool.h
+ ../../flex/graphscope_bufferpool/include/mmap_array.h
  ../../flex/graphscope_bufferpool/include/page_table.h
  ../../flex/graphscope_bufferpool/include/partitioner.h
  ../../flex/graphscope_bufferpool/include/replacer/TwoQLRU_replacer.h
@@ -584,12 +594,14 @@ engines/graph_db/CMakeFiles/flex_graph_db.dir/database/update_transaction.cc.o
  ../../flex/graphscope_bufferpool/include/rw_lock.h
  ../../flex/graphscope_bufferpool/include/type_traits.h
  ../../flex/graphscope_bufferpool/include/utils.h
+ ../../flex/storages/rt_mutable_graph/column_family.h
  ../../flex/storages/rt_mutable_graph/file_names.h
  ../../flex/storages/rt_mutable_graph/mutable_csr.h
  ../../flex/storages/rt_mutable_graph/mutable_csr_cgraph.h
  ../../flex/storages/rt_mutable_graph/mutable_property_fragment.h
  ../../flex/storages/rt_mutable_graph/schema.h
  ../../flex/storages/rt_mutable_graph/types.h
+ ../../flex/storages/rt_mutable_graph/vertex.h
  ../../flex/utils/allocators.h
  ../../flex/utils/arrow_utils.h
  ../../flex/utils/base_indexer.h

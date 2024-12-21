@@ -24,6 +24,7 @@
 
 #include "flex/storages/rt_mutable_graph/mutable_csr.h"
 #include "flex/storages/rt_mutable_graph/types.h"
+#include "flex/storages/rt_mutable_graph/vertex.h"
 #include "flex/utils/arrow_utils.h"
 #include "flex/utils/id_indexer.h"
 #include "flex/utils/property/table.h"
@@ -93,6 +94,7 @@ class MutablePropertyFragment {
                                    label_t edge_label) const;
 
   void loadSchema(const std::string& filename);
+  void cgraph_open(const std::string& snapshot_dir_path);
 
   Schema schema_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;
@@ -100,6 +102,8 @@ class MutablePropertyFragment {
   std::vector<Table> vertex_data_;
 
   size_t vertex_label_num_, edge_label_num_;
+
+  std::vector<cgraph::Vertex> vertices_;
 };
 
 }  // namespace gs

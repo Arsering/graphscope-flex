@@ -997,6 +997,8 @@ flex/storages/rt_mutable_graph/mutable_csr.h
 ../../flex/storages/rt_mutable_graph/flex/storages/rt_mutable_graph/mutable_csr.h
 flex/storages/rt_mutable_graph/types.h
 ../../flex/storages/rt_mutable_graph/flex/storages/rt_mutable_graph/types.h
+flex/storages/rt_mutable_graph/vertex.h
+../../flex/storages/rt_mutable_graph/flex/storages/rt_mutable_graph/vertex.h
 flex/utils/arrow_utils.h
 ../../flex/storages/rt_mutable_graph/flex/utils/arrow_utils.h
 flex/utils/id_indexer.h

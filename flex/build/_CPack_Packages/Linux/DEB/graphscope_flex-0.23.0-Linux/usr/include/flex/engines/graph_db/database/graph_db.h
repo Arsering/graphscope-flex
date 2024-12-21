@@ -33,7 +33,6 @@
 #include "flex/storages/rt_mutable_graph/loader/loader_factory.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
-
 namespace gs {
 
 class GraphDB;
@@ -49,6 +48,9 @@ class GraphDB {
 
   void Init(const Schema& schema, const std::string& data_dir,
             int thread_num = 1);
+
+  void CGraphInit(const Schema& schema, const std::string& data_dir,
+                  int thread_num = 1);
 
   void Checkpoint();
 

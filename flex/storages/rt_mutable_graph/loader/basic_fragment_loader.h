@@ -156,6 +156,7 @@ class BasicFragmentLoader {
   std::vector<Table> vertex_data_;
 
   std::vector<cgraph::Vertex> vertices_;
+  std::vector<BaseIndexer<vid_t>*> indexers_;
 };
 }  // namespace gs
 

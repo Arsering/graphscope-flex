@@ -380,4 +380,51 @@ const MutableCsrBase* MutablePropertyFragment::get_ie_csr(
   return ie_[index];
 }
 
+void MutablePropertyFragment::cgraph_open(
+    const std::string& snapshot_dir_path) {
+  loadSchema(
+      schema_path(snapshot_dir_path + "/snapshots/" + std::to_string(1)));
+
+  std::filesystem::create_directories(snapshot_dir_path +
+                                      "/runtime/tmp");  // 创建runtime/tmp目录
+  LOG(INFO) << "copy snapshot from "
+            << snapshot_dir_path + "/snapshots/" + std::to_string(1) << " to "
+            << snapshot_dir_path + "/runtime/tmp";
+  std::filesystem::copy(snapshot_dir_path + "/snapshots/" + std::to_string(1),
+                        snapshot_dir_path + "/runtime/tmp",
+                        std::filesystem::copy_options::recursive |
+                            std::filesystem::copy_options::overwrite_existing);
+  LOG(INFO) << "copy snapshot to tmp done";
+
+  for (size_t vertex_id = 0;
+       vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
+    lf_indexers_.emplace_back();
+    lf_indexers_.back().open("hash_map",
+                             snapshot_dir_path + "/snapshots/" +
+                                 std::to_string(1) + "/" +
+                                 schema_.get_vertex_label_name(vertex_id),
+                             snapshot_dir_path + "/runtime/tmp/" +
+                                 schema_.get_vertex_label_name(vertex_id));
+    // create vertex
+    vertices_.emplace_back();
+    // 初始化vertex
+    vertices_.back().Open(schema_.get_vertex_label_name(vertex_id),
+                          snapshot_dir_path + "/runtime/tmp");
+  }
+
+  LOG(INFO) << "open vertex done";
+
+  auto person_label_id = schema_.get_vertex_label_id("PERSON");
+  auto property_id = 5;
+  gs::oid_t person_oid = 8796093022290;
+  gs::vid_t person_vid = lf_indexers_[person_label_id].get_index(person_oid);
+  auto item = vertices_[person_label_id].ReadColumn(person_vid, property_id);
+  std::vector<char> data(item.Size());
+  item.Copy(data.data(), data.size());
+  LOG(INFO) << "data: " << std::string_view(data.data(), data.size());
+  LOG(INFO) << "data: " << gbp::BufferBlock::Ref<gs::Date>(item).milli_second;
+  LOG(INFO) << gbp::TimeConverter::millisToDateString(
+      gbp::BufferBlock::Ref<gs::Date>(item).milli_second, true);
+}
+
 }  // namespace gs
