@@ -302,7 +302,9 @@ class Vertex {
 
   void Init(
       std::vector<std::vector<ColumnConfiguration>>& column_configurations,
+      std::map<size_t, size_t>& edge_label_to_property_id,
       const std::string& vertex_name, const std::string& db_dir_path) {
+    edge_label_to_property_id_ = edge_label_to_property_id;
     db_dir_path_ = db_dir_path;
     {
       vertex_name_ = vertex_name;
@@ -334,6 +336,7 @@ class Vertex {
         }
         property_id_to_ColumnToColumnFamily_configurations_.insert(
             {column_configuration.property_id, column_configuration});
+
         property_id_to_ColumnToColumnFamily_configurations_[column_configuration
                                                                 .property_id]
             .column_id_in_column_family = column_id_in_column_family++;
@@ -468,6 +471,11 @@ class Vertex {
 
   void InsertColumn(size_t vertex_id,
                     const std::pair<size_t, std::string_view> value) {
+#if ASSERT_ENABLE
+    assert(property_id_to_ColumnToColumnFamily_configurations_.count(
+               value.first) == 1);
+#endif
+
     auto column_to_column_family =
         property_id_to_ColumnToColumnFamily_configurations_[value.first];
 
@@ -514,10 +522,19 @@ class Vertex {
     }
   }
 
-  void EdgeListInitBatch(size_t property_id,
+  void EdgeListInitBatch(size_t edge_label_id,
                          std::vector<std::pair<size_t, size_t>>& values) {
+#if ASSERT_ENABLE
+    assert(edge_label_to_property_id_.count(edge_label_id) == 1);
+#endif
+
     auto column_to_column_family =
-        property_id_to_ColumnToColumnFamily_configurations_[property_id];
+        property_id_to_ColumnToColumnFamily_configurations_
+            [edge_label_to_property_id_[edge_label_id]];
+    if (column_to_column_family.column_type !=
+        gs::PropertyType::kDynamicEdgeList) {
+      assert(false);
+    }
     for (auto& value : values) {
       auto item_t =
           datas_of_all_column_family_[column_to_column_family.column_family_id]
@@ -553,8 +570,12 @@ class Vertex {
   }
   // pair<property_id, value>
   void InsertEdge(size_t vertex_id, std::pair<size_t, std::string_view> value) {
+#if ASSERT_ENABLE
+    assert(edge_label_to_property_id_.count(value.first) == 1);
+#endif
     auto column_to_column_family =
-        property_id_to_ColumnToColumnFamily_configurations_[value.first];
+        property_id_to_ColumnToColumnFamily_configurations_
+            [edge_label_to_property_id_[value.first]];
     switch (column_to_column_family.column_type) {
     case gs::PropertyType::kDynamicEdgeList: {
       auto item_t =
@@ -591,7 +612,8 @@ class Vertex {
       break;
     }
     case gs::PropertyType::kEdge: {
-      InsertColumn(vertex_id, value);
+      InsertColumn(vertex_id,
+                   {edge_label_to_property_id_[value.first], value.second});
       break;
     }
     default: {
@@ -602,21 +624,37 @@ class Vertex {
     }
   }
 
-  gbp::BufferBlock ReadEdgeList(size_t vertex_id, size_t property_id) {
+  gbp::BufferBlock ReadEdges(size_t vertex_id, size_t edge_label_id) {
+#if ASSERT_ENABLE
+    assert(edge_label_to_property_id_.count(edge_label_id) == 1);
+#endif
+
     auto column_to_column_family =
-        property_id_to_ColumnToColumnFamily_configurations_[property_id];
-    if (column_to_column_family.column_type !=
-        gs::PropertyType::kDynamicEdgeList) {
+        property_id_to_ColumnToColumnFamily_configurations_
+            [edge_label_to_property_id_[edge_label_id]];
+    switch (column_to_column_family.column_type) {
+    case PropertyType::kDynamicEdgeList: {
+      auto item_t =
+          datas_of_all_column_family_[column_to_column_family.column_family_id]
+              .fixed_length_column_family->getColumn(
+                  vertex_id,
+                  column_to_column_family.column_id_in_column_family);
+      auto& item = gbp::BufferBlock::Ref<MutableAdjlist>(item_t);
+      return datas_of_all_column_family_[column_to_column_family
+                                             .column_family_id]
+          .csr[column_to_column_family.edge_list_id_in_column_family]
+          ->get(item.start_idx_, item.size_);
+    }
+    case PropertyType::kEdge: {
+      return ReadColumn(vertex_id, edge_label_to_property_id_[edge_label_id]);
+    }
+    default: {
+      LOG(INFO) << edge_label_to_property_id_[edge_label_id] << " "
+                << edge_label_id << " "
+                << static_cast<int>(column_to_column_family.edge_type);
       assert(false);
     }
-    auto item_t =
-        datas_of_all_column_family_[column_to_column_family.column_family_id]
-            .fixed_length_column_family->getColumn(
-                vertex_id, column_to_column_family.column_id_in_column_family);
-    auto& item = gbp::BufferBlock::Ref<MutableAdjlist>(item_t);
-    return datas_of_all_column_family_[column_to_column_family.column_family_id]
-        .csr[column_to_column_family.edge_list_id_in_column_family]
-        ->get(item.start_idx_, item.size_);
+    }
   }
 
   // std::vector<std::pair<size_t, std::string_view>> void ReadVertex(
@@ -628,7 +666,6 @@ class Vertex {
 
   gbp::BufferBlock ReadColumn(size_t vertex_id, size_t property_id) {
 #if ASSERT_ENABLE
-    // assert(vertex_id < row_capacity_);
     assert(property_id_to_ColumnToColumnFamily_configurations_.count(
                property_id) == 1);
 #endif
@@ -726,7 +763,7 @@ class Vertex {
     grape::InArchive arc;
     arc << property_id_to_ColumnToColumnFamily_configurations_
         << column_family_num_ << capacity_in_row_ << vertex_name_
-        << column_family_info_;
+        << column_family_info_ << edge_label_to_property_id_;
     CHECK(writer->WriteArchive(arc));
   }
 
@@ -735,7 +772,7 @@ class Vertex {
     CHECK(reader->ReadArchive(arc));
     arc >> property_id_to_ColumnToColumnFamily_configurations_ >>
         column_family_num_ >> capacity_in_row_ >> vertex_name_ >>
-        column_family_info_;
+        column_family_info_ >> edge_label_to_property_id_;
   }
 
  private:
@@ -769,6 +806,7 @@ class Vertex {
 
   std::map<size_t, ColumnConfiguration>
       property_id_to_ColumnToColumnFamily_configurations_;
+  std::map<size_t, size_t> edge_label_to_property_id_;
   size_t capacity_in_row_ = 0;
   std::string db_dir_path_;
   std::string vertex_name_;

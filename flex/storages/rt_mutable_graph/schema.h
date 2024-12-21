@@ -158,6 +158,8 @@ class Schema {
   label_t edge_label_to_index(const std::string& label);
 
   uint32_t generate_edge_label(label_t src, label_t dst, label_t edge) const;
+  uint32_t generate_edge_label_with_direction(label_t src, label_t dst,
+                                              label_t edge, bool is_out) const;
 
   IdIndexer<std::string, label_t> vlabel_indexer_;
   IdIndexer<std::string, label_t> elabel_indexer_;

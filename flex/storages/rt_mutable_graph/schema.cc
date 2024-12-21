@@ -311,6 +311,14 @@ uint32_t Schema::generate_edge_label(label_t src, label_t dst,
   return ret;
 }
 
+uint32_t Schema::generate_edge_label_with_direction(label_t src, label_t dst,
+                                                    label_t edge,
+                                                    bool is_out) const {
+  uint32_t ret = generate_edge_label(src, dst, edge) << 8;
+  ret |= is_out;
+  return ret;
+}
+
 bool Schema::Equals(const Schema& other) const {
   if (vertex_label_num() != other.vertex_label_num() ||
       edge_label_num() != other.edge_label_num()) {

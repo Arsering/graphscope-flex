@@ -702,13 +702,14 @@ void CSVFragmentLoader::InitCGraph() {
   std::vector<std::vector<std::vector<cgraph::Vertex::ColumnConfiguration>>>
       column_configurations;
   column_configurations.resize(schema_.vprop_names_.size());
+  std::vector<std::map<size_t, size_t>> edge_label_to_property_id;
+  edge_label_to_property_id.resize(schema_.vprop_names_.size());
   std::unordered_map<gs::LoadingConfig::edge_triplet_type,
                      std::pair<size_t, size_t>,
                      boost::hash<gs::LoadingConfig::edge_triplet_type>>
       edge_property_ids;
 
   auto vertex_sources = loading_config_.GetVertexLoadingMeta();
-  LOG(INFO) << schema_.vprop_column_family_nums_.size();
   basic_fragment_loader_.vertices_.reserve(schema_.vprop_names_.size());
   std::filesystem::create_directories(basic_fragment_loader_.work_dir_ +
                                       "/snapshots/" + std::to_string(1));
@@ -761,6 +762,9 @@ void CSVFragmentLoader::InitCGraph() {
       {
         auto ie_column_family_id = schema_.ie_column_family_.at(label_id);
         auto ie_column_type = PropertyType::kDynamicEdgeList;
+        auto label_id_with_direction =
+            schema_.generate_edge_label_with_direction(
+                src_label_id, dst_label_id, e_label_id, false);
         if (schema_.ie_strategy_.at(label_id) == EdgeStrategy::kMultiple) {
           ie_column_type = PropertyType::kDynamicEdgeList;
         } else if (schema_.ie_strategy_.at(label_id) == EdgeStrategy::kSingle) {
@@ -776,6 +780,8 @@ void CSVFragmentLoader::InitCGraph() {
               property_ids[dst_label_id], ie_column_type, ie_column_family_id,
               e_property_type, schema_.get_edge_label_name(label_id));
           edge_property_ids[iter->first].first = property_ids[dst_label_id]++;
+          edge_label_to_property_id[dst_label_id][label_id_with_direction] =
+              edge_property_ids[iter->first].first;
         }
       }
 
@@ -783,6 +789,9 @@ void CSVFragmentLoader::InitCGraph() {
       {
         auto oe_column_family_id = schema_.oe_column_family_.at(label_id);
         auto oe_column_type = PropertyType::kDynamicEdgeList;
+        auto label_id_with_direction =
+            schema_.generate_edge_label_with_direction(
+                src_label_id, dst_label_id, e_label_id, true);
         if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kMultiple) {
           oe_column_type = PropertyType::kDynamicEdgeList;
         } else if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kSingle) {
@@ -798,6 +807,8 @@ void CSVFragmentLoader::InitCGraph() {
               e_property_type, schema_.get_edge_label_name(label_id));
 
           edge_property_ids[iter->first].second = property_ids[src_label_id]++;
+          edge_label_to_property_id[src_label_id][label_id_with_direction] =
+              edge_property_ids[iter->first].second;
         }
       }
     }
@@ -811,7 +822,7 @@ void CSVFragmentLoader::InitCGraph() {
 
     // 初始化vertex
     basic_fragment_loader_.vertices_[vertex_id].Init(
-        column_configurations[vertex_id],
+        column_configurations[vertex_id], edge_label_to_property_id[vertex_id],
         schema_.get_vertex_label_name(vertex_id),
         basic_fragment_loader_.work_dir_ + "/snapshots/" + std::to_string(1));
     // 初始化vertex的大小
@@ -979,6 +990,9 @@ void CSVFragmentLoader::InitCGraph() {
       std::array<uint64_t, 3> edge_list = {10, 100, 299};  // 假数据
                                                            // 插入ie
       {
+        auto label_id_with_direction =
+            schema_.generate_edge_label_with_direction(
+                src_label_id, dst_label_id, e_label_id, false);
         switch (schema_.ie_strategy_.at(label_id)) {
         case EdgeStrategy::kMultiple: {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
@@ -988,7 +1002,7 @@ void CSVFragmentLoader::InitCGraph() {
           }
 
           basic_fragment_loader_.vertices_[dst_label_id].EdgeListInitBatch(
-              ie_property_id, edge_list_len);
+              label_id_with_direction, edge_list_len);
         }
         case EdgeStrategy::kSingle: {
           std::vector<char> edge;
@@ -1006,7 +1020,7 @@ void CSVFragmentLoader::InitCGraph() {
                 e_property_type));
             basic_fragment_loader_.vertices_[dst_label_id].InsertEdge(
                 lf_indexers_[dst_label_id].get_index(std::stol(dst_obj_id)),
-                {ie_property_id, {edge.data(), edge.size()}});
+                {label_id_with_direction, {edge.data(), edge.size()}});
           }
           break;
         }
@@ -1016,6 +1030,9 @@ void CSVFragmentLoader::InitCGraph() {
       }
       // 插入oe
       {
+        auto label_id_with_direction =
+            schema_.generate_edge_label_with_direction(
+                src_label_id, dst_label_id, e_label_id, true);
         switch (schema_.oe_strategy_.at(label_id)) {
         case EdgeStrategy::kMultiple: {
           // 初始化oe
@@ -1026,7 +1043,7 @@ void CSVFragmentLoader::InitCGraph() {
           }
 
           basic_fragment_loader_.vertices_[src_label_id].EdgeListInitBatch(
-              oe_property_id, edge_list_len);
+              label_id_with_direction, edge_list_len);
         }
         case EdgeStrategy::kSingle: {
           std::vector<char> edge;
@@ -1044,7 +1061,7 @@ void CSVFragmentLoader::InitCGraph() {
                 e_property_type));
             basic_fragment_loader_.vertices_[src_label_id].InsertEdge(
                 lf_indexers_[src_label_id].get_index(std::stol(src_obj_id)),
-                {oe_property_id, {edge.data(), edge.size()}});
+                {label_id_with_direction, {edge.data(), edge.size()}});
           }
           break;
         }
@@ -1077,8 +1094,10 @@ void CSVFragmentLoader::loadEdges_cgraph() {
   std::vector<std::vector<std::vector<cgraph::Vertex::ColumnConfiguration>>>
       column_configurations;
   std::vector<std::vector<std::vector<std::string>>> edge_files;
+  std::vector<std::map<size_t, size_t>> edge_label_to_property_id;
   property_ids.resize(schema_.vprop_names_.size());
   column_configurations.resize(schema_.vprop_names_.size());
+  edge_label_to_property_id.resize(schema_.vprop_names_.size());
   for (size_t i = 0; i < schema_.vprop_column_family_nums_.size(); i++) {
     column_configurations[i].resize(schema_.vprop_column_family_nums_[i]);
     edge_files;
@@ -1156,7 +1175,8 @@ void CSVFragmentLoader::loadEdges_cgraph() {
     auto& column_configuration = column_configurations[vertex_id];
     basic_fragment_loader_.vertices_.emplace_back();
     basic_fragment_loader_.vertices_.back().Init(
-        column_configuration, schema_.get_vertex_label_name(vertex_id),
+        column_configuration, edge_label_to_property_id[vertex_id],
+        schema_.get_vertex_label_name(vertex_id),
         basic_fragment_loader_.work_dir_ + "/snapshots/" + std::to_string(1));
 
     basic_fragment_loader_.vertices_.back().Resize(

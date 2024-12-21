@@ -425,6 +425,19 @@ void MutablePropertyFragment::cgraph_open(
   LOG(INFO) << "data: " << gbp::BufferBlock::Ref<gs::Date>(item).milli_second;
   LOG(INFO) << gbp::TimeConverter::millisToDateString(
       gbp::BufferBlock::Ref<gs::Date>(item).milli_second, true);
+
+  auto edge_label_id_with_direction =
+      schema_.generate_edge_label_with_direction(
+          person_label_id, person_label_id, schema_.get_edge_label_id("KNOWS"),
+          false);
+  auto item_t = vertices_[person_label_id].ReadEdges(
+      person_vid, edge_label_id_with_direction);
+
+  LOG(INFO) << "data: "
+            << gbp::TimeConverter::millisToDateString(
+                   gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t)
+                       .data.milli_second,
+                   true);
 }
 
 }  // namespace gs
