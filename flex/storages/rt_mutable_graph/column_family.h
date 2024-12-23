@@ -39,6 +39,11 @@ class FixedLengthColumnFamily {
 #if ASSERT_ENABLE
     assert(rowId < row_capacity_);
     assert(columnId < offsets_.size());
+    if (newValue.size() != columnLengths_[columnId]) {
+      LOG(INFO) << "newValue.size() = " << newValue.size()
+                << ", columnLengths_[columnId] = " << columnLengths_[columnId]
+                << " " << columnId;
+    }
     assert(newValue.size() == columnLengths_[columnId]);
 #endif
     // 更新value

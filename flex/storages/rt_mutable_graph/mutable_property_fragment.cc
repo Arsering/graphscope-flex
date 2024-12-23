@@ -434,7 +434,8 @@ void MutablePropertyFragment::cgraph_open(
                            schema_.get_vertex_label_name(vertex_id));
       cgraph_lf_indexers_.emplace_back(lf_indexer);
     } else if (child_configs.count(vertex_id) == 1) {
-      GroupedKidLFIndexer<vid_t>* lf_indexer = new GroupedKidLFIndexer<vid_t>();
+      GroupedChildLFIndexer<vid_t>* lf_indexer =
+          new GroupedChildLFIndexer<vid_t>();
       lf_indexer->open("hash_map",
                        snapshot_dir_path + "/snapshots/" + std::to_string(1) +
                            "/" + schema_.get_vertex_label_name(vertex_id),
@@ -617,142 +618,35 @@ void MutablePropertyFragment::cgraph_open(
     }
   }
 
-  // {//test single edge isLocatedIn
-  //   LOG(INFO) << "test single edge isLocatedIn";
-  //   std::vector<gs::oid_t> person_oid_list = {933,1129,6597069767117};
-  //   auto place_label_id = schema_.get_vertex_label_id("PLACE");
-  //   auto islocatedin_edge_label_id_with_direction =
-  //       schema_.generate_edge_label_with_direction(
-  //           person_label_id, place_label_id, schema_.get_edge_label_id("ISLOCATEDIN"),
-  //           true);
-  //   for (auto person_oid : person_oid_list) {
-  //     auto person_vid = cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
-  //     auto item_t6 = vertices_[person_label_id].ReadEdges(
-  //         person_vid, islocatedin_edge_label_id_with_direction, edge_size);
-  //     for (int i = 0; i < edge_size; i++) {
-  //       auto islocatedin_id =
-  //           gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t6, i)
-  //               .neighbor;
-  //       LOG(INFO)<<"person oid is "<<person_oid<< "islocatedin lid is "<<islocatedin_id;
-  //       LOG(INFO)<<"person oid is "<<person_oid<< "islocatedin oid is "
-  //                 << cgraph_lf_indexers_[place_label_id]->get_key(islocatedin_id);
-  //     }
-  //   }
-  // }
-
-  {  // test edge of post and comment
-    LOG(INFO) << "test edge of post and comment";
-    auto post_oid = 206158430586;
-    auto post_vid = cgraph_lf_indexers_[post_label_id]->get_index(post_oid);
-
-    auto comment_reply_post_edge_label_id_with_direction =
-        schema_.generate_edge_label_with_direction(
-            comment_label_id, post_label_id,
-            schema_.get_edge_label_id("REPLYOF"), false);
-    auto item_t6 = vertices_[post_label_id].ReadEdges(
-        post_vid, comment_reply_post_edge_label_id_with_direction, edge_size);
-    for (int i = 0; i < edge_size; i++) {
-      auto reply_post_id =
-          gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t6, i)
-              .neighbor;
-      LOG(INFO) << "comment reply post oid is "
-                << cgraph_lf_indexers_[comment_label_id]->get_key(reply_post_id);
-    }
-
-    post_oid = 206158430395;
-    post_vid = cgraph_lf_indexers_[post_label_id]->get_index(post_oid);
-    auto post_like_edge_label_id_with_direction =
-        schema_.generate_edge_label_with_direction(
-            person_label_id, post_label_id, schema_.get_edge_label_id("LIKES"),
-            false);
-    auto item_t4 = vertices_[post_label_id].ReadEdges(
-        post_vid, post_like_edge_label_id_with_direction, edge_size);
-    for (int i = 0; i < edge_size; i++) {
-      auto like_id =
-          gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t4, i)
-              .neighbor;
-      // LOG(INFO) << "like oid is "
-      //           << cgraph_lf_indexers_[person_label_id]->get_key(like_id);
-      LOG(INFO) << "like lid is " << like_id;
-      if(like_id<1520){
-        LOG(INFO) << "like oid is "
-                << cgraph_lf_indexers_[person_label_id]->get_key(like_id);
-      }
-    }
-
-    auto comment_oid = 687194767790;
-    auto comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
-    auto comment_reply_comment_edge_label_id_with_direction =
-        schema_.generate_edge_label_with_direction(
-            comment_label_id, comment_label_id,
-            schema_.get_edge_label_id("REPLYOF"), false);
-    auto item_t7 = vertices_[comment_label_id].ReadEdges(
-        comment_vid, comment_reply_comment_edge_label_id_with_direction,
-        edge_size);
-    for (int i = 0; i < edge_size; i++) {
-      auto reply_comment_id =
-          gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t7, i)
-              .neighbor;
-      LOG(INFO) << "comment reply comment oid is "
-                << cgraph_lf_indexers_[comment_label_id]->get_key(reply_comment_id);
-    }
-
-    comment_oid=206158430587;
-    comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
-    auto comment_reply_comment_edge_label_id_with_direction2 =
-        schema_.generate_edge_label_with_direction(
-            comment_label_id, post_label_id,
-            schema_.get_edge_label_id("REPLYOF"), true);
-    auto item_t8 = vertices_[comment_label_id].ReadEdges(
-        comment_vid, comment_reply_comment_edge_label_id_with_direction2, edge_size);
-    for (int i = 0; i < edge_size; i++) {
-      auto reply_post_id =
-          gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t8, i)
-              .neighbor;
-      LOG(INFO) << "comment reply post, post oid is "
-                << cgraph_lf_indexers_[post_label_id]->get_key(reply_post_id);
-    }
-
+  {
     LOG(INFO) << "test comment reply post timestamp";
-    comment_oid=1030792475784;
-    comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
+    auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
+    auto post_label_id = schema_.get_vertex_label_id("POST");
+    auto comment_oid = 1030792475784;
+    auto comment_vid =
+        cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
     auto comment_reply_post_edge_label_id_with_direction3 =
         schema_.generate_edge_label_with_direction(
             comment_label_id, post_label_id,
             schema_.get_edge_label_id("REPLYOF"), true);
     auto item_t9 = vertices_[comment_label_id].ReadEdges(
-        comment_vid, comment_reply_post_edge_label_id_with_direction3, edge_size);
-    auto timestamp = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t9, 0).timestamp.load();
+        comment_vid, comment_reply_post_edge_label_id_with_direction3,
+        edge_size);
+    auto timestamp =
+        gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t9, 0)
+            .timestamp.load();
     LOG(INFO) << "post timestamp: " << timestamp;
     auto comment_reply_comment_edge_label_id_with_direction4 =
         schema_.generate_edge_label_with_direction(
             comment_label_id, comment_label_id,
             schema_.get_edge_label_id("REPLYOF"), true);
     auto item_t10 = vertices_[comment_label_id].ReadEdges(
-        comment_vid, comment_reply_comment_edge_label_id_with_direction4, edge_size);
-    auto timestamp2 = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t10, 0).timestamp.load();
+        comment_vid, comment_reply_comment_edge_label_id_with_direction4,
+        edge_size);
+    auto timestamp2 =
+        gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t10, 0)
+            .timestamp.load();
     LOG(INFO) << "comment timestamp: " << timestamp2;
-
-    comment_oid = 1030792152613;
-    comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
-    auto comment_like_edge_label_id_with_direction =
-        schema_.generate_edge_label_with_direction(
-            person_label_id, comment_label_id,
-            schema_.get_edge_label_id("LIKES"), false);
-    auto item_t5 = vertices_[comment_label_id].ReadEdges(
-        comment_vid, comment_like_edge_label_id_with_direction, edge_size);
-    for (int i = 0; i < edge_size; i++) {
-      auto like_id =
-          gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t5, i)
-              .neighbor;
-      // LOG(INFO) << "like oid is "
-      //           << cgraph_lf_indexers_[person_label_id]->get_key(like_id);
-      LOG(INFO) << "like lid is " << like_id;
-      if(like_id<1520){
-        LOG(INFO) << "like oid is "
-                << cgraph_lf_indexers_[person_label_id]->get_key(like_id);
-      }
-    }
   }
 }
 

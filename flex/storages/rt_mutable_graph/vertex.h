@@ -750,10 +750,6 @@ class Vertex {
       assert(false);
       break;
     }
-    // case gs::PropertyType::kEdge: {
-    //   assert(false);
-    //   break;
-    // }
     default: {
       assert(false);
     }
@@ -778,8 +774,8 @@ class Vertex {
     }
     for (auto& column_configuration :
          property_id_to_ColumnToColumnFamily_configurations_) {
-      if (column_configuration.second.column_type ==
-          gs::PropertyType::kDynamicEdgeList) {
+      switch (column_configuration.second.column_type) {
+      case gs::PropertyType::kDynamicEdgeList: {
         for (size_t row_id = capacity_in_row_; row_id < new_capacity_in_row;
              row_id++) {
           auto item_t =
@@ -797,6 +793,24 @@ class Vertex {
               },
               item_t);
         }
+        break;
+      }
+      case gs::PropertyType::kEdge: {
+        std::vector<char> empty_edge;
+        assert(ConstructEdge(empty_edge, std::string(), 0,
+                             column_configuration.second.edge_type,
+                             std::numeric_limits<timestamp_t>::max(), true));
+        for (size_t row_id = capacity_in_row_; row_id < new_capacity_in_row;
+             row_id++) {
+          datas_of_all_column_family_[column_configuration.second
+                                          .column_family_id]
+              .fixed_length_column_family->setColumn(
+                  row_id,
+                  column_configuration.second.column_id_in_column_family,
+                  std::string_view(empty_edge.data(), empty_edge.size()));
+        }
+        break;
+      }
       }
     }
     capacity_in_row_ = new_capacity_in_row;
@@ -822,8 +836,64 @@ class Vertex {
         column_family_num_ >> capacity_in_row_ >> vertex_name_ >>
         column_family_info_ >> edge_label_to_property_id_;
   }
+  static bool ConstructEdge(std::vector<char>& edge,
+                            const std::string& e_property, size_t e_neighbor,
+                            PropertyType e_property_type, size_t timestamp = 0,
+                            bool property_is_empty = false) {
+    switch (e_property_type) {
+    case PropertyType::kEmpty: {
+      edge.resize(sizeof(MutableNbr<grape::EmptyType>));
+      auto item = reinterpret_cast<MutableNbr<grape::EmptyType>*>(edge.data());
+      item->neighbor = e_neighbor;
+      item->timestamp = timestamp;
+      break;
+    }
+    case PropertyType::kDate: {
+      edge.resize(sizeof(MutableNbr<gs::Date>));
+      auto item = reinterpret_cast<MutableNbr<gs::Date>*>(edge.data());
+      item->neighbor = e_neighbor;
+      item->timestamp = timestamp;
+      if (!property_is_empty)
+        item->data = gbp::TimeConverter::dateStringToMillis(e_property);
+      break;
+    }
+    case PropertyType::kInt32: {
+      edge.resize(sizeof(MutableNbr<int32_t>));
+      auto item = reinterpret_cast<MutableNbr<int32_t>*>(edge.data());
+      item->neighbor = e_neighbor;
+      item->timestamp = timestamp;
+      if (!property_is_empty)
+        item->data = std::stoi(e_property);
+      break;
+    }
+    case PropertyType::kInt64: {
+      edge.resize(sizeof(MutableNbr<int64_t>));
+      auto item = reinterpret_cast<MutableNbr<int64_t>*>(edge.data());
+      item->neighbor = e_neighbor;
+      item->timestamp = timestamp;
+      if (!property_is_empty)
+        item->data = std::stoll(e_property);
+      break;
+    }
+    case PropertyType::kDouble: {
+      edge.resize(sizeof(MutableNbr<double>));
+      auto item = reinterpret_cast<MutableNbr<double>*>(edge.data());
+      item->neighbor = e_neighbor;
+      item->timestamp = timestamp;
+      if (!property_is_empty)
+        item->data = std::stod(e_property);
+      break;
+    }
+    default:
+      assert(false);
+    }
+
+    return true;
+  }
 
   std::string GetVertexName() const { return vertex_name_; }
+
+
 
  private:
   struct ColumnFamilyInfo {
