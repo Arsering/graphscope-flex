@@ -679,6 +679,7 @@ class Vertex {
                   column_to_column_family.column_id_in_column_family);
       auto& item = gbp::BufferBlock::Ref<MutableAdjlist>(item_t);
       edge_num = item.size_;
+      LOG(INFO)<<"item size is : "<<item.size_;
       return datas_of_all_column_family_[column_to_column_family
                                              .column_family_id]
           .csr[column_to_column_family.edge_list_id_in_column_family]
@@ -693,6 +694,7 @@ class Vertex {
                 << edge_label_id << " "
                 << static_cast<int>(column_to_column_family.edge_type);
       assert(false);
+      return gbp::BufferBlock();
     }
     }
   }
@@ -703,6 +705,11 @@ class Vertex {
   //     InsertColumn(vertex_id, value);
   //   }
   // }
+
+  gs::PropertyType GetColumnType(size_t property_id) {
+    assert(property_id_to_ColumnToColumnFamily_configurations_.count(property_id) == 1);
+    return property_id_to_ColumnToColumnFamily_configurations_[property_id].column_type;
+  }
 
   gbp::BufferBlock ReadColumn(size_t vertex_id, size_t property_id) {
 #if ASSERT_ENABLE
@@ -883,6 +890,10 @@ class Vertex {
 
     return true;
   }
+
+  std::string GetVertexName() const { return vertex_name_; }
+
+
 
  private:
   struct ColumnFamilyInfo {

@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include "flex/storages/rt_mutable_graph/types.h"
 #include "grape/util.h"
 
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
@@ -284,20 +285,20 @@ const Table& MutablePropertyFragment::get_vertex_table(
 }
 
 vid_t MutablePropertyFragment::vertex_num(label_t vertex_label) const {
-  return static_cast<vid_t>(lf_indexers_[vertex_label].size());
+  return static_cast<vid_t>(cgraph_lf_indexers_[vertex_label]->size());
 }
 
 bool MutablePropertyFragment::get_lid(label_t label, oid_t oid,
                                       vid_t& lid) const {
-  return lf_indexers_[label].get_index(oid, lid);
+  return cgraph_lf_indexers_[label]->get_index(oid, lid);
 }
 
 oid_t MutablePropertyFragment::get_oid(label_t label, vid_t lid) const {
-  return lf_indexers_[label].get_key(lid);
+  return cgraph_lf_indexers_[label]->get_key(lid);
 }
 
 vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id) {
-  return lf_indexers_[label].insert(id);
+  return cgraph_lf_indexers_[label]->insert(id);
 }
 
 std::shared_ptr<MutableCsrConstEdgeIterBase>
@@ -483,75 +484,135 @@ void MutablePropertyFragment::cgraph_open(
           false);
   auto item_t = vertices_[person_label_id].ReadEdges(
       person_vid, edge_label_id_with_direction, edge_size);
-  LOG(INFO) << "cp"
+  LOG(INFO) << "edge_size: " << edge_size;
+  for (int i = 0; i < edge_size; i++) {  LOG(INFO) << "cp"
             << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor;
-  LOG(INFO) << "data: "
-            << cgraph_lf_indexers_[person_label_id]->get_key(
+    LOG(INFO) << "data: "
+              << cgraph_lf_indexers_[person_label_id]->get_key(
                    gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor)
             << " "
             << gbp::TimeConverter::millisToDateString(
-                   gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t)
-                       .data.milli_second,
-                   true);
+                     gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i)
+                         .data.milli_second,
+                     true);
+  }
+  person_oid = 1129;
+  auto person_vid2 = cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
 
-  person_oid = 933;
-  auto person_vid2 =
-      cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
-
-  {
-    auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
-    auto edge_label_id_with_direction3 =
-        schema_.generate_edge_label_with_direction(
-            comment_label_id, person_label_id,
-            schema_.get_edge_label_id("HASCREATOR"), false);
-    auto item_t3 = vertices_[person_label_id].ReadEdges(
-        person_vid2, edge_label_id_with_direction3, edge_size);
-    for (int i = 0; i < edge_size; i++) {
-      LOG(INFO) << cgraph_lf_indexers_[comment_label_id]->get_key(
-                       gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(
-                           item_t3, i)
-                           .neighbor)
-                << " "
-                << gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t3,
-                                                                       i)
-                       .neighbor;
-    }
+  auto post_label_id = schema_.get_vertex_label_id("POST");
+  auto edge_label_id_with_direction2 =
+      schema_.generate_edge_label_with_direction(
+          post_label_id, person_label_id,
+          schema_.get_edge_label_id("HASCREATOR"), false);
+  auto item_t2 = vertices_[person_label_id].ReadEdges(
+      person_vid2, edge_label_id_with_direction2, edge_size);
+  LOG(INFO) << "edge_size2: " << edge_size;
+  for (int i = 0; i < edge_size; i++) {
+    auto post_id =
+        gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t2, i)
+            .neighbor;
+    LOG(INFO) << "post oid is " << cgraph_lf_indexers_[post_label_id]->get_key(post_id);
   }
 
-  {  // test person knows person
-    LOG(INFO) << "test person knows person";
-    std::vector<gs::oid_t> person_oid_list = {933, 1129, 6597069767117};
+  auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
+  auto edge_label_id_with_direction3 =
+      schema_.generate_edge_label_with_direction(
+          comment_label_id, person_label_id,
+          schema_.get_edge_label_id("HASCREATOR"), false);
+  auto item_t3 = vertices_[person_label_id].ReadEdges(
+      person_vid2, edge_label_id_with_direction3, edge_size);
+  for (int i = 0; i < edge_size; i++) {
+    auto comment_id =
+        gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t3, i)
+            .neighbor;
+    LOG(INFO) << "comment oid is "
+              << cgraph_lf_indexers_[comment_label_id]->get_key(comment_id);
+  }
+
+  {  // test vertex property
+    std::vector<gs::oid_t> person_oid_list = {933,1129,6597069767117};
     for (auto person_oid : person_oid_list) {
-      auto person_vid =
-          cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+      auto person_vid = cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+      for (auto property_id = 1; property_id < 9; property_id++) {
+        if (property_id == 4 || property_id == 5) {
+          continue;
+        }
+        auto item_p = vertices_[person_label_id].ReadColumn(person_vid, property_id);
+        std::vector<char> data(item_p.Size());
+        item_p.Copy(data.data(), data.size());
+        LOG(INFO) << "data: " << std::string_view(data.data(), data.size());
+      }
+    }
+
+    std::vector<gs::oid_t> comment_oid_list = {618475290625,1030792151054};
+    for (auto comment_oid : comment_oid_list) {
+      auto comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
+      for (auto property_id = 1; property_id < 5; property_id++) {
+        if (property_id == 1) {
+          continue;
+        }
+        auto item_p = vertices_[comment_label_id].ReadColumn(comment_vid, property_id);
+        std::vector<char> data(item_p.Size());
+        item_p.Copy(data.data(), data.size());
+        LOG(INFO) << "data: " << std::string_view(data.data(), data.size());
+      }
+    }
+
+    std::vector<gs::oid_t> post_oid_list = {618475290624,481036337190};
+    for (auto post_oid : post_oid_list) {
+      auto post_vid = cgraph_lf_indexers_[post_label_id]->get_index(post_oid);
+      for (auto property_id = 1; property_id < 7; property_id++) {
+        if (property_id == 2) {
+          continue;
+        }
+        auto item_p = vertices_[post_label_id].ReadColumn(post_vid, property_id);
+        std::vector<char> data(item_p.Size());
+        if (data.size() > 0) {
+          item_p.Copy(data.data(), data.size());
+          LOG(INFO) << "data: " << std::string_view(data.data(), data.size());
+        }else {
+          LOG(INFO) << "data is empty";
+        }
+      }
+    }
+
+  }
+
+  {//test person knows person
+    LOG(INFO) << "test person knows person";
+    std::vector<gs::oid_t> person_oid_list = {933,1129,6597069767117};
+    for (auto person_oid : person_oid_list) {
+      auto person_vid = cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
       auto knows_edge_label_id_with_direction_out =
           schema_.generate_edge_label_with_direction(
-              person_label_id, person_label_id,
-              schema_.get_edge_label_id("KNOWS"), true);
+              person_label_id, person_label_id, schema_.get_edge_label_id("KNOWS"),
+              true);
       auto item_t4 = vertices_[person_label_id].ReadEdges(
           person_vid, knows_edge_label_id_with_direction_out, edge_size);
       for (int i = 0; i < edge_size; i++) {
         auto knows_id =
-            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t4, i).neighbor;
-        LOG(INFO) << person_oid << "out knows lid is " << knows_id;
-        if (knows_id < 1520) {
-          LOG(INFO) << person_oid << "out knows oid is "
-                    << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
+            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t4, i)
+                .neighbor;
+        LOG(INFO)<<person_oid<< "out knows lid is "<<knows_id;
+        if(knows_id<1520){
+          LOG(INFO)<<person_oid<< "out knows oid is "
+                  << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
         }
       }
       auto knows_edge_label_id_with_direction_in =
           schema_.generate_edge_label_with_direction(
-              person_label_id, person_label_id,
-              schema_.get_edge_label_id("KNOWS"), false);
+              person_label_id, person_label_id, schema_.get_edge_label_id("KNOWS"),
+              false);
       auto item_t5 = vertices_[person_label_id].ReadEdges(
           person_vid, knows_edge_label_id_with_direction_in, edge_size);
       for (int i = 0; i < edge_size; i++) {
         auto knows_id =
-            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t5, i).neighbor;
-        LOG(INFO) << person_oid << "in knows lid is " << knows_id;
-        if (knows_id < 1520) {
-          LOG(INFO) << person_oid << "in knows oid is "
-                    << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
+            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t5, i)
+                .neighbor;
+        LOG(INFO)<<person_oid<< "in knows lid is "<<knows_id;
+        if(knows_id<1520){
+          LOG(INFO)<<person_oid<< "in knows oid is "
+                  << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
         }
       }
     }

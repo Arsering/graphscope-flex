@@ -96,6 +96,10 @@ class MutablePropertyFragment {
   void loadSchema(const std::string& filename);
   void cgraph_open(const std::string& snapshot_dir_path);
 
+  cgraph::Vertex& get_vertices(label_t label){
+    return vertices_[label];
+  }
+
   Schema schema_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;
   std::vector<MutableCsrBase*> ie_, oe_;

@@ -14,6 +14,8 @@ option(BUILD_HQPS "Whether to build HighQPS Engine" ON)
 option(BUILD_TEST "Whether to build test" OFF)
 option(BUILD_DOC "Whether to build doc" OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 # set(DEFAULT_BUILD_TYPE "Release")
