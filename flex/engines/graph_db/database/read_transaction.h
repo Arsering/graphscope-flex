@@ -82,7 +82,7 @@ class AdjListView {
  private:
   gbp::BufferBlock edges_;
   int current_index_;
-  int size_;
+  size_t size_;
   timestamp_t timestamp_;
 };
 
@@ -96,7 +96,7 @@ class GraphView {
       }
 
   AdjListView<EDATA_T> get_edges(vid_t v) {
-    int edge_size;
+    size_t edge_size;
     auto item_t = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
@@ -118,13 +118,13 @@ class SingleGraphView {
       : vertex_label_(vertex_label), edge_label_with_direction_(edge_label_with_direction), timestamp_(timestamp), graph_(graph) {}
 
   FORCE_INLINE bool exist(vid_t v) const {
-    int edge_size;
+    size_t edge_size;
     auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
     return (gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_);
   }
 
   FORCE_INLINE const gbp::BufferBlock exist(vid_t v, bool& exist) const {
-    int edge_size;
+    size_t edge_size;
     auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
     exist = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
     return item;
@@ -133,7 +133,7 @@ class SingleGraphView {
     return gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
   }
   FORCE_INLINE const gbp::BufferBlock get_edge(vid_t v) const {
-    int edge_size;
+    size_t edge_size;
     auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
     return item;
   }
@@ -235,7 +235,7 @@ class ReadTransaction {
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             v_label, neighbor_label, edge_label, true);
-    int edge_size;
+    size_t edge_size;
     auto item_t = graph_.get_vertices(v_label).ReadEdges(v, edge_label_id_with_direction, edge_size);
     // LOG(INFO) << "item size =" << item_t.GetSize();
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
@@ -248,7 +248,7 @@ class ReadTransaction {
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             neighbor_label, v_label, edge_label, false);
-    int edge_size;
+    size_t edge_size;
     auto item_t = graph_.get_vertices(v_label).ReadEdges(v, edge_label_id_with_direction, edge_size);
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }

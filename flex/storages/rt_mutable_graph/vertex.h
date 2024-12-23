@@ -64,6 +64,7 @@ class Vertex {
     size_t column_family_id;
     PropertyType edge_type;
     std::string column_name;
+    std::string nbr_name;
 
     size_t column_id_in_column_family;
     size_t edge_list_id_in_column_family;
@@ -71,19 +72,21 @@ class Vertex {
     ColumnConfiguration() = default;
     ColumnConfiguration(size_t property_id_in, gs::PropertyType column_type_in,
                         size_t column_family_id_in, PropertyType edge_type_in,
-                        const std::string& column_name_in)
+                        const std::string& column_name_in,
+                        const std::string& nbr_name_in)
         : property_id(property_id_in),
           column_type(column_type_in),
           edge_type(edge_type_in),
           column_family_id(column_family_id_in),
-          column_name(column_name_in) {}
+          column_name(column_name_in),
+          nbr_name(nbr_name_in) {}
     ~ColumnConfiguration() = default;
     void print() const {
       LOG(INFO) << "property_id: " << property_id
                 << " column_type: " << static_cast<int>(column_type)
                 << " column_family_id: " << column_family_id
                 << " edge_type: " << static_cast<int>(edge_type)
-                << " column_name: " << column_name
+                << " column_name: " << column_name << " nbr_name: " << nbr_name
                 << " column_id_in_column_family: " << column_id_in_column_family
                 << " edge_list_id_in_column_family: "
                 << edge_list_id_in_column_family;
@@ -95,6 +98,7 @@ class Vertex {
       in_archive << column_family_id;
       in_archive << edge_type;
       in_archive << column_name;
+      in_archive << nbr_name;
       in_archive << column_id_in_column_family;
       in_archive << edge_list_id_in_column_family;
       return in_archive;
@@ -109,6 +113,7 @@ class Vertex {
       os << obj.column_family_id;
       os << obj.edge_type;
       os << obj.column_name;
+      os << obj.nbr_name;
       os << obj.column_id_in_column_family;
       os << obj.edge_list_id_in_column_family;
       return os;
@@ -120,6 +125,7 @@ class Vertex {
       os >> obj.column_family_id;
       os >> obj.edge_type;
       os >> obj.column_name;
+      os >> obj.nbr_name;
       os >> obj.column_id_in_column_family;
       os >> obj.edge_list_id_in_column_family;
       return os;
@@ -205,7 +211,8 @@ class Vertex {
               mmap_array_ptr->open(
                   db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
                       std::to_string(column_family_id) + "_" +
-                      column_configuration.second.column_name + ".edgelist",
+                      column_configuration.second.column_name + "_" +
+                      column_configuration.second.nbr_name + ".edgelist",
                   false);
               datas_of_all_column_family_[column_family_id]
                   .csr[column_configuration.second
@@ -227,7 +234,8 @@ class Vertex {
               mmap_array_ptr->open(
                   db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
                       std::to_string(column_family_id) + "_" +
-                      column_configuration.second.column_name + ".edgelist",
+                      column_configuration.second.column_name + "_" +
+                      column_configuration.second.nbr_name + ".edgelist",
                   false);
               datas_of_all_column_family_[column_family_id]
                   .csr[column_configuration.second
@@ -250,7 +258,8 @@ class Vertex {
               mmap_array_ptr->open(
                   db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
                       std::to_string(column_family_id) + "_" +
-                      column_configuration.second.column_name + ".edgelist",
+                      column_configuration.second.column_name + "_" +
+                      column_configuration.second.nbr_name + ".edgelist",
                   false);
               datas_of_all_column_family_[column_family_id]
                   .csr[column_configuration.second
@@ -375,7 +384,8 @@ class Vertex {
               mmap_array_ptr->open(
                   db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
                       std::to_string(column_family_id) + "_" +
-                      column_configuration.column_name + ".edgelist",
+                      column_configuration.column_name + "_" +
+                      column_configuration.nbr_name + ".edgelist",
                   false);
               datas_of_all_column_family_[column_family_id].csr.emplace_back(
                   mmap_array_ptr);
@@ -394,7 +404,8 @@ class Vertex {
               mmap_array_ptr->open(
                   db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
                       std::to_string(column_family_id) + "_" +
-                      column_configuration.column_name + ".edgelist",
+                      column_configuration.column_name + "_" +
+                      column_configuration.nbr_name + ".edgelist",
                   false);
               datas_of_all_column_family_[column_family_id].csr.emplace_back(
                   mmap_array_ptr);
@@ -414,7 +425,8 @@ class Vertex {
               mmap_array_ptr->open(
                   db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
                       std::to_string(column_family_id) + "_" +
-                      column_configuration.column_name + ".edgelist",
+                      column_configuration.column_name + "_" +
+                      column_configuration.nbr_name + ".edgelist",
                   false);
               datas_of_all_column_family_[column_family_id].csr.emplace_back(
                   mmap_array_ptr);
@@ -600,7 +612,10 @@ class Vertex {
             idx_new += item.start_idx_;
           },
           item_t);
-
+      if (column_to_column_family.column_name == "HASCREATOR" &&
+          vertex_id == 0) {
+        LOG(INFO) << "idx_new: " << idx_new;
+      }
       // 插入边
       datas_of_all_column_family_[column_to_column_family.column_family_id]
           .csr[column_to_column_family.edge_list_id_in_column_family]
@@ -624,7 +639,8 @@ class Vertex {
     }
   }
 
-  gbp::BufferBlock ReadEdges(size_t vertex_id, size_t edge_label_id,int& edge_size) {
+  gbp::BufferBlock ReadEdges(size_t vertex_id, size_t edge_label_id,
+                             size_t& edge_num) {
 #if ASSERT_ENABLE
     assert(edge_label_to_property_id_.count(edge_label_id) == 1);
 #endif
@@ -640,14 +656,20 @@ class Vertex {
                   vertex_id,
                   column_to_column_family.column_id_in_column_family);
       auto& item = gbp::BufferBlock::Ref<MutableAdjlist>(item_t);
-      edge_size = item.size_;
+      edge_num = item.size_;
+      LOG(INFO)
+          << "edge_num: " << item.size_ << " " << item.start_idx_
+          << datas_of_all_column_family_[column_to_column_family
+                                             .column_family_id]
+                 .csr[column_to_column_family.edge_list_id_in_column_family]
+                 ->filename();
       return datas_of_all_column_family_[column_to_column_family
                                              .column_family_id]
           .csr[column_to_column_family.edge_list_id_in_column_family]
           ->get(item.start_idx_, item.size_);
     }
     case PropertyType::kEdge: {
-      edge_size = 1;
+      edge_num = 1;
       return ReadColumn(vertex_id, edge_label_to_property_id_[edge_label_id]);
     }
     default: {
