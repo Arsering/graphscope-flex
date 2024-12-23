@@ -657,12 +657,12 @@ class Vertex {
                   column_to_column_family.column_id_in_column_family);
       auto& item = gbp::BufferBlock::Ref<MutableAdjlist>(item_t);
       edge_num = item.size_;
-      LOG(INFO)
-          << "edge_num: " << item.size_ << " " << item.start_idx_
-          << datas_of_all_column_family_[column_to_column_family
-                                             .column_family_id]
-                 .csr[column_to_column_family.edge_list_id_in_column_family]
-                 ->filename();
+      // LOG(INFO)
+      //     << "edge_num: " << item.size_ << " " << item.start_idx_
+      //     << datas_of_all_column_family_[column_to_column_family
+      //                                        .column_family_id]
+      //            .csr[column_to_column_family.edge_list_id_in_column_family]
+      //            ->filename();
       return datas_of_all_column_family_[column_to_column_family
                                              .column_family_id]
           .csr[column_to_column_family.edge_list_id_in_column_family]
@@ -689,6 +689,11 @@ class Vertex {
   //   }
   // }
 
+  gs::PropertyType GetColumnType(size_t property_id) {
+    assert(property_id_to_ColumnToColumnFamily_configurations_.count(property_id) == 1);
+    return property_id_to_ColumnToColumnFamily_configurations_[property_id].column_type;
+  }
+
   gbp::BufferBlock ReadColumn(size_t vertex_id, size_t property_id) {
 #if ASSERT_ENABLE
     assert(property_id_to_ColumnToColumnFamily_configurations_.count(
@@ -698,6 +703,7 @@ class Vertex {
     auto column_to_column_family =
         property_id_to_ColumnToColumnFamily_configurations_[property_id];
     switch (column_to_column_family.column_type) {
+    case gs::PropertyType::kEdge:
     case gs::PropertyType::kInt32:
     case gs::PropertyType::kDate:
     case gs::PropertyType::kInt64: {
@@ -727,10 +733,10 @@ class Vertex {
       assert(false);
       break;
     }
-    case gs::PropertyType::kEdge: {
-      assert(false);
-      break;
-    }
+    // case gs::PropertyType::kEdge: {
+    //   assert(false);
+    //   break;
+    // }
     default: {
       assert(false);
     }

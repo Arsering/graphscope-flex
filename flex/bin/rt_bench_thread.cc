@@ -239,7 +239,12 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-      reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      auto query=std::string(buffer.data(), buffer.data() + length);
+      auto type=int(query.back());
+      if(query_type_==33||type==query_type_){
+        reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      }
+      // reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
@@ -399,7 +404,7 @@ class CSVReader {
     if (log_thread_.joinable())
       log_thread_.join();
   }
-
+  int query_type_;
  private:
   Req() : cur_(0), warmup_num_(0) {}
   ~Req() {
@@ -493,7 +498,9 @@ int main(int argc, char** argv) {
       "log-data-path,l", bpo::value<std::string>(), "log data directory path")(
       "buffer-pool-size,B",
       bpo::value<uint64_t>()->default_value(pool_size_Byte),
-      "size of buffer pool");
+      "size of buffer pool")
+      ("query-type,q",bpo::value<uint32_t>()->default_value(0),"query type");
+      ;
 
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
@@ -604,9 +611,12 @@ int main(int argc, char** argv) {
   gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
-  // Req::get().load_query(req_file);
+  if (vm.count("query-type")) {
+    Req::get().query_type_ = vm["query-type"].as<uint32_t>();
+  }
+  Req::get().load_query(req_file);
   // Req::get().load_result(req_file);
-  Req::get().gen_ic7_query();
+  // Req::get().gen_ic7_query();
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
