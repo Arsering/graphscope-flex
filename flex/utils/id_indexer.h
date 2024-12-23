@@ -113,7 +113,8 @@ class LFIndexer : public BaseIndexer<INDEX_T> {
     LOG(FATAL) << "LFIndexer: get_kid_index is not implemented";
     return op_status::op_status_not_implemented;
   }
-  op_status set_new_kid_range(int64_t parent_oid) override {
+  op_status set_new_kid_range(size_t kid_label_id,
+                              int64_t max_kid_oid) override {
     LOG(FATAL) << "LFIndexer: set_new_kid_range is not implemented";
     return op_status::op_status_not_implemented;
   }

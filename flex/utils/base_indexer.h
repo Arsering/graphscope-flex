@@ -144,7 +144,7 @@ class index_key_item {
 template <typename INDEX_T>
 struct value_with_lock {
   INDEX_T value : sizeof(INDEX_T) * 8 - 1;
-  bool lock : 1;
+  std::atomic_bool lock;
 };
 
 template <typename INDEX_T, size_t SIZE>
@@ -176,7 +176,9 @@ class BaseIndexer {
 
   virtual op_status get_kid_index(size_t kid_label_id, int64_t parent_oid,
                                   INDEX_T& ret) = 0;
-  virtual op_status set_new_kid_range(int64_t parent_oid) = 0;
+  // 设置新的kid范围，非常危险，少用！！！！
+  virtual op_status set_new_kid_range(size_t kid_label_id,
+                                      int64_t max_kid_oid) = 0;
 };
 
 template <typename KEY_T, typename INDEX_T>
@@ -186,7 +188,7 @@ template <typename INDEX_T>
 class LFIndexer;
 
 template <typename INDEX_T>
-class GroupedKidLFIndexer;
+class GroupedChildLFIndexer;
 
 template <typename INDEX_T, size_t SIZE>
 class GroupedParentLFIndexer;
@@ -197,10 +199,12 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
                       double rate = 0.8);
 
 template <typename _INDEX_T>
-void build_grouped_kid_lf_indexer(const IdIndexer<int64_t, _INDEX_T>& input,
-                                  const std::string& filename,
-                                  GroupedKidLFIndexer<_INDEX_T>& output,
-                                  size_t label_id_in_parent, double rate = 0.8);
+void build_grouped_child_lf_indexer(const IdIndexer<int64_t, _INDEX_T>& input,
+                                    const std::string& filename,
+                                    GroupedChildLFIndexer<_INDEX_T>& output,
+                                    BaseIndexer<_INDEX_T>& parent_lf,
+                                    size_t label_id_in_parent,
+                                    double rate = 0.8);
 
 template <typename _INDEX_T, size_t _SIZE>
 void build_grouped_parent_lf_indexer(
@@ -646,19 +650,16 @@ class IdIndexer {
                                const std::string& filename,
                                LFIndexer<_INDEX_T>& output, double rate);
   template <typename _INDEX_T>
-  friend void build_grouped_kid_lf_indexer(
+  friend void build_grouped_child_lf_indexer(
       const IdIndexer<int64_t, _INDEX_T>& input, const std::string& filename,
-      GroupedKidLFIndexer<_INDEX_T>& output, size_t label_id_in_parent,
-      double rate);
+      GroupedChildLFIndexer<_INDEX_T>& output, BaseIndexer<_INDEX_T>& parent_lf,
+      size_t label_id_in_parent, double rate);
 
   template <typename _INDEX_T, size_t _SIZE>
   friend void build_grouped_parent_lf_indexer(
       const IdIndexer<int64_t, _INDEX_T>& input, const std::string& filename,
       GroupedParentLFIndexer<_INDEX_T, _SIZE>& output,
       std::vector<size_t>& group_sizes, double rate);
-
-  // friend class GroupedKidLFIndexer<INDEX_T, SIZE>;
-  // friend class GroupedParentLFIndexer<INDEX_T, SIZE>;
 };
 
 }  // namespace gs

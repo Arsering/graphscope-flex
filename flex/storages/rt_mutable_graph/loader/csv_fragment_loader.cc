@@ -855,17 +855,17 @@ void CSVFragmentLoader::InitCGraph() {
         schema_.get_max_vnum(schema_.get_vertex_label_name(vertex_id)));
   }
 
-  // 插入property数据
+  cgraph_lf_indexers_.resize(schema_.vprop_names_.size());
+  // 创建parent indexer and lf indexer
   for (size_t vertex_id = 0;
        vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
     LOG(INFO) << schema_.get_vertex_label_name(vertex_id);
     auto v_files = vertex_sources[vertex_id];
     assert(v_files.size() == 1);
     csv::CSVLoader loader(v_files[0]);
-    // if (schema_.group_foreign_keys_.find(vertex_id) ==
-    //     schema_.group_foreign_keys_.end()) {
-    IdIndexer<oid_t, vid_t> indexer;  // 创建
     auto primary_key = loader.get_column(0);
+
+    IdIndexer<oid_t, vid_t> indexer;  // 创建
     vid_t vid = 0;
     for (int i = 0; i < primary_key.size(); i++) {
       oid_t obj_id = std::stol(primary_key[i]);
@@ -884,20 +884,68 @@ void CSVFragmentLoader::InitCGraph() {
         parent_configs.count(vertex_id) == 0) {
       LFIndexer<vid_t>* lf_indexer = new LFIndexer<vid_t>();
       build_lf_indexer(indexer, prefix, *lf_indexer);
-      cgraph_lf_indexers_.emplace_back(lf_indexer);
+      cgraph_lf_indexers_[vertex_id] = lf_indexer;
     } else if (child_configs.count(vertex_id) == 1) {
-      GroupedKidLFIndexer<vid_t>* lf_indexer = new GroupedKidLFIndexer<vid_t>();
-      build_grouped_kid_lf_indexer(indexer, prefix, *lf_indexer,
-                                   child_configs[vertex_id].second);
-      cgraph_lf_indexers_.emplace_back(lf_indexer);
+      continue;
     } else {
       std::vector<size_t> group_sizes;
       for (auto& [child_vertex_id, group_size] : parent_configs[vertex_id]) {
         group_sizes.emplace_back(group_size);
       }
-      cgraph_lf_indexers_.emplace_back(
-          GroupedParentLFIndexer_creation_helper(indexer, prefix, group_sizes));
+      cgraph_lf_indexers_[vertex_id] =
+          GroupedParentLFIndexer_creation_helper(indexer, prefix, group_sizes);
     }
+  }
+
+  for (size_t vertex_id = 0;
+       vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
+    LOG(INFO) << schema_.get_vertex_label_name(vertex_id);
+    auto v_files = vertex_sources[vertex_id];
+    assert(v_files.size() == 1);
+    csv::CSVLoader loader(v_files[0]);
+    auto primary_key = loader.get_column(0);
+
+    IdIndexer<oid_t, vid_t> indexer;  // 创建
+    vid_t vid = 0;
+    for (int i = 0; i < primary_key.size(); i++) {
+      oid_t obj_id = std::stol(primary_key[i]);
+      indexer.add(obj_id, vid);
+      vid++;
+    }
+    std::string prefix = basic_fragment_loader_.work_dir_ + "/snapshots/" +
+                         std::to_string(1) + "/" +
+                         schema_.get_vertex_label_name(vertex_id) + "/hash_map";
+
+    if (child_configs.count(vertex_id) == 1 &&
+        parent_configs.count(vertex_id) == 1) {
+      assert(false);
+    }
+    if (child_configs.count(vertex_id) == 0 &&
+        parent_configs.count(vertex_id) == 0) {
+      continue;
+    } else if (child_configs.count(vertex_id) == 1) {
+      GroupedChildLFIndexer<vid_t>* lf_indexer =
+          new GroupedChildLFIndexer<vid_t>();
+      build_grouped_child_lf_indexer(
+          indexer, prefix, *lf_indexer,
+          *cgraph_lf_indexers_[child_configs[vertex_id].first],
+          child_configs[vertex_id].second);
+      cgraph_lf_indexers_[vertex_id] = lf_indexer;
+      cgraph_lf_indexers_[child_configs[vertex_id].first]->set_new_kid_range(
+          child_configs[vertex_id].second, indexer.size());
+    } else {
+      continue;
+    }
+  }
+
+  // 插入property数据
+  for (size_t vertex_id = 0;
+       vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
+    LOG(INFO) << schema_.get_vertex_label_name(vertex_id);
+    auto v_files = vertex_sources[vertex_id];
+    assert(v_files.size() == 1);
+    csv::CSVLoader loader(v_files[0]);
+    auto primary_key = loader.get_column(0);
 
     for (auto column_family_id = 0;
          column_family_id < column_configurations[vertex_id].size();
@@ -1073,10 +1121,11 @@ void CSVFragmentLoader::InitCGraph() {
                    (e_property_type != PropertyType::kEmpty));
             if (loader.column_count() == 3)
               property = loader.get_element(i, 2);
-            assert(ConstructEdge(edge, property,
-                                 cgraph_lf_indexers_[src_label_id]->get_index(
-                                     std::stol(src_obj_id)),
-                                 e_property_type));
+            assert(cgraph::Vertex::ConstructEdge(
+                edge, property,
+                cgraph_lf_indexers_[src_label_id]->get_index(
+                    std::stol(src_obj_id)),
+                e_property_type));
             basic_fragment_loader_.cgraph_vertices_[dst_label_id].InsertEdge(
                 cgraph_lf_indexers_[dst_label_id]->get_index(
                     std::stol(dst_obj_id)),
@@ -1115,10 +1164,11 @@ void CSVFragmentLoader::InitCGraph() {
                    (e_property_type != PropertyType::kEmpty));
             if (loader.column_count() == 3)
               property = loader.get_element(i, 2);
-            assert(ConstructEdge(edge, property,
-                                 cgraph_lf_indexers_[dst_label_id]->get_index(
-                                     std::stol(dst_obj_id)),
-                                 e_property_type));
+            assert(cgraph::Vertex::ConstructEdge(
+                edge, property,
+                cgraph_lf_indexers_[dst_label_id]->get_index(
+                    std::stol(dst_obj_id)),
+                e_property_type));
             basic_fragment_loader_.cgraph_vertices_[src_label_id].InsertEdge(
                 cgraph_lf_indexers_[src_label_id]->get_index(
                     std::stol(src_obj_id)),
@@ -1294,14 +1344,16 @@ void CSVFragmentLoader::loadEdges_cgraph() {
 
       std::vector<char> edge;
 
-      assert(ConstructEdge(edge, std::string(), edge_list[0], e_property_type));
+      assert(cgraph::Vertex::ConstructEdge(edge, std::string(), edge_list[0],
+                                           e_property_type));
 
       basic_fragment_loader_.cgraph_vertices_[dst_label_id].InsertEdge(
           0, {ie_property_id, {edge.data(), edge.size()}});
 
     } else if (schema_.ie_strategy_.at(label_id) == EdgeStrategy::kSingle) {
       std::vector<char> edge;
-      assert(ConstructEdge(edge, std::string(), edge_list[0], e_property_type));
+      assert(cgraph::Vertex::ConstructEdge(edge, std::string(), edge_list[0],
+                                           e_property_type));
       basic_fragment_loader_.cgraph_vertices_[dst_label_id].InsertColumn(
           0, {ie_property_id, {edge.data(), edge.size()}});
     } else {
@@ -1319,14 +1371,16 @@ void CSVFragmentLoader::loadEdges_cgraph() {
           oe_property_id, edge_list_len);
       std::vector<char> edge;
 
-      assert(ConstructEdge(edge, std::string(), edge_list[0], e_property_type));
+      assert(cgraph::Vertex::ConstructEdge(edge, std::string(), edge_list[0],
+                                           e_property_type));
 
       basic_fragment_loader_.cgraph_vertices_[src_label_id].InsertEdge(
           0, {oe_property_id, {edge.data(), edge.size()}});
 
     } else if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kSingle) {
       std::vector<char> edge;
-      assert(ConstructEdge(edge, std::string(), edge_list[0], e_property_type));
+      assert(cgraph::Vertex::ConstructEdge(edge, std::string(), edge_list[0],
+                                           e_property_type));
       basic_fragment_loader_.cgraph_vertices_[src_label_id].InsertColumn(
           0, {oe_property_id, {edge.data(), edge.size()}});
     } else {
@@ -1336,56 +1390,6 @@ void CSVFragmentLoader::loadEdges_cgraph() {
   LOG(INFO) << "load edges done";
 }
 
-bool CSVFragmentLoader::ConstructEdge(std::vector<char>& edge,
-                                      const std::string& e_property,
-                                      size_t e_neighbor,
-                                      PropertyType e_property_type) {
-  switch (e_property_type) {
-  case PropertyType::kEmpty: {
-    edge.resize(sizeof(MutableNbr<grape::EmptyType>));
-    auto item = reinterpret_cast<MutableNbr<grape::EmptyType>*>(edge.data());
-    item->neighbor = e_neighbor;
-    item->timestamp = 0;
-    break;
-  }
-  case PropertyType::kDate: {
-    edge.resize(sizeof(MutableNbr<gs::Date>));
-    auto item = reinterpret_cast<MutableNbr<gs::Date>*>(edge.data());
-    item->neighbor = e_neighbor;
-    item->timestamp = 0;
-    item->data = gbp::TimeConverter::dateStringToMillis(e_property);
-    break;
-  }
-  case PropertyType::kInt32: {
-    edge.resize(sizeof(MutableNbr<int32_t>));
-    auto item = reinterpret_cast<MutableNbr<int32_t>*>(edge.data());
-    item->neighbor = e_neighbor;
-    item->timestamp = 0;
-    item->data = std::stoi(e_property);
-    break;
-  }
-  case PropertyType::kInt64: {
-    edge.resize(sizeof(MutableNbr<int64_t>));
-    auto item = reinterpret_cast<MutableNbr<int64_t>*>(edge.data());
-    item->neighbor = e_neighbor;
-    item->timestamp = 0;
-    item->data = std::stoll(e_property);
-    break;
-  }
-  case PropertyType::kDouble: {
-    edge.resize(sizeof(MutableNbr<double>));
-    auto item = reinterpret_cast<MutableNbr<double>*>(edge.data());
-    item->neighbor = e_neighbor;
-    item->timestamp = 0;
-    item->data = std::stod(e_property);
-    break;
-  }
-  default:
-    assert(false);
-  }
-
-  return true;
-}
 void CSVFragmentLoader::OpenCGraph() {  // 创建vertex
 
   std::filesystem::create_directories(basic_fragment_loader_.work_dir_ +

@@ -433,7 +433,8 @@ void MutablePropertyFragment::cgraph_open(
                            schema_.get_vertex_label_name(vertex_id));
       cgraph_lf_indexers_.emplace_back(lf_indexer);
     } else if (child_configs.count(vertex_id) == 1) {
-      GroupedKidLFIndexer<vid_t>* lf_indexer = new GroupedKidLFIndexer<vid_t>();
+      GroupedChildLFIndexer<vid_t>* lf_indexer =
+          new GroupedChildLFIndexer<vid_t>();
       lf_indexer->open("hash_map",
                        snapshot_dir_path + "/snapshots/" + std::to_string(1) +
                            "/" + schema_.get_vertex_label_name(vertex_id),
@@ -554,6 +555,37 @@ void MutablePropertyFragment::cgraph_open(
         }
       }
     }
+  }
+
+  {
+    LOG(INFO) << "test comment reply post timestamp";
+    auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
+    auto post_label_id = schema_.get_vertex_label_id("POST");
+    auto comment_oid = 1030792475784;
+    auto comment_vid =
+        cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
+    auto comment_reply_post_edge_label_id_with_direction3 =
+        schema_.generate_edge_label_with_direction(
+            comment_label_id, post_label_id,
+            schema_.get_edge_label_id("REPLYOF"), true);
+    auto item_t9 = vertices_[comment_label_id].ReadEdges(
+        comment_vid, comment_reply_post_edge_label_id_with_direction3,
+        edge_size);
+    auto timestamp =
+        gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t9, 0)
+            .timestamp.load();
+    LOG(INFO) << "post timestamp: " << timestamp;
+    auto comment_reply_comment_edge_label_id_with_direction4 =
+        schema_.generate_edge_label_with_direction(
+            comment_label_id, comment_label_id,
+            schema_.get_edge_label_id("REPLYOF"), true);
+    auto item_t10 = vertices_[comment_label_id].ReadEdges(
+        comment_vid, comment_reply_comment_edge_label_id_with_direction4,
+        edge_size);
+    auto timestamp2 =
+        gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t10, 0)
+            .timestamp.load();
+    LOG(INFO) << "comment timestamp: " << timestamp2;
   }
 }
 
