@@ -86,6 +86,9 @@ class GraphDBSession {
 
   int SessionId() const;
 
+  int get_vertex_property_column_id(label_t label, const std::string& col_name) {
+    return schema().get_property_id(label, col_name);
+  }
  private:
   GraphDB& db_;
   MMapAllocator& alloc_;

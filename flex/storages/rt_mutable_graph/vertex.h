@@ -624,7 +624,7 @@ class Vertex {
     }
   }
 
-  gbp::BufferBlock ReadEdges(size_t vertex_id, size_t edge_label_id) {
+  gbp::BufferBlock ReadEdges(size_t vertex_id, size_t edge_label_id,int& edge_size) {
 #if ASSERT_ENABLE
     assert(edge_label_to_property_id_.count(edge_label_id) == 1);
 #endif
@@ -640,12 +640,14 @@ class Vertex {
                   vertex_id,
                   column_to_column_family.column_id_in_column_family);
       auto& item = gbp::BufferBlock::Ref<MutableAdjlist>(item_t);
+      edge_size = item.size_;
       return datas_of_all_column_family_[column_to_column_family
                                              .column_family_id]
           .csr[column_to_column_family.edge_list_id_in_column_family]
           ->get(item.start_idx_, item.size_);
     }
     case PropertyType::kEdge: {
+      edge_size = 1;
       return ReadColumn(vertex_id, edge_label_to_property_id_[edge_label_id]);
     }
     default: {
@@ -653,6 +655,7 @@ class Vertex {
                 << edge_label_id << " "
                 << static_cast<int>(column_to_column_family.edge_type);
       assert(false);
+      return gbp::BufferBlock();
     }
     }
   }
@@ -774,6 +777,8 @@ class Vertex {
         column_family_num_ >> capacity_in_row_ >> vertex_name_ >>
         column_family_info_ >> edge_label_to_property_id_;
   }
+
+  std::string GetVertexName() const { return vertex_name_; }
 
  private:
   struct ColumnFamilyInfo {

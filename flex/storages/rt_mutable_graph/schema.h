@@ -161,6 +161,8 @@ class Schema {
   uint32_t generate_edge_label_with_direction(label_t src, label_t dst,
                                               label_t edge, bool is_out) const;
 
+  size_t get_property_id(label_t label, const std::string& property_name) const;
+  
   IdIndexer<std::string, label_t> vlabel_indexer_;
   IdIndexer<std::string, label_t> elabel_indexer_;
   std::vector<std::vector<size_t>> vprop_ids_;
@@ -180,6 +182,7 @@ class Schema {
   std::map<uint32_t, EdgeStrategy> ie_strategy_;
   std::map<uint32_t, size_t> oe_column_family_;
   std::map<uint32_t, size_t> ie_column_family_;
+  std::vector<std::map<std::string, size_t>> vprop_id_map_;
   std::vector<size_t> max_vnum_;
   std::vector<std::string> plugin_list_;
 };

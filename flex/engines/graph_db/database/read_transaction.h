@@ -30,118 +30,83 @@ namespace gs {
 class MutablePropertyFragment;
 class VersionManager;
 
-#if OV
 template <typename EDATA_T>
 class AdjListView {
-  class nbr_iterator {
-    using nbr_t = MutableNbr<EDATA_T>;
-
-   public:
-    nbr_iterator(const nbr_t* ptr, const nbr_t* end, timestamp_t timestamp)
-        : ptr_(ptr), end_(end), timestamp_(timestamp) {
-      while (ptr_ != end && ptr_->timestamp > timestamp_) {
-        ++ptr_;
-      }
-    }
-
-    const nbr_t& operator*() const { return *ptr_; }
-
-    const nbr_t* operator->() const { return ptr_; }
-
-    nbr_iterator& operator++() {
-      ++ptr_;
-      while (ptr_ != end_ && ptr_->timestamp > timestamp_) {
-        ++ptr_;
-      }
-      return *this;
-    }
-
-    bool operator==(const nbr_iterator& rhs) const {
-      return (ptr_ == rhs.ptr_);
-    }
-
-    bool operator!=(const nbr_iterator& rhs) const {
-      return (ptr_ != rhs.ptr_);
-    }
-
-   private:
-    const nbr_t* ptr_;
-    const nbr_t* end_;
-    timestamp_t timestamp_;
-  };
 
  public:
-  using slice_t = MutableNbrSlice<EDATA_T>;
 
-  AdjListView(const slice_t& slice, timestamp_t timestamp)
-      : edges_(slice), timestamp_(timestamp) {}
-
-  nbr_iterator begin() const {
-    return nbr_iterator(edges_.begin(), edges_.end(), timestamp_);
-  }
-  nbr_iterator end() const {
-    return nbr_iterator(edges_.end(), edges_.end(), timestamp_);
-  }
-
-  int estimated_degree() const { return edges_.size(); }
-
- private:
-  slice_t edges_;
-  timestamp_t timestamp_;
-};
-#else
-template <typename EDATA_T>
-class AdjListView {
- public:
-  using slice_t = MutableNbrSlice<EDATA_T>;
-  using sliceiter_t = TypedMutableCsrConstEdgeIter<EDATA_T>;
-
-  AdjListView(const slice_t& slice, timestamp_t timestamp)
-      : edges_(sliceiter_t(slice)), timestamp_(timestamp) {
-    while (edges_.is_valid() && edges_.get_timestamp() > timestamp_) {
-      edges_.next();
+  AdjListView(gbp::BufferBlock item, timestamp_t timestamp, int size)
+      : edges_(item), timestamp_(timestamp), current_index_(0), size_(size) {
+    // LOG(INFO) << "init adjlistview bufferblock size=" << edges_.GetSize()<<", size_="<<size_;
+    while (current_index_ < size_ && gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).timestamp.load() > timestamp_) {
+      current_index_++;
     }
   }
 
-  FORCE_INLINE vid_t get_neighbor() { return edges_.get_neighbor(); }
+  FORCE_INLINE vid_t get_neighbor() { 
+    assert(current_index_ < size_);
+    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).neighbor; 
+  }
 
-  FORCE_INLINE const void* get_data() { return edges_.get_data(); }
+  FORCE_INLINE const void* get_data() { 
+    assert(current_index_ < size_);
+    return static_cast<const void*>(&(gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).data));
+  }
 
-  FORCE_INLINE timestamp_t get_timestamp() { return edges_.get_timestamp(); }
+  FORCE_INLINE timestamp_t get_timestamp() { 
+    assert(current_index_ < size_);
+    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).timestamp.load(); 
+  }
 
   FORCE_INLINE void next() {
-    edges_.next();
-    while (edges_.is_valid() && edges_.get_timestamp() > timestamp_) {
-      edges_.next();
+    current_index_++;
+    while (current_index_ < size_ && gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).timestamp.load() > timestamp_) {
+      current_index_++;
     }
   }
 
   FORCE_INLINE bool is_valid() {
-    return edges_.is_valid() && edges_.get_timestamp() <= timestamp_;
+    // LOG(INFO) << "current_index_=" << current_index_ << ", size_=" << size_;
+    // LOG(INFO) << "edges size=" << edges_.GetSize();
+    if(current_index_ < size_) {
+      auto tmp = gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_);
+      // assert();
+      return tmp.timestamp.load() <= timestamp_;
+    }
+    return false;
   }
 
-  int estimated_degree() const { return edges_.size(); }
+  int estimated_degree() const { return size_; }
   timestamp_t timestamp() const { return timestamp_; }
 
  private:
-  sliceiter_t edges_;
+  gbp::BufferBlock edges_;
+  int current_index_;
+  int size_;
   timestamp_t timestamp_;
 };
-#endif
+
 template <typename EDATA_T>
 class GraphView {
  public:
-  GraphView(const MutableCsr<EDATA_T>& csr, timestamp_t timestamp)
-      : csr_(csr), timestamp_(timestamp) {}
+  GraphView(label_t vertex_label, unsigned int edge_label_with_direction, timestamp_t timestamp, MutablePropertyFragment& graph)
+      : vertex_label_(vertex_label), edge_label_with_direction_(edge_label_with_direction), timestamp_(timestamp), graph_(graph) {
+        // LOG(INFO) << "init graphview";
+        // LOG(INFO) << "edge_label_with_direction_=" << edge_label_with_direction_; 
+      }
 
-  AdjListView<EDATA_T> get_edges(vid_t v) const {
-    return AdjListView<EDATA_T>(csr_.get_edges(v), timestamp_);
+  AdjListView<EDATA_T> get_edges(vid_t v) {
+    int edge_size;
+    auto item_t = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
+    return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
   timestamp_t timestamp() const { return timestamp_; }
 
  private:
-  const MutableCsr<EDATA_T>& csr_;
+  label_t vertex_label_;
+  unsigned int edge_label_with_direction_;
   timestamp_t timestamp_;
+  MutablePropertyFragment& graph_;
 };
 
 template <typename EDATA_T>
@@ -149,24 +114,18 @@ class SingleGraphView {
   using nbr_t = MutableNbr<EDATA_T>;
 
  public:
-  SingleGraphView(const SingleMutableCsr<EDATA_T>& csr, timestamp_t timestamp)
-      : csr_(csr), timestamp_(timestamp) {}
-#if OV
-  bool exist(vid_t v) const {
-    return (csr_.get_edge(v).timestamp.load() <= timestamp_);
-  }
+  SingleGraphView(label_t vertex_label, unsigned int edge_label_with_direction, timestamp_t timestamp, MutablePropertyFragment& graph)
+      : vertex_label_(vertex_label), edge_label_with_direction_(edge_label_with_direction), timestamp_(timestamp), graph_(graph) {}
 
-  const MutableNbr<EDATA_T>& get_edge(vid_t v) const {
-    return csr_.get_edge(v);
-  }
-#else
   FORCE_INLINE bool exist(vid_t v) const {
-    auto item = csr_.get_edge(v);
+    int edge_size;
+    auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
     return (gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_);
   }
 
   FORCE_INLINE const gbp::BufferBlock exist(vid_t v, bool& exist) const {
-    auto item = csr_.get_edge(v);
+    int edge_size;
+    auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
     exist = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
     return item;
   }
@@ -174,19 +133,23 @@ class SingleGraphView {
     return gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
   }
   FORCE_INLINE const gbp::BufferBlock get_edge(vid_t v) const {
-    return csr_.get_edge(v);
+    int edge_size;
+    auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
+    return item;
   }
 
   FORCE_INLINE timestamp_t timestamp() const { return timestamp_; }
-#endif
+
  private:
-  const SingleMutableCsr<EDATA_T>& csr_;
+  label_t vertex_label_;
+  unsigned int edge_label_with_direction_;
   timestamp_t timestamp_;
+  MutablePropertyFragment& graph_;
 };
 
 class ReadTransaction {
  public:
-  ReadTransaction(const MutablePropertyFragment& graph, VersionManager& vm,
+  ReadTransaction(MutablePropertyFragment& graph, VersionManager& vm,
                   timestamp_t timestamp);
   ~ReadTransaction();
 
@@ -208,11 +171,7 @@ class ReadTransaction {
 
     oid_t GetId() const;
     vid_t GetIndex() const;
-#if OV
-    Any GetField(int col_id) const;
-#else
     gbp::BufferBlock GetField(int col_id) const;
-#endif
     int FieldNum() const;
 
    private:
@@ -227,11 +186,9 @@ class ReadTransaction {
     edge_iterator(label_t neighbor_label, label_t edge_label,
                   std::shared_ptr<MutableCsrConstEdgeIterBase> iter);
     ~edge_iterator();
-#if OV
-    Any GetData() const;
-#else
+
     const void* GetData() const;
-#endif
+
     bool IsValid() const;
 
     void Next();
@@ -253,12 +210,6 @@ class ReadTransaction {
 
   vertex_iterator FindVertex(label_t label, oid_t id) const;
 
-  bool GetVertexIndex(label_t label, oid_t id, vid_t& index) const;
-
-  vid_t GetVertexNum(label_t label) const;
-
-  oid_t GetVertexId(label_t label, vid_t index) const;
-
   edge_iterator GetOutEdgeIterator(label_t label, vid_t u,
                                    label_t neighnor_label,
                                    label_t edge_label) const;
@@ -267,23 +218,39 @@ class ReadTransaction {
                                   label_t neighnor_label,
                                   label_t edge_label) const;
 
+  bool GetVertexIndex(label_t label, oid_t id, vid_t& index) const;
+
+  vid_t GetVertexNum(label_t label) const;
+
+  oid_t GetVertexId(label_t label, vid_t index) const;
+
   template <typename EDATA_T>
   AdjListView<EDATA_T> GetOutgoingEdges(label_t v_label, vid_t v,
                                         label_t neighbor_label,
                                         label_t edge_label) const {
-    auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
-        graph_.get_oe_csr(v_label, neighbor_label, edge_label));
+    // auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
+    //     graph_.get_oe_csr(v_label, neighbor_label, edge_label));
 
-    return AdjListView<EDATA_T>(csr->get_edges(v), timestamp_);
+    // return AdjListView<EDATA_T>(csr->get_edges(v), timestamp_);
+    auto edge_label_id_with_direction =
+        graph_.schema().generate_edge_label_with_direction(
+            v_label, neighbor_label, edge_label, true);
+    int edge_size;
+    auto item_t = graph_.get_vertices(v_label).ReadEdges(v, edge_label_id_with_direction, edge_size);
+    // LOG(INFO) << "item size =" << item_t.GetSize();
+    return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
 
   template <typename EDATA_T>
   AdjListView<EDATA_T> GetIncomingEdges(label_t v_label, vid_t v,
                                         label_t neighbor_label,
                                         label_t edge_label) const {
-    auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
-        graph_.get_ie_csr(v_label, neighbor_label, edge_label));
-    return AdjListView<EDATA_T>(csr->get_edges(v), timestamp_);
+    auto edge_label_id_with_direction =
+        graph_.schema().generate_edge_label_with_direction(
+            neighbor_label, v_label, edge_label, false);
+    int edge_size;
+    auto item_t = graph_.get_vertices(v_label).ReadEdges(v, edge_label_id_with_direction, edge_size);
+    return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
 
   const Schema& schema() const;
@@ -292,40 +259,55 @@ class ReadTransaction {
   GraphView<EDATA_T> GetOutgoingGraphView(label_t v_label,
                                           label_t neighbor_label,
                                           label_t edge_label) const {
-    auto csr = dynamic_cast<const MutableCsr<EDATA_T>*>(
-        graph_.get_oe_csr(v_label, neighbor_label, edge_label));
-    return GraphView<EDATA_T>(*csr, timestamp_);
+    auto edge_label_id_with_direction =
+        graph_.schema().generate_edge_label_with_direction(
+            v_label, neighbor_label, edge_label, true);
+    return GraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_, graph_);
   }
 
   template <typename EDATA_T>
   GraphView<EDATA_T> GetIncomingGraphView(label_t v_label,
                                           label_t neighbor_label,
                                           label_t edge_label) const {
-    auto csr = dynamic_cast<const MutableCsr<EDATA_T>*>(
-        graph_.get_ie_csr(v_label, neighbor_label, edge_label));
-    return GraphView<EDATA_T>(*csr, timestamp_);
+    auto edge_label_id_with_direction =
+        graph_.schema().generate_edge_label_with_direction(
+            neighbor_label, v_label, edge_label, false);
+    return GraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_, graph_);
   }
 
   template <typename EDATA_T>
   SingleGraphView<EDATA_T> GetOutgoingSingleGraphView(
       label_t v_label, label_t neighbor_label, label_t edge_label) const {
-    auto csr = dynamic_cast<const SingleMutableCsr<EDATA_T>*>(
-        graph_.get_oe_csr(v_label, neighbor_label, edge_label));
-    return SingleGraphView<EDATA_T>(*csr, timestamp_);
+    auto edge_label_id_with_direction =
+        graph_.schema().generate_edge_label_with_direction(
+            v_label, neighbor_label, edge_label, true);
+    return SingleGraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_, graph_);
   }
 
   template <typename EDATA_T>
   SingleGraphView<EDATA_T> GetIncomingSingleGraphView(
       label_t v_label, label_t neighbor_label, label_t edge_label) const {
-    auto csr = dynamic_cast<const SingleMutableCsr<EDATA_T>*>(
-        graph_.get_ie_csr(v_label, neighbor_label, edge_label));
-    return SingleGraphView<EDATA_T>(*csr, timestamp_);
+    auto edge_label_id_with_direction =
+        graph_.schema().generate_edge_label_with_direction(
+             neighbor_label,v_label, edge_label, false);
+    return SingleGraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_, graph_);
+  }
+
+  gbp::BufferBlock GetVertexProp(label_t label, vid_t v, std::string property_name){
+    auto property_id = graph_.schema().get_property_id(label, property_name);
+    auto item_t = graph_.get_vertices(label).ReadColumn(v, property_id);
+    return item_t;
+  }
+
+  gbp::BufferBlock GetVertexProp(label_t label, vid_t v, int property_id){
+    auto item_t = graph_.get_vertices(label).ReadColumn(v, property_id);
+    return item_t;
   }
 
  private:
   void release();
 
-  const MutablePropertyFragment& graph_;
+  MutablePropertyFragment& graph_;
   VersionManager& vm_;
   timestamp_t timestamp_;
 };
