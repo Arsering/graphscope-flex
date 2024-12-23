@@ -394,6 +394,11 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
         (max_kid_oid + group_configs_[kid_label_id].second - 1) /
         group_configs_[kid_label_id].second *
         group_configs_[kid_label_id].second;
+    LOG(INFO) << "max_kid_oid: " << max_kid_oid
+              << " group_configs_[kid_label_id].second: "
+              << group_configs_[kid_label_id].second
+              << " group_configs_[kid_label_id].first: "
+              << group_configs_[kid_label_id].first;
     return op_status::op_status_success;
   }
 

@@ -833,7 +833,7 @@ void CSVFragmentLoader::InitCGraph() {
     auto group_size = std::get<1>(foreign_key_2);
     auto parent_vertex_id =
         schema_.get_vertex_label_id(std::get<0>(foreign_key_2));
-    auto label_id_in_parent = parent_configs[parent_vertex_id].size() - 1;
+    auto label_id_in_parent = parent_configs[parent_vertex_id].size();
     parent_configs[parent_vertex_id].emplace_back(child_vertex_id, group_size);
     child_configs[child_vertex_id] =
         std::make_pair(parent_vertex_id, label_id_in_parent);
@@ -933,6 +933,10 @@ void CSVFragmentLoader::InitCGraph() {
       cgraph_lf_indexers_[vertex_id] = lf_indexer;
       cgraph_lf_indexers_[child_configs[vertex_id].first]->set_new_kid_range(
           child_configs[vertex_id].second, indexer.size());
+      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     1, 26388279066936);
+      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     2, 2199023255922);
     } else {
       continue;
     }
