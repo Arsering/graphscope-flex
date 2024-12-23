@@ -130,11 +130,14 @@ class SingleGraphView {
     return item;
   }
   FORCE_INLINE bool exist1(gbp::BufferBlock& item) const {
+    LOG(INFO)<<"check exist1, item timestamp: "<<gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load()<<", txn timestamp: "<<timestamp_;
     return gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
   }
   FORCE_INLINE const gbp::BufferBlock get_edge(vid_t v) const {
     size_t edge_size;
     auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
+    auto v_oid=graph_.get_oid(vertex_label_, v);
+    LOG(INFO) << "v_oid: " << v_oid<<"get edge, and edge size is "<<edge_size;
     return item;
   }
 

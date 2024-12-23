@@ -467,6 +467,8 @@ void MutablePropertyFragment::cgraph_open(
   gs::oid_t person_oid = 8796093022290;
   gs::vid_t person_vid =
       cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+  assert(person_oid ==
+         cgraph_lf_indexers_[person_label_id]->get_key(person_vid));
   auto item = vertices_[person_label_id].ReadColumn(person_vid, property_id);
   std::vector<char> data(item.Size());
   item.Copy(data.data(), data.size());
@@ -482,9 +484,13 @@ void MutablePropertyFragment::cgraph_open(
   auto item_t = vertices_[person_label_id].ReadEdges(
       person_vid, edge_label_id_with_direction, edge_size);
   LOG(INFO) << "edge_size: " << edge_size;
-  for (int i = 0; i < edge_size; i++) {
+  for (int i = 0; i < edge_size; i++) {  LOG(INFO) << "cp"
+            << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor;
     LOG(INFO) << "data: "
-              << gbp::TimeConverter::millisToDateString(
+              << cgraph_lf_indexers_[person_label_id]->get_key(
+                   gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor)
+            << " "
+            << gbp::TimeConverter::millisToDateString(
                      gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i)
                          .data.milli_second,
                      true);
@@ -690,6 +696,42 @@ void MutablePropertyFragment::cgraph_open(
       LOG(INFO) << "comment reply comment oid is "
                 << cgraph_lf_indexers_[comment_label_id]->get_key(reply_comment_id);
     }
+
+    comment_oid=206158430587;
+    comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
+    auto comment_reply_comment_edge_label_id_with_direction2 =
+        schema_.generate_edge_label_with_direction(
+            comment_label_id, post_label_id,
+            schema_.get_edge_label_id("REPLYOF"), true);
+    auto item_t8 = vertices_[comment_label_id].ReadEdges(
+        comment_vid, comment_reply_comment_edge_label_id_with_direction2, edge_size);
+    for (int i = 0; i < edge_size; i++) {
+      auto reply_post_id =
+          gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t8, i)
+              .neighbor;
+      LOG(INFO) << "comment reply post, post oid is "
+                << cgraph_lf_indexers_[post_label_id]->get_key(reply_post_id);
+    }
+
+    LOG(INFO) << "test comment reply post timestamp";
+    comment_oid=1030792475784;
+    comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
+    auto comment_reply_post_edge_label_id_with_direction3 =
+        schema_.generate_edge_label_with_direction(
+            comment_label_id, post_label_id,
+            schema_.get_edge_label_id("REPLYOF"), true);
+    auto item_t9 = vertices_[comment_label_id].ReadEdges(
+        comment_vid, comment_reply_post_edge_label_id_with_direction3, edge_size);
+    auto timestamp = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t9, 0).timestamp.load();
+    LOG(INFO) << "post timestamp: " << timestamp;
+    auto comment_reply_comment_edge_label_id_with_direction4 =
+        schema_.generate_edge_label_with_direction(
+            comment_label_id, comment_label_id,
+            schema_.get_edge_label_id("REPLYOF"), true);
+    auto item_t10 = vertices_[comment_label_id].ReadEdges(
+        comment_vid, comment_reply_comment_edge_label_id_with_direction4, edge_size);
+    auto timestamp2 = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t10, 0).timestamp.load();
+    LOG(INFO) << "comment timestamp: " << timestamp2;
 
     comment_oid = 1030792152613;
     comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
