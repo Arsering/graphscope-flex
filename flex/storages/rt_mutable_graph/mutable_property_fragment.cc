@@ -466,6 +466,8 @@ void MutablePropertyFragment::cgraph_open(
   gs::oid_t person_oid = 8796093022290;
   gs::vid_t person_vid =
       cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+  assert(person_oid ==
+         cgraph_lf_indexers_[person_label_id]->get_key(person_vid));
   auto item = vertices_[person_label_id].ReadColumn(person_vid, property_id);
   std::vector<char> data(item.Size());
   item.Copy(data.data(), data.size());
@@ -480,8 +482,12 @@ void MutablePropertyFragment::cgraph_open(
           false);
   auto item_t = vertices_[person_label_id].ReadEdges(
       person_vid, edge_label_id_with_direction, edge_size);
-
+  LOG(INFO) << "cp"
+            << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor;
   LOG(INFO) << "data: "
+            << cgraph_lf_indexers_[person_label_id]->get_key(
+                   gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor)
+            << " "
             << gbp::TimeConverter::millisToDateString(
                    gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t)
                        .data.milli_second,

@@ -731,7 +731,7 @@ void CSVFragmentLoader::InitCGraph() {
                   schema_.vproperties_[vertex_id][column_id],
                   schema_.vprop_column_family_ids_[vertex_id][column_id],
                   PropertyType::kNone, schema_.get_vertex_label_name(vertex_id),
-                  std::string());
+                  std::string(), cgraph::Vertex::EdgeDirection::kNone);
       if (property_ids[vertex_id] <= schema_.vprop_ids_[vertex_id][column_id]) {
         property_ids[vertex_id] = schema_.vprop_ids_[vertex_id][column_id] + 1;
       }
@@ -779,7 +779,8 @@ void CSVFragmentLoader::InitCGraph() {
           column_configurations[dst_label_id][ie_column_family_id].emplace_back(
               property_ids[dst_label_id], ie_column_type, ie_column_family_id,
               e_property_type, schema_.get_edge_label_name(label_id),
-              schema_.get_vertex_label_name(src_label_id));
+              schema_.get_vertex_label_name(src_label_id),
+              cgraph::Vertex::EdgeDirection::kIn);
           edge_property_ids[iter->first].first = property_ids[dst_label_id]++;
           edge_label_to_property_id[dst_label_id][label_id_with_direction] =
               edge_property_ids[iter->first].first;
@@ -806,7 +807,8 @@ void CSVFragmentLoader::InitCGraph() {
           column_configurations[src_label_id][oe_column_family_id].emplace_back(
               property_ids[src_label_id], oe_column_type, oe_column_family_id,
               e_property_type, schema_.get_edge_label_name(label_id),
-              schema_.get_vertex_label_name(dst_label_id));
+              schema_.get_vertex_label_name(dst_label_id),
+              cgraph::Vertex::EdgeDirection::kOut);
 
           edge_property_ids[iter->first].second = property_ids[src_label_id]++;
           edge_label_to_property_id[src_label_id][label_id_with_direction] =
@@ -833,7 +835,6 @@ void CSVFragmentLoader::InitCGraph() {
         schema_.get_vertex_label_id(std::get<0>(foreign_key_2));
     auto label_id_in_parent = parent_configs[parent_vertex_id].size() - 1;
     parent_configs[parent_vertex_id].emplace_back(child_vertex_id, group_size);
-    LOG(INFO) << "cp";
     child_configs[child_vertex_id] =
         std::make_pair(parent_vertex_id, label_id_in_parent);
   }
@@ -1081,22 +1082,6 @@ void CSVFragmentLoader::InitCGraph() {
                     std::stol(dst_obj_id)),
                 {label_id_with_direction, {edge.data(), edge.size()}});
           }
-          if (schema_.get_edge_label_name(label_id) == "HASCREATOR") {
-            LOG(INFO) << "label_id_with_direction: " << label_id_with_direction
-                      << " dst_label_id " << dst_label_id;
-            size_t edge_num = 0;
-            auto edges =
-                basic_fragment_loader_.cgraph_vertices_[dst_label_id].ReadEdges(
-                    0, label_id_with_direction, edge_num);
-            LOG(INFO)
-                << cgraph_lf_indexers_[src_label_id]->get_key(
-                       gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(
-                           edges, 0)
-                           .neighbor)
-                << " "
-                << gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(edges, 0)
-                       .neighbor;
-          }
           break;
         }
         default: {
@@ -1159,28 +1144,6 @@ void CSVFragmentLoader::InitCGraph() {
     io_adaptor->Close();
   }
   LOG(INFO) << "load vertices done";
-
-  size_t person_label_id = schema_.get_vertex_label_id("PERSON");
-  LOG(INFO) << "person_label_id: " << person_label_id;
-  size_t edge_size = 10;
-  auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
-  auto edge_label_id_with_direction3 =
-      schema_.generate_edge_label_with_direction(
-          comment_label_id, person_label_id,
-          schema_.get_edge_label_id("HASCREATOR"), false);
-  gs::vid_t person_vid2 = cgraph_lf_indexers_[person_label_id]->get_index(933);
-  auto item_t3 =
-      basic_fragment_loader_.cgraph_vertices_[person_label_id].ReadEdges(
-          person_vid2, edge_label_id_with_direction3, edge_size);
-  for (int i = 0; i < edge_size; i++) {
-    LOG(INFO) << cgraph_lf_indexers_[comment_label_id]->get_key(
-                     gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(
-                         item_t3, i)
-                         .neighbor)
-              << " "
-              << gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t3, i)
-                     .neighbor;
-  }
 }
 
 void CSVFragmentLoader::loadEdges_cgraph() {
@@ -1240,7 +1203,8 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         column_configurations[dst_label_id][ie_column_family_id].emplace_back(
             property_ids[dst_label_id], ie_column_type, ie_column_family_id,
             e_property_type, schema_.get_edge_label_name(label_id),
-            schema_.get_vertex_label_name(src_label_id));
+            schema_.get_vertex_label_name(src_label_id),
+            cgraph::Vertex::EdgeDirection::kIn);
         edge_property_ids[iter->first].first = property_ids[dst_label_id]++;
       }
     }
@@ -1262,7 +1226,8 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         column_configurations[src_label_id][oe_column_family_id].emplace_back(
             property_ids[src_label_id], oe_column_type, oe_column_family_id,
             e_property_type, schema_.get_edge_label_name(label_id),
-            schema_.get_vertex_label_name(dst_label_id));
+            schema_.get_vertex_label_name(dst_label_id),
+            cgraph::Vertex::EdgeDirection::kOut);
         edge_property_ids[iter->first].second = property_ids[src_label_id]++;
       }
     }
