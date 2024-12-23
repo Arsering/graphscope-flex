@@ -262,7 +262,7 @@ void Schema::Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) const {
       << eproperties_ << eprop_names_ << ie_strategy_ << oe_strategy_
       << ie_column_family_ << oe_column_family_ << max_vnum_ << plugin_list_
       << vprop_column_family_nums_ << vprop_column_family_ids_ << vprop_ids_
-      << group_foreign_keys_;
+      << group_foreign_keys_1_ << group_foreign_keys_2_;
   CHECK(writer->WriteArchive(arc));
 }
 
@@ -275,7 +275,7 @@ void Schema::Deserialize(std::unique_ptr<grape::LocalIOAdaptor>& reader) {
       eproperties_ >> eprop_names_ >> ie_strategy_ >> oe_strategy_ >>
       ie_column_family_ >> oe_column_family_ >> max_vnum_ >> plugin_list_ >>
       vprop_column_family_nums_ >> vprop_column_family_ids_ >> vprop_ids_ >>
-      group_foreign_keys_;
+      group_foreign_keys_1_ >> group_foreign_keys_2_;
 }
 
 label_t Schema::vertex_label_to_index(const std::string& label) {
@@ -647,12 +647,16 @@ static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
   }
 
   if (node["group_foreign_key"]) {
-    std::string edge_type;
-    std::string foreign_key_type;
+    std::string edge_type, foreign_key_type, foreign_key_name;
+    size_t group_size;
     get_scalar(node["group_foreign_key"], "edge_type", edge_type);
     get_scalar(node["group_foreign_key"], "foreign_key_type", foreign_key_type);
-    schema.group_foreign_keys_[schema.get_vertex_label_id(label_name)] =
+    get_scalar(node["group_foreign_key"], "foreign_key_name", foreign_key_name);
+    get_scalar(node["group_foreign_key"], "group_size", group_size);
+    schema.group_foreign_keys_1_[schema.get_vertex_label_id(label_name)] =
         std::make_pair(edge_type, foreign_key_type);
+    schema.group_foreign_keys_2_[schema.get_vertex_label_id(label_name)] =
+        std::make_pair(foreign_key_name, group_size);
   }
   return true;
 }

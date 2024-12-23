@@ -92,6 +92,7 @@ class CSVFragmentLoader : public IFragmentLoader {
   mutable BasicFragmentLoader basic_fragment_loader_;
 
   std::vector<LFIndexer<vid_t>> lf_indexers_;
+  std::vector<BaseIndexer<vid_t>*> cgraph_lf_indexers_;
 };
 
 }  // namespace gs

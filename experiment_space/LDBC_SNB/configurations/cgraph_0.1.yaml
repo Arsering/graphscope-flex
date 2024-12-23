@@ -129,6 +129,8 @@ schema:
       group_foreign_key:
         edge_type: HASCREATOR
         foreign_key_type: dst
+        foreign_key_name: PERSON
+        group_size: 512
       properties:
         - property_id: 0
           property_name: id
@@ -170,6 +172,8 @@ schema:
       group_foreign_key:
         edge_type: HASCREATOR
         foreign_key_type: dst
+        foreign_key_name: PERSON
+        group_size: 128
       properties:
         - property_id: 0
           property_name: id

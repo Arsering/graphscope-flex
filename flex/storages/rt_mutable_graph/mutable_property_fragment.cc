@@ -396,15 +396,60 @@ void MutablePropertyFragment::cgraph_open(
                             std::filesystem::copy_options::overwrite_existing);
   LOG(INFO) << "copy snapshot to tmp done";
 
+  std::map<size_t, std::vector<std::pair<size_t, size_t>>>
+      parent_configs;  // vertex_id -> (child_vertex_id, group_size)
+  std::map<size_t, std::pair<size_t, size_t>>
+      child_configs;  // vertex_id -> (parent_vertex_id, label_Id_in_parent,)
   for (size_t vertex_id = 0;
        vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
-    lf_indexers_.emplace_back();
-    lf_indexers_.back().open("hash_map",
-                             snapshot_dir_path + "/snapshots/" +
-                                 std::to_string(1) + "/" +
-                                 schema_.get_vertex_label_name(vertex_id),
-                             snapshot_dir_path + "/runtime/tmp/" +
-                                 schema_.get_vertex_label_name(vertex_id));
+    if (schema_.group_foreign_keys_1_.count(vertex_id) == 0) {
+      continue;
+    }
+    auto& foreign_key_1 = schema_.group_foreign_keys_1_.at(vertex_id);
+    auto& foreign_key_2 = schema_.group_foreign_keys_2_.at(vertex_id);
+    auto child_vertex_id = vertex_id;
+    auto group_size = std::get<1>(foreign_key_2);
+    auto parent_vertex_id =
+        schema_.get_vertex_label_id(std::get<0>(foreign_key_2));
+    auto label_id_in_parent = parent_configs[parent_vertex_id].size() - 1;
+    parent_configs[parent_vertex_id].emplace_back(child_vertex_id, group_size);
+    child_configs[child_vertex_id] =
+        std::make_pair(parent_vertex_id, label_id_in_parent);
+  }
+
+  for (size_t vertex_id = 0;
+       vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
+    if (child_configs.count(vertex_id) == 1 &&
+        parent_configs.count(vertex_id) == 1) {
+      assert(false);
+    }
+    if (child_configs.count(vertex_id) == 0 &&
+        parent_configs.count(vertex_id) == 0) {
+      LFIndexer<vid_t>* lf_indexer = new LFIndexer<vid_t>();
+      lf_indexer->open("hash_map",
+                       snapshot_dir_path + "/snapshots/" + std::to_string(1) +
+                           "/" + schema_.get_vertex_label_name(vertex_id),
+                       snapshot_dir_path + "/runtime/tmp/" +
+                           schema_.get_vertex_label_name(vertex_id));
+      cgraph_lf_indexers_.emplace_back(lf_indexer);
+    } else if (child_configs.count(vertex_id) == 1) {
+      GroupedKidLFIndexer<vid_t>* lf_indexer = new GroupedKidLFIndexer<vid_t>();
+      lf_indexer->open("hash_map",
+                       snapshot_dir_path + "/snapshots/" + std::to_string(1) +
+                           "/" + schema_.get_vertex_label_name(vertex_id),
+                       snapshot_dir_path + "/runtime/tmp/" +
+                           schema_.get_vertex_label_name(vertex_id));
+      cgraph_lf_indexers_.emplace_back(lf_indexer);
+    } else {
+      GroupedParentLFIndexer<vid_t, 2>* lf_indexer =
+          new GroupedParentLFIndexer<vid_t, 2>();
+      lf_indexer->open("hash_map",
+                       snapshot_dir_path + "/snapshots/" + std::to_string(1) +
+                           "/" + schema_.get_vertex_label_name(vertex_id),
+                       snapshot_dir_path + "/runtime/tmp/" +
+                           schema_.get_vertex_label_name(vertex_id));
+      cgraph_lf_indexers_.emplace_back(lf_indexer);
+    }
     // create vertex
     vertices_.emplace_back();
     // 初始化vertex
@@ -414,10 +459,13 @@ void MutablePropertyFragment::cgraph_open(
 
   LOG(INFO) << "open vertex done";
 
+  size_t edge_size = 0;
+
   auto person_label_id = schema_.get_vertex_label_id("PERSON");
   auto property_id = 5;
   gs::oid_t person_oid = 8796093022290;
-  gs::vid_t person_vid = lf_indexers_[person_label_id].get_index(person_oid);
+  gs::vid_t person_vid =
+      cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
   auto item = vertices_[person_label_id].ReadColumn(person_vid, property_id);
   std::vector<char> data(item.Size());
   item.Copy(data.data(), data.size());
@@ -431,13 +479,76 @@ void MutablePropertyFragment::cgraph_open(
           person_label_id, person_label_id, schema_.get_edge_label_id("KNOWS"),
           false);
   auto item_t = vertices_[person_label_id].ReadEdges(
-      person_vid, edge_label_id_with_direction);
+      person_vid, edge_label_id_with_direction, edge_size);
 
   LOG(INFO) << "data: "
             << gbp::TimeConverter::millisToDateString(
                    gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t)
                        .data.milli_second,
                    true);
+
+  person_oid = 933;
+  auto person_vid2 =
+      cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+
+  {
+    auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
+    auto edge_label_id_with_direction3 =
+        schema_.generate_edge_label_with_direction(
+            comment_label_id, person_label_id,
+            schema_.get_edge_label_id("HASCREATOR"), false);
+    auto item_t3 = vertices_[person_label_id].ReadEdges(
+        person_vid2, edge_label_id_with_direction3, edge_size);
+    for (int i = 0; i < edge_size; i++) {
+      LOG(INFO) << cgraph_lf_indexers_[comment_label_id]->get_key(
+                       gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(
+                           item_t3, i)
+                           .neighbor)
+                << " "
+                << gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t3,
+                                                                       i)
+                       .neighbor;
+    }
+  }
+
+  {  // test person knows person
+    LOG(INFO) << "test person knows person";
+    std::vector<gs::oid_t> person_oid_list = {933, 1129, 6597069767117};
+    for (auto person_oid : person_oid_list) {
+      auto person_vid =
+          cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+      auto knows_edge_label_id_with_direction_out =
+          schema_.generate_edge_label_with_direction(
+              person_label_id, person_label_id,
+              schema_.get_edge_label_id("KNOWS"), true);
+      auto item_t4 = vertices_[person_label_id].ReadEdges(
+          person_vid, knows_edge_label_id_with_direction_out, edge_size);
+      for (int i = 0; i < edge_size; i++) {
+        auto knows_id =
+            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t4, i).neighbor;
+        LOG(INFO) << person_oid << "out knows lid is " << knows_id;
+        if (knows_id < 1520) {
+          LOG(INFO) << person_oid << "out knows oid is "
+                    << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
+        }
+      }
+      auto knows_edge_label_id_with_direction_in =
+          schema_.generate_edge_label_with_direction(
+              person_label_id, person_label_id,
+              schema_.get_edge_label_id("KNOWS"), false);
+      auto item_t5 = vertices_[person_label_id].ReadEdges(
+          person_vid, knows_edge_label_id_with_direction_in, edge_size);
+      for (int i = 0; i < edge_size; i++) {
+        auto knows_id =
+            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t5, i).neighbor;
+        LOG(INFO) << person_oid << "in knows lid is " << knows_id;
+        if (knows_id < 1520) {
+          LOG(INFO) << person_oid << "in knows oid is "
+                    << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
+        }
+      }
+    }
+  }
 }
 
 }  // namespace gs

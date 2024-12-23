@@ -104,6 +104,7 @@ class MutablePropertyFragment {
   size_t vertex_label_num_, edge_label_num_;
 
   std::vector<cgraph::Vertex> vertices_;
+  std::vector<BaseIndexer<vid_t>*> cgraph_lf_indexers_;
 };
 
 }  // namespace gs
