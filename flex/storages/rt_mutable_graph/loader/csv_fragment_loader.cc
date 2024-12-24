@@ -1510,6 +1510,13 @@ void CSVFragmentLoader::test_csv_loader_vertex() {
     auto primary_key_ind = std::get<2>(schema_.get_vertex_primary_key(
         comment_label_id)[0]);  //这里获取primary key的index
     auto primary_key_column = columns[primary_key_ind];  // primary key对应的列
+    for (auto i = 0; i < 10; ++i) {
+      auto chunked_array = std::make_shared<arrow::ChunkedArray>(
+          primary_key_column);
+      auto casted = std::static_pointer_cast<arrow::Int64Array>(
+          chunked_array->chunk(0));
+      LOG(INFO) << "primary_key: " << casted->Value(i);
+    }
     auto other_columns_array = columns;  //其他属性对应的列
     other_columns_array.erase(other_columns_array.begin() +
                               primary_key_ind);  //删除primary key对应的列
