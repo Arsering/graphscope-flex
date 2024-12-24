@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <cstddef>
 #include "flex/storages/rt_mutable_graph/types.h"
 #include "grape/util.h"
 
@@ -648,6 +649,11 @@ void MutablePropertyFragment::cgraph_open(
             .timestamp.load();
     LOG(INFO) << "comment timestamp: " << timestamp2;
   }
+
+  {
+    
+  }
+
 }
 
 }  // namespace gs

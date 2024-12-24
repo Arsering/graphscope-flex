@@ -622,8 +622,8 @@ void CSVFragmentLoader::loadVertices() {
          ++iter) {
       vertex_files.emplace_back(iter->first, iter->second);
     }
-    LOG(INFO) << "Parallel loading with " << thread_num_ << " threads, " << " "
-              << vertex_files.size() << " vertex files, ";
+    LOG(INFO) << "Parallel loading with " << thread_num_ << " threads, "
+              << " " << vertex_files.size() << " vertex files, ";
     std::atomic<size_t> v_ind(0);
     std::vector<std::thread> threads(thread_num_);
     for (int i = 0; i < thread_num_; ++i) {
@@ -954,10 +954,12 @@ void CSVFragmentLoader::InitCGraph() {
     for (auto column_family_id = 0;
          column_family_id < column_configurations[vertex_id].size();
          column_family_id++) {
+      LOG(INFO) << "column_family_id: " << column_family_id;
       for (auto column_id = 0;
            column_id <
            column_configurations[vertex_id][column_family_id].size();
            column_id++) {
+        LOG(INFO) << "column_id: " << column_id;
         auto& column_configuration =
             column_configurations[vertex_id][column_family_id][column_id];
         auto value = loader.get_column(column_configuration.property_id);
@@ -965,6 +967,9 @@ void CSVFragmentLoader::InitCGraph() {
         switch (column_configuration.column_type) {
         case PropertyType::kInt32: {
           for (int k = 0; k < value.size(); k++) {
+            if (k % 1000000 == 0) {
+              LOG(INFO) << "k: " << k;
+            }
             int32_t data = std::stoi(value[k]);
             gs::vid_t vid = cgraph_lf_indexers_[vertex_id]->get_index(
                 std::stol(primary_key[k]));
@@ -980,6 +985,9 @@ void CSVFragmentLoader::InitCGraph() {
         }
         case PropertyType::kInt64: {
           for (int k = 0; k < value.size(); k++) {
+            if (k % 1000000 == 0) {
+              LOG(INFO) << "k: " << k;
+            }
             int64_t data = std::stoll(value[k]);
             gs::vid_t vid = cgraph_lf_indexers_[vertex_id]->get_index(
                 std::stol(primary_key[k]));
@@ -995,6 +1003,9 @@ void CSVFragmentLoader::InitCGraph() {
         }
         case PropertyType::kDouble: {
           for (int k = 0; k < value.size(); k++) {
+            if (k % 1000000 == 0) {
+              LOG(INFO) << "k: " << k;
+            }
             double data = std::stod(value[k]);
             gs::vid_t vid = cgraph_lf_indexers_[vertex_id]->get_index(
                 std::stol(primary_key[k]));
@@ -1010,6 +1021,9 @@ void CSVFragmentLoader::InitCGraph() {
         }
         case PropertyType::kDate: {
           for (int k = 0; k < value.size(); k++) {
+            if (k % 1000000 == 0) {
+              LOG(INFO) << "k: " << k;
+            }
             gs::Date data;
             data.milli_second =
                 gbp::TimeConverter::dateStringToMillis(value[k]);
@@ -1029,6 +1043,9 @@ void CSVFragmentLoader::InitCGraph() {
         case PropertyType::kString:
         case PropertyType::kDynamicString: {
           for (int k = 0; k < value.size(); k++) {
+            if (k % 1000000 == 0) {
+              LOG(INFO) << "k: " << k;
+            }
             std::string data = value[k];
             gs::vid_t vid = cgraph_lf_indexers_[vertex_id]->get_index(
                 std::stol(primary_key[k]));
@@ -1104,6 +1121,8 @@ void CSVFragmentLoader::InitCGraph() {
         auto label_id_with_direction =
             schema_.generate_edge_label_with_direction(
                 src_label_id, dst_label_id, e_label_id, false);
+        LOG(INFO) << "insert in edge: " << src_label_id << " " << dst_label_id
+                  << " " << e_label_id;
         switch (schema_.ie_strategy_.at(label_id)) {
         case EdgeStrategy::kMultiple: {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
@@ -1111,13 +1130,16 @@ void CSVFragmentLoader::InitCGraph() {
             edge_list_len.emplace_back(vertex_id,
                                        (dst_degree[vertex_id] + 1) * 2);
           }
-
+          LOG(INFO) << "edge_list_len: " << edge_list_len.size();
           basic_fragment_loader_.cgraph_vertices_[dst_label_id]
               .EdgeListInitBatch(label_id_with_direction, edge_list_len);
         }
         case EdgeStrategy::kSingle: {
           std::vector<char> edge;
           for (auto i = 0; i < loader.row_count(); i++) {
+            if (i % 1000000 == 0) {
+              LOG(INFO) << "i: " << i;
+            }
             std::string src_obj_id, dst_obj_id, property;
             src_obj_id = loader.get_element(i, 0);
             dst_obj_id = loader.get_element(i, 1);
@@ -1146,6 +1168,8 @@ void CSVFragmentLoader::InitCGraph() {
         auto label_id_with_direction =
             schema_.generate_edge_label_with_direction(
                 src_label_id, dst_label_id, e_label_id, true);
+        LOG(INFO) << "insert out edge: " << src_label_id << " " << dst_label_id
+                  << " " << e_label_id;
         switch (schema_.oe_strategy_.at(label_id)) {
         case EdgeStrategy::kMultiple: {
           // 初始化oe
@@ -1154,13 +1178,16 @@ void CSVFragmentLoader::InitCGraph() {
             edge_list_len.emplace_back(vertex_id,
                                        (src_degree[vertex_id] + 1) * 2);
           }
-
+          LOG(INFO) << "edge_list_len: " << edge_list_len.size();
           basic_fragment_loader_.cgraph_vertices_[src_label_id]
               .EdgeListInitBatch(label_id_with_direction, edge_list_len);
         }
         case EdgeStrategy::kSingle: {
           std::vector<char> edge;
           for (auto i = 0; i < loader.row_count(); i++) {
+            if (i % 1000000 == 0) {
+              LOG(INFO) << "i: " << i;
+            }
             std::string src_obj_id, dst_obj_id, property;
             src_obj_id = loader.get_element(i, 0);
             dst_obj_id = loader.get_element(i, 1);
@@ -1466,7 +1493,180 @@ void CSVFragmentLoader::OpenCGraph() {  // 创建vertex
   }
 }
 
+void CSVFragmentLoader::test_csv_loader_vertex() {
+  auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
+  auto v_sources = loading_config_.GetVertexLoadingMeta();
+  auto v_files = v_sources.at(comment_label_id);
+  LOG(INFO) << "v_file is : " << v_files[0];
+  auto reader = create_vertex_reader(
+      schema_, loading_config_, comment_label_id, v_files[0],
+      false);  //创建vertex label id对应的点的reader
+  while (true) {
+    auto record_batch = reader->Read();  //按batch进行read
+    if (record_batch == nullptr) {
+      break;
+    }
+    auto columns = record_batch->columns();  //将读到的数据转换成列
+    auto primary_key_ind = std::get<2>(schema_.get_vertex_primary_key(
+        comment_label_id)[0]);  //这里获取primary key的index
+    auto primary_key_column = columns[primary_key_ind];  // primary key对应的列
+    auto other_columns_array = columns;  //其他属性对应的列
+    other_columns_array.erase(other_columns_array.begin() +
+                              primary_key_ind);  //删除primary key对应的列
+    //准备开始读取并插入属性
+    auto property_col_num = other_columns_array.size();  //其他属性的数量
+    for (auto i = 0; i < property_col_num; i++) {
+      auto process_column =
+          other_columns_array[i];  //获取当前属性，这里就是第i个属性对应的chunk,
+                                   //这里是可以直接用index索引的
+      auto chunked_array = std::make_shared<arrow::ChunkedArray>(
+          process_column);  //将当前属性转换成arrow::ChunkedArray
+      auto type = chunked_array->type();  //获取当前属性的类型
+      auto col_type = schema_.get_vertex_properties(comment_label_id)[i];
+      if (col_type == PropertyType::kDate) {
+        if (type->Equals(arrow::timestamp(arrow::TimeUnit::MILLI))) {
+          for (auto j = 0; j < chunked_array->num_chunks(); ++j) {
+            auto casted = std::static_pointer_cast<arrow::TimestampArray>(
+                chunked_array->chunk(
+                    j));  //将当前属性转换成arrow::TimestampArray
+            for (auto k = 0; k < 10;
+                 ++k) {  //这里就可以遍历处理后的值，这里就已经转换好了
+              LOG(INFO) << "date: " << casted->Value(k) << " ";
+            }
+            break;
+          }
+        }
+      } else if (col_type == PropertyType::kString) {
+        CHECK(type == arrow::large_utf8() || type == arrow::utf8())
+            << "Inconsistent data type, expect string, but got "
+            << type->ToString();
+        if (type == arrow::large_utf8()) {
+          for (auto j = 0; j < chunked_array->num_chunks(); ++j) {
+            auto casted = std::static_pointer_cast<arrow::LargeStringArray>(
+                chunked_array->chunk(j));
+            for (auto k = 0; k < 10; ++k) {
+              auto str = casted->GetView(k);
+              std::string_view str_view(str.data(), str.size());
+              LOG(INFO) << "string: " << str_view;
+            }
+            break;
+          }
+        } else {
+          for (auto j = 0; j < chunked_array->num_chunks(); ++j) {
+            auto casted = std::static_pointer_cast<arrow::StringArray>(
+                chunked_array->chunk(j));
+            for (auto k = 0; k < 10; ++k) {
+              auto str = casted->GetView(k);
+              std::string_view str_view(str.data(), str.size());
+              LOG(INFO) << "string: " << str_view;
+            }
+            break;
+          }
+        }
+      } else if (col_type == PropertyType::kInt32) {
+        for (auto j = 0; j < chunked_array->num_chunks(); ++j) {
+          auto casted = std::static_pointer_cast<arrow::Int32Array>(
+              chunked_array->chunk(j));
+          for (auto k = 0; k < 10; ++k) {
+            LOG(INFO) << "int32: " << casted->Value(k);
+          }
+          break;
+        }
+      } else if (col_type == PropertyType::kInt64) {
+        for (auto j = 0; j < chunked_array->num_chunks(); ++j) {
+          auto casted = std::static_pointer_cast<arrow::Int64Array>(
+              chunked_array->chunk(j));
+          for (auto k = 0; k < 10; ++k) {
+            LOG(INFO) << "int64: " << casted->Value(k);
+          }
+          break;
+        }
+      }
+    }
+    break;
+  }
+}
+
+void CSVFragmentLoader::test_csv_loader_edge() {
+  auto edge_sources = loading_config_.GetEdgeLoadingMeta();
+  for (auto iter = edge_sources.begin(); iter != edge_sources.end(); ++iter) {
+    auto src_label_id = std::get<0>(iter->first);
+    auto dst_label_id = std::get<1>(iter->first);
+    auto e_label_id = std::get<2>(iter->first);
+    auto e_files = iter->second;
+    LOG(INFO) << "e_file is : " << e_files[0];
+    auto reader =
+        create_edge_reader(schema_, loading_config_, src_label_id, dst_label_id,
+                           e_label_id, e_files[0],
+                           false);  //创建edge label id对应的边的reader
+    while (true) {
+      auto record_batch = reader->Read();  //按batch进行read
+      if (record_batch == nullptr) {
+        break;
+      }
+      auto columns = record_batch->columns();
+      auto src_col = columns[0];
+      auto dst_col = columns[1];
+      CHECK(src_col->type() == arrow::int64())
+          << "src_col type: " << src_col->type()->ToString();
+      CHECK(dst_col->type() == arrow::int64())
+          << "dst_col type: " << dst_col->type()->ToString();
+      std::vector<std::shared_ptr<arrow::Array>> property_cols;
+      for (auto i = 2; i < columns.size(); ++i) {
+        property_cols.emplace_back(columns[i]);
+      }
+      CHECK(property_cols.size() <= 1)
+          << "Currently only support at most one property on edge";
+      CHECK(src_col->length() == dst_col->length());
+      CHECK(src_col->type() == arrow::int64());
+      CHECK(dst_col->type() == arrow::int64());
+      auto src_casted_array =
+          std::static_pointer_cast<arrow::Int64Array>(src_col);
+      auto dst_casted_array =
+          std::static_pointer_cast<arrow::Int64Array>(dst_col);
+      if (property_cols.size() == 1) {
+        auto property_type = schema_.get_edge_properties(
+            src_label_id, dst_label_id, e_label_id)[0];
+        if (property_type == PropertyType::kDate) {
+          auto property_casted_array =
+              std::static_pointer_cast<arrow::TimestampArray>(property_cols[0]);
+          for (auto i = 0; i < 10; ++i) {
+            LOG(INFO) << "src: " << src_casted_array->Value(i)
+                      << " dst: " << dst_casted_array->Value(i)
+                      << " property: " << property_casted_array->Value(i);
+          }
+        } else if (property_type == PropertyType::kInt32) {
+          auto property_casted_array =
+              std::static_pointer_cast<arrow::Int32Array>(property_cols[0]);
+          for (auto i = 0; i < 10; ++i) {
+            LOG(INFO) << "src: " << src_casted_array->Value(i)
+                      << " dst: " << dst_casted_array->Value(i)
+                      << " property: " << property_casted_array->Value(i);
+          }
+        } else if (property_type == PropertyType::kInt64) {
+          auto property_casted_array =
+              std::static_pointer_cast<arrow::Int64Array>(property_cols[0]);
+          for (auto i = 0; i < 10; ++i) {
+            LOG(INFO) << "src: " << src_casted_array->Value(i)
+                      << " dst: " << dst_casted_array->Value(i)
+                      << " property: " << property_casted_array->Value(i);
+          }
+        } 
+      } else {
+        for (auto i = 0; i < 10; ++i) {
+          LOG(INFO) << "src: " << src_casted_array->Value(i)
+                    << " dst: " << dst_casted_array->Value(i);
+        }
+      }
+      break;
+    }
+  }
+}
+
 void CSVFragmentLoader::LoadFragment() {
+  test_csv_loader_vertex();
+  test_csv_loader_edge();
+  return;
   InitCGraph();
   // OpenCGraph();
   // loadEdges_cgraph();

@@ -52,6 +52,9 @@ class CSVFragmentLoader : public IFragmentLoader {
 
   void LoadFragment() override;
 
+  void test_csv_loader_vertex();
+  void test_csv_loader_edge();
+
  private:
   void loadVertices();
 
