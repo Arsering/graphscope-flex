@@ -826,301 +826,301 @@ void MutablePropertyFragment::cgraph_open(
     LOG(INFO) << "comment timestamp: " << timestamp2;
   }
 
-  {
-    auto vertex_oid = 15527184033;
-    auto vertex_id = cgraph_lf_indexers_[person_label_id]->insert(vertex_oid);
-    auto vertex_name = schema_.get_vertex_label_name(person_label_id);
-    LOG(INFO) << "vertex name: " << vertex_name;
+  // {
+  //   auto vertex_oid = 15527184033;
+  //   auto vertex_id = cgraph_lf_indexers_[person_label_id]->insert(vertex_oid);
+  //   auto vertex_name = schema_.get_vertex_label_name(person_label_id);
+  //   LOG(INFO) << "vertex name: " << vertex_name;
 
-    // 假设有以下几个值要合并
-    // int property_id = 1;
-    // PropertyType column_type = PropertyType::kInt32;
-    // size_t column_family_id = 2;
-    // std::string name = "test";
-    std::string first_name = "Carmen";
-    std::string last_name = "Lepland";
-    std::string gender = "female";
-    std::string birthday_string = "1984-02-18";
-    std::string creation_date_string = "2010-01-28T06:39:58.781+0000";
-    gs::Date birthday = gbp::TimeConverter::dateStringToMillis(birthday_string);
-    gs::Date creation_date =
-        gbp::TimeConverter::dateStringToMillis(creation_date_string);
-    std::string location_ip = "195.20.151.175";
-    std::string browser_used = "Internet Explorer";
-    std::string language = "et;en";
-    std::string email = "Carmen1129@gmail.com;Carmen1129@yahoo.com";
-    // 1. 计算实际需要的buffer大小(包含字符串长度)
-    size_t buffer_size = 0;
-    buffer_size += sizeof(size_t) + first_name.size();  // 字符串长度 + 内容
-    buffer_size += sizeof(size_t) + last_name.size();
-    buffer_size += sizeof(size_t) + gender.size();
-    buffer_size += sizeof(gs::Date);  // birthday
-    buffer_size += sizeof(gs::Date);  // creation_date
-    buffer_size += sizeof(size_t) + location_ip.size();
-    buffer_size += sizeof(size_t) + browser_used.size();
-    buffer_size += sizeof(size_t) + language.size();
-    buffer_size += sizeof(size_t) + email.size();
+  //   // 假设有以下几个值要合并
+  //   // int property_id = 1;
+  //   // PropertyType column_type = PropertyType::kInt32;
+  //   // size_t column_family_id = 2;
+  //   // std::string name = "test";
+  //   std::string first_name = "Carmen";
+  //   std::string last_name = "Lepland";
+  //   std::string gender = "female";
+  //   std::string birthday_string = "1984-02-18";
+  //   std::string creation_date_string = "2010-01-28T06:39:58.781+0000";
+  //   gs::Date birthday = gbp::TimeConverter::dateStringToMillis(birthday_string);
+  //   gs::Date creation_date =
+  //       gbp::TimeConverter::dateStringToMillis(creation_date_string);
+  //   std::string location_ip = "195.20.151.175";
+  //   std::string browser_used = "Internet Explorer";
+  //   std::string language = "et;en";
+  //   std::string email = "Carmen1129@gmail.com;Carmen1129@yahoo.com";
+  //   // 1. 计算实际需要的buffer大小(包含字符串长度)
+  //   size_t buffer_size = 0;
+  //   buffer_size += sizeof(size_t) + first_name.size();  // 字符串长度 + 内容
+  //   buffer_size += sizeof(size_t) + last_name.size();
+  //   buffer_size += sizeof(size_t) + gender.size();
+  //   buffer_size += sizeof(gs::Date);  // birthday
+  //   buffer_size += sizeof(gs::Date);  // creation_date
+  //   buffer_size += sizeof(size_t) + location_ip.size();
+  //   buffer_size += sizeof(size_t) + browser_used.size();
+  //   buffer_size += sizeof(size_t) + language.size();
+  //   buffer_size += sizeof(size_t) + email.size();
 
-    std::vector<char> buffer(buffer_size);
-    size_t offset = 0;
+  //   std::vector<char> buffer(buffer_size);
+  //   size_t offset = 0;
 
-    // 2. 写入字符串(先写长度,再写内容)
-    auto write_string = [&buffer, &offset](const std::string& str) {
-      size_t len = str.size();
-      memcpy(buffer.data() + offset, &len, sizeof(size_t));
-      offset += sizeof(size_t);
-      memcpy(buffer.data() + offset, str.data(), len);
-      offset += len;
-    };
+  //   // 2. 写入字符串(先写长度,再写内容)
+  //   auto write_string = [&buffer, &offset](const std::string& str) {
+  //     size_t len = str.size();
+  //     memcpy(buffer.data() + offset, &len, sizeof(size_t));
+  //     offset += sizeof(size_t);
+  //     memcpy(buffer.data() + offset, str.data(), len);
+  //     offset += len;
+  //   };
 
-    write_string(first_name);
-    write_string(last_name);
-    write_string(gender);
-    memcpy(buffer.data() + offset, &birthday, sizeof(gs::Date));
-    offset += sizeof(gs::Date);
-    memcpy(buffer.data() + offset, &creation_date, sizeof(gs::Date));
-    offset += sizeof(gs::Date);
-    write_string(location_ip);
-    write_string(browser_used);
-    write_string(language);
-    write_string(email);
+  //   write_string(first_name);
+  //   write_string(last_name);
+  //   write_string(gender);
+  //   memcpy(buffer.data() + offset, &birthday, sizeof(gs::Date));
+  //   offset += sizeof(gs::Date);
+  //   memcpy(buffer.data() + offset, &creation_date, sizeof(gs::Date));
+  //   offset += sizeof(gs::Date);
+  //   write_string(location_ip);
+  //   write_string(browser_used);
+  //   write_string(language);
+  //   write_string(email);
 
-    // 4. 用buffer初始化OutArchive
-    grape::OutArchive out_archive;
-    out_archive.SetSlice(buffer.data(), buffer.size());
+  //   // 4. 用buffer初始化OutArchive
+  //   grape::OutArchive out_archive;
+  //   out_archive.SetSlice(buffer.data(), buffer.size());
 
-    auto vertex_props = schema_.get_vertex_properties(person_label_id);
+  //   auto vertex_props = schema_.get_vertex_properties(person_label_id);
 
-    for (size_t i = 0; i < vertex_props.size(); i++) {
-      switch (vertex_props[i]) {
-      case PropertyType::kInt32:
-        LOG(INFO) << i << " prop type is int32";
-        break;
-      case PropertyType::kInt64:
-        LOG(INFO) << i << " prop type is int64";
-        break;
-      case PropertyType::kDouble:
-        LOG(INFO) << i << " prop type is double";
-        break;
-      case PropertyType::kString:
-        LOG(INFO) << i << " prop type is string";
-        break;
-      case PropertyType::kDate:
-        LOG(INFO) << i << " prop type is date";
-        break;
-      default:
-        LOG(INFO) << i << " prop type is unknown";
-        break;
-      }
-    }
-    auto vertex_prop_ids = schema_.get_vertex_prop_ids(person_label_id);
-    for (auto prop_id : vertex_prop_ids) {
-      LOG(INFO) << "prop_id: " << prop_id;
-    }
-    for (auto i = 0; i < vertex_prop_ids.size(); i++) {
-      switch (vertex_props[i]) {
-      case PropertyType::kInt32: {
-        int32_t data_int32;
-        out_archive >> data_int32;
-        LOG(INFO) << "data_int32: " << data_int32;
-        vertices_[person_label_id].InsertColumn(
-            vertex_id, {vertex_prop_ids[i],
-                        std::string_view(reinterpret_cast<char*>(&data_int32),
-                                         sizeof(int32_t))});
-        break;
-      }
-      case PropertyType::kInt64: {
-        int64_t data_int64;
-        out_archive >> data_int64;
-        LOG(INFO) << "data_int64: " << data_int64;
-        vertices_[person_label_id].InsertColumn(
-            vertex_id, {vertex_prop_ids[i],
-                        std::string_view(reinterpret_cast<char*>(&data_int64),
-                                         sizeof(int64_t))});
-        break;
-      }
-      case PropertyType::kDouble: {
-        double data_double;
-        out_archive >> data_double;
-        LOG(INFO) << "data_double: " << data_double;
-        vertices_[person_label_id].InsertColumn(
-            vertex_id, {vertex_prop_ids[i],
-                        std::string_view(reinterpret_cast<char*>(&data_double),
-                                         sizeof(double))});
-        break;
-      }
-      case PropertyType::kString: {
-        std::string data_string;
-        out_archive >> data_string;
-        LOG(INFO) << "data_string: " << data_string;
-        vertices_[person_label_id].InsertColumn(
-            vertex_id, {vertex_prop_ids[i], data_string});
-        break;
-      }
-      case PropertyType::kDate: {
-        gs::Date data_date;
-        out_archive >> data_date;
-        LOG(INFO) << "data_date: " << data_date;
-        vertices_[person_label_id].InsertColumn(
-            vertex_id, {vertex_prop_ids[i],
-                        std::string_view(reinterpret_cast<char*>(&data_date),
-                                         sizeof(gs::Date))});
-        break;
-      }
-      default:
-        LOG(INFO) << i << " prop type is unknown";
-        break;
-      }
-    }
-    vertices_[person_label_id].InitVertex(vertex_id);
-    auto inserted_vid =
-        cgraph_lf_indexers_[person_label_id]->get_index(vertex_oid);
-    LOG(INFO) << "inseted_vid: " << inserted_vid;
-    auto item_p = vertices_[person_label_id].ReadColumn(inserted_vid, 1);
-    std::vector<char> data(item_p.Size());
-    item_p.Copy(data.data(), data.size());
-    LOG(INFO) << "first_name: " << std::string_view(data.data(), data.size());
-  }
+  //   for (size_t i = 0; i < vertex_props.size(); i++) {
+  //     switch (vertex_props[i]) {
+  //     case PropertyType::kInt32:
+  //       LOG(INFO) << i << " prop type is int32";
+  //       break;
+  //     case PropertyType::kInt64:
+  //       LOG(INFO) << i << " prop type is int64";
+  //       break;
+  //     case PropertyType::kDouble:
+  //       LOG(INFO) << i << " prop type is double";
+  //       break;
+  //     case PropertyType::kString:
+  //       LOG(INFO) << i << " prop type is string";
+  //       break;
+  //     case PropertyType::kDate:
+  //       LOG(INFO) << i << " prop type is date";
+  //       break;
+  //     default:
+  //       LOG(INFO) << i << " prop type is unknown";
+  //       break;
+  //     }
+  //   }
+  //   auto vertex_prop_ids = schema_.get_vertex_prop_ids(person_label_id);
+  //   for (auto prop_id : vertex_prop_ids) {
+  //     LOG(INFO) << "prop_id: " << prop_id;
+  //   }
+  //   for (auto i = 0; i < vertex_prop_ids.size(); i++) {
+  //     switch (vertex_props[i]) {
+  //     case PropertyType::kInt32: {
+  //       int32_t data_int32;
+  //       out_archive >> data_int32;
+  //       LOG(INFO) << "data_int32: " << data_int32;
+  //       vertices_[person_label_id].InsertColumn(
+  //           vertex_id, {vertex_prop_ids[i],
+  //                       std::string_view(reinterpret_cast<char*>(&data_int32),
+  //                                        sizeof(int32_t))});
+  //       break;
+  //     }
+  //     case PropertyType::kInt64: {
+  //       int64_t data_int64;
+  //       out_archive >> data_int64;
+  //       LOG(INFO) << "data_int64: " << data_int64;
+  //       vertices_[person_label_id].InsertColumn(
+  //           vertex_id, {vertex_prop_ids[i],
+  //                       std::string_view(reinterpret_cast<char*>(&data_int64),
+  //                                        sizeof(int64_t))});
+  //       break;
+  //     }
+  //     case PropertyType::kDouble: {
+  //       double data_double;
+  //       out_archive >> data_double;
+  //       LOG(INFO) << "data_double: " << data_double;
+  //       vertices_[person_label_id].InsertColumn(
+  //           vertex_id, {vertex_prop_ids[i],
+  //                       std::string_view(reinterpret_cast<char*>(&data_double),
+  //                                        sizeof(double))});
+  //       break;
+  //     }
+  //     case PropertyType::kString: {
+  //       std::string data_string;
+  //       out_archive >> data_string;
+  //       LOG(INFO) << "data_string: " << data_string;
+  //       vertices_[person_label_id].InsertColumn(
+  //           vertex_id, {vertex_prop_ids[i], data_string});
+  //       break;
+  //     }
+  //     case PropertyType::kDate: {
+  //       gs::Date data_date;
+  //       out_archive >> data_date;
+  //       LOG(INFO) << "data_date: " << data_date;
+  //       vertices_[person_label_id].InsertColumn(
+  //           vertex_id, {vertex_prop_ids[i],
+  //                       std::string_view(reinterpret_cast<char*>(&data_date),
+  //                                        sizeof(gs::Date))});
+  //       break;
+  //     }
+  //     default:
+  //       LOG(INFO) << i << " prop type is unknown";
+  //       break;
+  //     }
+  //   }
+  //   vertices_[person_label_id].InitVertex(vertex_id);
+  //   auto inserted_vid =
+  //       cgraph_lf_indexers_[person_label_id]->get_index(vertex_oid);
+  //   LOG(INFO) << "inseted_vid: " << inserted_vid;
+  //   auto item_p = vertices_[person_label_id].ReadColumn(inserted_vid, 1);
+  //   std::vector<char> data(item_p.Size());
+  //   item_p.Copy(data.data(), data.size());
+  //   LOG(INFO) << "first_name: " << std::string_view(data.data(), data.size());
+  // }
 
-  {  // test insert person likes comment
-    LOG(INFO) << "test insert person likes comment";
-    uint8_t person_label_id = schema_.get_vertex_label_id("PERSON");
-    LOG(INFO) << "person label id: " << (int) person_label_id;
-    uint8_t comment_label_id = schema_.get_vertex_label_id("COMMENT");
-    LOG(INFO) << "comment label id: " << (int) comment_label_id;
-    uint8_t likes_label_id = schema_.get_edge_label_id("LIKES");
-    LOG(INFO) << "likes label id: " << (int) likes_label_id;
-    auto person_oid1 = 15527184033;
-    auto comment_oid = 1030792151057;
-    std::string creation_date_string = "2010-01-28T06:39:58.781+0000";
-    gs::Date creation_date =
-        gbp::TimeConverter::dateStringToMillis(creation_date_string);
-    LOG(INFO) << "creation_date: " << creation_date;
-    auto edge_property = schema_.get_edge_property(
-        person_label_id, comment_label_id, schema_.get_edge_label_id("LIKES"));
-    auto edge_with_direction = schema_.generate_edge_label_with_direction(
-        person_label_id, comment_label_id, likes_label_id, true);
-    auto edge_with_direction_in = schema_.generate_edge_label_with_direction(
-        person_label_id, comment_label_id, likes_label_id, false);
-    auto flag1 = vertices_[person_label_id].edge_label_with_direction_exist(
-        edge_with_direction);
-    auto flag2 = vertices_[comment_label_id].edge_label_with_direction_exist(
-        edge_with_direction_in);
-    LOG(INFO) << "person to comment edge exist: " << flag1;
-    LOG(INFO) << "comment to person edge exist: " << flag2;
-    MutableNbr<gs::Date> edge;
-    edge.neighbor =
-        cgraph_lf_indexers_[person_label_id]->get_index(person_oid1);
-    edge.timestamp = 0;
-    edge.data = creation_date;
-    vertices_[comment_label_id].InsertEdgeUnsafe(
-        cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid),
-        {edge_with_direction_in,
-         {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
-    auto comment_vid =
-        cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
-    size_t edge_num;
-    auto item_p = vertices_[comment_label_id].ReadEdges(
-        comment_vid, edge_with_direction_in, edge_num);
-    for (size_t i = 0; i < edge_num; i++) {
-      auto edge_data = gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_p, i);
-      LOG(INFO) << "edge_data: " << edge_data.neighbor;
-      LOG(INFO) << "neighbor: "
-                << cgraph_lf_indexers_[person_label_id]->get_key(
-                       edge_data.neighbor);
-      LOG(INFO) << "edge_data: " << edge_data.data;
-    }
+  // {  // test insert person likes comment
+  //   LOG(INFO) << "test insert person likes comment";
+  //   uint8_t person_label_id = schema_.get_vertex_label_id("PERSON");
+  //   LOG(INFO) << "person label id: " << (int) person_label_id;
+  //   uint8_t comment_label_id = schema_.get_vertex_label_id("COMMENT");
+  //   LOG(INFO) << "comment label id: " << (int) comment_label_id;
+  //   uint8_t likes_label_id = schema_.get_edge_label_id("LIKES");
+  //   LOG(INFO) << "likes label id: " << (int) likes_label_id;
+  //   auto person_oid1 = 15527184033;
+  //   auto comment_oid = 1030792151057;
+  //   std::string creation_date_string = "2010-01-28T06:39:58.781+0000";
+  //   gs::Date creation_date =
+  //       gbp::TimeConverter::dateStringToMillis(creation_date_string);
+  //   LOG(INFO) << "creation_date: " << creation_date;
+  //   auto edge_property = schema_.get_edge_property(
+  //       person_label_id, comment_label_id, schema_.get_edge_label_id("LIKES"));
+  //   auto edge_with_direction = schema_.generate_edge_label_with_direction(
+  //       person_label_id, comment_label_id, likes_label_id, true);
+  //   auto edge_with_direction_in = schema_.generate_edge_label_with_direction(
+  //       person_label_id, comment_label_id, likes_label_id, false);
+  //   auto flag1 = vertices_[person_label_id].edge_label_with_direction_exist(
+  //       edge_with_direction);
+  //   auto flag2 = vertices_[comment_label_id].edge_label_with_direction_exist(
+  //       edge_with_direction_in);
+  //   LOG(INFO) << "person to comment edge exist: " << flag1;
+  //   LOG(INFO) << "comment to person edge exist: " << flag2;
+  //   MutableNbr<gs::Date> edge;
+  //   edge.neighbor =
+  //       cgraph_lf_indexers_[person_label_id]->get_index(person_oid1);
+  //   edge.timestamp = 0;
+  //   edge.data = creation_date;
+  //   vertices_[comment_label_id].InsertEdgeUnsafe(
+  //       cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid),
+  //       {edge_with_direction_in,
+  //        {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+  //   auto comment_vid =
+  //       cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
+  //   size_t edge_num;
+  //   auto item_p = vertices_[comment_label_id].ReadEdges(
+  //       comment_vid, edge_with_direction_in, edge_num);
+  //   for (size_t i = 0; i < edge_num; i++) {
+  //     auto edge_data = gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_p, i);
+  //     LOG(INFO) << "edge_data: " << edge_data.neighbor;
+  //     LOG(INFO) << "neighbor: "
+  //               << cgraph_lf_indexers_[person_label_id]->get_key(
+  //                      edge_data.neighbor);
+  //     LOG(INFO) << "edge_data: " << edge_data.data;
+  //   }
 
-    // test insert person knows person
-    auto person_vid1 =
-        cgraph_lf_indexers_[person_label_id]->get_index(person_oid1);
-    auto person_oid2 = 2199023256684;
-    auto person_vid2 =
-        cgraph_lf_indexers_[person_label_id]->get_index(person_oid2);
-    auto person_knows_person_edge_label_id_out =
-        schema_.generate_edge_label_with_direction(
-            person_label_id, person_label_id,
-            schema_.get_edge_label_id("KNOWS"), true);
-    auto person_knows_person_edge_label_id_in =
-        schema_.generate_edge_label_with_direction(
-            person_label_id, person_label_id,
-            schema_.get_edge_label_id("KNOWS"), false);
-    auto edge_type = schema_.get_edge_properties(person_label_id, person_label_id,
-                                                 schema_.get_edge_label_id("KNOWS"));
-    schema_.traverse_edge_properties();
-    if(edge_type.size() == 1 && edge_type[0] == PropertyType::kDate) {
-      MutableNbr<gs::Date> edge_out;
-      edge_out.neighbor = person_vid2;
-      edge_out.timestamp = 0;
-      edge_out.data = creation_date;
-      MutableNbr<gs::Date> edge_in;
-      edge_in.neighbor = person_vid1;
-      edge_in.timestamp = 0;
-      edge_in.data = creation_date;
-      vertices_[person_label_id].InsertEdgeUnsafe(
-          person_vid1,
-          {person_knows_person_edge_label_id_out,
-          {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
-      vertices_[person_label_id].InsertEdgeUnsafe(
-          person_vid2,
-          {person_knows_person_edge_label_id_in,
-          {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
-      auto item_knows = vertices_[person_label_id].ReadEdges(
-          person_vid1, person_knows_person_edge_label_id_out, edge_num);
-      for (size_t i = 0; i < edge_num; i++) {
-        auto edge_data =
-            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_knows, i);
-        LOG(INFO) << "edge_data: " << edge_data.neighbor;
-        LOG(INFO) << "neighbor: "
-                  << cgraph_lf_indexers_[person_label_id]->get_key(
-                        edge_data.neighbor);
-        LOG(INFO) << "edge_data: " << edge_data.data;
-      }
-      auto item_knows_in = vertices_[person_label_id].ReadEdges(
-          person_vid2, person_knows_person_edge_label_id_in, edge_num);
-      for (size_t i = 0; i < edge_num; i++) {
-        auto edge_data =
-            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_knows_in, i);
-        LOG(INFO) << "edge_data: " << edge_data.neighbor;
-        LOG(INFO) << "neighbor: "
-                  << cgraph_lf_indexers_[person_label_id]->get_key(
-                        edge_data.neighbor);
-        LOG(INFO) << "edge_data: " << edge_data.data;
-      }
-    }
-    // test person isLocatedIn place
-    auto place_label_id = schema_.get_vertex_label_id("PLACE");
-    auto place_oid = 1;
-    auto place_vid = cgraph_lf_indexers_[place_label_id]->get_index(place_oid);
-    auto person_isLocatedIn_place_edge_label_id_out = schema_.generate_edge_label_with_direction(
-        person_label_id, place_label_id, schema_.get_edge_label_id("ISLOCATEDIN"), true);
-    auto person_isLocatedIn_place_edge_label_id_in = schema_.generate_edge_label_with_direction(
-        person_label_id, place_label_id, schema_.get_edge_label_id("ISLOCATEDIN"), false);
-    MutableNbr<grape::EmptyType> edge_out;
-    edge_out.neighbor = place_vid;
-    edge_out.timestamp = 0;
-    vertices_[person_label_id].InsertEdgeUnsafe(person_vid1, {person_isLocatedIn_place_edge_label_id_out, {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
-    MutableNbr<grape::EmptyType> edge_in;
-    edge_in.neighbor = person_vid1;
-    edge_in.timestamp = 0;
-    LOG(INFO) << "place_label_id: " << (int) place_label_id;
-    LOG(INFO)<<"place vid: "<<place_vid;
-    LOG(INFO)<<"person_isLocatedIn_place_edge_label_id_in: "<<person_isLocatedIn_place_edge_label_id_in;
-    LOG(INFO)<<"edge_in: "<<edge_in.neighbor<<edge_in.timestamp;
-    vertices_[place_label_id].InsertEdgeUnsafe(place_vid, {person_isLocatedIn_place_edge_label_id_in, {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
-    auto item_place = vertices_[person_label_id].ReadEdges(person_vid1, person_isLocatedIn_place_edge_label_id_out, edge_num);
-    for (size_t i = 0; i < edge_num; i++) {
-      auto edge_data = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_place, i);
-      LOG(INFO) << "edge_data: " << edge_data.neighbor;
-      LOG(INFO) << "neighbor: " << cgraph_lf_indexers_[place_label_id]->get_key(edge_data.neighbor);
-    }
-    auto item_person = vertices_[place_label_id].ReadEdges(place_vid, person_isLocatedIn_place_edge_label_id_in, edge_num);
-    for (size_t i = 0; i < edge_num; i++) {
-      auto edge_data = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_person, i);
-      LOG(INFO) << "edge_data: " << edge_data.neighbor;
-      LOG(INFO) << "neighbor: " << cgraph_lf_indexers_[person_label_id]->get_key(edge_data.neighbor);
-    }
-  }
+  //   // test insert person knows person
+  //   auto person_vid1 =
+  //       cgraph_lf_indexers_[person_label_id]->get_index(person_oid1);
+  //   auto person_oid2 = 2199023256684;
+  //   auto person_vid2 =
+  //       cgraph_lf_indexers_[person_label_id]->get_index(person_oid2);
+  //   auto person_knows_person_edge_label_id_out =
+  //       schema_.generate_edge_label_with_direction(
+  //           person_label_id, person_label_id,
+  //           schema_.get_edge_label_id("KNOWS"), true);
+  //   auto person_knows_person_edge_label_id_in =
+  //       schema_.generate_edge_label_with_direction(
+  //           person_label_id, person_label_id,
+  //           schema_.get_edge_label_id("KNOWS"), false);
+  //   auto edge_type = schema_.get_edge_properties(person_label_id, person_label_id,
+  //                                                schema_.get_edge_label_id("KNOWS"));
+  //   schema_.traverse_edge_properties();
+  //   if(edge_type.size() == 1 && edge_type[0] == PropertyType::kDate) {
+  //     MutableNbr<gs::Date> edge_out;
+  //     edge_out.neighbor = person_vid2;
+  //     edge_out.timestamp = 0;
+  //     edge_out.data = creation_date;
+  //     MutableNbr<gs::Date> edge_in;
+  //     edge_in.neighbor = person_vid1;
+  //     edge_in.timestamp = 0;
+  //     edge_in.data = creation_date;
+  //     vertices_[person_label_id].InsertEdgeUnsafe(
+  //         person_vid1,
+  //         {person_knows_person_edge_label_id_out,
+  //         {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+  //     vertices_[person_label_id].InsertEdgeUnsafe(
+  //         person_vid2,
+  //         {person_knows_person_edge_label_id_in,
+  //         {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+  //     auto item_knows = vertices_[person_label_id].ReadEdges(
+  //         person_vid1, person_knows_person_edge_label_id_out, edge_num);
+  //     for (size_t i = 0; i < edge_num; i++) {
+  //       auto edge_data =
+  //           gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_knows, i);
+  //       LOG(INFO) << "edge_data: " << edge_data.neighbor;
+  //       LOG(INFO) << "neighbor: "
+  //                 << cgraph_lf_indexers_[person_label_id]->get_key(
+  //                       edge_data.neighbor);
+  //       LOG(INFO) << "edge_data: " << edge_data.data;
+  //     }
+  //     auto item_knows_in = vertices_[person_label_id].ReadEdges(
+  //         person_vid2, person_knows_person_edge_label_id_in, edge_num);
+  //     for (size_t i = 0; i < edge_num; i++) {
+  //       auto edge_data =
+  //           gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_knows_in, i);
+  //       LOG(INFO) << "edge_data: " << edge_data.neighbor;
+  //       LOG(INFO) << "neighbor: "
+  //                 << cgraph_lf_indexers_[person_label_id]->get_key(
+  //                       edge_data.neighbor);
+  //       LOG(INFO) << "edge_data: " << edge_data.data;
+  //     }
+  //   }
+  //   // test person isLocatedIn place
+  //   auto place_label_id = schema_.get_vertex_label_id("PLACE");
+  //   auto place_oid = 1;
+  //   auto place_vid = cgraph_lf_indexers_[place_label_id]->get_index(place_oid);
+  //   auto person_isLocatedIn_place_edge_label_id_out = schema_.generate_edge_label_with_direction(
+  //       person_label_id, place_label_id, schema_.get_edge_label_id("ISLOCATEDIN"), true);
+  //   auto person_isLocatedIn_place_edge_label_id_in = schema_.generate_edge_label_with_direction(
+  //       person_label_id, place_label_id, schema_.get_edge_label_id("ISLOCATEDIN"), false);
+  //   MutableNbr<grape::EmptyType> edge_out;
+  //   edge_out.neighbor = place_vid;
+  //   edge_out.timestamp = 0;
+  //   vertices_[person_label_id].InsertEdgeUnsafe(person_vid1, {person_isLocatedIn_place_edge_label_id_out, {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+  //   MutableNbr<grape::EmptyType> edge_in;
+  //   edge_in.neighbor = person_vid1;
+  //   edge_in.timestamp = 0;
+  //   LOG(INFO) << "place_label_id: " << (int) place_label_id;
+  //   LOG(INFO)<<"place vid: "<<place_vid;
+  //   LOG(INFO)<<"person_isLocatedIn_place_edge_label_id_in: "<<person_isLocatedIn_place_edge_label_id_in;
+  //   LOG(INFO)<<"edge_in: "<<edge_in.neighbor<<edge_in.timestamp;
+  //   vertices_[place_label_id].InsertEdgeUnsafe(place_vid, {person_isLocatedIn_place_edge_label_id_in, {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+  //   auto item_place = vertices_[person_label_id].ReadEdges(person_vid1, person_isLocatedIn_place_edge_label_id_out, edge_num);
+  //   for (size_t i = 0; i < edge_num; i++) {
+  //     auto edge_data = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_place, i);
+  //     LOG(INFO) << "edge_data: " << edge_data.neighbor;
+  //     LOG(INFO) << "neighbor: " << cgraph_lf_indexers_[place_label_id]->get_key(edge_data.neighbor);
+  //   }
+  //   auto item_person = vertices_[place_label_id].ReadEdges(place_vid, person_isLocatedIn_place_edge_label_id_in, edge_num);
+  //   for (size_t i = 0; i < edge_num; i++) {
+  //     auto edge_data = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_person, i);
+  //     LOG(INFO) << "edge_data: " << edge_data.neighbor;
+  //     LOG(INFO) << "neighbor: " << cgraph_lf_indexers_[person_label_id]->get_key(edge_data.neighbor);
+  //   }
+  // }
 }
 }  // namespace gs
 

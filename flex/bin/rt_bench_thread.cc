@@ -688,10 +688,10 @@ int main(int argc, char** argv) {
   if (vm.count("query-type")) {
     Req::get().query_type_ = vm["query-type"].as<uint32_t>();
   }
-  // Req::get().load_query(req_file);
-  // Req::get().load_result(req_file);
+  Req::get().load_query(req_file);
+  Req::get().load_result(req_file);
   // Req::get().gen_ic7_query();
-  Req::get().gen_insert_query();
+  // Req::get().gen_insert_query();
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);

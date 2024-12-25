@@ -149,7 +149,7 @@ class SingleGraphView {
     return item;
   }
   FORCE_INLINE bool exist1(gbp::BufferBlock& item) const {
-    LOG(INFO) << "exist1: " << gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() << " <= " << timestamp_;
+    // LOG(INFO) << "exist1: " << gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() << " <= " << timestamp_;
     return gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
   }
   FORCE_INLINE const gbp::BufferBlock get_edge(vid_t v) const {

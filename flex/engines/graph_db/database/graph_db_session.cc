@@ -131,7 +131,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << "]";
 #endif
     constexpr bool store_query = false;
-    constexpr bool check_result = false;
+    constexpr bool check_result = true;
 
     if constexpr (store_query) {
       static const size_t max_query_num = 200000100;
