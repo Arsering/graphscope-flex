@@ -929,9 +929,9 @@ void CSVFragmentLoader::LoadCGraph() {
       }
       if (child_configs.count(vertex_id) == 1 &&
           parent_configs.count(vertex_id) == 0) {
-        cgraph_lf_indexers_[child_configs[vertex_id].first]->set_new_kid_range(
-            child_configs[vertex_id].second,
-            cgraph_lf_indexers_[vertex_id]->size());
+        cgraph_lf_indexers_[child_configs[vertex_id].first]
+            ->set_new_child_range(child_configs[vertex_id].second,
+                                  cgraph_lf_indexers_[vertex_id]->size());
         cgraph_lf_indexers_[vertex_id]->set_parent_lf(
             *cgraph_lf_indexers_[child_configs[vertex_id].first]);
       }

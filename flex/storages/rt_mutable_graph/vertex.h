@@ -615,7 +615,7 @@ class Vertex {
                                                                   .second];
       if (column_to_column_family.column_type ==
           gs::PropertyType::kDynamicEdgeList) {
-        EdgeListInit(edge_label_id.second, vertex_id, 128);
+        EdgeListInit(edge_label_id.first, vertex_id, 128);
       } else if (column_to_column_family.column_type ==
                  gs::PropertyType::kEdge) {
         assert(ConstructEdgeNew(empty_edge, std::string(), 0,
