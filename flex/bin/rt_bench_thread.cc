@@ -227,6 +227,67 @@ class Req {
       log_thread_.join();
   }
 
+  class CSVReader {
+  std::ifstream csv_data_;
+  std::vector<std::string> words_;
+
+ public:
+  CSVReader() = default;
+  CSVReader(const std::string& file_name) { init(file_name); }
+
+  ~CSVReader() = default;
+
+  void init(const std::string& file_name) {
+    try {
+      csv_data_.open(file_name, std::ios::in);
+    } catch (std::ios_base::failure& e) {
+      std::cout << "fuck" << std::endl;
+      return;
+    }
+    LOG(INFO) << "file_name=" << file_name;
+    std::string line;
+    std::getline(csv_data_, line);  // ignore the first line of file
+  }
+
+  std::vector<std::string>& GetNextLine() {
+    words_.clear();
+    std::string line, word;
+    if (!std::getline(csv_data_, line))
+      return words_;
+
+    std::istringstream sin;
+    sin.clear();
+    sin.str(line);
+
+    while (std::getline(sin, word, '|')) {
+      words_.push_back(word);
+    }
+    return words_;
+  }
+};
+
+    void gen_ic7_query(){
+    //读取person_0_0.csv第一列
+    std::string csv_dir_path = "/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/lgraph_db/sf0.1/social_network/dynamic/person_0_0.csv";
+    std::vector<std::string> result_buffer;
+    std::vector<char> tmp;
+    CSVReader csv_reader;
+    csv_reader.init(csv_dir_path);
+    while (true) {
+      gs::Encoder encoder(tmp);
+      auto& words = csv_reader.GetNextLine();
+      if (words.size() == 0)
+        break;
+      encoder.put_long(stol(words[0]));
+      encoder.put_byte(7);
+      reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
+      tmp.clear();
+      if(reqs_.size() == 20) break;
+    }
+    num_of_reqs_unique_ = reqs_.size();
+    LOG(INFO) << "Number of query = " << reqs_.size();
+  }
+
   int query_type_;
  private:
   Req() : cur_(0), warmup_num_(0) {}
@@ -442,6 +503,7 @@ int main(int argc, char** argv) {
 
   Req::get().load_query(req_file);
   // Req::get().load_result(req_file);
+  // Req::get().gen_ic7_query();
   gbp::DirectCache::CleanAllCache();
 
   for (size_t idx = 0; idx < 2; idx++) {

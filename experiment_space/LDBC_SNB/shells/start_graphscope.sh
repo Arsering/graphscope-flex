@@ -1,8 +1,8 @@
 #!/bin/bash
 DISK_DEVICE=/dev/vdb
-CUR_DIR=/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex
+CUR_DIR=/data-1/yichengzhang/data/latest_gs_bp/zed-graphscope-flex
 
-export SF=30
+export SF=0.1
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
@@ -10,7 +10,7 @@ export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
 # export QUERY_FILE=/data/zhengyang/data/offline/${Scale_Factor}
-export QUERY_FILE=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/query_file/sf30
+export QUERY_FILE=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/query_file/sf0.1
 
 # export QUERY_FILE=${INPUT_OUTPUT_DIR}/configurations/query.file
 
@@ -51,8 +51,8 @@ do
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     
     # nohup 
-    gdb --args rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 200 -r ${QUERY_FILE} -q 33
-    # &>> ${LOG_DIR}/gs_log.log
+    # gdb --args 
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 20 -r ${QUERY_FILE} -q 12 &>> ${LOG_DIR}/gs_log.log
     # rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num}
     #  &> ${LOG_DIR}/gs_log.log
 done

@@ -84,7 +84,7 @@
         "charconv": "cpp"
     },
     "clangd.arguments": [
-        "--compile-commands-dir=/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex/build"
+        "--compile-commands-dir=/data-1/yichengzhang/data/latest_gs_bp/zed-graphscope-flex/flex/build"
     ],
     "clangd.fallbackFlags": [
         "--std=c++20"
