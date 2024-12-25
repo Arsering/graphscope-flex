@@ -165,7 +165,6 @@ template <typename INDEX_T>
 class BaseIndexer {
  public:
   virtual ~BaseIndexer() = default;
-
   // 基类定义的公共接口
   virtual size_t size() const = 0;
   virtual INDEX_T insert(int64_t oid) = 0;
@@ -179,6 +178,10 @@ class BaseIndexer {
   // 设置新的kid范围，非常危险，少用！！！！
   virtual op_status set_new_kid_range(size_t kid_label_id,
                                       int64_t max_kid_oid) = 0;
+  virtual bool set_parent_lf(BaseIndexer<INDEX_T>& parent_lf) {
+    assert(false);
+    return false;
+  }
 };
 
 template <typename KEY_T, typename INDEX_T>
@@ -202,7 +205,6 @@ template <typename _INDEX_T>
 void build_grouped_child_lf_indexer(const IdIndexer<int64_t, _INDEX_T>& input,
                                     const std::string& filename,
                                     GroupedChildLFIndexer<_INDEX_T>& output,
-                                    BaseIndexer<_INDEX_T>& parent_lf,
                                     size_t label_id_in_parent,
                                     double rate = 0.8);
 
@@ -652,8 +654,8 @@ class IdIndexer {
   template <typename _INDEX_T>
   friend void build_grouped_child_lf_indexer(
       const IdIndexer<int64_t, _INDEX_T>& input, const std::string& filename,
-      GroupedChildLFIndexer<_INDEX_T>& output, BaseIndexer<_INDEX_T>& parent_lf,
-      size_t label_id_in_parent, double rate);
+      GroupedChildLFIndexer<_INDEX_T>& output, size_t label_id_in_parent,
+      double rate);
 
   template <typename _INDEX_T, size_t _SIZE>
   friend void build_grouped_parent_lf_indexer(

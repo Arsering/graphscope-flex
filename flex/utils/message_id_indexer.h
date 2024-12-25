@@ -301,6 +301,10 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
                          const std::string& filename, double rate) {
     assert(false);
   }
+  ~GroupedParentLFIndexer() override {
+    LOG(INFO) << "GroupedParentLFIndexer: destructor called";
+    dump_meta(file_path_ + ".meta");
+  }
 
   size_t size() const override { return num_elements_.load(); }
 
@@ -351,6 +355,9 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
   op_status get_kid_index(size_t kid_label_id, int64_t parent_oid,
                           INDEX_T& ret) override {
 #if ASSERT_ENABLE
+    if (kid_label_id >= SIZE) {
+      LOG(FATAL) << "kid_label_id: " << kid_label_id << " >= SIZE: " << SIZE;
+    }
     assert(kid_label_id < SIZE);
     INDEX_T parent_vid = 0;
     assert(get_index(parent_oid, parent_vid));  // 判断parent是否存在
@@ -394,11 +401,6 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
         (max_kid_oid + group_configs_[kid_label_id].second - 1) /
         group_configs_[kid_label_id].second *
         group_configs_[kid_label_id].second;
-    LOG(INFO) << "max_kid_oid: " << max_kid_oid
-              << " group_configs_[kid_label_id].second: "
-              << group_configs_[kid_label_id].second
-              << " group_configs_[kid_label_id].first: "
-              << group_configs_[kid_label_id].first;
     return op_status::op_status_success;
   }
 
@@ -597,6 +599,8 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
   std::array<std::pair<int64_t, int64_t>, SIZE>
       group_configs_;  // pair<max_vertex_id, group_size>
 
+  std::string file_path_;
+
   template <typename _INDEX_T, size_t _SIZE>
   friend void build_grouped_parent_lf_indexer(
       const IdIndexer<int64_t, _INDEX_T>& input, const std::string& filename,
@@ -616,6 +620,9 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
         hasher_(rhs.hasher_) {
     hash_policy_.set_mod_function_by_index(
         rhs.hash_policy_.get_mod_function_index());
+  }
+  ~GroupedChildLFIndexer() override {
+    LOG(INFO) << "GroupedChildLFIndexer: destructor called";
   }
 
   size_t size() const override { return num_elements_.load(); }
@@ -676,6 +683,11 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
                               int64_t max_kid_oid) override {
     LOG(FATAL) << "GroupedChildLFIndexer: set_new_kid_range is not implemented";
     return op_status::op_status_not_implemented;
+  }
+
+  bool set_parent_lf(BaseIndexer<INDEX_T>& parent_lf) override {
+    parent_indexer_ = &parent_lf;
+    return true;
   }
 
   INDEX_T get_index(int64_t oid) const override {
@@ -785,7 +797,7 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     std::string class_name_this = "GroupedChildLFIndexer";
     grape::InArchive arc;
     arc << class_name_this << num_slots_minus_one_
-        << hash_policy_.get_mod_function_index();
+        << hash_policy_.get_mod_function_index() << kid_label_id_in_parent_;
     FILE* fout = fopen(filename.c_str(), "wb");
     fwrite(arc.GetBuffer(), sizeof(char), arc.GetSize(), fout);
     fflush(fout);
@@ -805,7 +817,8 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     arc.SetSlice(buf.data(), meta_file_size);
     size_t mod_function_index;
     std::string class_name;
-    arc >> class_name >> num_slots_minus_one_ >> mod_function_index;
+    arc >> class_name >> num_slots_minus_one_ >> mod_function_index >>
+        kid_label_id_in_parent_;
     if (class_name != class_name_this) {
       LOG(FATAL) << "class name mismatch: " << class_name << " vs "
                  << class_name_this;
@@ -833,8 +846,8 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
   template <typename _INDEX_T>
   friend void build_grouped_child_lf_indexer(
       const IdIndexer<int64_t, _INDEX_T>& input, const std::string& filename,
-      GroupedChildLFIndexer<_INDEX_T>& output, BaseIndexer<_INDEX_T>& parent_lf,
-      size_t label_id_in_parent, double rate);
+      GroupedChildLFIndexer<_INDEX_T>& output, size_t label_id_in_parent,
+      double rate);
 };
 
 template <class INDEX_T, size_t SIZE>
@@ -934,17 +947,14 @@ void build_grouped_parent_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
       index = (index + 1) % input.num_slots_minus_one_;
     }
   }
-
-  lf.dump_meta(filename + ".meta");
+  lf.file_path_ = filename;
 }
 
 template <typename INDEX_T>
 void build_grouped_child_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
                                     const std::string& filename,
                                     GroupedChildLFIndexer<INDEX_T>& lf,
-                                    BaseIndexer<INDEX_T>& parent_lf,
                                     size_t label_id_in_parent, double rate) {
-  lf.parent_indexer_ = &parent_lf;
   lf.kid_label_id_in_parent_ = label_id_in_parent;
 
   double indices_rate = static_cast<double>(input.keys_.size()) /

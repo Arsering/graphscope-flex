@@ -673,21 +673,14 @@ static bool parse_vertices_schema(YAML::Node node, Schema& schema) {
     }
   }
   schema.vprop_id_map_.reserve(schema.vprop_names_.size());
-  assert(schema.vprop_names_.size()==num);
+  assert(schema.vprop_names_.size() == num);
   for (auto i = 0; i < num; ++i) {
     schema.vprop_id_map_.emplace_back();
   }
   for (auto i = 0; i < num; ++i) {
     for (auto j = 0; j < schema.vprop_names_[i].size(); ++j) {
-      schema.vprop_id_map_[i][schema.vprop_names_[i][j]] = schema.vprop_ids_[i][j];
-    }
-  }
-  //log out schema vprop_id_map_
-  LOG(INFO) << "schema vprop_id_map_";
-  for (auto i = 0; i < schema.vprop_id_map_.size(); ++i) {
-    LOG(INFO) << "vertex label: " << schema.get_vertex_label_name(i);
-    for (auto key: schema.vprop_id_map_[i]) {
-      LOG(INFO) << "property: " << key.first << " id: " << key.second;
+      schema.vprop_id_map_[i][schema.vprop_names_[i][j]] =
+          schema.vprop_ids_[i][j];
     }
   }
   return true;
@@ -923,7 +916,8 @@ Schema Schema::LoadFromYaml(const std::string& schema_config) {
   return schema;
 }
 
-size_t Schema::get_property_id(label_t label, const std::string& property_name) const {
+size_t Schema::get_property_id(label_t label,
+                               const std::string& property_name) const {
   return vprop_id_map_.at(label).at(property_name);
 }
 

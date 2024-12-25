@@ -391,10 +391,14 @@ void MutablePropertyFragment::cgraph_open(
   LOG(INFO) << "copy snapshot from "
             << snapshot_dir_path + "/snapshots/" + std::to_string(1) << " to "
             << snapshot_dir_path + "/runtime/tmp";
-  std::filesystem::copy(snapshot_dir_path + "/snapshots/" + std::to_string(1),
-                        snapshot_dir_path + "/runtime/tmp",
-                        std::filesystem::copy_options::recursive |
-                            std::filesystem::copy_options::overwrite_existing);
+  // std::filesystem::copy(snapshot_dir_path + "/snapshots/" +
+  // std::to_string(1),
+  //                       snapshot_dir_path + "/runtime/tmp",
+  //                       std::filesystem::copy_options::recursive |
+  //                           std::filesystem::copy_options::overwrite_existing);
+  gbp::cgraph::copy_directory_concurrently(
+      snapshot_dir_path + "/snapshots/" + std::to_string(1),
+      snapshot_dir_path + "/runtime/tmp");
   LOG(INFO) << "copy snapshot to tmp done";
 
   std::map<size_t, std::vector<std::pair<size_t, size_t>>>
@@ -452,6 +456,30 @@ void MutablePropertyFragment::cgraph_open(
                            schema_.get_vertex_label_name(vertex_id));
       cgraph_lf_indexers_.emplace_back(lf_indexer);
     }
+  }
+  for (size_t vertex_id = 0;
+       vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
+    if (child_configs.count(vertex_id) == 1 &&
+        parent_configs.count(vertex_id) == 1) {
+      assert(false);
+    }
+    if (child_configs.count(vertex_id) == 0 &&
+        parent_configs.count(vertex_id) == 0) {
+      continue;
+    } else if (child_configs.count(vertex_id) == 1) {
+      cgraph_lf_indexers_[vertex_id]->set_parent_lf(
+          *cgraph_lf_indexers_[child_configs[vertex_id].first]);
+      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+          3, 26388279066936);
+      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+          4, 2199023255922);
+    } else {
+      continue;
+    }
+  }
+
+  for (size_t vertex_id = 0;
+       vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
     // create vertex
     vertices_.emplace_back();
     // 初始化vertex
@@ -460,9 +488,8 @@ void MutablePropertyFragment::cgraph_open(
   }
 
   LOG(INFO) << "open vertex done";
-
+  return;
   size_t edge_size = 0;
-
   auto person_label_id = schema_.get_vertex_label_id("PERSON");
   auto property_id = 5;
   gs::oid_t person_oid = 8796093022290;
@@ -485,19 +512,22 @@ void MutablePropertyFragment::cgraph_open(
   auto item_t = vertices_[person_label_id].ReadEdges(
       person_vid, edge_label_id_with_direction, edge_size);
   LOG(INFO) << "edge_size: " << edge_size;
-  for (int i = 0; i < edge_size; i++) {  LOG(INFO) << "cp"
-            << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor;
-    LOG(INFO) << "data: "
-              << cgraph_lf_indexers_[person_label_id]->get_key(
-                   gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor)
-            << " "
-            << gbp::TimeConverter::millisToDateString(
-                     gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i)
-                         .data.milli_second,
-                     true);
+  for (int i = 0; i < edge_size; i++) {
+    LOG(INFO)
+        << "vid of nbr: "
+        << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i).neighbor
+        << " oid of nbr: "
+        << cgraph_lf_indexers_[person_label_id]->get_key(
+               gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor)
+        << " timestamp of nbr: "
+        << gbp::TimeConverter::millisToDateString(
+               gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i)
+                   .data.milli_second,
+               true);
   }
   person_oid = 1129;
-  auto person_vid2 = cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+  auto person_vid2 =
+      cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
 
   auto post_label_id = schema_.get_vertex_label_id("POST");
   auto edge_label_id_with_direction2 =
@@ -511,7 +541,8 @@ void MutablePropertyFragment::cgraph_open(
     auto post_id =
         gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_t2, i)
             .neighbor;
-    LOG(INFO) << "post oid is " << cgraph_lf_indexers_[post_label_id]->get_key(post_id);
+    LOG(INFO) << "post oid is "
+              << cgraph_lf_indexers_[post_label_id]->get_key(post_id);
   }
 
   auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
@@ -530,89 +561,92 @@ void MutablePropertyFragment::cgraph_open(
   }
 
   {  // test vertex property
-    std::vector<gs::oid_t> person_oid_list = {933,1129,6597069767117};
+    std::vector<gs::oid_t> person_oid_list = {933, 1129, 6597069767117};
     for (auto person_oid : person_oid_list) {
-      auto person_vid = cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+      auto person_vid =
+          cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
       for (auto property_id = 1; property_id < 9; property_id++) {
         if (property_id == 4 || property_id == 5) {
           continue;
         }
-        auto item_p = vertices_[person_label_id].ReadColumn(person_vid, property_id);
+        auto item_p =
+            vertices_[person_label_id].ReadColumn(person_vid, property_id);
         std::vector<char> data(item_p.Size());
         item_p.Copy(data.data(), data.size());
         LOG(INFO) << "data: " << std::string_view(data.data(), data.size());
       }
     }
 
-    std::vector<gs::oid_t> comment_oid_list = {618475290625,1030792151054};
+    std::vector<gs::oid_t> comment_oid_list = {618475290625, 1030792151054};
     for (auto comment_oid : comment_oid_list) {
-      auto comment_vid = cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
+      auto comment_vid =
+          cgraph_lf_indexers_[comment_label_id]->get_index(comment_oid);
       for (auto property_id = 1; property_id < 5; property_id++) {
         if (property_id == 1) {
           continue;
         }
-        auto item_p = vertices_[comment_label_id].ReadColumn(comment_vid, property_id);
+        auto item_p =
+            vertices_[comment_label_id].ReadColumn(comment_vid, property_id);
         std::vector<char> data(item_p.Size());
         item_p.Copy(data.data(), data.size());
         LOG(INFO) << "data: " << std::string_view(data.data(), data.size());
       }
     }
 
-    std::vector<gs::oid_t> post_oid_list = {618475290624,481036337190};
+    std::vector<gs::oid_t> post_oid_list = {618475290624, 481036337190};
     for (auto post_oid : post_oid_list) {
       auto post_vid = cgraph_lf_indexers_[post_label_id]->get_index(post_oid);
       for (auto property_id = 1; property_id < 7; property_id++) {
         if (property_id == 2) {
           continue;
         }
-        auto item_p = vertices_[post_label_id].ReadColumn(post_vid, property_id);
+        auto item_p =
+            vertices_[post_label_id].ReadColumn(post_vid, property_id);
         std::vector<char> data(item_p.Size());
         if (data.size() > 0) {
           item_p.Copy(data.data(), data.size());
           LOG(INFO) << "data: " << std::string_view(data.data(), data.size());
-        }else {
+        } else {
           LOG(INFO) << "data is empty";
         }
       }
     }
-
   }
 
-  {//test person knows person
+  {  // test person knows person
     LOG(INFO) << "test person knows person";
-    std::vector<gs::oid_t> person_oid_list = {933,1129,6597069767117};
+    std::vector<gs::oid_t> person_oid_list = {933, 1129, 6597069767117};
     for (auto person_oid : person_oid_list) {
-      auto person_vid = cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+      auto person_vid =
+          cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
       auto knows_edge_label_id_with_direction_out =
           schema_.generate_edge_label_with_direction(
-              person_label_id, person_label_id, schema_.get_edge_label_id("KNOWS"),
-              true);
+              person_label_id, person_label_id,
+              schema_.get_edge_label_id("KNOWS"), true);
       auto item_t4 = vertices_[person_label_id].ReadEdges(
           person_vid, knows_edge_label_id_with_direction_out, edge_size);
       for (int i = 0; i < edge_size; i++) {
         auto knows_id =
-            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t4, i)
-                .neighbor;
-        LOG(INFO)<<person_oid<< "out knows lid is "<<knows_id;
-        if(knows_id<1520){
-          LOG(INFO)<<person_oid<< "out knows oid is "
-                  << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
+            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t4, i).neighbor;
+        LOG(INFO) << person_oid << "out knows lid is " << knows_id;
+        if (knows_id < 1520) {
+          LOG(INFO) << person_oid << "out knows oid is "
+                    << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
         }
       }
       auto knows_edge_label_id_with_direction_in =
           schema_.generate_edge_label_with_direction(
-              person_label_id, person_label_id, schema_.get_edge_label_id("KNOWS"),
-              false);
+              person_label_id, person_label_id,
+              schema_.get_edge_label_id("KNOWS"), false);
       auto item_t5 = vertices_[person_label_id].ReadEdges(
           person_vid, knows_edge_label_id_with_direction_in, edge_size);
       for (int i = 0; i < edge_size; i++) {
         auto knows_id =
-            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t5, i)
-                .neighbor;
-        LOG(INFO)<<person_oid<< "in knows lid is "<<knows_id;
-        if(knows_id<1520){
-          LOG(INFO)<<person_oid<< "in knows oid is "
-                  << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
+            gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t5, i).neighbor;
+        LOG(INFO) << person_oid << "in knows lid is " << knows_id;
+        if (knows_id < 1520) {
+          LOG(INFO) << person_oid << "in knows oid is "
+                    << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
         }
       }
     }
