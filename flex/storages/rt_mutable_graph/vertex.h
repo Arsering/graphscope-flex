@@ -507,9 +507,9 @@ class Vertex {
     }
   }
 
-  void InsertColumn(
-      size_t vertex_id, const std::pair<size_t, std::string_view> value,
-      timestamp_t timestamp = std::numeric_limits<timestamp_t>::max()) {
+  void InsertColumn(size_t vertex_id,
+                    const std::pair<size_t, std::string_view> value,
+                    timestamp_t timestamp = 0) {
 #if ASSERT_ENABLE
     assert(property_id_to_ColumnToColumnFamily_configurations_.count(
                value.first) == 1);
@@ -758,8 +758,10 @@ class Vertex {
       break;
     }
     case gs::PropertyType::kEdge: {
-      InsertColumn(vertex_id,
-                   {edge_label_to_property_id_[value.first], value.second});
+      datas_of_all_column_family_[column_to_column_family.column_family_id]
+          .fixed_length_column_family->setColumn(
+              vertex_id, column_to_column_family.column_id_in_column_family,
+              value.second);
       break;
     }
     default: {

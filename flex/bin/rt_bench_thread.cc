@@ -239,12 +239,8 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-      auto query = std::string(buffer.data(), buffer.data() + length);
-      auto type = int(query.back());
-      if (query_type_ == 33 || type == query_type_) {
-        reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
-      }
-      // reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+
+      reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
@@ -288,31 +284,6 @@ class Req {
       return words_;
     }
   };
-
-  void gen_ic7_query() {
-    // 读取person_0_0.csv第一列
-    std::string csv_dir_path =
-        "/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/lgraph_db/"
-        "sf0.1/social_network/dynamic/person_0_0.csv";
-    std::vector<std::string> result_buffer;
-    std::vector<char> tmp;
-    CSVReader csv_reader;
-    csv_reader.init(csv_dir_path);
-    while (true) {
-      gs::Encoder encoder(tmp);
-      auto& words = csv_reader.GetNextLine();
-      if (words.size() == 0)
-        break;
-      encoder.put_long(stol(words[0]));
-      encoder.put_byte(7);
-      reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
-      tmp.clear();
-      if (reqs_.size() == 20)
-        break;
-    }
-    num_of_reqs_unique_ = reqs_.size();
-    LOG(INFO) << "Number of query = " << reqs_.size();
-  }
 
   void do_query(size_t thread_id) {
     size_t id;
@@ -408,7 +379,6 @@ class Req {
     if (log_thread_.joinable())
       log_thread_.join();
   }
-  int query_type_;
 
  private:
   Req() : cur_(0), warmup_num_(0) {}
@@ -590,7 +560,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Start loading graph";
   // db.Init(schema, data_path, shard_num);
   db.CGraphInit(schema, data_path, shard_num);
-  return 0;
+
   t0 += grape::GetCurrentTime();
   uint32_t warmup_num = vm["warmup-num"].as<uint32_t>();
   uint32_t benchmark_num = vm["benchmark-num"].as<uint32_t>();
@@ -615,9 +585,6 @@ int main(int argc, char** argv) {
   gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
-  if (vm.count("query-type")) {
-    Req::get().query_type_ = vm["query-type"].as<uint32_t>();
-  }
   Req::get().load_query(req_file);
   Req::get().load_result(req_file);
   // Req::get().gen_ic7_query();
