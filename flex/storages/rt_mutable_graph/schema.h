@@ -165,6 +165,7 @@ class Schema {
   size_t get_property_id(label_t label, const std::string& property_name) const;
 
   std::vector<size_t> get_vertex_prop_ids(label_t label) const;
+  void traverse_edge_properties();
 
   
   IdIndexer<std::string, label_t> vlabel_indexer_;

@@ -37,6 +37,7 @@ InsertTransaction::~InsertTransaction() { Abort(); }
 
 bool InsertTransaction::AddVertex(label_t label, oid_t id,
                                   const std::vector<Any>& props) {
+  assert(false);
   size_t arc_size = arc_.GetSize();
   arc_ << static_cast<uint8_t>(0) << label << id;
   const std::vector<PropertyType>& types =
@@ -69,6 +70,7 @@ bool InsertTransaction::AddVertex(label_t label, oid_t id,
 bool InsertTransaction::AddEdge(label_t src_label, oid_t src, label_t dst_label,
                                 oid_t dst, label_t edge_label,
                                 const Any& prop) {
+  assert(false);
   vid_t lid;
   if (!graph_.get_lid(src_label, src, lid)) {
     if (added_vertices_.find(std::make_pair(src_label, src)) ==
@@ -103,6 +105,7 @@ bool InsertTransaction::AddEdge(label_t src_label, oid_t src, label_t dst_label,
 }
 
 void InsertTransaction::Commit() {
+  assert(false);
   if (timestamp_ == std::numeric_limits<timestamp_t>::max()) {
     return;
   }
@@ -125,6 +128,7 @@ void InsertTransaction::Commit() {
 }
 
 void InsertTransaction::Abort() {
+  assert(false);
   if (timestamp_ != std::numeric_limits<timestamp_t>::max()) {
     LOG(ERROR) << "aborting " << timestamp_ << "-th transaction (insert)";
     vm_.release_insert_timestamp(timestamp_);
@@ -132,11 +136,15 @@ void InsertTransaction::Abort() {
   }
 }
 
-timestamp_t InsertTransaction::timestamp() const { return timestamp_; }
+timestamp_t InsertTransaction::timestamp() const {
+  assert(false);
+  return timestamp_;
+}
 
 void InsertTransaction::IngestWal(MutablePropertyFragment& graph,
                                   uint32_t timestamp, char* data, size_t length,
                                   MMapAllocator& alloc) {
+  assert(false);
   grape::OutArchive arc;
   arc.SetSlice(data, length);
   while (!arc.Empty()) {
@@ -148,9 +156,6 @@ void InsertTransaction::IngestWal(MutablePropertyFragment& graph,
 
       arc >> label >> id;
       vid_t lid = graph.add_vertex(label, id);
-
-      
-      
       graph.get_vertex_table(label).ingest(lid, arc);
     } else if (op_type == 1) {
       label_t src_label, dst_label, edge_label;
@@ -183,6 +188,7 @@ void InsertTransaction::clear() {
 bool InsertTransaction::get_vertex_with_retries(MutablePropertyFragment& graph,
                                                 label_t label, oid_t oid,
                                                 vid_t& lid) {
+  assert(false);
   if (likely(graph.get_lid(label, oid, lid))) {
     return true;
   }

@@ -164,6 +164,43 @@ const std::vector<PropertyType>& Schema::get_edge_properties(
   return eproperties_.at(index);
 }
 
+void Schema::traverse_edge_properties(){
+  for(auto& edge_property: eproperties_){
+    auto& vec = edge_property.second;
+    for(auto& property: vec){
+      switch(property){
+        case PropertyType::kDate:
+          LOG(INFO) << "date";
+          break;
+        case PropertyType::kInt32:
+          LOG(INFO) << "int32";
+          break;
+        case PropertyType::kInt64:
+          LOG(INFO) << "int64";
+          break;
+        case PropertyType::kDouble:
+          LOG(INFO) << "double";
+          break;
+        case PropertyType::kString:
+          LOG(INFO) << "string";
+          break;
+        case PropertyType::kBufferObject:
+          LOG(INFO) << "buffer_object";
+          break;
+        case PropertyType::kDynamicString:
+          LOG(INFO) << "dynamic_string";
+          break;
+        case PropertyType::kEdge:
+          LOG(INFO) << "edge";
+          break;
+        default:
+          LOG(INFO) << "unknown";
+          break;
+      }
+    }
+  }
+}
+
 PropertyType Schema::get_edge_property(label_t src, label_t dst,
                                        label_t edge) const {
   uint32_t index = generate_edge_label(src, dst, edge);

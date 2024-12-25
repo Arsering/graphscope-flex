@@ -165,6 +165,7 @@ class Req {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
     num_of_reqs_unique_ = reqs_.size();
+    // num_of_reqs_=num_of_reqs_unique_;
 
     // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
@@ -310,6 +311,77 @@ class Req {
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << reqs_.size();
+  }
+
+  void gen_insert_query() {
+    std::vector<char> tmp;
+    gs::Encoder encoder(tmp);
+    // gen ins1
+    // 生成插入person的请求
+    encoder.put_long(15527184034); // personId
+    encoder.put_string("Soyo"); // firstName
+    encoder.put_string("Nakasaki"); // lastName
+    encoder.put_string("female"); // gender
+    std::string birthday = "2001-05-27";
+    auto birthday_date = gbp::TimeConverter::dateStringToMillis(birthday);
+    encoder.put_long(birthday_date); // birthday
+    std::string creationdate = "2020-01-01T00:00:00.000+0000";
+    auto creationdate_date = gbp::TimeConverter::dateStringToMillis(creationdate);
+    encoder.put_long(creationdate_date); // creationDate
+    encoder.put_string("192.168.1.1"); // locationIP
+    encoder.put_string("Chrome"); // browserUsed
+    encoder.put_long(1014); // cityId
+    encoder.put_string({"en;es"}); // languages
+    encoder.put_string({"alice@email.com"}); // emails
+    encoder.put_int(1); // tag num
+    encoder.put_long(1); // tag id
+    encoder.put_int(1); // studyat num
+    encoder.put_long(1); // studyat org id
+    encoder.put_int(2020); // studyat year
+    encoder.put_int(1); // workat num
+    encoder.put_long(1); // workat org id
+    encoder.put_int(40); // workat year
+    encoder.put_byte(22); // 请求类型为插入person
+    reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
+    tmp.clear();
+
+    encoder.put_long(15527184034); // 请求类型为插入person
+    encoder.put_byte(15);
+    reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
+    tmp.clear();
+
+    long authorpersonid = 15527184034;
+    long commentid = 420102062001;
+    std::string browser = "Chrome";
+    std::string content = "Hello, world!";
+    long countryid = 1;
+    long creationdate_date2 = creationdate_date;
+    int length = 13;
+    std::string ip_addr = "192.168.1.1";
+    long replytocommentid = 1030792151045;
+    long replytopostid = -1;
+
+    encoder.put_long(authorpersonid); // 请求类型为插入person
+    encoder.put_long(commentid);
+    encoder.put_string(browser);
+    encoder.put_string(content);
+    encoder.put_long(countryid);
+    encoder.put_long(creationdate_date2);
+    encoder.put_int(length);
+    encoder.put_string(ip_addr);
+    encoder.put_long(replytocommentid);
+    encoder.put_long(replytopostid);
+    encoder.put_byte(28);
+    reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
+    tmp.clear();
+
+    encoder.put_long(420102062001); // 请求类型为插入person
+    encoder.put_byte(19);
+    reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
+    tmp.clear();
+
+    num_of_reqs_unique_ = reqs_.size();
+    num_of_reqs_=num_of_reqs_unique_;
   }
 
   void do_query(size_t thread_id) {
@@ -588,7 +660,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Start loading graph";
   // db.Init(schema, data_path, shard_num);
   db.CGraphInit(schema, data_path, shard_num);
-  return 0;
+  // return 0;
   t0 += grape::GetCurrentTime();
   uint32_t warmup_num = vm["warmup-num"].as<uint32_t>();
   uint32_t benchmark_num = vm["benchmark-num"].as<uint32_t>();
@@ -616,9 +688,10 @@ int main(int argc, char** argv) {
   if (vm.count("query-type")) {
     Req::get().query_type_ = vm["query-type"].as<uint32_t>();
   }
-  Req::get().load_query(req_file);
-  Req::get().load_result(req_file);
+  // Req::get().load_query(req_file);
+  // Req::get().load_result(req_file);
   // Req::get().gen_ic7_query();
+  Req::get().gen_insert_query();
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
@@ -670,6 +743,7 @@ int main(int argc, char** argv) {
     gbp::get_counter_global(11) = 0;
     gbp::warmup_mark().store(1);
     gbp::DirectCache::CleanAllCache();
+    // break;
   }
 
   Req::get().LoggerStop();
