@@ -148,6 +148,9 @@ void InsertTransaction::IngestWal(MutablePropertyFragment& graph,
 
       arc >> label >> id;
       vid_t lid = graph.add_vertex(label, id);
+
+      
+      
       graph.get_vertex_table(label).ingest(lid, arc);
     } else if (op_type == 1) {
       label_t src_label, dst_label, edge_label;

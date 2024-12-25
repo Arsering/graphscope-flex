@@ -963,7 +963,7 @@ void CSVFragmentLoader::InitCGraph() {
         auto& column_configuration =
             column_configurations[vertex_id][column_family_id][column_id];
         auto value = loader.get_column(column_configuration.property_id);
-
+        LOG(INFO)<<"column_configuration.property_id: "<<column_configuration.property_id;
         switch (column_configuration.column_type) {
         case PropertyType::kInt32: {
           for (int k = 0; k < value.size(); k++) {
@@ -1509,9 +1509,15 @@ void CSVFragmentLoader::test_csv_loader_vertex() {
     auto columns = record_batch->columns();  //将读到的数据转换成列
     auto primary_key_ind = std::get<2>(schema_.get_vertex_primary_key(
         comment_label_id)[0]);  //这里获取primary key的index
+    
+    
+    auto other_columns_array = columns;  //其他属性对应的列
+    other_columns_array.erase(other_columns_array.begin() +
+                              primary_key_ind);  //删除primary key对应的列
     auto primary_key_column = columns[primary_key_ind];  // primary key对应的列
     auto chunked_array = std::make_shared<arrow::ChunkedArray>(
           primary_key_column);
+    LOG(INFO) << "primary_key_column chunk num : " << chunked_array->num_chunks()<<" chunk size: "<<chunked_array->chunk(0)->length();
     for (auto j = 0; j < chunked_array->num_chunks(); ++j) {
       for (auto i = 0; i < 10; ++i) {
         auto casted = std::static_pointer_cast<arrow::Int64Array>(
@@ -1519,9 +1525,6 @@ void CSVFragmentLoader::test_csv_loader_vertex() {
         LOG(INFO) << "primary_key: " << casted->Value(i);
       }
     }
-    auto other_columns_array = columns;  //其他属性对应的列
-    other_columns_array.erase(other_columns_array.begin() +
-                              primary_key_ind);  //删除primary key对应的列
     //准备开始读取并插入属性
     auto property_col_num = other_columns_array.size();  //其他属性的数量
     for (auto i = 0; i < property_col_num; i++) {
@@ -1530,6 +1533,7 @@ void CSVFragmentLoader::test_csv_loader_vertex() {
                                    //这里是可以直接用index索引的
       auto chunked_array = std::make_shared<arrow::ChunkedArray>(
           process_column);  //将当前属性转换成arrow::ChunkedArray
+      LOG(INFO) << "process_column chunk num : " << chunked_array->num_chunks()<<" chunk size: "<<chunked_array->chunk(0)->length();
       auto type = chunked_array->type();  //获取当前属性的类型
       auto col_type = schema_.get_vertex_properties(comment_label_id)[i];
       if (col_type == PropertyType::kDate) {
@@ -1666,16 +1670,16 @@ void CSVFragmentLoader::test_csv_loader_edge() {
           LOG(INFO) << "src: " << src_casted_array->Value(i)
                     << " dst: " << dst_casted_array->Value(i);
         }
-      }
-      break;
+  }
+  break;
     }
   }
 }
 
 void CSVFragmentLoader::LoadFragment() {
-  test_csv_loader_vertex();
-  test_csv_loader_edge();
-  return;
+  // test_csv_loader_vertex();
+  // test_csv_loader_edge();
+  // return;
   InitCGraph();
   // OpenCGraph();
   // loadEdges_cgraph();

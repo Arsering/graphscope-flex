@@ -661,6 +661,10 @@ class Vertex {
     }
   }
 
+  bool edge_label_with_direction_exist(size_t edge_label_id){
+    return edge_label_to_property_id_.find(edge_label_id)!=edge_label_to_property_id_.end();
+  }
+
   gbp::BufferBlock ReadEdges(size_t vertex_id, size_t edge_label_id,
                              size_t& edge_num) {
 #if ASSERT_ENABLE

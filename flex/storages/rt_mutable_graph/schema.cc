@@ -927,4 +927,8 @@ size_t Schema::get_property_id(label_t label, const std::string& property_name) 
   return vprop_id_map_.at(label).at(property_name);
 }
 
+std::vector<size_t> Schema::get_vertex_prop_ids(label_t label) const {
+  return vprop_ids_.at(label);
+}
+
 }  // namespace gs

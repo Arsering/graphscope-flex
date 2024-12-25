@@ -162,6 +162,8 @@ class Schema {
                                               label_t edge, bool is_out) const;
 
   size_t get_property_id(label_t label, const std::string& property_name) const;
+
+  std::vector<size_t> get_vertex_prop_ids(label_t label) const;
   
   IdIndexer<std::string, label_t> vlabel_indexer_;
   IdIndexer<std::string, label_t> elabel_indexer_;
