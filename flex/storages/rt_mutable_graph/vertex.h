@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <vector>
 
 #include "column_family.h"
@@ -592,6 +593,7 @@ class Vertex {
               column_family_info_[column_to_column_family.column_family_id]
                   .edge_list_sizes_[column_to_column_family
                                         .edge_list_id_in_column_family];
+          // LOG(INFO)<<"start_idx_: "<<item.start_idx_;
 
           item.capacity_ = degree_max;
           item.size_ = 0;
@@ -615,7 +617,8 @@ class Vertex {
                                                                   .second];
       if (column_to_column_family.column_type ==
           gs::PropertyType::kDynamicEdgeList) {
-        EdgeListInit(edge_label_id.second, vertex_id, 128);
+        LOG(INFO)<<"edge_label_id: "<<edge_label_id.first<<" "<<edge_label_id.second;
+        EdgeListInit(edge_label_id.first, vertex_id, 128);
       } else if (column_to_column_family.column_type ==
                  gs::PropertyType::kEdge) {
         assert(ConstructEdgeNew(empty_edge, std::string(), 0,
@@ -650,7 +653,7 @@ class Vertex {
         .csr[column_to_column_family.edge_list_id_in_column_family]
         ->resize(column_family_info_[column_to_column_family.column_family_id]
                      .edge_list_sizes_[column_to_column_family
-                                           .edge_list_id_in_column_family]);
+                                           .edge_list_id_in_column_family]*2);
   }
 
   void InsertEdgeConcurrent(size_t vertex_id, size_t edge_label_id,
@@ -739,12 +742,16 @@ class Vertex {
                                                     std::memory_order_release,
                                                     std::memory_order_relaxed))
               ;
+            // LOG(INFO)<<"item.size_: "<<item.size_;
             idx_new = item.size_.fetch_add(1);
+            // LOG(INFO)<<"idx_new: "<<idx_new;
             if (item.capacity_ <= idx_new) {
               LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_;
               assert(false);  // 没有空闲空间，需要重新分配
             }
+            // LOG(INFO)<<"start_idx_: "<<item.start_idx_;
             idx_new += item.start_idx_;
+            // LOG(INFO)<<"idx_new: "<<idx_new;
           },
           item_t);
       // 插入边
@@ -772,6 +779,10 @@ class Vertex {
 
   bool edge_label_with_direction_exist(size_t edge_label_id){
     return edge_label_to_property_id_.find(edge_label_id)!=edge_label_to_property_id_.end();
+  }
+
+  std::map<size_t,size_t>& get_edge_label_to_property_id(){
+    return edge_label_to_property_id_;
   }
 
   gbp::BufferBlock ReadEdges(size_t vertex_id, size_t edge_label_id,
@@ -1008,6 +1019,8 @@ class Vertex {
   }
 
   std::string GetVertexName() const { return vertex_name_; }
+
+
 
  private:
   void InsertEdgeAtomicHelper(gbp::BufferBlock edge,
