@@ -32,45 +32,56 @@ class VersionManager;
 
 template <typename EDATA_T>
 class AdjListView {
-
  public:
-
   AdjListView(gbp::BufferBlock item, timestamp_t timestamp, int size)
       : edges_(item), timestamp_(timestamp), current_index_(0), size_(size) {
-    // LOG(INFO) << "init adjlistview bufferblock size=" << edges_.GetSize()<<", size_="<<size_;
-    while (current_index_ < size_ && gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).timestamp.load() > timestamp_) {
+    // LOG(INFO) << "init adjlistview bufferblock size=" << edges_.GetSize()<<",
+    // size_="<<size_;
+    while (current_index_ < size_ &&
+           gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
+                   .timestamp.load() > timestamp_) {
       current_index_++;
     }
   }
 
-  FORCE_INLINE vid_t get_neighbor() { 
+  FORCE_INLINE vid_t get_neighbor() {
+#if ASSERT_ENABLE
     assert(current_index_ < size_);
-    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).neighbor; 
+#endif
+    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
+        .neighbor;
   }
 
-  FORCE_INLINE const void* get_data() { 
+  FORCE_INLINE const void* get_data() {
+#if ASSERT_ENABLE
     assert(current_index_ < size_);
-    return static_cast<const void*>(&(gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).data));
+#endif
+    return static_cast<const void*>(
+        &(gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
+              .data));
   }
 
-  FORCE_INLINE timestamp_t get_timestamp() { 
+  FORCE_INLINE timestamp_t get_timestamp() {
+#if ASSERT_ENABLE
     assert(current_index_ < size_);
-    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).timestamp.load(); 
+#endif
+    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
+        .timestamp.load();
   }
 
   FORCE_INLINE void next() {
     current_index_++;
-    while (current_index_ < size_ && gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_).timestamp.load() > timestamp_) {
+    while (current_index_ < size_ &&
+           gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
+                   .timestamp.load() > timestamp_) {
       current_index_++;
     }
   }
 
   FORCE_INLINE bool is_valid() {
-    // LOG(INFO) << "current_index_=" << current_index_ << ", size_=" << size_;
-    // LOG(INFO) << "edges size=" << edges_.GetSize();
-    if(current_index_ < size_) {
-      auto tmp = gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_,current_index_);
-      // assert();
+    if (current_index_ < size_) {
+      auto tmp =
+          gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_);
       return tmp.timestamp.load() <= timestamp_;
     }
     return false;
@@ -89,15 +100,17 @@ class AdjListView {
 template <typename EDATA_T>
 class GraphView {
  public:
-  GraphView(label_t vertex_label, unsigned int edge_label_with_direction, timestamp_t timestamp, MutablePropertyFragment& graph)
-      : vertex_label_(vertex_label), edge_label_with_direction_(edge_label_with_direction), timestamp_(timestamp), graph_(graph) {
-        // LOG(INFO) << "init graphview";
-        // LOG(INFO) << "edge_label_with_direction_=" << edge_label_with_direction_; 
-      }
+  GraphView(label_t vertex_label, unsigned int edge_label_with_direction,
+            timestamp_t timestamp, MutablePropertyFragment& graph)
+      : vertex_label_(vertex_label),
+        edge_label_with_direction_(edge_label_with_direction),
+        timestamp_(timestamp),
+        graph_(graph) {}
 
   AdjListView<EDATA_T> get_edges(vid_t v) {
     size_t edge_size;
-    auto item_t = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
+    auto item_t = graph_.get_vertices(vertex_label_)
+                      .ReadEdges(v, edge_label_with_direction_, edge_size);
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
   timestamp_t timestamp() const { return timestamp_; }
@@ -114,30 +127,35 @@ class SingleGraphView {
   using nbr_t = MutableNbr<EDATA_T>;
 
  public:
-  SingleGraphView(label_t vertex_label, unsigned int edge_label_with_direction, timestamp_t timestamp, MutablePropertyFragment& graph)
-      : vertex_label_(vertex_label), edge_label_with_direction_(edge_label_with_direction), timestamp_(timestamp), graph_(graph) {}
+  SingleGraphView(label_t vertex_label, unsigned int edge_label_with_direction,
+                  timestamp_t timestamp, MutablePropertyFragment& graph)
+      : vertex_label_(vertex_label),
+        edge_label_with_direction_(edge_label_with_direction),
+        timestamp_(timestamp),
+        graph_(graph) {}
 
   FORCE_INLINE bool exist(vid_t v) const {
     size_t edge_size;
-    auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
+    auto item = graph_.get_vertices(vertex_label_)
+                    .ReadEdges(v, edge_label_with_direction_, edge_size);
     return (gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_);
   }
 
   FORCE_INLINE const gbp::BufferBlock exist(vid_t v, bool& exist) const {
     size_t edge_size;
-    auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
+    auto item = graph_.get_vertices(vertex_label_)
+                    .ReadEdges(v, edge_label_with_direction_, edge_size);
     exist = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
     return item;
   }
   FORCE_INLINE bool exist1(gbp::BufferBlock& item) const {
-    LOG(INFO)<<"check exist1, item timestamp: "<<gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load()<<", txn timestamp: "<<timestamp_;
+    LOG(INFO) << "exist1: " << gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() << " <= " << timestamp_;
     return gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
   }
   FORCE_INLINE const gbp::BufferBlock get_edge(vid_t v) const {
     size_t edge_size;
-    auto item = graph_.get_vertices(vertex_label_).ReadEdges(v, edge_label_with_direction_, edge_size);
-    auto v_oid=graph_.get_oid(vertex_label_, v);
-    LOG(INFO) << "v_oid: " << v_oid<<"get edge, and edge size is "<<edge_size;
+    auto item = graph_.get_vertices(vertex_label_)
+                    .ReadEdges(v, edge_label_with_direction_, edge_size);
     return item;
   }
 
@@ -239,7 +257,8 @@ class ReadTransaction {
         graph_.schema().generate_edge_label_with_direction(
             v_label, neighbor_label, edge_label, true);
     size_t edge_size;
-    auto item_t = graph_.get_vertices(v_label).ReadEdges(v, edge_label_id_with_direction, edge_size);
+    auto item_t = graph_.get_vertices(v_label).ReadEdges(
+        v, edge_label_id_with_direction, edge_size);
     // LOG(INFO) << "item size =" << item_t.GetSize();
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
@@ -252,7 +271,8 @@ class ReadTransaction {
         graph_.schema().generate_edge_label_with_direction(
             neighbor_label, v_label, edge_label, false);
     size_t edge_size;
-    auto item_t = graph_.get_vertices(v_label).ReadEdges(v, edge_label_id_with_direction, edge_size);
+    auto item_t = graph_.get_vertices(v_label).ReadEdges(
+        v, edge_label_id_with_direction, edge_size);
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
 
@@ -265,7 +285,8 @@ class ReadTransaction {
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             v_label, neighbor_label, edge_label, true);
-    return GraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_, graph_);
+    return GraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_,
+                              graph_);
   }
 
   template <typename EDATA_T>
@@ -275,7 +296,8 @@ class ReadTransaction {
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             neighbor_label, v_label, edge_label, false);
-    return GraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_, graph_);
+    return GraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_,
+                              graph_);
   }
 
   template <typename EDATA_T>
@@ -284,7 +306,8 @@ class ReadTransaction {
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             v_label, neighbor_label, edge_label, true);
-    return SingleGraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_, graph_);
+    return SingleGraphView<EDATA_T>(v_label, edge_label_id_with_direction,
+                                    timestamp_, graph_);
   }
 
   template <typename EDATA_T>
@@ -292,17 +315,19 @@ class ReadTransaction {
       label_t v_label, label_t neighbor_label, label_t edge_label) const {
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
-             neighbor_label,v_label, edge_label, false);
-    return SingleGraphView<EDATA_T>(v_label, edge_label_id_with_direction, timestamp_, graph_);
+            neighbor_label, v_label, edge_label, false);
+    return SingleGraphView<EDATA_T>(v_label, edge_label_id_with_direction,
+                                    timestamp_, graph_);
   }
 
-  gbp::BufferBlock GetVertexProp(label_t label, vid_t v, std::string property_name){
+  gbp::BufferBlock GetVertexProp(label_t label, vid_t v,
+                                 std::string property_name) {
     auto property_id = graph_.schema().get_property_id(label, property_name);
     auto item_t = graph_.get_vertices(label).ReadColumn(v, property_id);
     return item_t;
   }
 
-  gbp::BufferBlock GetVertexProp(label_t label, vid_t v, int property_id){
+  gbp::BufferBlock GetVertexProp(label_t label, vid_t v, int property_id) {
     auto item_t = graph_.get_vertices(label).ReadColumn(v, property_id);
     return item_t;
   }

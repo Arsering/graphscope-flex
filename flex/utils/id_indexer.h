@@ -47,7 +47,7 @@ class LFIndexer : public BaseIndexer<INDEX_T> {
     hash_policy_.set_mod_function_by_index(
         rhs.hash_policy_.get_mod_function_index());
   }
-
+  ~LFIndexer() override { LOG(INFO) << "LFIndexer: destructor called"; }
   size_t size() const override { return num_elements_.load(); }
 
   INDEX_T insert(int64_t oid) override {

@@ -184,9 +184,6 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 
     return result_buffer;
   }
-  if ((int) type > 14) {
-    return result_buffer;
-  }
 
   LOG(INFO) << "[Query-" << (int) type << "][Thread-" << thread_id_
             << "] retry - 1 / 3";

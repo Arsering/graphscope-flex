@@ -55,16 +55,18 @@ void ReadTransaction::release() {
 ReadTransaction::vertex_iterator::vertex_iterator(
     label_t label, vid_t cur, vid_t num, const MutablePropertyFragment& graph)
     : label_(label), cur_(cur), num_(num), graph_(graph) {
-      assert(false);
-    }
+  assert(false);
+}
 ReadTransaction::vertex_iterator::~vertex_iterator() = default;
 
-bool ReadTransaction::vertex_iterator::IsValid() const { 
+bool ReadTransaction::vertex_iterator::IsValid() const {
   assert(false);
-  return cur_ < num_; }
-void ReadTransaction::vertex_iterator::Next() { 
+  return cur_ < num_;
+}
+void ReadTransaction::vertex_iterator::Next() {
   assert(false);
-  ++cur_; }
+  ++cur_;
+}
 void ReadTransaction::vertex_iterator::Goto(vid_t target) {
   assert(false);
   cur_ = std::min(target, num_);
@@ -74,10 +76,10 @@ oid_t ReadTransaction::vertex_iterator::GetId() const {
   assert(false);
   return graph_.get_oid(label_, cur_);
 }
-vid_t ReadTransaction::vertex_iterator::GetIndex() const { 
+vid_t ReadTransaction::vertex_iterator::GetIndex() const {
   assert(false);
-  return cur_; }
-
+  return cur_;
+}
 
 gbp::BufferBlock ReadTransaction::vertex_iterator::GetField(int col_id) const {
   assert(false);
@@ -97,7 +99,6 @@ ReadTransaction::edge_iterator::edge_iterator(
       iter_(std::move(iter)) {}
 ReadTransaction::edge_iterator::~edge_iterator() = default;
 
-
 const void* ReadTransaction::edge_iterator::GetData() const {
   assert(false);
   return iter_->get_data();
@@ -108,9 +109,10 @@ bool ReadTransaction::edge_iterator::IsValid() const {
   return iter_->is_valid();
 }
 
-void ReadTransaction::edge_iterator::Next() { 
+void ReadTransaction::edge_iterator::Next() {
   assert(false);
-  iter_->next(); }
+  iter_->next();
+}
 
 vid_t ReadTransaction::edge_iterator::GetNeighbor() const {
   assert(false);
