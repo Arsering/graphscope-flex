@@ -244,7 +244,6 @@ class Req {
       if (query_type_ == 33 || type == query_type_) {
         reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
       }
-      // reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
@@ -288,7 +287,6 @@ class Req {
       return words_;
     }
   };
-
   void gen_ic7_query() {
     // 读取person_0_0.csv第一列
     std::string csv_dir_path =

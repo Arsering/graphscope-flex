@@ -1459,16 +1459,15 @@ void CSVFragmentLoader::loadEdges_cgraph() {
                     property_cols[0]);
 
             MutableNbr<gs::Date> edge;
+            edge.timestamp = 0;
             for (auto i = 0; i < src_casted_array->length(); ++i) {
               auto src_obj_id = src_casted_array->Value(i);
               auto dst_obj_id = dst_casted_array->Value(i);
+              edge.data.milli_second = property_casted_array->Value(i);
 
               if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
                 edge.neighbor =
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id);
-                edge.timestamp = 0;
-                edge.data.milli_second = property_casted_array->Value(i);
-
                 cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
                     {ie_label_id_with_direction,
@@ -1490,15 +1489,15 @@ void CSVFragmentLoader::loadEdges_cgraph() {
                 std::static_pointer_cast<arrow::Int32Array>(property_cols[0]);
 
             MutableNbr<int32_t> edge;
+            edge.timestamp = 0;
             for (auto i = 0; i < src_casted_array->length(); ++i) {
               auto src_obj_id = src_casted_array->Value(i);
               auto dst_obj_id = dst_casted_array->Value(i);
+              edge.data = property_casted_array->Value(i);
 
               if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
                 edge.neighbor =
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id);
-                edge.timestamp = 0;
-                edge.data = property_casted_array->Value(i);
                 cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
                     {ie_label_id_with_direction,
@@ -1518,17 +1517,17 @@ void CSVFragmentLoader::loadEdges_cgraph() {
           case PropertyType::kInt64: {
             auto property_casted_array =
                 std::static_pointer_cast<arrow::Int64Array>(property_cols[0]);
+
             MutableNbr<int64_t> edge;
+            edge.timestamp = 0;
             for (auto i = 0; i < src_casted_array->length(); ++i) {
               auto src_obj_id = src_casted_array->Value(i);
               auto dst_obj_id = dst_casted_array->Value(i);
+              edge.data = property_casted_array->Value(i);
 
               if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
                 edge.neighbor =
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id);
-                edge.timestamp = 0;
-                edge.data = property_casted_array->Value(i);
-
                 cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
                     {ie_label_id_with_direction,
@@ -1551,6 +1550,7 @@ void CSVFragmentLoader::loadEdges_cgraph() {
           }
         } else {
           MutableNbr<grape::EmptyType> edge;
+          edge.timestamp = 0;
           for (auto i = 0; i < src_casted_array->length(); ++i) {
             auto src_obj_id = src_casted_array->Value(i);
             auto dst_obj_id = dst_casted_array->Value(i);
@@ -1558,7 +1558,6 @@ void CSVFragmentLoader::loadEdges_cgraph() {
             if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
               edge.neighbor =
                   cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id);
-              edge.timestamp = 0;
               cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
                   cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
                   {ie_label_id_with_direction,

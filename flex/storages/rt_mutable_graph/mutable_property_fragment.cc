@@ -394,11 +394,7 @@ void MutablePropertyFragment::cgraph_open(
   LOG(INFO) << "copy snapshot from "
             << snapshot_dir_path + "/snapshots/" + std::to_string(1) << " to "
             << snapshot_dir_path + "/runtime/tmp";
-  // std::filesystem::copy(snapshot_dir_path + "/snapshots/" +
-  // std::to_string(1),
-  //                       snapshot_dir_path + "/runtime/tmp",
-  //                       std::filesystem::copy_options::recursive |
-  //                           std::filesystem::copy_options::overwrite_existing);
+
   gbp::cgraph::copy_directory_concurrently(
       snapshot_dir_path + "/snapshots/" + std::to_string(1),
       snapshot_dir_path + "/runtime/tmp");
@@ -472,10 +468,10 @@ void MutablePropertyFragment::cgraph_open(
     } else if (child_configs.count(vertex_id) == 1) {
       cgraph_lf_indexers_[vertex_id]->set_parent_lf(
           *cgraph_lf_indexers_[child_configs[vertex_id].first]);
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-          3, 26388279066936);
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-          4, 2199023255922);
+      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     3, 26388279066936);
+      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     4, 2199023255922);
     } else {
       continue;
     }
