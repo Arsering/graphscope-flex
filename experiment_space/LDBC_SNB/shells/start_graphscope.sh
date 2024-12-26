@@ -1,8 +1,8 @@
 #!/bin/bash
 DISK_DEVICE=/dev/vdb
-CUR_DIR=/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex
+CUR_DIR=/data-1/yichengzhang/data/latest_gs_bp/zed-graphscope-flex
 
-export SF=30
+export SF=0.1
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
@@ -32,7 +32,9 @@ cp ${INPUT_OUTPUT_DIR}/configurations/bulk_load_${SF}.yaml ${LOG_DIR}/configurat
 mkdir ${LOG_DIR}/shells
 cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 
-# rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
+rm -rf ${DB_ROOT_DIR}/* 
+gdb --args bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR}
+#  &> ${LOG_DIR}/gs_log.log
 # gdb --args 
 # bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
 
@@ -51,7 +53,7 @@ do
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     
     # nohup 
-    gdb --args rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 100 -r ${QUERY_FILE} 
+    # gdb --args rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 100 -r ${QUERY_FILE} 
     # &>> ${LOG_DIR}/gs_log.log
     # rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num}
     #  &> ${LOG_DIR}/gs_log.log

@@ -68,7 +68,9 @@ bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,
   return true;
 }
 
-bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,label_t creator_label,oid_t creator_id,
+bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,
+                                              label_t creator_label,
+                                              oid_t creator_id,
                                               const std::vector<Any>& props) {
   size_t arc_size = arc_.GetSize();
   arc_ << static_cast<uint8_t>(2) << label << id << creator_label << creator_id;
@@ -202,12 +204,14 @@ void SingleVertexInsertTransaction::ingestWal() {
       graph_.get_vertex_table(added_vertex_label_)
           .ingest(added_vertex_vid_, arc);
     } else if (op_type == 2) {
-      arc.GetBytes(sizeof(label_t) + sizeof(oid_t) + sizeof(label_t) + sizeof(oid_t));
-      added_vertex_vid_ =
-          graph_.add_vertex(added_vertex_label_, added_vertex_id_, added_vertex_creator_label_, added_vertex_creator_id_);
+      arc.GetBytes(sizeof(label_t) + sizeof(oid_t) + sizeof(label_t) +
+                   sizeof(oid_t));
+      added_vertex_vid_ = graph_.add_vertex(
+          added_vertex_label_, added_vertex_id_, added_vertex_creator_label_,
+          added_vertex_creator_id_);
       graph_.get_vertex_table(added_vertex_label_)
           .ingest(added_vertex_vid_, arc);
-    }else if (op_type == 1) {
+    } else if (op_type == 1) {
       label_t src_label, dst_label, edge_label;
       arc >> src_label;
       arc.GetBytes(sizeof(oid_t));
