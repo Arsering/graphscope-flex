@@ -617,7 +617,7 @@ class Vertex {
                                                                   .second];
       if (column_to_column_family.column_type ==
           gs::PropertyType::kDynamicEdgeList) {
-        LOG(INFO)<<"edge_label_id: "<<edge_label_id.first<<" "<<edge_label_id.second;
+        // LOG(INFO)<<"edge_label_id: "<<edge_label_id.first<<" "<<edge_label_id.second;
         EdgeListInit(edge_label_id.first, vertex_id, 128);
       } else if (column_to_column_family.column_type ==
                  gs::PropertyType::kEdge) {
@@ -746,7 +746,7 @@ class Vertex {
             idx_new = item.size_.fetch_add(1);
             // LOG(INFO)<<"idx_new: "<<idx_new;
             if (item.capacity_ <= idx_new) {
-              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_;
+              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_<<" "<<item.size_;
               assert(false);  // 没有空闲空间，需要重新分配
             }
             // LOG(INFO)<<"start_idx_: "<<item.start_idx_;
