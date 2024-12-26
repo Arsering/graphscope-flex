@@ -1495,18 +1495,31 @@ void CSVFragmentLoader::loadEdges_cgraph() {
               if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
                 edge.neighbor =
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id);
-                cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
+                // cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
+                //     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
+                //     {ie_label_id_with_direction,
+                //      {reinterpret_cast<const char*>(&edge.data),
+                //       sizeof(edge.data)}});
+                cgraph_vertices_[dst_label_id].InsertEdgeConcurrent(
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
-                    {ie_label_id_with_direction,
-                     {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                    ie_label_id_with_direction,
+                    {reinterpret_cast<const char*>(&edge.data),
+                     sizeof(edge.data)},
+                    edge.neighbor, edge.timestamp);
               }
               if (oe_strategy != EdgeStrategy::kNone) {  // 反向边
                 edge.neighbor =
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id);
-                cgraph_vertices_[src_label_id].InsertEdgeUnsafe(
+                // cgraph_vertices_[src_label_id].InsertEdgeUnsafe(
+                //     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id),
+                //     {oe_label_id_with_direction,
+                //      {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                cgraph_vertices_[src_label_id].InsertEdgeConcurrent(
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id),
-                    {oe_label_id_with_direction,
-                     {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                    oe_label_id_with_direction,
+                    {reinterpret_cast<const char*>(&edge.data),
+                     sizeof(edge.data)},
+                    edge.neighbor, edge.timestamp);
               }
             }
             break;
@@ -1525,18 +1538,32 @@ void CSVFragmentLoader::loadEdges_cgraph() {
               if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
                 edge.neighbor =
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id);
-                cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
+                // cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
+                //     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
+                //     {ie_label_id_with_direction,
+                //      {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+
+                cgraph_vertices_[dst_label_id].InsertEdgeConcurrent(
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
-                    {ie_label_id_with_direction,
-                     {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                    ie_label_id_with_direction,
+                    {reinterpret_cast<const char*>(&edge.data),
+                     sizeof(edge.data)},
+                    edge.neighbor, edge.timestamp);
               }
               if (oe_strategy != EdgeStrategy::kNone) {  // 反向边
                 edge.neighbor =
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id);
-                cgraph_vertices_[src_label_id].InsertEdgeUnsafe(
+                // cgraph_vertices_[src_label_id].InsertEdgeUnsafe(
+                //     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id),
+                //     {oe_label_id_with_direction,
+                //      {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+
+                cgraph_vertices_[src_label_id].InsertEdgeConcurrent(
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id),
-                    {oe_label_id_with_direction,
-                     {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                    oe_label_id_with_direction,
+                    {reinterpret_cast<const char*>(&edge.data),
+                     sizeof(edge.data)},
+                    edge.neighbor, edge.timestamp);
               }
             }
             break;
@@ -1555,18 +1582,31 @@ void CSVFragmentLoader::loadEdges_cgraph() {
               if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
                 edge.neighbor =
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id);
-                cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
+                // cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
+                //     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
+                //     {ie_label_id_with_direction,
+                //      {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                cgraph_vertices_[dst_label_id].InsertEdgeConcurrent(
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
-                    {ie_label_id_with_direction,
-                     {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                    ie_label_id_with_direction,
+                    {reinterpret_cast<const char*>(&edge.data),
+                     sizeof(edge.data)},
+                    edge.neighbor, edge.timestamp);
               }
               if (oe_strategy != EdgeStrategy::kNone) {  // 反向边
                 edge.neighbor =
                     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id);
-                cgraph_vertices_[src_label_id].InsertEdgeUnsafe(
+                // cgraph_vertices_[src_label_id].InsertEdgeUnsafe(
+                //     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id),
+                //     {oe_label_id_with_direction,
+                //      {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+
+                cgraph_vertices_[src_label_id].InsertEdgeConcurrent(
                     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id),
-                    {oe_label_id_with_direction,
-                     {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                    oe_label_id_with_direction,
+                    {reinterpret_cast<const char*>(&edge.data),
+                     sizeof(edge.data)},
+                    edge.neighbor, edge.timestamp);
               }
             }
             break;
@@ -1585,18 +1625,28 @@ void CSVFragmentLoader::loadEdges_cgraph() {
             if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
               edge.neighbor =
                   cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id);
-              cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
+              // cgraph_vertices_[dst_label_id].InsertEdgeUnsafe(
+              //     cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
+              //     {ie_label_id_with_direction,
+              //      {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+
+              cgraph_vertices_[dst_label_id].InsertEdgeConcurrent(
                   cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id),
-                  {ie_label_id_with_direction,
-                   {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                  ie_label_id_with_direction, std::string(), edge.neighbor,
+                  edge.timestamp);
             }
             if (oe_strategy != EdgeStrategy::kNone) {  // 反向边
               edge.neighbor =
                   cgraph_lf_indexers_[dst_label_id]->get_index(dst_obj_id);
-              cgraph_vertices_[src_label_id].InsertEdgeUnsafe(
+              // cgraph_vertices_[src_label_id].InsertEdgeUnsafe(
+              //     cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id),
+              //     {oe_label_id_with_direction,
+              //      {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+
+              cgraph_vertices_[src_label_id].InsertEdgeConcurrent(
                   cgraph_lf_indexers_[src_label_id]->get_index(src_obj_id),
-                  {oe_label_id_with_direction,
-                   {reinterpret_cast<const char*>(&edge), sizeof(edge)}});
+                  oe_label_id_with_direction, std::string(), edge.neighbor,
+                  edge.timestamp);
             }
           }
         }

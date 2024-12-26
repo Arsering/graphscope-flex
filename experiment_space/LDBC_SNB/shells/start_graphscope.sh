@@ -2,7 +2,7 @@
 DISK_DEVICE=/dev/vdb
 CUR_DIR=/data/zhengyang/data/graphscope-flex
 
-export SF=30
+export SF=0.1
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
@@ -39,17 +39,17 @@ rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/con
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
-for thread_num in 1
+for thread_num in 30
 do
     expression="(1.25 + 0.0131 * $thread_num + 5) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression))")
     echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*30))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*50))")
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     
-    # rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 40000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 40000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
 done
 
 # cgexec -g memory:yz_variable 

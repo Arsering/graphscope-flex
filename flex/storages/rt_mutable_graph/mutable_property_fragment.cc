@@ -295,89 +295,56 @@ void MutablePropertyFragment::ingest_edge(label_t src_label, vid_t src_lid,
     gs::Date edge_data;
     arc >> edge_data;
     if (oe_strategy != EdgeStrategy::kNone) {
-      MutableNbr<gs::Date> edge_out;
-      edge_out.neighbor = dst_lid;
-      edge_out.timestamp = ts;
-      edge_out.data = edge_data;
-      vertices_[src_label].InsertEdgeUnsafe(
-          src_lid,
-          {edge_label_with_direction_out,
-           {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+      vertices_[src_label].InsertEdgeConcurrent(
+          src_lid, edge_label_with_direction_out,
+          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
+          dst_lid, ts);
     }
     if (ie_strategy != EdgeStrategy::kNone) {
-      MutableNbr<gs::Date> edge_in;
-      edge_in.neighbor = src_lid;
-      edge_in.timestamp = ts;
-      edge_in.data = edge_data;
-      vertices_[dst_label].InsertEdgeUnsafe(
-          dst_lid,
-          {edge_label_with_direction_in,
-           {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+      vertices_[dst_label].InsertEdgeConcurrent(
+          dst_lid, edge_label_with_direction_in,
+          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
+          src_lid, ts);
     }
   } else if (edge_type.size() == 1 && edge_type[0] == PropertyType::kInt32) {
     int32_t edge_data;
     arc >> edge_data;
     if (oe_strategy != EdgeStrategy::kNone) {
-      MutableNbr<int32_t> edge_out;
-      edge_out.neighbor = dst_lid;
-      edge_out.timestamp = ts;
-      edge_out.data = edge_data;
-      vertices_[src_label].InsertEdgeUnsafe(
-          src_lid,
-          {edge_label_with_direction_out,
-           {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+      vertices_[src_label].InsertEdgeConcurrent(
+          src_lid, edge_label_with_direction_out,
+          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
+          dst_lid, ts);
     }
     if (ie_strategy != EdgeStrategy::kNone) {
-      MutableNbr<int32_t> edge_in;
-      edge_in.neighbor = src_lid;
-      edge_in.timestamp = ts;
-      edge_in.data = edge_data;
-      vertices_[dst_label].InsertEdgeUnsafe(
-          dst_lid,
-          {edge_label_with_direction_in,
-           {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+      vertices_[dst_label].InsertEdgeConcurrent(
+          dst_lid, edge_label_with_direction_in,
+          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
+          src_lid, ts);
     }
   } else if (edge_type.size() == 1 && edge_type[0] == PropertyType::kInt64) {
     int64_t edge_data;
     arc >> edge_data;
     if (oe_strategy != EdgeStrategy::kNone) {
-      MutableNbr<int64_t> edge_out;
-      edge_out.neighbor = dst_lid;
-      edge_out.timestamp = ts;
-      edge_out.data = edge_data;
-      vertices_[src_label].InsertEdgeUnsafe(
-          src_lid,
-          {edge_label_with_direction_out,
-           {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+      vertices_[src_label].InsertEdgeConcurrent(
+          src_lid, edge_label_with_direction_out,
+          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
+          dst_lid, ts);
     }
     if (ie_strategy != EdgeStrategy::kNone) {
-      MutableNbr<int64_t> edge_in;
-      edge_in.neighbor = src_lid;
-      edge_in.timestamp = ts;
-      edge_in.data = edge_data;
-      vertices_[dst_label].InsertEdgeUnsafe(
-          dst_lid,
-          {edge_label_with_direction_in,
-           {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+      vertices_[dst_label].InsertEdgeConcurrent(
+          dst_lid, edge_label_with_direction_in,
+          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
+          src_lid, ts);
     }
   } else {
     if (oe_strategy != EdgeStrategy::kNone) {
-      MutableNbr<grape::EmptyType> edge_out;
-      edge_out.timestamp = ts;
-      edge_out.neighbor = dst_lid;
-      vertices_[src_label].InsertEdgeUnsafe(
-          src_lid,
-          {edge_label_with_direction_out,
-           {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+      vertices_[src_label].InsertEdgeConcurrent(
+          src_lid, edge_label_with_direction_out, std::string(), dst_lid, ts);
     }
+
     if (ie_strategy != EdgeStrategy::kNone) {
-      MutableNbr<grape::EmptyType> edge_in;
-      edge_in.timestamp = ts;
-      edge_in.neighbor = src_lid;
-      vertices_[dst_label].InsertEdgeUnsafe(
-          dst_lid,
-          {edge_label_with_direction_in,
-           {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+      vertices_[dst_label].InsertEdgeConcurrent(
+          dst_lid, edge_label_with_direction_in, std::string(), src_lid, ts);
     }
   }
 }
@@ -663,7 +630,7 @@ void MutablePropertyFragment::cgraph_open(
   }
 
   LOG(INFO) << "open vertex done";
-  // return;
+  return;
   size_t edge_size = 0;
   auto person_label_id = schema_.get_vertex_label_id("PERSON");
   auto property_id = 5;
