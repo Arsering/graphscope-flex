@@ -122,8 +122,8 @@ int main(int argc, char** argv) {
 
   // init access logger
   gbp::get_log_dir() = log_data_path;
-  db.Init(schema, data_path, shard_num);
-
+  // db.Init(schema, data_path, shard_num);
+  db.CGraphInit(schema, data_path, shard_num);
   t0 += grape::GetCurrentTime();
 
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";

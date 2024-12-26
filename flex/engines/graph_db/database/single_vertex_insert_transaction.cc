@@ -68,6 +68,42 @@ bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,
   return true;
 }
 
+bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,
+                                              label_t creator_label,
+                                              oid_t creator_id,
+                                              const std::vector<Any>& props) {
+  size_t arc_size = arc_.GetSize();
+  arc_ << static_cast<uint8_t>(2) << label << id << creator_label << creator_id;
+  const std::vector<PropertyType>& types =
+      graph_.schema().get_vertex_properties(label);
+  if (types.size() != props.size()) {
+    arc_.Resize(arc_size);
+    std::string label_name = graph_.schema().get_vertex_label_name(label);
+    LOG(ERROR) << "Vertex [" << label_name
+               << "] properties size not match, expected " << types.size()
+               << ", but got " << props.size();
+    return false;
+  }
+  int col_num = props.size();
+  for (int col_i = 0; col_i != col_num; ++col_i) {
+    auto& prop = props[col_i];
+    if (prop.type != types[col_i]) {
+      arc_.Resize(arc_size);
+      std::string label_name = graph_.schema().get_vertex_label_name(label);
+      LOG(ERROR) << "Vertex [" << label_name << "][" << col_i
+                 << "] property type not match, expected " << types[col_i]
+                 << ", but got " << prop.type;
+      return false;
+    }
+    serialize_field(arc_, prop);
+  }
+  added_vertex_id_ = id;
+  added_vertex_label_ = label;
+  added_vertex_creator_label_ = creator_label;
+  added_vertex_creator_id_ = creator_id;
+  return true;
+}
+
 bool SingleVertexInsertTransaction::AddEdge(label_t src_label, oid_t src,
                                             label_t dst_label, oid_t dst,
                                             label_t edge_label,
@@ -165,8 +201,7 @@ void SingleVertexInsertTransaction::ingestWal() {
       arc.GetBytes(sizeof(label_t) + sizeof(oid_t));
       added_vertex_vid_ =
           graph_.add_vertex(added_vertex_label_, added_vertex_id_);
-      graph_.get_vertex_table(added_vertex_label_)
-          .ingest(added_vertex_vid_, arc);
+      graph_.ingest_vertex(added_vertex_label_, added_vertex_vid_, arc);
     } else if (op_type == 1) {
       label_t src_label, dst_label, edge_label;
       arc >> src_label;
@@ -183,9 +218,15 @@ void SingleVertexInsertTransaction::ingestWal() {
       if (dst_vid == std::numeric_limits<vid_t>::max()) {
         dst_vid = added_vertex_vid_;
       }
-
-      graph_.IngestEdge(src_label, src_vid, dst_label, dst_vid, edge_label,
-                        timestamp_, arc, alloc_);
+      graph_.ingest_edge(src_label, src_vid, dst_label, dst_vid, edge_label,
+                         timestamp_, arc);
+    } else if (op_type == 2) {
+      arc.GetBytes(sizeof(label_t) + sizeof(oid_t) + sizeof(label_t) +
+                   sizeof(oid_t));
+      added_vertex_vid_ = graph_.add_vertex(
+          added_vertex_label_, added_vertex_id_, added_vertex_creator_label_,
+          added_vertex_creator_id_);
+      graph_.ingest_vertex(added_vertex_label_, added_vertex_vid_, arc);
     } else {
       LOG(FATAL) << "Unexpected op-" << static_cast<int>(op_type);
     }

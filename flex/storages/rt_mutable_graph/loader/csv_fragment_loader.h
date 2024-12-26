@@ -52,6 +52,9 @@ class CSVFragmentLoader : public IFragmentLoader {
 
   void LoadFragment() override;
 
+  void test_csv_loader_vertex();
+  void test_csv_loader_edge();
+
  private:
   void loadVertices();
 
@@ -76,6 +79,9 @@ class CSVFragmentLoader : public IFragmentLoader {
                     label_t e_label_id,
                     const std::vector<std::string>& e_files);
   void LoadCGraph();
+  void loadIndexer_cgraph(size_t vertex_label_id,
+                          IdIndexer<oid_t, vid_t>& indexer);
+
   void loadVertices_cgraph(
       size_t vertex_label_id,
       std::vector<std::vector<gs::cgraph::Vertex::ColumnConfiguration>>&
@@ -84,9 +90,6 @@ class CSVFragmentLoader : public IFragmentLoader {
   void loadEdges_cgraph();
 
   void OpenCGraph();
-
-  void test_csv_loader_edge();
-  void test_csv_loader_vertex();
 
   const LoadingConfig& loading_config_;
   const Schema& schema_;

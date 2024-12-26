@@ -16,6 +16,7 @@
 #ifndef GRAPHSCOPE_FRAGMENT_SCHEMA_H_
 #define GRAPHSCOPE_FRAGMENT_SCHEMA_H_
 
+#include <bits/stdint-uintn.h>
 #include "flex/storages/rt_mutable_graph/types.h"
 #include "flex/utils/id_indexer.h"
 #include "flex/utils/property/table.h"
@@ -162,7 +163,10 @@ class Schema {
                                               label_t edge, bool is_out) const;
 
   size_t get_property_id(label_t label, const std::string& property_name) const;
-  
+
+  std::vector<size_t> get_vertex_prop_ids(label_t label) const;
+  void traverse_edge_properties();
+
   IdIndexer<std::string, label_t> vlabel_indexer_;
   IdIndexer<std::string, label_t> elabel_indexer_;
   std::vector<std::vector<size_t>> vprop_ids_;
@@ -184,6 +188,7 @@ class Schema {
   std::map<uint32_t, size_t> oe_column_family_;
   std::map<uint32_t, size_t> ie_column_family_;
   std::vector<std::map<std::string, size_t>> vprop_id_map_;
+  // vertex label id, edge label id, src label id, dst label id, is_out
   std::vector<size_t> max_vnum_;
   std::vector<std::string> plugin_list_;
 };

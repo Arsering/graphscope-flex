@@ -83,7 +83,7 @@ class FixedLengthColumnFamily {
   size_t getSizeInByte() const { return property_buffer_.get_size_in_byte(); }
   // size的单位为byte
   void resize(size_t size) {
-    property_buffer_.resize(size * offsets_.back());
+    property_buffer_.resize(size);
     row_capacity_ = size;
   }
 };

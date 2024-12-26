@@ -239,51 +239,11 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-
       reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
   }
-
-  class CSVReader {
-    std::ifstream csv_data_;
-    std::vector<std::string> words_;
-
-   public:
-    CSVReader() = default;
-    CSVReader(const std::string& file_name) { init(file_name); }
-
-    ~CSVReader() = default;
-
-    void init(const std::string& file_name) {
-      try {
-        csv_data_.open(file_name, std::ios::in);
-      } catch (std::ios_base::failure& e) {
-        std::cout << "fuck" << std::endl;
-        return;
-      }
-      LOG(INFO) << "file_name=" << file_name;
-      std::string line;
-      std::getline(csv_data_, line);  // ignore the first line of file
-    }
-
-    std::vector<std::string>& GetNextLine() {
-      words_.clear();
-      std::string line, word;
-      if (!std::getline(csv_data_, line))
-        return words_;
-
-      std::istringstream sin;
-      sin.clear();
-      sin.str(line);
-
-      while (std::getline(sin, word, '|')) {
-        words_.push_back(word);
-      }
-      return words_;
-    }
-  };
 
   void do_query(size_t thread_id) {
     size_t id;
@@ -303,11 +263,6 @@ class Req {
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           reqs_[id % num_of_reqs_unique_]);
 
-      std::ofstream result_file(gbp::get_log_dir() + "/results.log",
-                                std::ios::app);
-      result_file.write(ret.data(), ret.size());
-      result_file.write("\n", 1);
-      result_file.close();
       end_[id] = gbp::GetSystemTime();
     }
     return;
@@ -473,9 +428,7 @@ int main(int argc, char** argv) {
       "log-data-path,l", bpo::value<std::string>(), "log data directory path")(
       "buffer-pool-size,B",
       bpo::value<uint64_t>()->default_value(pool_size_Byte),
-      "size of buffer pool")(
-      "query-type,q", bpo::value<uint32_t>()->default_value(0), "query type");
-  ;
+      "size of buffer pool");
 
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
@@ -558,13 +511,13 @@ int main(int argc, char** argv) {
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
   LOG(INFO) << "Start loading graph";
-  // db.Init(schema, data_path, shard_num);
   db.CGraphInit(schema, data_path, shard_num);
 
   t0 += grape::GetCurrentTime();
   uint32_t warmup_num = vm["warmup-num"].as<uint32_t>();
   uint32_t benchmark_num = vm["benchmark-num"].as<uint32_t>();
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
+
 #if !OV
   t0 = -grape::GetCurrentTime();
 
@@ -587,7 +540,6 @@ int main(int argc, char** argv) {
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);
   Req::get().load_result(req_file);
-  // Req::get().gen_ic7_query();
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);

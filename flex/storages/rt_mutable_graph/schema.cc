@@ -164,6 +164,43 @@ const std::vector<PropertyType>& Schema::get_edge_properties(
   return eproperties_.at(index);
 }
 
+void Schema::traverse_edge_properties() {
+  for (auto& edge_property : eproperties_) {
+    auto& vec = edge_property.second;
+    for (auto& property : vec) {
+      switch (property) {
+      case PropertyType::kDate:
+        LOG(INFO) << "date";
+        break;
+      case PropertyType::kInt32:
+        LOG(INFO) << "int32";
+        break;
+      case PropertyType::kInt64:
+        LOG(INFO) << "int64";
+        break;
+      case PropertyType::kDouble:
+        LOG(INFO) << "double";
+        break;
+      case PropertyType::kString:
+        LOG(INFO) << "string";
+        break;
+      case PropertyType::kBufferObject:
+        LOG(INFO) << "buffer_object";
+        break;
+      case PropertyType::kDynamicString:
+        LOG(INFO) << "dynamic_string";
+        break;
+      case PropertyType::kEdge:
+        LOG(INFO) << "edge";
+        break;
+      default:
+        LOG(INFO) << "unknown";
+        break;
+      }
+    }
+  }
+}
+
 PropertyType Schema::get_edge_property(label_t src, label_t dst,
                                        label_t edge) const {
   uint32_t index = generate_edge_label(src, dst, edge);
@@ -734,19 +771,23 @@ static bool parse_edge_schema(YAML::Node node, Schema& schema) {
     }
     EdgeStrategy ie = EdgeStrategy::kMultiple;
     EdgeStrategy oe = EdgeStrategy::kMultiple;
-    size_t ie_column_family = 0;  // default column family
-    size_t oe_column_family = 0;  // default column family
+
     {
       std::string ie_str, oe_str;
       if (get_scalar(cur_node, "outgoing_edge_strategy", oe_str)) {
         oe = StringToEdgeStrategy(oe_str);
-        get_scalar(cur_node, "outgoing_edge_column_family", oe_column_family);
       }
       if (get_scalar(cur_node, "incoming_edge_strategy", ie_str)) {
         ie = StringToEdgeStrategy(ie_str);
-        get_scalar(cur_node, "incoming_edge_column_family", ie_column_family);
       }
     }
+    size_t ie_column_family = 0;  // default column family
+    size_t oe_column_family = 0;  // default column family
+    {
+      get_scalar(cur_node, "outgoing_edge_column_family", oe_column_family);
+      get_scalar(cur_node, "incoming_edge_column_family", ie_column_family);
+    }
+
     VLOG(10) << "edge " << edge_label_name << " from " << src_label_name
              << " to " << dst_label_name << " with " << property_types.size()
              << " properties";
@@ -919,6 +960,10 @@ Schema Schema::LoadFromYaml(const std::string& schema_config) {
 size_t Schema::get_property_id(label_t label,
                                const std::string& property_name) const {
   return vprop_id_map_.at(label).at(property_name);
+}
+
+std::vector<size_t> Schema::get_vertex_prop_ids(label_t label) const {
+  return vprop_ids_.at(label);
 }
 
 }  // namespace gs
