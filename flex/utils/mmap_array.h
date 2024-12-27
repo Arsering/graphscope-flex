@@ -300,6 +300,8 @@ class mmap_array : public mmap_array_base {
     } else {
       size_t file_size_new = (size % OBJ_NUM_PERPAGE) * sizeof(T) +
                              (size / OBJ_NUM_PERPAGE) * gbp::PAGE_SIZE_MEMORY;
+      // LOG(INFO) << filename_ << " resize " << size << " " << file_size_new
+      //           << " " << OBJ_NUM_PERPAGE << " " << sizeof(T);
       buffer_pool_manager_->Resize(fd_gbp_, file_size_new);
       size_ = size;
     }

@@ -28,7 +28,7 @@ limitations under the License.
 
 #include "flat_hash_map/flat_hash_map.hpp"
 #include "flex/utils/base_indexer.h"
-#include "flex/utils/message_id_indexer.h"
+#include "flex/utils/grouped_if_indexer.h"
 #include "flex/utils/mmap_array.h"
 #include "flex/utils/string_view_vector.h"
 
@@ -104,19 +104,23 @@ class LFIndexer : public BaseIndexer<INDEX_T> {
 #endif
     return ind;
   }
-  INDEX_T insert_with_parent_oid(int64_t oid, int64_t foreign_oid) override {
+
+  INDEX_T insert_with_parent_oid(int64_t oid, int64_t foreign_oid,
+                                 INDEX_T& previous_child_vid) override {
     LOG(FATAL) << "LFIndexer: insert_with_parent_oid is not implemented";
     return 0;
   }
-  op_status get_kid_index(size_t kid_label_id, int64_t parent_oid,
-                          INDEX_T& ret) override {
-    LOG(FATAL) << "LFIndexer: get_kid_index is not implemented";
-    return op_status::op_status_not_implemented;
+
+  bool get_child_index(size_t child_label_id, int64_t parent_oid,
+                       INDEX_T& ret) override {
+    LOG(FATAL) << "LFIndexer: get_child_index is not implemented";
+    return false;
   }
-  op_status set_new_kid_range(size_t kid_label_id,
-                              int64_t max_kid_oid) override {
-    LOG(FATAL) << "LFIndexer: set_new_kid_range is not implemented";
-    return op_status::op_status_not_implemented;
+
+  bool set_new_child_range(size_t child_label_id,
+                           int64_t max_child_oid) override {
+    LOG(FATAL) << "LFIndexer: set_new_child_range is not implemented";
+    return false;
   }
 
   INDEX_T get_index(int64_t oid) const override {

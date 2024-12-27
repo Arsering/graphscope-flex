@@ -61,7 +61,8 @@ class MutablePropertyFragment {
   oid_t get_oid(label_t label, vid_t lid) const;
 
   vid_t add_vertex(label_t label, oid_t id);
-  vid_t add_vertex(label_t label, oid_t id,label_t creator_label,oid_t creator_id);
+  vid_t add_vertex(label_t label, oid_t id, label_t creator_label,
+                   oid_t creator_id);
   std::shared_ptr<MutableCsrConstEdgeIterBase> get_outgoing_edges(
       label_t label, vid_t u, label_t neighbor_label, label_t edge_label) const;
 
@@ -99,10 +100,9 @@ class MutablePropertyFragment {
 
   cgraph::Vertex& get_vertices(label_t label) { return vertices_[label]; }
   void ingest_vertex(label_t label, vid_t vid, grape::OutArchive& arc);
-  void ingest_edge(label_t src_label, vid_t src_lid, 
-                    label_t dst_label, vid_t dst_lid, 
-                    label_t edge_label, timestamp_t ts,
-                    grape::OutArchive& arc);
+  void ingest_edge(label_t src_label, vid_t src_lid, label_t dst_label,
+                   vid_t dst_lid, label_t edge_label, timestamp_t ts,
+                   grape::OutArchive& arc);
 
   Schema schema_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;

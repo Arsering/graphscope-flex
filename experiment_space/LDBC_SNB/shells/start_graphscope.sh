@@ -2,11 +2,12 @@
 DISK_DEVICE=/dev/vdb
 CUR_DIR=/data-1/yichengzhang/data/latest_gs_bp/graphscope-flex
 
-export SF=0.1
+export SF=30
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
-export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/new_layout_db
+# export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/new_layout_db_30
+export DB_ROOT_DIR=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/new_layout_db_30_full_column
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
 export QUERY_FILE=/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/nvme/query_file/sf30
@@ -26,16 +27,15 @@ mkdir ${LOG_DIR}/graphscope_logs
 
 # generate and save configuration file
 # bash gen_bulk_load_yaml.sh
-cp ${INPUT_OUTPUT_DIR}/configurations/cgraph_${SF}.yaml ${LOG_DIR}/configurations/graph.yaml
+# cp ${INPUT_OUTPUT_DIR}/configurations/cgraph_${SF}.yaml ${LOG_DIR}/configurations/graph.yaml
+cp ${INPUT_OUTPUT_DIR}/configurations/cgraph_${SF}_full_column_storage.yaml ${LOG_DIR}/configurations/graph.yaml
 cp ${INPUT_OUTPUT_DIR}/configurations/cgraph_bulk_load_${SF}.yaml ${LOG_DIR}/configurations/bulk_load.yaml
 
 # store shell file
 mkdir ${LOG_DIR}/shells
 cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 
-# rm -rf ${DB_ROOT_DIR}/* 
-# gdb --args bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} 
-# &>> ${LOG_DIR}/gs_log.log
+# rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &>> ${LOG_DIR}/gs_log.log
 # rm -rf ${DB_ROOT_DIR}/* &&
 # start iostat
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
@@ -48,11 +48,11 @@ do
     # echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*30))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*60))")
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     
-    gdb --args rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 20000 -r ${QUERY_FILE} -q 33
-    # &>> ${LOG_DIR}/gs_log.log
+    # gdb --args 
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 5000 -r ${QUERY_FILE}  &>> ${LOG_DIR}/gs_log.log
     # gdb --args rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} 
     # &> ${LOG_DIR}/gs_log.log
 done

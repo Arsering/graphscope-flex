@@ -150,12 +150,29 @@ class SingleGraphView {
   }
   FORCE_INLINE bool exist1(gbp::BufferBlock& item) const {
     // LOG(INFO) << "exist1: " << gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() << " <= " << timestamp_;
-    return gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
+    #if PROFILE_ENABLE
+    auto start = gbp::GetSystemTime();
+    #endif
+    auto ret = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
+    #if PROFILE_ENABLE
+    auto end = gbp::GetSystemTime();
+    gbp::get_counter(5) += end - start;
+    gbp::get_counter(6) += 1;
+    #endif
+    return ret;
   }
   FORCE_INLINE const gbp::BufferBlock get_edge(vid_t v) const {
     size_t edge_size;
+    #if PROFILE_ENABLE
+    auto start = gbp::GetSystemTime();
+    #endif
     auto item = graph_.get_vertices(vertex_label_)
                     .ReadEdges(v, edge_label_with_direction_, edge_size);
+    #if PROFILE_ENABLE
+    auto end = gbp::GetSystemTime();
+    gbp::get_counter(3) += end - start;
+    gbp::get_counter(4) += 1;
+    #endif
     return item;
   }
 
@@ -322,13 +339,29 @@ class ReadTransaction {
 
   gbp::BufferBlock GetVertexProp(label_t label, vid_t v,
                                  std::string property_name) {
+    #if PROFILE_ENABLE
+    auto start = gbp::GetSystemTime();
+    #endif
     auto property_id = graph_.schema().get_property_id(label, property_name);
     auto item_t = graph_.get_vertices(label).ReadColumn(v, property_id);
+    #if PROFILE_ENABLE
+    auto end = gbp::GetSystemTime();
+    gbp::get_counter(7) += end - start;
+    gbp::get_counter(8) += 1;
+    #endif
     return item_t;
   }
 
   gbp::BufferBlock GetVertexProp(label_t label, vid_t v, int property_id) {
+    #if PROFILE_ENABLE
+    auto start = gbp::GetSystemTime();
+    #endif
     auto item_t = graph_.get_vertices(label).ReadColumn(v, property_id);
+    #if PROFILE_ENABLE
+    auto end = gbp::GetSystemTime();
+    gbp::get_counter(9) += end - start;
+    gbp::get_counter(10) += 1;
+    #endif
     return item_t;
   }
 

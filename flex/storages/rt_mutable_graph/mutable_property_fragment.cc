@@ -277,78 +277,107 @@ void MutablePropertyFragment::IngestEdge(label_t src_label, vid_t src_lid,
 }
 
 void MutablePropertyFragment::ingest_edge(label_t src_label, vid_t src_lid,
-                                         label_t dst_label, vid_t dst_lid,
-                                         label_t edge_label, timestamp_t ts,
-                                         grape::OutArchive& arc) {
-  auto edge_type = schema_.get_edge_properties(src_label, dst_label, edge_label);
-  auto edge_label_with_direction_out = schema_.generate_edge_label_with_direction(src_label, dst_label, edge_label, true);
-  auto edge_label_with_direction_in = schema_.generate_edge_label_with_direction(src_label, dst_label, edge_label, false);
+                                          label_t dst_label, vid_t dst_lid,
+                                          label_t edge_label, timestamp_t ts,
+                                          grape::OutArchive& arc) {
+  auto edge_type =
+      schema_.get_edge_properties(src_label, dst_label, edge_label);
+  auto edge_label_with_direction_out =
+      schema_.generate_edge_label_with_direction(src_label, dst_label,
+                                                 edge_label, true);
+  auto edge_label_with_direction_in =
+      schema_.generate_edge_label_with_direction(src_label, dst_label,
+                                                 edge_label, false);
   auto label_id = schema_.generate_edge_label(src_label, dst_label, edge_label);
   auto oe_strategy = schema_.oe_strategy_.at(label_id);
   auto ie_strategy = schema_.ie_strategy_.at(label_id);
-  if(edge_type.size() == 1 && edge_type[0] == PropertyType::kDate) {
+  if (edge_type.size() == 1 && edge_type[0] == PropertyType::kDate) {
     gs::Date edge_data;
     arc >> edge_data;
-    if(oe_strategy != EdgeStrategy::kNone){
+    if (oe_strategy != EdgeStrategy::kNone) {
       MutableNbr<gs::Date> edge_out;
       edge_out.neighbor = dst_lid;
       edge_out.timestamp = ts;
       edge_out.data = edge_data;
-      vertices_[src_label].InsertEdgeUnsafe(src_lid, {edge_label_with_direction_out, {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+      vertices_[src_label].InsertEdgeUnsafe(
+          src_lid,
+          {edge_label_with_direction_out,
+           {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
     }
-    if(ie_strategy != EdgeStrategy::kNone){
+    if (ie_strategy != EdgeStrategy::kNone) {
       MutableNbr<gs::Date> edge_in;
       edge_in.neighbor = src_lid;
       edge_in.timestamp = ts;
       edge_in.data = edge_data;
-      vertices_[dst_label].InsertEdgeUnsafe(dst_lid, {edge_label_with_direction_in, {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+      vertices_[dst_label].InsertEdgeUnsafe(
+          dst_lid,
+          {edge_label_with_direction_in,
+           {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
     }
-  }else if(edge_type.size() == 1 && edge_type[0] == PropertyType::kInt32){
+  } else if (edge_type.size() == 1 && edge_type[0] == PropertyType::kInt32) {
     int32_t edge_data;
     arc >> edge_data;
-    if(oe_strategy != EdgeStrategy::kNone){
+    if (oe_strategy != EdgeStrategy::kNone) {
       MutableNbr<int32_t> edge_out;
       edge_out.neighbor = dst_lid;
       edge_out.timestamp = ts;
       edge_out.data = edge_data;
-      vertices_[src_label].InsertEdgeUnsafe(src_lid, {edge_label_with_direction_out, {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+      vertices_[src_label].InsertEdgeUnsafe(
+          src_lid,
+          {edge_label_with_direction_out,
+           {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
     }
-    if(ie_strategy != EdgeStrategy::kNone){
+    if (ie_strategy != EdgeStrategy::kNone) {
       MutableNbr<int32_t> edge_in;
       edge_in.neighbor = src_lid;
       edge_in.timestamp = ts;
       edge_in.data = edge_data;
-      vertices_[dst_label].InsertEdgeUnsafe(dst_lid, {edge_label_with_direction_in, {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+      vertices_[dst_label].InsertEdgeUnsafe(
+          dst_lid,
+          {edge_label_with_direction_in,
+           {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
     }
-  }else if(edge_type.size() == 1 && edge_type[0] == PropertyType::kInt64){
+  } else if (edge_type.size() == 1 && edge_type[0] == PropertyType::kInt64) {
     int64_t edge_data;
     arc >> edge_data;
-    if(oe_strategy != EdgeStrategy::kNone){
+    if (oe_strategy != EdgeStrategy::kNone) {
       MutableNbr<int64_t> edge_out;
       edge_out.neighbor = dst_lid;
       edge_out.timestamp = ts;
       edge_out.data = edge_data;
-      vertices_[src_label].InsertEdgeUnsafe(src_lid, {edge_label_with_direction_out, {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+      vertices_[src_label].InsertEdgeUnsafe(
+          src_lid,
+          {edge_label_with_direction_out,
+           {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
     }
-    if(ie_strategy != EdgeStrategy::kNone){
+    if (ie_strategy != EdgeStrategy::kNone) {
       MutableNbr<int64_t> edge_in;
       edge_in.neighbor = src_lid;
       edge_in.timestamp = ts;
       edge_in.data = edge_data;
-      vertices_[dst_label].InsertEdgeUnsafe(dst_lid, {edge_label_with_direction_in, {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+      vertices_[dst_label].InsertEdgeUnsafe(
+          dst_lid,
+          {edge_label_with_direction_in,
+           {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
     }
-  }else{
-    if(oe_strategy != EdgeStrategy::kNone){ 
+  } else {
+    if (oe_strategy != EdgeStrategy::kNone) {
       MutableNbr<grape::EmptyType> edge_out;
       edge_out.timestamp = ts;
       edge_out.neighbor = dst_lid;
-      vertices_[src_label].InsertEdgeUnsafe(src_lid, {edge_label_with_direction_out, {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
+      vertices_[src_label].InsertEdgeUnsafe(
+          src_lid,
+          {edge_label_with_direction_out,
+           {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
     }
-    if(ie_strategy != EdgeStrategy::kNone){
+    if (ie_strategy != EdgeStrategy::kNone) {
       MutableNbr<grape::EmptyType> edge_in;
       edge_in.timestamp = ts;
       edge_in.neighbor = src_lid;
-      vertices_[dst_label].InsertEdgeUnsafe(dst_lid, {edge_label_with_direction_in, {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
+      vertices_[dst_label].InsertEdgeUnsafe(
+          dst_lid,
+          {edge_label_with_direction_in,
+           {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
     }
   }
 }
@@ -370,6 +399,9 @@ vid_t MutablePropertyFragment::vertex_num(label_t vertex_label) const {
 
 bool MutablePropertyFragment::get_lid(label_t label, oid_t oid,
                                       vid_t& lid) const {
+  // auto ret = cgraph_lf_indexers_[label]->get_index(oid, lid);
+  // assert(ret);
+  // return ret;
   return cgraph_lf_indexers_[label]->get_index(oid, lid);
 }
 
@@ -381,8 +413,12 @@ vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id) {
   return cgraph_lf_indexers_[label]->insert(id);
 }
 
-vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id,label_t creator_label,oid_t creator_id) {
-  return cgraph_lf_indexers_[label]->insert_with_parent_oid(id, creator_id);
+vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id,
+                                          label_t creator_label,
+                                          oid_t creator_id) {
+  gs::vid_t previous_vertex_id;
+  return cgraph_lf_indexers_[label]->insert_with_parent_oid(id, creator_id,
+                                                            previous_vertex_id);
 }
 
 void MutablePropertyFragment::ingest_vertex(label_t label, vid_t vertex_id,
@@ -425,8 +461,8 @@ void MutablePropertyFragment::ingest_vertex(label_t label, vid_t vertex_id,
       std::string data_string;
       out_archive >> data_string;
       LOG(INFO) << "data_string: " << data_string;
-      vertices_[label].InsertColumn(
-          vertex_id, {vertex_prop_ids[i], data_string});
+      vertices_[label].InsertColumn(vertex_id,
+                                    {vertex_prop_ids[i], data_string});
       break;
     }
     case PropertyType::kDate: {
@@ -630,7 +666,7 @@ void MutablePropertyFragment::cgraph_open(
   }
 
   LOG(INFO) << "open vertex done";
-  // return;
+  return;
   size_t edge_size = 0;
   auto person_label_id = schema_.get_vertex_label_id("PERSON");
   auto property_id = 5;
@@ -828,9 +864,10 @@ void MutablePropertyFragment::cgraph_open(
 
   // {
   //   auto vertex_oid = 15527184033;
-  //   auto vertex_id = cgraph_lf_indexers_[person_label_id]->insert(vertex_oid);
-  //   auto vertex_name = schema_.get_vertex_label_name(person_label_id);
-  //   LOG(INFO) << "vertex name: " << vertex_name;
+  //   auto vertex_id =
+  //   cgraph_lf_indexers_[person_label_id]->insert(vertex_oid); auto
+  //   vertex_name = schema_.get_vertex_label_name(person_label_id); LOG(INFO)
+  //   << "vertex name: " << vertex_name;
 
   //   // 假设有以下几个值要合并
   //   // int property_id = 1;
@@ -842,8 +879,9 @@ void MutablePropertyFragment::cgraph_open(
   //   std::string gender = "female";
   //   std::string birthday_string = "1984-02-18";
   //   std::string creation_date_string = "2010-01-28T06:39:58.781+0000";
-  //   gs::Date birthday = gbp::TimeConverter::dateStringToMillis(birthday_string);
-  //   gs::Date creation_date =
+  //   gs::Date birthday =
+  //   gbp::TimeConverter::dateStringToMillis(birthday_string); gs::Date
+  //   creation_date =
   //       gbp::TimeConverter::dateStringToMillis(creation_date_string);
   //   std::string location_ip = "195.20.151.175";
   //   std::string browser_used = "Internet Explorer";
@@ -979,7 +1017,8 @@ void MutablePropertyFragment::cgraph_open(
   //   auto item_p = vertices_[person_label_id].ReadColumn(inserted_vid, 1);
   //   std::vector<char> data(item_p.Size());
   //   item_p.Copy(data.data(), data.size());
-  //   LOG(INFO) << "first_name: " << std::string_view(data.data(), data.size());
+  //   LOG(INFO) << "first_name: " << std::string_view(data.data(),
+  //   data.size());
   // }
 
   // {  // test insert person likes comment
@@ -997,7 +1036,8 @@ void MutablePropertyFragment::cgraph_open(
   //       gbp::TimeConverter::dateStringToMillis(creation_date_string);
   //   LOG(INFO) << "creation_date: " << creation_date;
   //   auto edge_property = schema_.get_edge_property(
-  //       person_label_id, comment_label_id, schema_.get_edge_label_id("LIKES"));
+  //       person_label_id, comment_label_id,
+  //       schema_.get_edge_label_id("LIKES"));
   //   auto edge_with_direction = schema_.generate_edge_label_with_direction(
   //       person_label_id, comment_label_id, likes_label_id, true);
   //   auto edge_with_direction_in = schema_.generate_edge_label_with_direction(
@@ -1023,9 +1063,9 @@ void MutablePropertyFragment::cgraph_open(
   //   auto item_p = vertices_[comment_label_id].ReadEdges(
   //       comment_vid, edge_with_direction_in, edge_num);
   //   for (size_t i = 0; i < edge_num; i++) {
-  //     auto edge_data = gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_p, i);
-  //     LOG(INFO) << "edge_data: " << edge_data.neighbor;
-  //     LOG(INFO) << "neighbor: "
+  //     auto edge_data = gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_p,
+  //     i); LOG(INFO) << "edge_data: " << edge_data.neighbor; LOG(INFO) <<
+  //     "neighbor: "
   //               << cgraph_lf_indexers_[person_label_id]->get_key(
   //                      edge_data.neighbor);
   //     LOG(INFO) << "edge_data: " << edge_data.data;
@@ -1045,7 +1085,8 @@ void MutablePropertyFragment::cgraph_open(
   //       schema_.generate_edge_label_with_direction(
   //           person_label_id, person_label_id,
   //           schema_.get_edge_label_id("KNOWS"), false);
-  //   auto edge_type = schema_.get_edge_properties(person_label_id, person_label_id,
+  //   auto edge_type = schema_.get_edge_properties(person_label_id,
+  //   person_label_id,
   //                                                schema_.get_edge_label_id("KNOWS"));
   //   schema_.traverse_edge_properties();
   //   if(edge_type.size() == 1 && edge_type[0] == PropertyType::kDate) {
@@ -1091,36 +1132,48 @@ void MutablePropertyFragment::cgraph_open(
   //   // test person isLocatedIn place
   //   auto place_label_id = schema_.get_vertex_label_id("PLACE");
   //   auto place_oid = 1;
-  //   auto place_vid = cgraph_lf_indexers_[place_label_id]->get_index(place_oid);
-  //   auto person_isLocatedIn_place_edge_label_id_out = schema_.generate_edge_label_with_direction(
-  //       person_label_id, place_label_id, schema_.get_edge_label_id("ISLOCATEDIN"), true);
-  //   auto person_isLocatedIn_place_edge_label_id_in = schema_.generate_edge_label_with_direction(
-  //       person_label_id, place_label_id, schema_.get_edge_label_id("ISLOCATEDIN"), false);
+  //   auto place_vid =
+  //   cgraph_lf_indexers_[place_label_id]->get_index(place_oid); auto
+  //   person_isLocatedIn_place_edge_label_id_out =
+  //   schema_.generate_edge_label_with_direction(
+  //       person_label_id, place_label_id,
+  //       schema_.get_edge_label_id("ISLOCATEDIN"), true);
+  //   auto person_isLocatedIn_place_edge_label_id_in =
+  //   schema_.generate_edge_label_with_direction(
+  //       person_label_id, place_label_id,
+  //       schema_.get_edge_label_id("ISLOCATEDIN"), false);
   //   MutableNbr<grape::EmptyType> edge_out;
   //   edge_out.neighbor = place_vid;
   //   edge_out.timestamp = 0;
-  //   vertices_[person_label_id].InsertEdgeUnsafe(person_vid1, {person_isLocatedIn_place_edge_label_id_out, {reinterpret_cast<const char*>(&edge_out), sizeof(edge_out)}});
-  //   MutableNbr<grape::EmptyType> edge_in;
-  //   edge_in.neighbor = person_vid1;
-  //   edge_in.timestamp = 0;
-  //   LOG(INFO) << "place_label_id: " << (int) place_label_id;
-  //   LOG(INFO)<<"place vid: "<<place_vid;
-  //   LOG(INFO)<<"person_isLocatedIn_place_edge_label_id_in: "<<person_isLocatedIn_place_edge_label_id_in;
-  //   LOG(INFO)<<"edge_in: "<<edge_in.neighbor<<edge_in.timestamp;
-  //   vertices_[place_label_id].InsertEdgeUnsafe(place_vid, {person_isLocatedIn_place_edge_label_id_in, {reinterpret_cast<const char*>(&edge_in), sizeof(edge_in)}});
-  //   auto item_place = vertices_[person_label_id].ReadEdges(person_vid1, person_isLocatedIn_place_edge_label_id_out, edge_num);
-  //   for (size_t i = 0; i < edge_num; i++) {
-  //     auto edge_data = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_place, i);
+  //   vertices_[person_label_id].InsertEdgeUnsafe(person_vid1,
+  //   {person_isLocatedIn_place_edge_label_id_out, {reinterpret_cast<const
+  //   char*>(&edge_out), sizeof(edge_out)}}); MutableNbr<grape::EmptyType>
+  //   edge_in; edge_in.neighbor = person_vid1; edge_in.timestamp = 0; LOG(INFO)
+  //   << "place_label_id: " << (int) place_label_id; LOG(INFO)<<"place vid:
+  //   "<<place_vid; LOG(INFO)<<"person_isLocatedIn_place_edge_label_id_in:
+  //   "<<person_isLocatedIn_place_edge_label_id_in; LOG(INFO)<<"edge_in:
+  //   "<<edge_in.neighbor<<edge_in.timestamp;
+  //   vertices_[place_label_id].InsertEdgeUnsafe(place_vid,
+  //   {person_isLocatedIn_place_edge_label_id_in, {reinterpret_cast<const
+  //   char*>(&edge_in), sizeof(edge_in)}}); auto item_place =
+  //   vertices_[person_label_id].ReadEdges(person_vid1,
+  //   person_isLocatedIn_place_edge_label_id_out, edge_num); for (size_t i = 0;
+  //   i < edge_num; i++) {
+  //     auto edge_data =
+  //     gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_place, i);
   //     LOG(INFO) << "edge_data: " << edge_data.neighbor;
-  //     LOG(INFO) << "neighbor: " << cgraph_lf_indexers_[place_label_id]->get_key(edge_data.neighbor);
+  //     LOG(INFO) << "neighbor: " <<
+  //     cgraph_lf_indexers_[place_label_id]->get_key(edge_data.neighbor);
   //   }
-  //   auto item_person = vertices_[place_label_id].ReadEdges(place_vid, person_isLocatedIn_place_edge_label_id_in, edge_num);
-  //   for (size_t i = 0; i < edge_num; i++) {
-  //     auto edge_data = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_person, i);
+  //   auto item_person = vertices_[place_label_id].ReadEdges(place_vid,
+  //   person_isLocatedIn_place_edge_label_id_in, edge_num); for (size_t i = 0;
+  //   i < edge_num; i++) {
+  //     auto edge_data =
+  //     gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_person, i);
   //     LOG(INFO) << "edge_data: " << edge_data.neighbor;
-  //     LOG(INFO) << "neighbor: " << cgraph_lf_indexers_[person_label_id]->get_key(edge_data.neighbor);
+  //     LOG(INFO) << "neighbor: " <<
+  //     cgraph_lf_indexers_[person_label_id]->get_key(edge_data.neighbor);
   //   }
   // }
 }
 }  // namespace gs
-

@@ -68,7 +68,9 @@ bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,
   return true;
 }
 
-bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,label_t creator_label,oid_t creator_id,
+bool SingleVertexInsertTransaction::AddVertex(label_t label, oid_t id,
+                                              label_t creator_label,
+                                              oid_t creator_id,
                                               const std::vector<Any>& props) {
   size_t arc_size = arc_.GetSize();
   arc_ << static_cast<uint8_t>(2) << label << id << creator_label << creator_id;
@@ -216,7 +218,8 @@ void SingleVertexInsertTransaction::ingestWal() {
       if (dst_vid == std::numeric_limits<vid_t>::max()) {
         dst_vid = added_vertex_vid_;
       }
-      graph_.ingest_edge(src_label, src_vid, dst_label, dst_vid, edge_label, timestamp_, arc);
+      graph_.ingest_edge(src_label, src_vid, dst_label, dst_vid, edge_label,
+                         timestamp_, arc);
     } else if (op_type == 2) {
       arc.GetBytes(sizeof(label_t) + sizeof(oid_t) + sizeof(label_t) +
                    sizeof(oid_t));

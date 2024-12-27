@@ -21,13 +21,13 @@ class Vertex {
     DataPerColumnFamily(bool empty = false) {
       if (empty) {
         fixed_length_column_family = nullptr;
-        dynamic_length_column_family = nullptr;
-        dynamic_length_column_family_size = 0;
+        stringpool = nullptr;
+        stringpool_size = 0;
         csr.clear();
       } else {
         fixed_length_column_family = new FixedLengthColumnFamily();
-        dynamic_length_column_family = new mmap_array<char>();
-        dynamic_length_column_family_size = 0;
+        stringpool = new mmap_array<char>();
+        stringpool_size = 0;
         csr.clear();
       }
     }
@@ -54,8 +54,8 @@ class Vertex {
       // }
     }
     FixedLengthColumnFamily* fixed_length_column_family = nullptr;
-    mmap_array<char>* dynamic_length_column_family = nullptr;
-    size_t dynamic_length_column_family_size = 0;
+    mmap_array<char>* stringpool = nullptr;
+    size_t stringpool_size = 0;
     std::vector<mmap_array_base*>
         csr;  // csr之所以是一个vector，是因为一个vertex可能有多个edge_list，不同的edge的size可能不同，放在同一个mmap_array中不便于对齐
   };
@@ -309,11 +309,10 @@ class Vertex {
 
       // 初始化存储string的文件
       if (string_mark) {
-        datas_of_all_column_family_[column_family_id]
-            .dynamic_length_column_family->open(
-                db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
-                    std::to_string(column_family_id) + ".stringpool",
-                false);
+        datas_of_all_column_family_[column_family_id].stringpool->open(
+            db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
+                std::to_string(column_family_id) + ".stringpool",
+            false);
       }
     }
   }
@@ -489,11 +488,10 @@ class Vertex {
 
       // 初始化存储string的文件
       if (string_mark) {
-        datas_of_all_column_family_[column_family_id]
-            .dynamic_length_column_family->open(
-                db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
-                    std::to_string(column_family_id) + ".stringpool",
-                false);
+        datas_of_all_column_family_[column_family_id].stringpool->open(
+            db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
+                std::to_string(column_family_id) + ".stringpool",
+            false);
       }
 
       column_family_id++;
@@ -545,13 +543,12 @@ class Vertex {
       auto start_pos =
           gbp::as_atomic(datas_of_all_column_family_[column_to_column_family
                                                          .column_family_id]
-                             .dynamic_length_column_family_size)
+                             .stringpool_size)
               .fetch_add(value.second.size());
 
       // 存储string内容
       datas_of_all_column_family_[column_to_column_family.column_family_id]
-          .dynamic_length_column_family->set(start_pos, value.second,
-                                             value.second.size());
+          .stringpool->set(start_pos, value.second, value.second.size());
 
       // 存储string的position
       string_item position = {start_pos, (uint32_t) value.second.size()};
@@ -617,7 +614,6 @@ class Vertex {
                                                                   .second];
       if (column_to_column_family.column_type ==
           gs::PropertyType::kDynamicEdgeList) {
-        // LOG(INFO)<<"edge_label_id: "<<edge_label_id.first<<" "<<edge_label_id.second;
         EdgeListInit(edge_label_id.first, vertex_id, 128);
       } else if (column_to_column_family.column_type ==
                  gs::PropertyType::kEdge) {
@@ -653,7 +649,8 @@ class Vertex {
         .csr[column_to_column_family.edge_list_id_in_column_family]
         ->resize(column_family_info_[column_to_column_family.column_family_id]
                      .edge_list_sizes_[column_to_column_family
-                                           .edge_list_id_in_column_family]*2);
+                                           .edge_list_id_in_column_family] *
+                 2);
   }
 
   void InsertEdgeConcurrent(size_t vertex_id, size_t edge_label_id,
@@ -779,11 +776,12 @@ class Vertex {
     }
   }
 
-  bool edge_label_with_direction_exist(size_t edge_label_id){
-    return edge_label_to_property_id_.find(edge_label_id)!=edge_label_to_property_id_.end();
+  bool edge_label_with_direction_exist(size_t edge_label_id) {
+    return edge_label_to_property_id_.find(edge_label_id) !=
+           edge_label_to_property_id_.end();
   }
 
-  std::map<size_t,size_t>& get_edge_label_to_property_id(){
+  std::map<size_t, size_t>& get_edge_label_to_property_id() {
     return edge_label_to_property_id_;
   }
 
@@ -870,7 +868,7 @@ class Vertex {
       auto& item = gbp::BufferBlock::Ref<string_item>(position);
       result =
           datas_of_all_column_family_[column_to_column_family.column_family_id]
-              .dynamic_length_column_family->get(item.offset, item.length);
+              .stringpool->get(item.offset, item.length);
       break;
     }
     case gs::PropertyType::kDynamicEdgeList: {
@@ -891,9 +889,9 @@ class Vertex {
       }
       data_per_column_family.fixed_length_column_family->resize(
           new_capacity_in_row);
-      if (!data_per_column_family.dynamic_length_column_family->read_only())
-        data_per_column_family.dynamic_length_column_family->resize(
-            new_capacity_in_row * 128 * 1);
+      if (!data_per_column_family.stringpool->read_only())
+        data_per_column_family.stringpool->resize(new_capacity_in_row * 128 *
+                                                  1);
 
       for (auto& csr : data_per_column_family.csr) {
         csr->resize(new_capacity_in_row * 128);
@@ -903,22 +901,34 @@ class Vertex {
          property_id_to_ColumnToColumnFamily_configurations_) {
       switch (column_configuration.second.column_type) {
       case gs::PropertyType::kDynamicEdgeList: {
+        MutableAdjlist empty_adjlist;
+        empty_adjlist.capacity_ = 0;
+        empty_adjlist.size_ = 0;
+        empty_adjlist.start_idx_ = 0;
+        std::string_view empty_adjlist_view(
+            reinterpret_cast<char*>(&empty_adjlist), sizeof(MutableAdjlist));
         for (size_t row_id = capacity_in_row_; row_id < new_capacity_in_row;
              row_id++) {
-          auto item_t =
-              datas_of_all_column_family_[column_configuration.second
-                                              .column_family_id]
-                  .fixed_length_column_family->getColumn(
-                      row_id,
-                      column_configuration.second.column_id_in_column_family);
+          datas_of_all_column_family_[column_configuration.second
+                                          .column_family_id]
+              .fixed_length_column_family->setColumn(
+                  row_id,
+                  column_configuration.second.column_id_in_column_family,
+                  empty_adjlist_view);
 
-          gbp::BufferBlock::UpdateContent<MutableAdjlist>(
-              [&](MutableAdjlist& item) {
-                item.capacity_ = 0;
-                item.start_idx_ = 0;
-                item.size_ = 0;
-              },
-              item_t);
+          // auto item_t =
+          //     datas_of_all_column_family_[column_configuration.second
+          //                                     .column_family_id]
+          //         .fixed_length_column_family->getColumn(
+          //             row_id,
+          //             column_configuration.second.column_id_in_column_family);
+          // gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+          //     [&](MutableAdjlist& item) {
+          //       item.capacity_ = 0;
+          //       item.start_idx_ = 0;
+          //       item.size_ = 0;
+          //     },
+          //     item_t);
         }
         break;
       }
@@ -942,6 +952,7 @@ class Vertex {
     }
     capacity_in_row_ = new_capacity_in_row;
   }
+
   size_t CapacityInRow() const { return capacity_in_row_; }
   FixedLengthColumnFamily& GetColumnFamily(size_t column_family_id) {
     return *(datas_of_all_column_family_[column_family_id]
@@ -1021,8 +1032,6 @@ class Vertex {
   }
 
   std::string GetVertexName() const { return vertex_name_; }
-
-
 
  private:
   void InsertEdgeAtomicHelper(gbp::BufferBlock edge,

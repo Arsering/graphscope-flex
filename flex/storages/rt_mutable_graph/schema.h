@@ -167,7 +167,6 @@ class Schema {
   std::vector<size_t> get_vertex_prop_ids(label_t label) const;
   void traverse_edge_properties();
 
-  
   IdIndexer<std::string, label_t> vlabel_indexer_;
   IdIndexer<std::string, label_t> elabel_indexer_;
   std::vector<std::vector<size_t>> vprop_ids_;
@@ -189,7 +188,7 @@ class Schema {
   std::map<uint32_t, size_t> oe_column_family_;
   std::map<uint32_t, size_t> ie_column_family_;
   std::vector<std::map<std::string, size_t>> vprop_id_map_;
-    //vertex label id, edge label id, src label id, dst label id, is_out
+  // vertex label id, edge label id, src label id, dst label id, is_out
   std::vector<size_t> max_vnum_;
   std::vector<std::string> plugin_list_;
 };

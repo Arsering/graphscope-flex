@@ -12,278 +12,6 @@
 #include "flex/storages/rt_mutable_graph/types.h"
 
 namespace gs {
-// 泛型类，OID是object ID ，VID是Vertex ID
-template <typename OID = int64_t, typename INDEX_T = int64_t>
-class MessageIdAllocator : public gs::BaseIndexer<INDEX_T> {
-  // 确保OID和LID是整数类型
-  static_assert(std::is_integral<OID>::value, "OID must be an integral type");
-  static_assert(std::is_integral<INDEX_T>::value,
-                "VID must be an integral type");
-
- private:
-  static constexpr int MESSAGE_IN_BLOCK = 3;  // 每个block中可以存放的消息数量
-
-  tbb::concurrent_unordered_map<OID, int>
-      person_counters;                     // 每个person的当前计数器
-  std::atomic<int> global_block_count{0};  // 全局block计数器
-
-  // 存储每个message id对应的person
-  tbb::concurrent_unordered_map<INDEX_T, OID> message_owners;
-
-  // 存储外部消息ID到内部消息ID的映射
-  tbb::concurrent_unordered_map<OID, INDEX_T> oid_to_lid_map;
-
-  // 存储内部消息ID到外部消息ID的映射
-  tbb::concurrent_unordered_map<INDEX_T, OID> lid_to_oid_map;
-
- public:
-  MessageIdAllocator() = default;
-
-  // 获取下一个消息ID，现在需要传入外部消息ID
-  INDEX_T get_message_id(OID person, OID message_oid) {
-    // 检查这个oid是否已经分配过lid
-    auto oid_it = oid_to_lid_map.find(message_oid);
-    if (oid_it != oid_to_lid_map.end()) {
-      return oid_it->second;  // 如果已经分配过，直接返回对应的lid
-    }
-
-    // 获取该person当前的计数器值
-    auto it = person_counters.find(person);
-    if (it == person_counters.end()) {
-      // 新的person，分配一个新的block
-      person_counters.insert(
-          {person, global_block_count.fetch_add(1) * MESSAGE_IN_BLOCK});
-      it = person_counters.find(person);
-    }
-
-    // 计算当前消息的全局offset
-    INDEX_T current_offset = static_cast<INDEX_T>(it->second);
-
-    // 记录message id的所有者
-    message_owners.insert({current_offset, person});
-
-    // 记录oid到lid的映射
-    oid_to_lid_map.insert({message_oid, current_offset});
-    lid_to_oid_map.insert({current_offset, message_oid});
-
-    // 增加计数器
-    int new_counter = it->second + 1;
-    person_counters[person] = new_counter;
-
-    // 检查是否需要分配新的block
-    if (new_counter % MESSAGE_IN_BLOCK == 0) {
-      // 分配新的block
-      person_counters[person] =
-          global_block_count.fetch_add(1) * MESSAGE_IN_BLOCK;
-    }
-
-    return current_offset;
-  }
-
-  // 根据外部消息ID获取内部消息ID
-  bool get_lid_by_oid(OID message_oid, INDEX_T& lid) const {
-    auto it = oid_to_lid_map.find(message_oid);
-    if (it == oid_to_lid_map.end()) {
-      return false;
-    }
-    lid = it->second;
-    return true;
-  }
-
-  // 根据内部消息ID获取外部消息ID
-  bool get_oid_by_lid(INDEX_T message_lid, OID& oid) const {
-    auto it = lid_to_oid_map.find(message_lid);
-    if (it == lid_to_oid_map.end()) {
-      return false;
-    }
-    oid = it->second;
-    return true;
-  }
-
-  // 获取当前全局block数量
-  int get_block_count() const { return global_block_count.load(); }
-
-  // 打印block分配情况
-  void print_block_allocation() const {
-    std::cout << "\n=== Block Allocation Status ===\n";
-
-    int total_blocks = get_block_count();
-    for (int block = 0; block < total_blocks; ++block) {
-      INDEX_T block_start = static_cast<INDEX_T>(block * MESSAGE_IN_BLOCK);
-      std::cout << "\nBlock " << block << " (Message IDs " << block_start
-                << " - " << (block_start + MESSAGE_IN_BLOCK - 1) << "):\n";
-
-      // 检查这个block中的每个message id
-      for (int offset = 0; offset < MESSAGE_IN_BLOCK; ++offset) {
-        INDEX_T msg_id = block_start + offset;
-        auto it = message_owners.find(msg_id);
-        if (it != message_owners.end()) {
-          std::cout << "  Message ID " << std::setw(3) << msg_id
-                    << " -> Person " << it->second;
-
-          // 尝试找到对应的OID
-          auto oid_it = lid_to_oid_map.find(msg_id);
-          if (oid_it != lid_to_oid_map.end()) {
-            std::cout << " (OID: " << oid_it->second << ")";
-          }
-          std::cout << "\n";
-        } else {
-          std::cout << "  Message ID " << std::setw(3) << msg_id
-                    << " -> Unallocated\n";
-        }
-      }
-    }
-    std::cout << "\nTotal Blocks: " << total_blocks << "\n";
-    std::cout << "=========================\n";
-  }
-  // 将当前状态保存到文件
-  void dump(const std::string& file_path) const {
-    std::ofstream file(file_path, std::ios::binary);
-    if (!file) {
-      throw std::runtime_error("Cannot open file for writing: " + file_path);
-    }
-
-    // 保存 block 数量
-    int block_count = global_block_count.load();
-    file.write(reinterpret_cast<const char*>(&block_count),
-               sizeof(block_count));
-
-    // 保存 person_counters
-    size_t counter_size = person_counters.size();
-    file.write(reinterpret_cast<const char*>(&counter_size),
-               sizeof(counter_size));
-    for (const auto& pair : person_counters) {
-      file.write(reinterpret_cast<const char*>(&pair.first),
-                 sizeof(pair.first));
-      file.write(reinterpret_cast<const char*>(&pair.second),
-                 sizeof(pair.second));
-    }
-
-    // 保存 message_owners
-    size_t owners_size = message_owners.size();
-    file.write(reinterpret_cast<const char*>(&owners_size),
-               sizeof(owners_size));
-    for (const auto& pair : message_owners) {
-      file.write(reinterpret_cast<const char*>(&pair.first),
-                 sizeof(pair.first));
-      file.write(reinterpret_cast<const char*>(&pair.second),
-                 sizeof(pair.second));
-    }
-
-    // 保存 oid_to_lid_map
-    size_t oid_map_size = oid_to_lid_map.size();
-    file.write(reinterpret_cast<const char*>(&oid_map_size),
-               sizeof(oid_map_size));
-    for (const auto& pair : oid_to_lid_map) {
-      file.write(reinterpret_cast<const char*>(&pair.first),
-                 sizeof(pair.first));
-      file.write(reinterpret_cast<const char*>(&pair.second),
-                 sizeof(pair.second));
-    }
-
-    // 保存 lid_to_oid_map
-    size_t lid_map_size = lid_to_oid_map.size();
-    file.write(reinterpret_cast<const char*>(&lid_map_size),
-               sizeof(lid_map_size));
-    for (const auto& pair : lid_to_oid_map) {
-      file.write(reinterpret_cast<const char*>(&pair.first),
-                 sizeof(pair.first));
-      file.write(reinterpret_cast<const char*>(&pair.second),
-                 sizeof(pair.second));
-    }
-  }
-
-  // 从文件加载状态
-  void load(const std::string& file_path) {
-    std::ifstream file(file_path, std::ios::binary);
-    if (!file) {
-      throw std::runtime_error("Cannot open file for reading: " + file_path);
-    }
-
-    // 清除现有状态
-    person_counters.clear();
-    message_owners.clear();
-    oid_to_lid_map.clear();
-    lid_to_oid_map.clear();
-
-    // 加载 block 数量
-    int block_count;
-    file.read(reinterpret_cast<char*>(&block_count), sizeof(block_count));
-    global_block_count.store(block_count);
-
-    // 加载 person_counters
-    size_t counter_size;
-    file.read(reinterpret_cast<char*>(&counter_size), sizeof(counter_size));
-    for (size_t i = 0; i < counter_size; ++i) {
-      OID first;
-      int second;
-      file.read(reinterpret_cast<char*>(&first), sizeof(first));
-      file.read(reinterpret_cast<char*>(&second), sizeof(second));
-      person_counters[first] = second;
-    }
-
-    // 加载 message_owners
-    size_t owners_size;
-    file.read(reinterpret_cast<char*>(&owners_size), sizeof(owners_size));
-    for (size_t i = 0; i < owners_size; ++i) {
-      INDEX_T first;
-      OID second;
-      file.read(reinterpret_cast<char*>(&first), sizeof(first));
-      file.read(reinterpret_cast<char*>(&second), sizeof(second));
-      message_owners[first] = second;
-    }
-
-    // 加载 oid_to_lid_map
-    size_t oid_map_size;
-    file.read(reinterpret_cast<char*>(&oid_map_size), sizeof(oid_map_size));
-    for (size_t i = 0; i < oid_map_size; ++i) {
-      OID first;
-      INDEX_T second;
-      file.read(reinterpret_cast<char*>(&first), sizeof(first));
-      file.read(reinterpret_cast<char*>(&second), sizeof(second));
-      oid_to_lid_map[first] = second;
-    }
-
-    // 加载 lid_to_oid_map
-    size_t lid_map_size;
-    file.read(reinterpret_cast<char*>(&lid_map_size), sizeof(lid_map_size));
-    for (size_t i = 0; i < lid_map_size; ++i) {
-      INDEX_T first;
-      OID second;
-      file.read(reinterpret_cast<char*>(&first), sizeof(first));
-      file.read(reinterpret_cast<char*>(&second), sizeof(second));
-      lid_to_oid_map[first] = second;
-    }
-  }
-
-  // 实现基类接口
-  bool get_index(OID oid, INDEX_T& lid) const override {
-    return get_lid_by_oid(oid, lid);
-  }
-
-  OID get_key(const INDEX_T& lid) const override {
-    OID oid;
-    if (!get_oid_by_lid(lid, oid)) {
-      throw std::runtime_error("LID not found");
-    }
-    return oid;
-  }
-
-  size_t size() const override {
-    return global_block_count.load() * MESSAGE_IN_BLOCK;
-  }
-
-  void dump(const std::string& name, const std::string& snapshot_dir) override {
-    dump(snapshot_dir + "/" + name);
-  }
-
-  // 添加缺失的虚函数实现
-  void open(const std::string& name, const std::string& snapshot_dir,
-            const std::string& work_dir) override {
-    load(snapshot_dir + "/" + name);
-  }
-};
-
 template <typename INDEX_T, size_t SIZE>
 class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
  public:
@@ -347,53 +75,54 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
     return ind;
   }
 
-  INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid) override {
+  INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid,
+                                 INDEX_T& previous_child_vid) override {
     LOG(FATAL) << "GroupedParentLFIndexer: insert_with_parent_oid is not "
                   "implemented";
     return 0;
   }
-  op_status get_kid_index(size_t kid_label_id, int64_t parent_oid,
-                          INDEX_T& ret) override {
+  bool get_child_index(size_t child_label_id, int64_t parent_oid,
+                       INDEX_T& ret) override {
 #if ASSERT_ENABLE
-    if (kid_label_id >= SIZE) {
-      LOG(FATAL) << "kid_label_id: " << kid_label_id << " >= SIZE: " << SIZE;
+    if (child_label_id >= SIZE) {
+      LOG(FATAL) << "child_label_id: " << child_label_id
+                 << " >= SIZE: " << SIZE;
     }
-    assert(kid_label_id < SIZE);
+    assert(child_label_id < SIZE);
     INDEX_T parent_vid = 0;
     assert(get_index(parent_oid, parent_vid));  // 判断parent是否存在
 #endif
-    auto [items, index] = get_extra_values(parent_oid, kid_label_id);
+    auto [items, index] = get_extra_values(parent_oid, child_label_id);
     gbp::BufferBlock::UpdateContent<index_key_item_grouped<INDEX_T, SIZE>>(
         [&](index_key_item_grouped<INDEX_T, SIZE>& item) {
           bool lock_state = false;
-          while (item.extra_values[kid_label_id].lock.compare_exchange_weak(
+          while (item.extra_values[child_label_id].lock.compare_exchange_weak(
               lock_state, true, std::memory_order_release,
               std::memory_order_relaxed))
             ;  // 自旋等待锁释放
-          if (item.extra_values[kid_label_id].value ==
+          if (item.extra_values[child_label_id].value ==
               std::numeric_limits<INDEX_T>::max() >> 1) {  // 尚未初始化
-            item.extra_values[kid_label_id].value =
-                gbp::as_atomic(group_configs_[kid_label_id].first)
-                    .fetch_add(group_configs_[kid_label_id].second);
+            item.extra_values[child_label_id].value =
+                gbp::as_atomic(group_configs_[child_label_id].first)
+                    .fetch_add(group_configs_[child_label_id].second);
           }
 
-          ret = item.extra_values[kid_label_id].value++;
-          if (item.extra_values[kid_label_id].value %
-                  group_configs_[kid_label_id].second ==
+          ret = item.extra_values[child_label_id].value++;
+          if (item.extra_values[child_label_id].value %
+                  group_configs_[child_label_id].second ==
               0) {
-            item.extra_values[kid_label_id].value =
-                gbp::as_atomic(group_configs_[kid_label_id].first)
-                    .fetch_add(group_configs_[kid_label_id].second);
+            item.extra_values[child_label_id].value =
+                gbp::as_atomic(group_configs_[child_label_id].first)
+                    .fetch_add(group_configs_[child_label_id].second);
           }
-          item.extra_values[kid_label_id].lock.store(
+          item.extra_values[child_label_id].lock.store(
               false,
               std::memory_order_relaxed);  // 释放锁
         },
         items, index);
-    return op_status::op_status_success;
+    return true;
   }
-  op_status set_new_kid_range(size_t kid_label_id,
-                              int64_t max_kid_oid) override {
+  bool set_new_child_range(size_t kid_label_id, int64_t max_kid_oid) override {
 #if ASSERT_ENABLE
     assert(kid_label_id < SIZE);
 #endif
@@ -401,7 +130,7 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
         (max_kid_oid + group_configs_[kid_label_id].second - 1) /
         group_configs_[kid_label_id].second *
         group_configs_[kid_label_id].second;
-    return op_status::op_status_success;
+    return true;
   }
 
   INDEX_T get_index(int64_t oid) const override {
@@ -633,10 +362,11 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     return 0;
   }
 
-  INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid) override {
+  INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid,
+                                 INDEX_T& previous_child_vid) override {
     INDEX_T ind;
-    assert(parent_indexer_->get_kid_index(kid_label_id_in_parent_, parent_oid,
-                                          ind) == op_status::op_status_success);
+    assert(parent_indexer_->get_child_index(kid_label_id_in_parent_, parent_oid,
+                                            ind));
     {
       auto item1 = keys_.get(ind);
       gbp::BufferBlock::UpdateContent<int64_t>(
@@ -674,15 +404,16 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     }
     return ind;
   }
-  op_status get_kid_index(size_t kid_label_id, int64_t parent_oid,
-                          INDEX_T& ret) override {
-    LOG(FATAL) << "GroupedChildLFIndexer: get_kid_index is not implemented";
-    return op_status::op_status_not_implemented;
+  bool get_child_index(size_t child_label_id, int64_t parent_oid,
+                       INDEX_T& ret) override {
+    LOG(FATAL) << "GroupedChildLFIndexer: get_child_index is not implemented";
+    return false;
   }
-  op_status set_new_kid_range(size_t kid_label_id,
-                              int64_t max_kid_oid) override {
-    LOG(FATAL) << "GroupedChildLFIndexer: set_new_kid_range is not implemented";
-    return op_status::op_status_not_implemented;
+  bool set_new_child_range(size_t child_label_id,
+                           int64_t max_child_oid) override {
+    LOG(FATAL)
+        << "GroupedChildLFIndexer: set_new_child_range is not implemented";
+    return false;
   }
 
   bool set_parent_lf(BaseIndexer<INDEX_T>& parent_lf) override {

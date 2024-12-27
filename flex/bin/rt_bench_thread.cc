@@ -165,7 +165,6 @@ class Req {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
     num_of_reqs_unique_ = reqs_.size();
-    // num_of_reqs_=num_of_reqs_unique_;
 
     // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
@@ -242,7 +241,7 @@ class Req {
       ::fread(buffer.data(), length, 1, query_file_string);
       auto query = std::string(buffer.data(), buffer.data() + length);
       auto type = int(query.back());
-      if (query_type_ == 33 || type == query_type_) {
+      if (type == 19) {
         reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
       }
     }
@@ -250,148 +249,23 @@ class Req {
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
   }
 
-  class CSVReader {
-    std::ifstream csv_data_;
-    std::vector<std::string> words_;
-
-   public:
-    CSVReader() = default;
-    CSVReader(const std::string& file_name) { init(file_name); }
-
-    ~CSVReader() = default;
-
-    void init(const std::string& file_name) {
-      try {
-        csv_data_.open(file_name, std::ios::in);
-      } catch (std::ios_base::failure& e) {
-        std::cout << "fuck" << std::endl;
-        return;
-      }
-      LOG(INFO) << "file_name=" << file_name;
-      std::string line;
-      std::getline(csv_data_, line);  // ignore the first line of file
-    }
-
-    std::vector<std::string>& GetNextLine() {
-      words_.clear();
-      std::string line, word;
-      if (!std::getline(csv_data_, line))
-        return words_;
-
-      std::istringstream sin;
-      sin.clear();
-      sin.str(line);
-
-      while (std::getline(sin, word, '|')) {
-        words_.push_back(word);
-      }
-      return words_;
-    }
-  };
-  void gen_ic7_query() {
-    // 读取person_0_0.csv第一列
-    std::string csv_dir_path =
-        "/data-1/yichengzhang/data/experiment_space/LDBC_SNB-nvme/lgraph_db/"
-        "sf0.1/social_network/dynamic/person_0_0.csv";
-    std::vector<std::string> result_buffer;
-    std::vector<char> tmp;
-    CSVReader csv_reader;
-    csv_reader.init(csv_dir_path);
-    while (true) {
-      gs::Encoder encoder(tmp);
-      auto& words = csv_reader.GetNextLine();
-      if (words.size() == 0)
-        break;
-      encoder.put_long(stol(words[0]));
-      encoder.put_byte(7);
-      reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
-      tmp.clear();
-      if (reqs_.size() == 20)
-        break;
-    }
-    num_of_reqs_unique_ = reqs_.size();
-    LOG(INFO) << "Number of query = " << reqs_.size();
-  }
-
-  void gen_insert_query() {
-    std::vector<char> tmp;
-    gs::Encoder encoder(tmp);
-    // gen ins1
-    // 生成插入person的请求
-    encoder.put_long(15527184034); // personId
-    encoder.put_string("Soyo"); // firstName
-    encoder.put_string("Nakasaki"); // lastName
-    encoder.put_string("female"); // gender
-    std::string birthday = "2001-05-27";
-    auto birthday_date = gbp::TimeConverter::dateStringToMillis(birthday);
-    encoder.put_long(birthday_date); // birthday
-    std::string creationdate = "2020-01-01T00:00:00.000+0000";
-    auto creationdate_date = gbp::TimeConverter::dateStringToMillis(creationdate);
-    encoder.put_long(creationdate_date); // creationDate
-    encoder.put_string("192.168.1.1"); // locationIP
-    encoder.put_string("Chrome"); // browserUsed
-    encoder.put_long(1014); // cityId
-    encoder.put_string({"en;es"}); // languages
-    encoder.put_string({"alice@email.com"}); // emails
-    encoder.put_int(1); // tag num
-    encoder.put_long(1); // tag id
-    encoder.put_int(1); // studyat num
-    encoder.put_long(1); // studyat org id
-    encoder.put_int(2020); // studyat year
-    encoder.put_int(1); // workat num
-    encoder.put_long(1); // workat org id
-    encoder.put_int(40); // workat year
-    encoder.put_byte(22); // 请求类型为插入person
-    reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
-    tmp.clear();
-
-    encoder.put_long(15527184034); // 请求类型为插入person
-    encoder.put_byte(15);
-    reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
-    tmp.clear();
-
-    long authorpersonid = 15527184034;
-    long commentid = 420102062001;
-    std::string browser = "Chrome";
-    std::string content = "Hello, world!";
-    long countryid = 1;
-    long creationdate_date2 = creationdate_date;
-    int length = 13;
-    std::string ip_addr = "192.168.1.1";
-    long replytocommentid = 1030792151045;
-    long replytopostid = -1;
-
-    encoder.put_long(authorpersonid); // 请求类型为插入person
-    encoder.put_long(commentid);
-    encoder.put_string(browser);
-    encoder.put_string(content);
-    encoder.put_long(countryid);
-    encoder.put_long(creationdate_date2);
-    encoder.put_int(length);
-    encoder.put_string(ip_addr);
-    encoder.put_long(replytocommentid);
-    encoder.put_long(replytopostid);
-    encoder.put_byte(28);
-    reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
-    tmp.clear();
-
-    encoder.put_long(420102062001); // 请求类型为插入person
-    encoder.put_byte(19);
-    reqs_.emplace_back(std::string(tmp.begin(), tmp.end()));
-    tmp.clear();
-
-    num_of_reqs_unique_ = reqs_.size();
-    num_of_reqs_=num_of_reqs_unique_;
-  }
-
   void do_query(size_t thread_id) {
     size_t id;
-
+    for(int i=0;i<=10;i++){
+      gbp::get_counter(i) = 0;
+    }
     while (true) {
       id = cur_.fetch_add(1);
 
       if (id >= num_of_reqs_) {
         // LOG(INFO) << gbp::get_thread_id();
+        #if PROFILE_ENABLE
+        LOG(INFO) <<"get vertex index: " <<"get_counter(1): " << gbp::get_counter(1) << "; get_counter(2): " << gbp::get_counter(2);
+        LOG(INFO) <<"get edge: " <<"get_counter(3): " << gbp::get_counter(3) << "; get_counter(4): " << gbp::get_counter(4);
+        LOG(INFO) <<"exist1: " <<"get_counter(5): " << gbp::get_counter(5) << "; get_counter(6): " << gbp::get_counter(6);
+        LOG(INFO) <<"get vertex property: "<< "get_counter(7): " << gbp::get_counter(7) << "; get_counter(8): " << gbp::get_counter(8);
+        LOG(INFO) <<"get vertex property: "<< "get_counter(9): " << gbp::get_counter(9) << "; get_counter(10): " << gbp::get_counter(10);
+        #endif
         break;
       }
       // id = run_time_req_ids_[id];
@@ -402,11 +276,6 @@ class Req {
       auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
           reqs_[id % num_of_reqs_unique_]);
 
-      std::ofstream result_file(gbp::get_log_dir() + "/results.log",
-                                std::ios::app);
-      result_file.write(ret.data(), ret.size());
-      result_file.write("\n", 1);
-      result_file.close();
       end_[id] = gbp::GetSystemTime();
     }
     return;
@@ -478,7 +347,6 @@ class Req {
     if (log_thread_.joinable())
       log_thread_.join();
   }
-  int query_type_;
 
  private:
   Req() : cur_(0), warmup_num_(0) {}
@@ -573,9 +441,7 @@ int main(int argc, char** argv) {
       "log-data-path,l", bpo::value<std::string>(), "log data directory path")(
       "buffer-pool-size,B",
       bpo::value<uint64_t>()->default_value(pool_size_Byte),
-      "size of buffer pool")(
-      "query-type,q", bpo::value<uint32_t>()->default_value(0), "query type");
-  ;
+      "size of buffer pool");
 
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
@@ -658,13 +524,13 @@ int main(int argc, char** argv) {
 
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
   LOG(INFO) << "Start loading graph";
-  // db.Init(schema, data_path, shard_num);
   db.CGraphInit(schema, data_path, shard_num);
-  // return 0;
+
   t0 += grape::GetCurrentTime();
   uint32_t warmup_num = vm["warmup-num"].as<uint32_t>();
   uint32_t benchmark_num = vm["benchmark-num"].as<uint32_t>();
   LOG(INFO) << "Finished loading graph, elapsed " << t0 << " s";
+
 #if !OV
   t0 = -grape::GetCurrentTime();
 
@@ -685,13 +551,8 @@ int main(int argc, char** argv) {
   gbp::warmup_mark().store(0);
 
   std::string req_file = vm["req-file"].as<std::string>();
-  if (vm.count("query-type")) {
-    Req::get().query_type_ = vm["query-type"].as<uint32_t>();
-  }
   Req::get().load_query(req_file);
   Req::get().load_result(req_file);
-  // Req::get().gen_ic7_query();
-  // Req::get().gen_insert_query();
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
@@ -738,12 +599,10 @@ int main(int argc, char** argv) {
 
     LOG(INFO) << "10 = " << gbp::get_counter_global(10);
     LOG(INFO) << "11 = " << gbp::get_counter_global(11);
-
     gbp::get_counter_global(10) = 0;
     gbp::get_counter_global(11) = 0;
     gbp::warmup_mark().store(1);
     gbp::DirectCache::CleanAllCache();
-    // break;
   }
 
   Req::get().LoggerStop();

@@ -1,58 +1,37 @@
 name: ldbc_snb
 store_type: mutable_csr
 stored_procedures:
-  directory: /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build
+  directory: /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build
   enable_lists:
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic1.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic2.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic3.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic4.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic5.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic6.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic7.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic8.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic9.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic10.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic11.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic12.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic13.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic14.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is1.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is2.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is3.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is4.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is5.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is6.so
-    # - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is7.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic1_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic2_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic3_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic4_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic5_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic6_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic7_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic8_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic9_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic10_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic11_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic12_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic13_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ic14_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is1_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is2_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is3_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is4_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is5_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is6_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_is7_nocol.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ins1.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ins2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ins3.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ins4.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ins5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ins6.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ins7.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/test_query_set_get_only/build/libn_ins8.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic1.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic2.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic4.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic5.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic6.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic7.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic8.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic9.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic10.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic11.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic12.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic13.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic14.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is1.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is2.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is4.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is5.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is6.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is7.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins1.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins2.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins4.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins5.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins6.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins7.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins8.so
 
 schema:
   vertex_types:
@@ -60,7 +39,7 @@ schema:
       type_name: PLACE
       x_csr_params:
         max_vertex_num: 1460
-      column_family_num: 2
+      column_family_num: 3
       properties:
         - property_id: 0
           property_name: id
@@ -88,7 +67,7 @@ schema:
       type_name: PERSON
       x_csr_params:
         max_vertex_num: 2000
-      column_family_num: 2
+      column_family_num: 3
       properties:
         - property_id: 0 
           property_name: id
@@ -145,8 +124,8 @@ schema:
     - type_id: 2
       type_name: COMMENT
       x_csr_params:
-        max_vertex_num: 170000
-      column_family_num: 2
+        max_vertex_num: 300000
+      column_family_num: 3
       group_foreign_key:
         edge_type: HASCREATOR
         foreign_key_type: dst
@@ -188,8 +167,8 @@ schema:
     - type_id: 3
       type_name: POST
       x_csr_params:
-        max_vertex_num: 170000
-      column_family_num: 2
+        max_vertex_num: 200000
+      column_family_num: 3
       group_foreign_key:
         edge_type: HASCREATOR
         foreign_key_type: dst
@@ -242,7 +221,7 @@ schema:
       type_name: FORUM
       x_csr_params:
         max_vertex_num: 20000
-      column_family_num: 2
+      column_family_num: 3
       properties:
         - property_id: 0
           property_name: id
@@ -265,7 +244,7 @@ schema:
       type_name: ORGANISATION
       x_csr_params:
         max_vertex_num: 7955
-      column_family_num: 2
+      column_family_num: 3
       properties:
         - property_id: 0
           property_name: id
@@ -293,7 +272,7 @@ schema:
       type_name: TAGCLASS
       x_csr_params:
         max_vertex_num: 71
-      column_family_num: 2
+      column_family_num: 3
       properties:
         - property_id: 0
           property_name: id
@@ -316,7 +295,7 @@ schema:
       type_name: TAG
       x_csr_params:
         max_vertex_num: 16080
-      column_family_num: 2
+      column_family_num: 3
       properties:
         - property_id: 0
           property_name: id
@@ -342,22 +321,22 @@ schema:
         - source_vertex: COMMENT
           destination_vertex: PERSON
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
         - source_vertex: POST
           destination_vertex: PERSON
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
     - type_id: 1
       type_name: HASTAG
       vertex_type_pair_relations:
         - source_vertex: POST
           destination_vertex: TAG
-          outgoing_edge_column_family: 0
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_MANY
     - type_id: 2
       type_name: REPLYOF
@@ -365,14 +344,14 @@ schema:
         - source_vertex: COMMENT
           destination_vertex: COMMENT
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
         - source_vertex: COMMENT
           destination_vertex: POST
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
     - type_id: 3
       type_name: CONTAINEROF
@@ -381,7 +360,8 @@ schema:
           destination_vertex: POST
           outgoing_edge_strategy: None
           incoming_edge_strategy: Single
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
     - type_id: 4
       type_name: HASMEMBER
@@ -389,7 +369,8 @@ schema:
         - source_vertex: FORUM
           destination_vertex: PERSON
           outgoing_edge_strategy: None
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
       properties:
         - property_id: 0
@@ -402,7 +383,8 @@ schema:
         - source_vertex: FORUM
           destination_vertex: PERSON
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           incoming_edge_strategy: None
           relation: MANY_TO_ONE
     - type_id: 6
@@ -411,7 +393,8 @@ schema:
         - source_vertex: PERSON
           destination_vertex: TAG
           incoming_edge_strategy: None
-          outgoing_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
     - type_id: 7
       type_name: ISLOCATEDIN
@@ -419,29 +402,34 @@ schema:
         - source_vertex: COMMENT
           destination_vertex: PLACE
           outgoing_edge_strategy: None
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
         - source_vertex: PERSON
           destination_vertex: PLACE
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
         - source_vertex: POST
           destination_vertex: PLACE
           outgoing_edge_strategy: None
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
         - source_vertex: ORGANISATION
           destination_vertex: PLACE
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
     - type_id: 8
       type_name: KNOWS
       vertex_type_pair_relations:
         - source_vertex: PERSON
           destination_vertex: PERSON
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_MANY
       properties:
         - property_id: 0
@@ -453,13 +441,14 @@ schema:
       vertex_type_pair_relations:
         - source_vertex: PERSON
           destination_vertex: COMMENT
-          incoming_edge_column_family: 0
+          incoming_edge_column_family: 2
           outgoing_edge_strategy: None
           relation: MANY_TO_MANY
         - source_vertex: PERSON
           destination_vertex: POST
           outgoing_edge_strategy: None
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_MANY
       properties:
         - property_id: 0
@@ -471,7 +460,8 @@ schema:
       vertex_type_pair_relations:
         - source_vertex: PERSON
           destination_vertex: ORGANISATION
-          incoming_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_MANY
       properties:
         - property_id: 0
@@ -484,7 +474,8 @@ schema:
         - source_vertex: PLACE
           destination_vertex: PLACE
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
     - type_id: 12
       type_name: HASTYPE
@@ -492,7 +483,8 @@ schema:
         - source_vertex: TAG
           destination_vertex: TAGCLASS
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
     - type_id: 13
       type_name: ISSUBCLASSOF
@@ -500,7 +492,8 @@ schema:
         - source_vertex: TAGCLASS
           destination_vertex: TAGCLASS
           outgoing_edge_strategy: Single
-          outgoing_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_ONE
     - type_id: 14
       type_name: STUDYAT
@@ -508,7 +501,8 @@ schema:
         - source_vertex: PERSON
           destination_vertex: ORGANISATION
           incoming_edge_strategy: None
-          outgoing_edge_column_family: 0
+          outgoing_edge_column_family: 2
+          incoming_edge_column_family: 2
           relation: MANY_TO_MANY
       properties:
         - property_id: 0

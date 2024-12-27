@@ -79,6 +79,9 @@ class CSVFragmentLoader : public IFragmentLoader {
                     label_t e_label_id,
                     const std::vector<std::string>& e_files);
   void LoadCGraph();
+  void loadIndexer_cgraph(size_t vertex_label_id,
+                          IdIndexer<oid_t, vid_t>& indexer);
+
   void loadVertices_cgraph(
       size_t vertex_label_id,
       std::vector<std::vector<gs::cgraph::Vertex::ColumnConfiguration>>&

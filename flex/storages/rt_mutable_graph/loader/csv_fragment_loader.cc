@@ -745,14 +745,14 @@ void CSVFragmentLoader::LoadCGraph() {
     edge_property_ids.reserve(edge_sources.size());
 
     for (auto iter = edge_sources.begin(); iter != edge_sources.end(); ++iter) {
-      // LOG(INFO) << "src_vertex_name: "
-      //           << schema_.get_vertex_label_name(std::get<0>(iter->first))
-      //           << " "
-      //           << "dst_vertex_name: "
-      //           << schema_.get_vertex_label_name(std::get<1>(iter->first))
-      //           << " "
-      //           << "e_label_name: "
-      //           << schema_.get_edge_label_name(std::get<2>(iter->first));
+      LOG(INFO) << "src_vertex_name: "
+                << schema_.get_vertex_label_name(std::get<0>(iter->first))
+                << " "
+                << "dst_vertex_name: "
+                << schema_.get_vertex_label_name(std::get<1>(iter->first))
+                << " "
+                << "e_label_name: "
+                << schema_.get_edge_label_name(std::get<2>(iter->first));
       auto& src_label_id = std::get<0>(iter->first);
       auto& dst_label_id = std::get<1>(iter->first);
       auto& e_label_id = std::get<2>(iter->first);
@@ -772,6 +772,8 @@ void CSVFragmentLoader::LoadCGraph() {
           ie_column_type = PropertyType::kEdge;
         }
         if (schema_.ie_strategy_.at(label_id) != EdgeStrategy::kNone) {
+          // assert(ie_column_family_id == 2);
+
           assert(schema_.eproperties_.at(label_id).size() <= 1);
           auto e_property_type = schema_.eproperties_.at(label_id).size() == 0
                                      ? PropertyType::kEmpty
@@ -801,6 +803,8 @@ void CSVFragmentLoader::LoadCGraph() {
           oe_column_type = PropertyType::kEdge;
         }
         if (schema_.oe_strategy_.at(label_id) != EdgeStrategy::kNone) {
+          // assert(oe_column_family_id == 2);
+
           assert(schema_.eproperties_.at(label_id).size() <= 1);
           auto e_property_type = schema_.eproperties_.at(label_id).size() == 0
                                      ? PropertyType::kEmpty
@@ -836,6 +840,7 @@ void CSVFragmentLoader::LoadCGraph() {
       cgraph_vertices_[vertex_id].Resize(
           schema_.get_max_vnum(schema_.get_vertex_label_name(vertex_id)));
     });
+    // thread_pool.back().join();
   }
   for (auto& thread : thread_pool) {
     thread.join();
@@ -872,18 +877,8 @@ void CSVFragmentLoader::LoadCGraph() {
          vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
       thread_pool.emplace_back([vertex_id, &vertex_sources, &parent_configs,
                                 &child_configs, this]() {
-        auto v_files = vertex_sources[vertex_id];
-        assert(v_files.size() == 1);
-        csv::CSVLoader loader(v_files[0]);
-        auto primary_key = loader.get_column(0);
-
         IdIndexer<oid_t, vid_t> indexer;  // 创建
-        vid_t vid = 0;
-        for (int i = 0; i < primary_key.size(); i++) {
-          oid_t obj_id = std::stol(primary_key[i]);
-          indexer.add(obj_id, vid);
-          vid++;
-        }
+        loadIndexer_cgraph(vertex_id, indexer);
         std::string prefix = basic_fragment_loader_.work_dir_ + "/snapshots/" +
                              std::to_string(1) + "/" +
                              schema_.get_vertex_label_name(vertex_id) +
@@ -929,9 +924,9 @@ void CSVFragmentLoader::LoadCGraph() {
       }
       if (child_configs.count(vertex_id) == 1 &&
           parent_configs.count(vertex_id) == 0) {
-        cgraph_lf_indexers_[child_configs[vertex_id].first]->set_new_kid_range(
-            child_configs[vertex_id].second,
-            cgraph_lf_indexers_[vertex_id]->size());
+        cgraph_lf_indexers_[child_configs[vertex_id].first]
+            ->set_new_child_range(child_configs[vertex_id].second,
+                                  cgraph_lf_indexers_[vertex_id]->size());
         cgraph_lf_indexers_[vertex_id]->set_parent_lf(
             *cgraph_lf_indexers_[child_configs[vertex_id].first]);
       }
@@ -1143,6 +1138,40 @@ void CSVFragmentLoader::loadVertices_cgraph(
           assert(false);
         }
         }
+      }
+    }
+  }
+}
+
+void CSVFragmentLoader::loadIndexer_cgraph(size_t vertex_label_id,
+                                           IdIndexer<oid_t, vid_t>& indexer) {
+  // auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
+  auto v_sources = loading_config_.GetVertexLoadingMeta();
+  auto v_files = v_sources.at(vertex_label_id);
+  // LOG(INFO) << "v_file is : " << v_files[0];
+  auto reader = create_vertex_reader(
+      schema_, loading_config_, vertex_label_id, v_files[0],
+      false);  // 创建vertex label id对应的点的reader
+  gs::vid_t vid = 0;
+  while (true) {
+    auto record_batch = reader->Read();  // 按batch进行read
+    if (record_batch == nullptr) {
+      break;
+    }
+    auto columns = record_batch->columns();  // 将读到的数据转换成列
+    auto primary_key_ind = std::get<2>(schema_.get_vertex_primary_key(
+        vertex_label_id)[0]);  // 这里获取primary key的index
+    auto primary_key_column = columns[primary_key_ind];  // primary key对应的列
+    auto chunked_array_primary_key =
+        std::make_shared<arrow::ChunkedArray>(primary_key_column);
+
+    for (auto j = 0; j < chunked_array_primary_key->num_chunks(); ++j) {
+      auto casted_primary_key = std::static_pointer_cast<arrow::Int64Array>(
+          chunked_array_primary_key->chunk(j));
+      for (auto k = 0; k < casted_primary_key->length(); ++k) {
+        gs::oid_t oid = casted_primary_key->Value(k);
+        indexer.add(oid, vid);
+        vid++;
       }
     }
   }
@@ -1400,8 +1429,7 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         if (ie_strategy == EdgeStrategy::kMultiple) {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
           for (auto vertex_id = 0; vertex_id < dst_degree.size(); vertex_id++) {
-            edge_list_len.emplace_back(vertex_id,
-                                       (dst_degree[vertex_id] + 1) * 2);
+            edge_list_len.emplace_back(vertex_id, (dst_degree[vertex_id]) * 2);
           }
           cgraph_vertices_[dst_label_id].EdgeListInitBatch(
               ie_label_id_with_direction, edge_list_len);
@@ -1411,8 +1439,7 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         if (oe_strategy == EdgeStrategy::kMultiple) {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
           for (auto vertex_id = 0; vertex_id < src_degree.size(); vertex_id++) {
-            edge_list_len.emplace_back(vertex_id,
-                                       (src_degree[vertex_id] + 1) * 2);
+            edge_list_len.emplace_back(vertex_id, (src_degree[vertex_id]) * 2);
           }
           cgraph_vertices_[src_label_id].EdgeListInitBatch(
               oe_label_id_with_direction, edge_list_len);
@@ -1575,6 +1602,7 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         }
       }
     });
+    // thread_pool.back().join();
   }
   for (auto& thread : thread_pool) {
     thread.join();

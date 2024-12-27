@@ -168,16 +168,17 @@ class BaseIndexer {
   // 基类定义的公共接口
   virtual size_t size() const = 0;
   virtual INDEX_T insert(int64_t oid) = 0;
-  virtual INDEX_T insert_with_parent_oid(int64_t oid, int64_t foreign_oid) = 0;
+  virtual INDEX_T insert_with_parent_oid(int64_t oid, int64_t foreign_oid,
+                                         INDEX_T& previous_child_vid) = 0;
   virtual INDEX_T get_index(int64_t oid) const = 0;
   virtual bool get_index(int64_t oid, INDEX_T& ret) const = 0;
   virtual int64_t get_key(const INDEX_T& index) const = 0;
 
-  virtual op_status get_kid_index(size_t kid_label_id, int64_t parent_oid,
-                                  INDEX_T& ret) = 0;
+  virtual bool get_child_index(size_t child_label_id, int64_t parent_oid,
+                                    INDEX_T& ret) = 0;
   // 设置新的kid范围，非常危险，少用！！！！
-  virtual op_status set_new_kid_range(size_t kid_label_id,
-                                      int64_t max_kid_oid) = 0;
+  virtual bool set_new_child_range(size_t kid_label_id,
+                                        int64_t max_kid_oid) = 0;
   virtual bool set_parent_lf(BaseIndexer<INDEX_T>& parent_lf) {
     assert(false);
     return false;
