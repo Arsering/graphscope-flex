@@ -19,7 +19,7 @@ class EdgeHandle {
              PropertyType edge_type)
       : adj_list_(adj_list), csr_(csr), edge_type_(edge_type) {}
   ~EdgeHandle() = default;
-  gbp::BufferBlock getEdges(vid_t v_id, size_t& edge_size) const {
+  FORCE_INLINE gbp::BufferBlock getEdges(vid_t v_id, size_t& edge_size) const {
     switch (edge_type_) {
     case PropertyType::kDynamicEdgeList: {
       auto adj_item = adj_list_.getColumn(v_id);
@@ -53,7 +53,7 @@ class PropertyHandle {
         property_type_(property_type) {}
   ~PropertyHandle() = default;
 
-  gbp::BufferBlock getProperty(vid_t v_id) const {
+  FORCE_INLINE gbp::BufferBlock getProperty(vid_t v_id) const {
     switch (property_type_) {
     case gs::PropertyType::kInt32:
     case gs::PropertyType::kDate:
@@ -1029,6 +1029,7 @@ class Vertex {
     auto column_to_column_family =
         property_id_to_ColumnToColumnFamily_configurations_[property_id];
     switch (column_to_column_family.column_type) {
+    case gs::PropertyType::kEdge:
     case gs::PropertyType::kInt32:
     case gs::PropertyType::kDate:
     case gs::PropertyType::kInt64: {

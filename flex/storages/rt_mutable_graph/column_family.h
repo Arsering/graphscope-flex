@@ -23,7 +23,7 @@ class ColumnHandle {
         columnLength_(columnLength) {}
   ~ColumnHandle() = default;
   void setColumn(size_t rowId, std::string_view newValue) { assert(false); }
-  gbp::BufferBlock getColumn(size_t rowId) const {
+  FORCE_INLINE gbp::BufferBlock getColumn(size_t rowId) const {
     return property_buffer_.get_partial(rowId, offset_, columnLength_);
   }
 
