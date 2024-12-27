@@ -113,15 +113,18 @@ class AdjListView {
     #if PROFILE_ENABLE
     auto start = gbp::GetSystemTime();
     #endif
+
     if (current_index_ < size_) {
       auto tmp =
           gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_);
       auto ret = tmp.timestamp.load() <= timestamp_;
+
       #if PROFILE_ENABLE
       auto end = gbp::GetSystemTime();
       gbp::get_counter(17) += end - start;
       gbp::get_counter(18) += 1;
       #endif
+      
       return ret;
     }
     #if PROFILE_ENABLE

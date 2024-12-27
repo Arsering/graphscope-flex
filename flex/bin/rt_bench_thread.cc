@@ -251,7 +251,7 @@ class Req {
 
   void do_query(size_t thread_id) {
     size_t id;
-    for(int i=0;i<=10;i++){
+    for(int i=0;i<=30;i++){
       gbp::get_counter(i) = 0;
     }
     while (true) {
