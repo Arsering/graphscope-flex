@@ -296,45 +296,33 @@ void MutablePropertyFragment::ingest_edge(label_t src_label, vid_t src_lid,
     arc >> edge_data;
     if (oe_strategy != EdgeStrategy::kNone) {
       vertices_[src_label].InsertEdgeConcurrent(
-          src_lid, edge_label_with_direction_out,
-          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
-          dst_lid, ts);
+          src_lid, edge_label_with_direction_out, edge_data, dst_lid, ts);
     }
     if (ie_strategy != EdgeStrategy::kNone) {
       vertices_[dst_label].InsertEdgeConcurrent(
-          dst_lid, edge_label_with_direction_in,
-          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
-          src_lid, ts);
+          dst_lid, edge_label_with_direction_in, edge_data, src_lid, ts);
     }
   } else if (edge_type.size() == 1 && edge_type[0] == PropertyType::kInt32) {
     int32_t edge_data;
     arc >> edge_data;
     if (oe_strategy != EdgeStrategy::kNone) {
       vertices_[src_label].InsertEdgeConcurrent(
-          src_lid, edge_label_with_direction_out,
-          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
-          dst_lid, ts);
+          src_lid, edge_label_with_direction_out, edge_data, dst_lid, ts);
     }
     if (ie_strategy != EdgeStrategy::kNone) {
       vertices_[dst_label].InsertEdgeConcurrent(
-          dst_lid, edge_label_with_direction_in,
-          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
-          src_lid, ts);
+          dst_lid, edge_label_with_direction_in, edge_data, src_lid, ts);
     }
   } else if (edge_type.size() == 1 && edge_type[0] == PropertyType::kInt64) {
     int64_t edge_data;
     arc >> edge_data;
     if (oe_strategy != EdgeStrategy::kNone) {
       vertices_[src_label].InsertEdgeConcurrent(
-          src_lid, edge_label_with_direction_out,
-          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
-          dst_lid, ts);
+          src_lid, edge_label_with_direction_out, edge_data, dst_lid, ts);
     }
     if (ie_strategy != EdgeStrategy::kNone) {
       vertices_[dst_label].InsertEdgeConcurrent(
-          dst_lid, edge_label_with_direction_in,
-          {reinterpret_cast<const char*>(&edge_data), sizeof(edge_data)},
-          src_lid, ts);
+          dst_lid, edge_label_with_direction_in, edge_data, src_lid, ts);
     }
   } else {
     if (oe_strategy != EdgeStrategy::kNone) {

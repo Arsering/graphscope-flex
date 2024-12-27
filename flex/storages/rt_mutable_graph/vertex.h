@@ -12,6 +12,156 @@
 
 namespace gs {
 namespace cgraph {
+class EdgeHandle {
+ public:
+  EdgeHandle() = default;
+  EdgeHandle(ColumnHandle adj_list, mmap_array_base* csr,
+             PropertyType edge_type)
+      : adj_list_(adj_list), csr_(csr), edge_type_(edge_type) {}
+  ~EdgeHandle() = default;
+  gbp::BufferBlock getEdges(vid_t v_id, size_t& edge_size) const {
+    switch (edge_type_) {
+    case PropertyType::kDynamicEdgeList: {
+      auto adj_item = adj_list_.getColumn(v_id);
+      auto& adj_list = gbp::BufferBlock::Ref<MutableAdjlist>(adj_item);
+      edge_size = adj_list.size_;
+      return csr_->get(adj_list.start_idx_, adj_list.size_);
+    }
+    case PropertyType::kEdge: {
+      edge_size = 1;
+      return adj_list_.getColumn(v_id);
+    }
+    default: {
+      assert(false);
+      return gbp::BufferBlock();
+    }
+    }
+  }
+
+ private:
+  ColumnHandle adj_list_;
+  const mmap_array_base* csr_;
+  const PropertyType edge_type_;
+};
+
+class PropertyHandle {
+ public:
+  PropertyHandle(ColumnHandle column, const mmap_array<char>* stringpool,
+                 const PropertyType property_type)
+      : column_(column),
+        stringpool_(stringpool),
+        property_type_(property_type) {}
+  ~PropertyHandle() = default;
+
+  gbp::BufferBlock getProperty(vid_t v_id) const {
+    switch (property_type_) {
+    case gs::PropertyType::kInt32:
+    case gs::PropertyType::kDate:
+    case gs::PropertyType::kInt64: {
+      return column_.getColumn(v_id);
+    }
+    case PropertyType::kString: {
+      auto position = column_.getColumn(v_id);
+      auto& item = gbp::BufferBlock::Ref<string_item>(position);
+      return stringpool_->get(item.offset, item.length);
+    }
+    default: {
+      assert(false);
+    }
+    }
+  }
+
+ private:
+  ColumnHandle column_;
+  const mmap_array<char>* stringpool_;
+  const PropertyType property_type_;
+};
+
+inline void InsertEdgeAtomicHelper(gbp::BufferBlock edges,
+                                   std::string_view e_property,
+                                   size_t e_neighbor,
+                                   PropertyType e_property_type,
+                                   size_t timestamp, size_t idx_in_edges = 0) {
+  switch (e_property_type) {
+  case PropertyType::kEmpty: {
+    gbp::BufferBlock::UpdateContent<MutableNbr<grape::EmptyType>>(
+        [&](MutableNbr<grape::EmptyType>& item) {
+          item.neighbor = e_neighbor;
+          item.timestamp.store(timestamp);
+        },
+        edges, idx_in_edges);
+    break;
+  }
+  case PropertyType::kDate: {
+    gbp::BufferBlock::UpdateContent<MutableNbr<gs::Date>>(
+        [&](MutableNbr<gs::Date>& item) {
+          item.neighbor = e_neighbor;
+          item.data = *reinterpret_cast<const gs::Date*>(e_property.data());
+          item.timestamp.store(timestamp);
+        },
+        edges, idx_in_edges);
+    break;
+  }
+  case PropertyType::kInt32: {
+    gbp::BufferBlock::UpdateContent<MutableNbr<int32_t>>(
+        [&](MutableNbr<int32_t>& item) {
+          item.neighbor = e_neighbor;
+          item.data = *reinterpret_cast<const int32_t*>(e_property.data());
+          item.timestamp.store(timestamp);
+        },
+        edges, idx_in_edges);
+    break;
+  }
+  case PropertyType::kInt64: {
+    gbp::BufferBlock::UpdateContent<MutableNbr<int64_t>>(
+        [&](MutableNbr<int64_t>& item) {
+          item.neighbor = e_neighbor;
+          item.data = *reinterpret_cast<const int64_t*>(e_property.data());
+          item.timestamp.store(timestamp);
+        },
+        edges, idx_in_edges);
+    break;
+  }
+  case PropertyType::kDouble: {
+    gbp::BufferBlock::UpdateContent<MutableNbr<double>>(
+        [&](MutableNbr<double>& item) {
+          item.neighbor = e_neighbor;
+          item.data = *reinterpret_cast<const double*>(e_property.data());
+          item.timestamp.store(timestamp);
+        },
+        edges, idx_in_edges);
+    break;
+  }
+  default:
+    assert(false);
+  }
+}
+
+template <typename PROPERTY_TYPE>
+inline void InsertEdgeAtomicHelper(gbp::BufferBlock edges,
+                                   PROPERTY_TYPE e_property, size_t e_neighbor,
+                                   size_t e_timestamp,
+                                   size_t idx_in_edges = 0) {
+  gbp::BufferBlock::UpdateContent<MutableNbr<PROPERTY_TYPE>>(
+      [&](auto& item) {
+        item.neighbor = e_neighbor;
+        item.data = e_property;
+        item.timestamp.store(e_timestamp);
+      },
+      edges, idx_in_edges);
+}
+
+template <>
+inline void InsertEdgeAtomicHelper<grape::EmptyType>(
+    gbp::BufferBlock edges, grape::EmptyType e_property, size_t e_neighbor,
+    size_t e_timestamp, size_t idx_in_edges) {
+  gbp::BufferBlock::UpdateContent<MutableNbr<grape::EmptyType>>(
+      [&](auto& item) {
+        item.neighbor = e_neighbor;
+        item.timestamp.store(e_timestamp);
+      },
+      edges, idx_in_edges);
+}
 
 class Vertex {
  public:
@@ -637,11 +787,11 @@ class Vertex {
         ->resize(column_family_info_[column_to_column_family.column_family_id]
                      .edge_list_sizes_[column_to_column_family
                                            .edge_list_id_in_column_family] *
-                 2);
+                 10);
   }
-
+  template <typename PROPERTY_TYPE>
   void InsertEdgeConcurrent(size_t vertex_id, size_t edge_label_id,
-                            const std::string_view property, size_t neighbor,
+                            PROPERTY_TYPE property, size_t neighbor,
                             timestamp_t timestamp) {
     auto column_to_column_family =
         property_id_to_ColumnToColumnFamily_configurations_
@@ -661,55 +811,62 @@ class Vertex {
             while (item.lock_.compare_exchange_weak(old_data, 1,
                                                     std::memory_order_release,
                                                     std::memory_order_relaxed))
-              ;  // 获得锁,锁住整个edge list的修改
-            idx_new = item.size_ + 1;  // 获得当前边的相对插入位置
+              ;                    // 获得锁,锁住整个edge list的修改
+            idx_new = item.size_;  // 获得当前边的相对插入位置
             if (item.capacity_ <= idx_new) {
-              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_;
-              // item.capacity_ = item.capacity_ == 0 ? 4 : item.capacity_ * 2;
-              // auto new_start_idx =
-              //     gbp::as_atomic(
-              //         column_family_info_[column_to_column_family
-              //                                 .column_family_id]
-              //             .edge_list_sizes_[column_to_column_family
-              //                                   .edge_list_id_in_column_family])
-              //         .fetch_add(item.capacity_);
-
-              // auto nbr_slice_old =
-              //     datas_of_all_column_family_[column_to_column_family
-              //                                     .column_family_id]
-              //         .csr[column_to_column_family
-              //                  .edge_list_id_in_column_family]
-              //         ->get(item.start_idx_, item.size_);
-              // auto nbr_slice_new =
-              //     datas_of_all_column_family_[column_to_column_family
-              //                                     .column_family_id]
-              //         .csr[column_to_column_family
-              //                  .edge_list_id_in_column_family]
-              //         ->get(new_start_idx, item.capacity_);
-              // for (size_t i = 0; i < item.size_; i++)
-              //   gbp::BufferBlock::UpdateContent<nbr_t>(
-              //       [&](nbr_t& item) {
-              //         auto& item_old =
-              //             gbp::BufferBlock::Ref<nbr_t>(nbr_slice_old, i);
-              //         item.data = item_old.data;
-              //         item.neighbor = item_old.neighbor;
-              //         item.timestamp = item_old.timestamp.load();
-              //       },
-              //       nbr_slice_new, i);
-
-              // InsertEdgeAtomicHelper(nbr_slice_new, property, neighbor,
-              //                        column_to_column_family.edge_type,
-              //                        timestamp, i);
-
-              // gbp::BufferBlock::UpdateContent<adjlist_t>(
-              //     [&](adjlist_t& item) {
-              //       item.capacity_ = capacity_new;
-              //       item.start_idx_ = start_idx_new;
-              //     },
-              //     adj_list_item);
-
-              // item.start_idx_ = new_start_idx;
-              assert(false);  // 没有空闲空间，需要重新分配
+              // LOG(INFO) << "vertex_id: " << vertex_id << " " <<
+              // item.capacity_;
+              item.capacity_ = item.capacity_ == 0 ? 4 : item.capacity_ * 2;
+              auto new_start_idx =
+                  gbp::as_atomic(
+                      column_family_info_[column_to_column_family
+                                              .column_family_id]
+                          .edge_list_sizes_[column_to_column_family
+                                                .edge_list_id_in_column_family])
+                      .fetch_add(item.capacity_);  // 分配空间
+              auto new_capacity =
+                  column_family_info_[column_to_column_family.column_family_id]
+                      .edge_list_sizes_[column_to_column_family
+                                            .edge_list_id_in_column_family];
+              auto size_aaa =
+                  datas_of_all_column_family_[column_to_column_family
+                                                  .column_family_id]
+                      .csr[column_to_column_family
+                               .edge_list_id_in_column_family]
+                      ->size();
+              if (new_capacity > size_aaa) {
+                LOG(INFO) << "new_capacity: " << new_capacity << " "
+                          << size_aaa;
+              }
+              assert(new_capacity <= size_aaa);
+              {  // 复制旧数据
+                auto nbr_slice_old =
+                    datas_of_all_column_family_[column_to_column_family
+                                                    .column_family_id]
+                        .csr[column_to_column_family
+                                 .edge_list_id_in_column_family]
+                        ->get(item.start_idx_, item.size_);
+                auto nbr_slice_new =
+                    datas_of_all_column_family_[column_to_column_family
+                                                    .column_family_id]
+                        .csr[column_to_column_family
+                                 .edge_list_id_in_column_family]
+                        ->get(new_start_idx, item.size_);
+                for (size_t i = 0; i < item.size_; i++) {
+                  gbp::BufferBlock::UpdateContent<MutableNbr<PROPERTY_TYPE>>(
+                      [&](MutableNbr<PROPERTY_TYPE>& item) {
+                        auto& item_old =
+                            gbp::BufferBlock::Ref<MutableNbr<PROPERTY_TYPE>>(
+                                nbr_slice_old, i);
+                        item.data = item_old.data;
+                        item.neighbor = item_old.neighbor;
+                        item.timestamp = item_old.timestamp.load();
+                      },
+                      nbr_slice_new, i);
+                }
+              }
+              item.start_idx_ = new_start_idx;  // 更新start_idx_
+              // assert(false);  // 没有空闲空间，需要重新分配
             }
             idx_new += item.start_idx_;  // 获得当前边的绝对插入位置
           },
@@ -719,8 +876,7 @@ class Vertex {
           datas_of_all_column_family_[column_to_column_family.column_family_id]
               .csr[column_to_column_family.edge_list_id_in_column_family]
               ->get(idx_new);
-      InsertEdgeAtomicHelper(nbr_item, property, neighbor,
-                             column_to_column_family.edge_type, timestamp);
+      InsertEdgeAtomicHelper(nbr_item, property, neighbor, timestamp);
       gbp::BufferBlock::UpdateContent<MutableAdjlist>(
           [&](MutableAdjlist& item) {
             item.size_.fetch_add(1);  // 增加边的数量
@@ -735,8 +891,7 @@ class Vertex {
               .fixed_length_column_family->getColumn(
                   vertex_id,
                   column_to_column_family.column_id_in_column_family);
-      InsertEdgeAtomicHelper(edge_item, property, neighbor,
-                             column_to_column_family.edge_type, timestamp);
+      InsertEdgeAtomicHelper(edge_item, property, neighbor, timestamp);
       break;
     }
     default: {
@@ -874,7 +1029,6 @@ class Vertex {
     auto column_to_column_family =
         property_id_to_ColumnToColumnFamily_configurations_[property_id];
     switch (column_to_column_family.column_type) {
-    case gs::PropertyType::kEdge:
     case gs::PropertyType::kInt32:
     case gs::PropertyType::kDate:
     case gs::PropertyType::kInt64: {
@@ -909,6 +1063,31 @@ class Vertex {
     }
     }
     return result;
+  }
+
+  EdgeHandle getEdgeHandle(size_t edge_label_id) {
+    auto column_to_column_family =
+        property_id_to_ColumnToColumnFamily_configurations_
+            [edge_label_to_property_id_[edge_label_id]];
+    return EdgeHandle(
+        datas_of_all_column_family_[column_to_column_family.column_family_id]
+            .fixed_length_column_family->getColumnHandle(
+                column_to_column_family.column_id_in_column_family),
+        datas_of_all_column_family_[column_to_column_family.column_family_id]
+            .csr[column_to_column_family.edge_list_id_in_column_family],
+        column_to_column_family.edge_type);
+  }
+
+  PropertyHandle getPropertyHandle(size_t property_id) {
+    auto column_to_column_family =
+        property_id_to_ColumnToColumnFamily_configurations_[property_id];
+    return PropertyHandle(
+        datas_of_all_column_family_[column_to_column_family.column_family_id]
+            .fixed_length_column_family->getColumnHandle(
+                column_to_column_family.column_id_in_column_family),
+        datas_of_all_column_family_[column_to_column_family.column_family_id]
+            .stringpool,
+        column_to_column_family.column_type);
   }
 
   void Resize(size_t new_capacity_in_row) {
@@ -1063,65 +1242,6 @@ class Vertex {
   std::string GetVertexName() const { return vertex_name_; }
 
  private:
-  void InsertEdgeAtomicHelper(gbp::BufferBlock edges,
-                              std::string_view e_property, size_t e_neighbor,
-                              PropertyType e_property_type, size_t timestamp,
-                              size_t idx_in_edges = 0) {
-    switch (e_property_type) {
-    case PropertyType::kEmpty: {
-      gbp::BufferBlock::UpdateContent<MutableNbr<grape::EmptyType>>(
-          [&](MutableNbr<grape::EmptyType>& item) {
-            item.neighbor = e_neighbor;
-            item.timestamp.store(timestamp);
-          },
-          edges, idx_in_edges);
-      break;
-    }
-    case PropertyType::kDate: {
-      gbp::BufferBlock::UpdateContent<MutableNbr<gs::Date>>(
-          [&](MutableNbr<gs::Date>& item) {
-            item.neighbor = e_neighbor;
-            item.data = *reinterpret_cast<const gs::Date*>(e_property.data());
-            item.timestamp.store(timestamp);
-          },
-          edges, idx_in_edges);
-      break;
-    }
-    case PropertyType::kInt32: {
-      gbp::BufferBlock::UpdateContent<MutableNbr<int32_t>>(
-          [&](MutableNbr<int32_t>& item) {
-            item.neighbor = e_neighbor;
-            item.data = *reinterpret_cast<const int32_t*>(e_property.data());
-            item.timestamp.store(timestamp);
-          },
-          edges, idx_in_edges);
-      break;
-    }
-    case PropertyType::kInt64: {
-      gbp::BufferBlock::UpdateContent<MutableNbr<int64_t>>(
-          [&](MutableNbr<int64_t>& item) {
-            item.neighbor = e_neighbor;
-            item.data = *reinterpret_cast<const int64_t*>(e_property.data());
-            item.timestamp.store(timestamp);
-          },
-          edges, idx_in_edges);
-      break;
-    }
-    case PropertyType::kDouble: {
-      gbp::BufferBlock::UpdateContent<MutableNbr<double>>(
-          [&](MutableNbr<double>& item) {
-            item.neighbor = e_neighbor;
-            item.data = *reinterpret_cast<const double*>(e_property.data());
-            item.timestamp.store(timestamp);
-          },
-          edges, idx_in_edges);
-      break;
-    }
-    default:
-      assert(false);
-    }
-  }
-
   struct ColumnFamilyInfo {
     ColumnFamilyInfo() : column_number(0) {}
     ColumnFamilyInfo(size_t column_number) : column_number(column_number) {}

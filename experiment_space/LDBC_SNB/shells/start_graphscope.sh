@@ -39,7 +39,7 @@ rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/con
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
-for thread_num in 30
+for thread_num in 1
 do
     expression="(1.25 + 0.0131 * $thread_num + 5) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression))")

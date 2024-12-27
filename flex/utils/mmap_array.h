@@ -391,7 +391,7 @@ class mmap_array : public mmap_array_base {
 
     size_t rest_filelen_firstpage =
         gbp::PAGE_SIZE_MEMORY - file_offset % gbp::PAGE_SIZE_MEMORY;
-    if (rest_filelen_firstpage / sizeof(T) > len) {
+    if (rest_filelen_firstpage > len * sizeof(T)) {
       buf_size += sizeof(T) * len;
       // num_page = 1;
     } else {
@@ -434,7 +434,7 @@ class mmap_array : public mmap_array_base {
 
     size_t rest_filelen_firstpage =
         gbp::PAGE_SIZE_MEMORY - file_offset % gbp::PAGE_SIZE_MEMORY;
-    if (rest_filelen_firstpage / sizeof(T) > len) {
+    if (rest_filelen_firstpage > len * sizeof(T)) {
       buf_size += sizeof(T) * len;
       // num_page = 1;
     } else {
