@@ -50,7 +50,16 @@ vid_t ReadTransaction::GetVertexNum(label_t label) const {
 }
 
 oid_t ReadTransaction::GetVertexId(label_t label, vid_t index) const {
-  return graph_.get_oid(label, index);
+  #if PROFILE_ENABLE
+  auto start = gbp::GetSystemTime();
+  #endif
+  auto ret = graph_.get_oid(label, index);
+  #if PROFILE_ENABLE
+  auto end = gbp::GetSystemTime();
+  gbp::get_counter(23) += end - start;
+  gbp::get_counter(24) += 1;
+  #endif
+  return ret;
 }
 
 const Schema& ReadTransaction::schema() const { return graph_.schema(); }

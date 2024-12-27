@@ -241,7 +241,7 @@ class Req {
       ::fread(buffer.data(), length, 1, query_file_string);
       auto query = std::string(buffer.data(), buffer.data() + length);
       auto type = int(query.back());
-      if (type == 19) {
+      if (type == 16) {
         reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
       }
     }
@@ -265,6 +265,14 @@ class Req {
         LOG(INFO) <<"exist1: " <<"get_counter(5): " << gbp::get_counter(5) << "; get_counter(6): " << gbp::get_counter(6);
         LOG(INFO) <<"get vertex property: "<< "get_counter(7): " << gbp::get_counter(7) << "; get_counter(8): " << gbp::get_counter(8);
         LOG(INFO) <<"get vertex property: "<< "get_counter(9): " << gbp::get_counter(9) << "; get_counter(10): " << gbp::get_counter(10);
+        LOG(INFO) <<"get incoming edges: "<< "get_counter(11): " << gbp::get_counter(11) << "; get_counter(12): " << gbp::get_counter(12);
+        LOG(INFO) <<"get outgoing edges: "<< "get_counter(13): " << gbp::get_counter(13) << "; get_counter(14): " << gbp::get_counter(14);
+        LOG(INFO) <<"get next edge: "<< "get_counter(15): " << gbp::get_counter(15) << "; get_counter(16): " << gbp::get_counter(16);
+        LOG(INFO) <<"check is valid: "<< "get_counter(17): " << gbp::get_counter(17) << "; get_counter(18): " << gbp::get_counter(18);
+        LOG(INFO) <<"get data: "<< "get_counter(19): " << gbp::get_counter(19) << "; get_counter(20): " << gbp::get_counter(20);
+        LOG(INFO) <<"get neighbor: "<< "get_counter(21): " << gbp::get_counter(21) << "; get_counter(22): " << gbp::get_counter(22);
+        LOG(INFO) <<"get vertex oid: "<< "get_counter(23): " << gbp::get_counter(23) << "; get_counter(24): " << gbp::get_counter(24);
+        LOG(INFO) <<"graph view get edges: "<< "get_counter(25): " << gbp::get_counter(25) << "; get_counter(26): " << gbp::get_counter(26);
         #endif
         break;
       }
