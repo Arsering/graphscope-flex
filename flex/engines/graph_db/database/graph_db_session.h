@@ -89,6 +89,12 @@ class GraphDBSession {
   int get_vertex_property_column_id(label_t label, const std::string& col_name) {
     return schema().get_property_id(label, col_name);
   }
+
+  cgraph::PropertyHandle GetPropertyHandle(label_t label, const std::string& col_name) {
+    auto col_id = schema().get_property_id(label, col_name);
+    return graph().get_vertices(label).getPropertyHandle(col_id);
+  }
+  
  private:
   GraphDB& db_;
   MMapAllocator& alloc_;

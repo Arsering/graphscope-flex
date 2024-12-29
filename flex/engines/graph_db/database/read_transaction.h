@@ -150,18 +150,15 @@ class GraphView {
  public:
   GraphView(label_t vertex_label, unsigned int edge_label_with_direction,
             timestamp_t timestamp, MutablePropertyFragment& graph)
-      : vertex_label_(vertex_label),
-        edge_label_with_direction_(edge_label_with_direction),
-        timestamp_(timestamp),
-        graph_(graph) {}
+      : timestamp_(timestamp),
+        edge_handle_(graph.get_vertices(vertex_label).getEdgeHandle(edge_label_with_direction)) {}
 
   AdjListView<EDATA_T> get_edges(vid_t v) {
     #if PROFILE_ENABLE  
     auto start = gbp::GetSystemTime();
     #endif
     size_t edge_size;
-    auto item_t = graph_.get_vertices(vertex_label_)
-                      .ReadEdges(v, edge_label_with_direction_, edge_size);
+    auto item_t = edge_handle_.getEdges(v, edge_size);
     #if PROFILE_ENABLE
     auto end = gbp::GetSystemTime();
     gbp::get_counter(25) += end - start;
@@ -172,10 +169,8 @@ class GraphView {
   timestamp_t timestamp() const { return timestamp_; }
 
  private:
-  label_t vertex_label_;
-  unsigned int edge_label_with_direction_;
   timestamp_t timestamp_;
-  MutablePropertyFragment& graph_;
+  cgraph::EdgeHandle edge_handle_;
 };
 
 template <typename EDATA_T>
@@ -184,23 +179,19 @@ class SingleGraphView {
 
  public:
   SingleGraphView(label_t vertex_label, unsigned int edge_label_with_direction,
-                  timestamp_t timestamp, MutablePropertyFragment& graph)
-      : vertex_label_(vertex_label),
-        edge_label_with_direction_(edge_label_with_direction),
-        timestamp_(timestamp),
-        graph_(graph) {}
+                 timestamp_t timestamp, MutablePropertyFragment& graph)
+      : timestamp_(timestamp),
+        edge_handle_(graph.get_vertices(vertex_label).getEdgeHandle(edge_label_with_direction)) {}
 
   FORCE_INLINE bool exist(vid_t v) const {
     size_t edge_size;
-    auto item = graph_.get_vertices(vertex_label_)
-                    .ReadEdges(v, edge_label_with_direction_, edge_size);
+    auto item = edge_handle_.getEdges(v, edge_size);
     return (gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_);
   }
 
   FORCE_INLINE const gbp::BufferBlock exist(vid_t v, bool& exist) const {
     size_t edge_size;
-    auto item = graph_.get_vertices(vertex_label_)
-                    .ReadEdges(v, edge_label_with_direction_, edge_size);
+    auto item = edge_handle_.getEdges(v, edge_size);
     exist = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
     return item;
   }
@@ -222,8 +213,7 @@ class SingleGraphView {
     #if PROFILE_ENABLE
     auto start = gbp::GetSystemTime();
     #endif
-    auto item = graph_.get_vertices(vertex_label_)
-                    .ReadEdges(v, edge_label_with_direction_, edge_size);
+    auto item = edge_handle_.getEdges(v, edge_size);
     #if PROFILE_ENABLE
     auto end = gbp::GetSystemTime();
     gbp::get_counter(3) += end - start;
@@ -235,10 +225,11 @@ class SingleGraphView {
   FORCE_INLINE timestamp_t timestamp() const { return timestamp_; }
 
  private:
-  label_t vertex_label_;
-  unsigned int edge_label_with_direction_;
+  // label_t vertex_label_;
+  // unsigned int edge_label_with_direction_;
   timestamp_t timestamp_;
-  MutablePropertyFragment& graph_;
+  cgraph::EdgeHandle edge_handle_;
+  // MutablePropertyFragment& graph_;
 };
 
 class ReadTransaction {
@@ -392,6 +383,7 @@ class ReadTransaction {
   template <typename EDATA_T>
   SingleGraphView<EDATA_T> GetOutgoingSingleGraphView(
       label_t v_label, label_t neighbor_label, label_t edge_label) const {
+
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             v_label, neighbor_label, edge_label, true);

@@ -8,6 +8,31 @@
 
 namespace gs {
 namespace cgraph {
+class FixedLengthColumnFamily;
+
+class ColumnHandle {
+  friend class FixedLengthColumnFamily;
+
+ public:
+  ColumnHandle(const gbp::mmap_array& property_buffer,
+               const size_t& row_capacity, const size_t& offset,
+               const size_t& columnLength)
+      : property_buffer_(property_buffer),
+        row_capacity_(row_capacity),
+        offset_(offset),
+        columnLength_(columnLength) {}
+  ~ColumnHandle() = default;
+  void setColumn(size_t rowId, std::string_view newValue) { assert(false); }
+  FORCE_INLINE gbp::BufferBlock getColumn(size_t rowId) const {
+    return property_buffer_.get_partial(rowId, offset_, columnLength_);
+  }
+
+ private:
+  const gbp::mmap_array& property_buffer_;
+  const size_t& row_capacity_;  // 最大的容纳量
+  const size_t& offset_;        // 当前column的偏移量
+  const size_t& columnLength_;  // 单个column的长度
+};
 
 class FixedLengthColumnFamily {
  private:
@@ -73,6 +98,11 @@ class FixedLengthColumnFamily {
 #endif
     return property_buffer_.get_partial(rowId, offsets_[columnId],
                                         columnLengths_[columnId]);
+  }
+
+  ColumnHandle getColumnHandle(size_t columnId) const {
+    return ColumnHandle(property_buffer_, row_capacity_, offsets_[columnId],
+                        columnLengths_[columnId]);
   }
 
   // 获取column的长度
