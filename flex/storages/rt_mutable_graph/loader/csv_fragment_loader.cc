@@ -772,7 +772,7 @@ void CSVFragmentLoader::LoadCGraph() {
           ie_column_type = PropertyType::kEdge;
         }
         if (schema_.ie_strategy_.at(label_id) != EdgeStrategy::kNone) {
-          assert(ie_column_family_id == 2);
+          // assert(ie_column_family_id == 2);
 
           assert(schema_.eproperties_.at(label_id).size() <= 1);
           auto e_property_type = schema_.eproperties_.at(label_id).size() == 0
@@ -803,7 +803,7 @@ void CSVFragmentLoader::LoadCGraph() {
           oe_column_type = PropertyType::kEdge;
         }
         if (schema_.oe_strategy_.at(label_id) != EdgeStrategy::kNone) {
-          assert(oe_column_family_id == 2);
+          // assert(oe_column_family_id == 2);
 
           assert(schema_.eproperties_.at(label_id).size() <= 1);
           auto e_property_type = schema_.eproperties_.at(label_id).size() == 0

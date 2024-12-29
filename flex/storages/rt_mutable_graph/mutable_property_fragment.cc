@@ -354,6 +354,9 @@ vid_t MutablePropertyFragment::vertex_num(label_t vertex_label) const {
 
 bool MutablePropertyFragment::get_lid(label_t label, oid_t oid,
                                       vid_t& lid) const {
+  // auto ret = cgraph_lf_indexers_[label]->get_index(oid, lid);
+  // assert(ret);
+  // return ret;
   return cgraph_lf_indexers_[label]->get_index(oid, lid);
 }
 
@@ -618,7 +621,8 @@ void MutablePropertyFragment::cgraph_open(
   }
 
   LOG(INFO) << "open vertex done";
-  return;
+  // return;
+
   size_t edge_size = 0;
   auto person_label_id = schema_.get_vertex_label_id("PERSON");
   auto property_id = 5;
@@ -648,13 +652,27 @@ void MutablePropertyFragment::cgraph_open(
         << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i).neighbor
         << " oid of nbr: "
         << cgraph_lf_indexers_[person_label_id]->get_key(
-               gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t).neighbor)
+               gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i).neighbor)
         << " timestamp of nbr: "
         << gbp::TimeConverter::millisToDateString(
                gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i)
                    .data.milli_second,
                true);
   }
+
+  auto edgehandle = vertices_[person_label_id].getEdgeHandle(edge_label_id_with_direction);
+  auto item_th = edgehandle.getEdges(person_vid, edge_size);
+  for (int i = 0; i < edge_size; i++) {
+    LOG(INFO) << "vid of nbr: "
+              << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_th, i).neighbor
+              << " oid of nbr: "
+              << cgraph_lf_indexers_[person_label_id]->get_key(
+                     gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_th, i)
+                         .neighbor);
+  }
+
+  return;
+  
   person_oid = 1129;
   auto person_vid2 =
       cgraph_lf_indexers_[person_label_id]->get_index(person_oid);

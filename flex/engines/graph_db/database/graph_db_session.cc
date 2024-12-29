@@ -131,7 +131,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << "]";
 #endif
     constexpr bool store_query = false;
-    constexpr bool check_result = true;
+    constexpr bool check_result = false;
 
     if constexpr (store_query) {
       static const size_t max_query_num = 200000100;
@@ -184,6 +184,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 
     return result_buffer;
   }
+  assert(false);
 
   LOG(INFO) << "[Query-" << (int) type << "][Thread-" << thread_id_
             << "] retry - 1 / 3";

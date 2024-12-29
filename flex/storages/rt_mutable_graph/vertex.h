@@ -54,16 +54,31 @@ class PropertyHandle {
   ~PropertyHandle() = default;
 
   FORCE_INLINE gbp::BufferBlock getProperty(vid_t v_id) const {
+    #if PROFILE_ENABLE
+    auto start=gbp::GetSystemTime();
+    #endif
     switch (property_type_) {
     case gs::PropertyType::kInt32:
     case gs::PropertyType::kDate:
     case gs::PropertyType::kInt64: {
-      return column_.getColumn(v_id);
+      auto ret=column_.getColumn(v_id);
+      #if PROFILE_ENABLE
+      auto end=gbp::GetSystemTime();
+      gbp::get_counter(7) += end - start;
+      gbp::get_counter(8) += 1;
+      #endif
+      return ret;
     }
     case PropertyType::kString: {
       auto position = column_.getColumn(v_id);
       auto& item = gbp::BufferBlock::Ref<string_item>(position);
-      return stringpool_->get(item.offset, item.length);
+      auto ret = stringpool_->get(item.offset, item.length);
+      #if PROFILE_ENABLE
+      auto end=gbp::GetSystemTime();
+      gbp::get_counter(7) += end - start;
+      gbp::get_counter(8) += 1;
+      #endif
+      return ret;
     }
     default: {
       assert(false);
@@ -931,7 +946,7 @@ class Vertex {
               ;                                 // 获得锁
             idx_new = item.size_.fetch_add(1);  // 获得当前边的相对插入位置
             if (item.capacity_ <= idx_new) {
-              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_;
+              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_<<" "<<item.size_;
               assert(false);  // 没有空闲空间，需要重新分配
             }
             idx_new += item.start_idx_;  // 获得当前边的绝对插入位置
@@ -1069,16 +1084,24 @@ class Vertex {
   }
 
   EdgeHandle getEdgeHandle(size_t edge_label_id) {
+    // assert(edge_label_to_property_id_.count(edge_label_id) == 1);
+    // assert(property_id_to_ColumnToColumnFamily_configurations_.count(edge_label_to_property_id_[edge_label_id]) == 1);
     auto column_to_column_family =
-        property_id_to_ColumnToColumnFamily_configurations_
-            [edge_label_to_property_id_[edge_label_id]];
-    return EdgeHandle(
-        datas_of_all_column_family_[column_to_column_family.column_family_id]
-            .fixed_length_column_family->getColumnHandle(
-                column_to_column_family.column_id_in_column_family),
-        datas_of_all_column_family_[column_to_column_family.column_family_id]
-            .csr[column_to_column_family.edge_list_id_in_column_family],
-        column_to_column_family.edge_type);
+        property_id_to_ColumnToColumnFamily_configurations_[edge_label_to_property_id_[edge_label_id]];
+    auto param1 =
+        datas_of_all_column_family_[column_to_column_family.column_family_id].fixed_length_column_family->getColumnHandle(column_to_column_family.column_id_in_column_family);
+    gs::mmap_array_base* param2 = nullptr;
+    if (column_to_column_family.column_type == gs::PropertyType::kDynamicEdgeList) {
+      param2 =
+        datas_of_all_column_family_[column_to_column_family.column_family_id].csr[column_to_column_family.edge_list_id_in_column_family];
+      assert(param2 != nullptr);
+    }
+    auto param3 = column_to_column_family.column_type;
+    return EdgeHandle(param1, param2, param3);
+    // return EdgeHandle(
+    //     datas_of_all_column_family_[column_to_column_family.column_family_id].fixed_length_column_family->getColumnHandle(column_to_column_family.column_id_in_column_family),
+    //     datas_of_all_column_family_[column_to_column_family.column_family_id].csr[column_to_column_family.edge_list_id_in_column_family],
+    //     column_to_column_family.edge_type);
   }
 
   PropertyHandle getPropertyHandle(size_t property_id) {
