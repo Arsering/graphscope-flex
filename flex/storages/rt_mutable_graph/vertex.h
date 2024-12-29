@@ -824,6 +824,7 @@ class Vertex {
                           .edge_list_sizes_[column_to_column_family
                                                 .edge_list_id_in_column_family])
                       .fetch_add(item.capacity_);  // 分配空间
+#if ASSERT_ENABLE
               auto new_capacity =
                   column_family_info_[column_to_column_family.column_family_id]
                       .edge_list_sizes_[column_to_column_family
@@ -839,6 +840,7 @@ class Vertex {
                           << size_aaa;
               }
               assert(new_capacity <= size_aaa);
+#endif
               {  // 复制旧数据
                 auto nbr_slice_old =
                     datas_of_all_column_family_[column_to_column_family

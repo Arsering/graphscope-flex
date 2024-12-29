@@ -8,11 +8,7 @@
 
 namespace gs {
 namespace cgraph {
-class FixedLengthColumnFamily;
-
 class ColumnHandle {
-  friend class FixedLengthColumnFamily;
-
  public:
   ColumnHandle(const gbp::mmap_array& property_buffer,
                const size_t& row_capacity, const size_t& offset,
