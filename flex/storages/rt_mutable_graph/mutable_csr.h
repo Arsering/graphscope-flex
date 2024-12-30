@@ -857,7 +857,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
 
     ret.mmap_array_ = &nbr_list_;
     ret.start_idx_ = adj_list.start_idx_;
-    ret.size_ = adj_list.size_.load(std::memory_order_acquire);
+    ret.size_ = adj_list.size_.load();
     return ret;
   }
 

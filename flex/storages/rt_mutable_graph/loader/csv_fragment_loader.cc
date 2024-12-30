@@ -900,14 +900,18 @@ void CSVFragmentLoader::LoadCGraph() {
                                          child_configs[vertex_id].second);
           cgraph_lf_indexers_[vertex_id] = lf_indexer;
         } else {
-          std::vector<size_t> group_sizes;
-          for (auto& [child_vertex_id, group_size] :
-               parent_configs[vertex_id]) {
-            group_sizes.emplace_back(group_size);
-          }
-          cgraph_lf_indexers_[vertex_id] =
-              GroupedParentLFIndexer_creation_helper(indexer, prefix,
-                                                     group_sizes);
+          // std::vector<size_t> group_sizes;
+          // for (auto& [child_vertex_id, group_size] :
+          //      parent_configs[vertex_id]) {
+          //   group_sizes.emplace_back(group_size);
+          // }
+          // cgraph_lf_indexers_[vertex_id] =
+          //     GroupedParentLFIndexer_creation_helper(indexer, prefix,
+          //                                            group_sizes);
+          GroupedChildLFIndexer<vid_t>* lf_indexer =
+              new GroupedChildLFIndexer<vid_t>();
+          build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer, 0);
+          cgraph_lf_indexers_[vertex_id] = lf_indexer;
         }
       });
     }
@@ -1429,8 +1433,8 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         if (ie_strategy == EdgeStrategy::kMultiple) {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
           for (auto vertex_id = 0; vertex_id < dst_degree.size(); vertex_id++) {
-            edge_list_len.emplace_back(
-                vertex_id, (size_t) ((dst_degree[vertex_id]) * 0.9));
+            edge_list_len.emplace_back(vertex_id,
+                                       (size_t) ((dst_degree[vertex_id]) * 1));
           }
           cgraph_vertices_[dst_label_id].EdgeListInitBatch(
               ie_label_id_with_direction, edge_list_len);
@@ -1440,7 +1444,7 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         if (oe_strategy == EdgeStrategy::kMultiple) {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
           for (auto vertex_id = 0; vertex_id < src_degree.size(); vertex_id++) {
-            edge_list_len.emplace_back(vertex_id, (src_degree[vertex_id]) * 2);
+            edge_list_len.emplace_back(vertex_id, (src_degree[vertex_id]) * 1);
           }
           cgraph_vertices_[src_label_id].EdgeListInitBatch(
               oe_label_id_with_direction, edge_list_len);

@@ -319,6 +319,8 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
   mmap_array<index_key_item_grouped<INDEX_T, SIZE>>
       indices_;  // size() == indices_size_ == num_slots_minus_one_
                  // +log(num_slots_minus_one_)
+  mmap_array<child_index_in_parent<INDEX_T, SIZE>>
+      child_indices_;  // size() == indices_size_ == num_slots_minus_one_
   std::atomic<size_t> num_elements_;
   size_t num_slots_minus_one_;
   size_t indices_size_;
@@ -411,8 +413,8 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
   }
   bool set_new_child_range(size_t child_label_id,
                            int64_t max_child_oid) override {
-    LOG(FATAL)
-        << "GroupedChildLFIndexer: set_new_child_range is not implemented";
+    // LOG(FATAL)
+    //     << "GroupedChildLFIndexer: set_new_child_range is not implemented";
     return false;
   }
 

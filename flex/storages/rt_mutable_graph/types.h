@@ -18,6 +18,7 @@ limitations under the License.
 
 #include <stdint.h>
 #include <atomic>
+#include "flex/utils/mmap_array.h"
 #include "grape/serialization/in_archive.h"
 
 namespace gs {
@@ -140,19 +141,21 @@ class MutableAdjlist {
 
 struct MutableAdjlist {
  public:
-  MutableAdjlist() : start_idx_(0), size_(0), capacity_(0) {}
+  MutableAdjlist() : start_idx_(0), size_(0), capacity_(0), lock_(0) {}
   ~MutableAdjlist() {}
 
   void init(size_t start_idx, size_t cap, size_t size) {
     size_ = size;
     capacity_ = cap;
     start_idx_ = start_idx;
+    lock_.store(0);
   }
 
   std::atomic<u_int32_t> size_;
   u_int32_t capacity_;
-  std::atomic<u_int16_t> lock_;  // 锁 1表示锁住，0表示未锁住
-  size_t start_idx_;
+  size_t start_idx_ : 56;
+  std::atomic<u_int8_t> lock_;  // 锁 1表示锁住，0表示未锁住
+                                // gbp::FlaggedUINT64 start_idx_;
 };
 #endif
 

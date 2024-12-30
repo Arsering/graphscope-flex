@@ -54,30 +54,30 @@ class PropertyHandle {
   ~PropertyHandle() = default;
 
   FORCE_INLINE gbp::BufferBlock getProperty(vid_t v_id) const {
-    #if PROFILE_ENABLE
-    auto start=gbp::GetSystemTime();
-    #endif
+#if PROFILE_ENABLE
+    auto start = gbp::GetSystemTime();
+#endif
     switch (property_type_) {
     case gs::PropertyType::kInt32:
     case gs::PropertyType::kDate:
     case gs::PropertyType::kInt64: {
-      auto ret=column_.getColumn(v_id);
-      #if PROFILE_ENABLE
-      auto end=gbp::GetSystemTime();
+      auto ret = column_.getColumn(v_id);
+#if PROFILE_ENABLE
+      auto end = gbp::GetSystemTime();
       gbp::get_counter(7) += end - start;
       gbp::get_counter(8) += 1;
-      #endif
+#endif
       return ret;
     }
     case PropertyType::kString: {
       auto position = column_.getColumn(v_id);
       auto& item = gbp::BufferBlock::Ref<string_item>(position);
       auto ret = stringpool_->get(item.offset, item.length);
-      #if PROFILE_ENABLE
-      auto end=gbp::GetSystemTime();
+#if PROFILE_ENABLE
+      auto end = gbp::GetSystemTime();
       gbp::get_counter(7) += end - start;
       gbp::get_counter(8) += 1;
-      #endif
+#endif
       return ret;
     }
     default: {
@@ -741,6 +741,7 @@ class Vertex {
           assert(item.start_idx_ == 0);
           assert(item.capacity_ == 0);
           assert(item.size_ == 0);
+          assert(item.lock_.load() == 0);
           item.start_idx_ =
               gbp::as_atomic(
                   column_family_info_[column_to_column_family.column_family_id]
@@ -814,7 +815,7 @@ class Vertex {
 
     switch (column_to_column_family.column_type) {
     case gs::PropertyType::kDynamicEdgeList: {
-      auto item_t =
+      auto adj_list_item =
           datas_of_all_column_family_[column_to_column_family.column_family_id]
               .fixed_length_column_family->getColumn(
                   vertex_id,
@@ -822,15 +823,14 @@ class Vertex {
       size_t idx_new = 0;
       gbp::BufferBlock::UpdateContent<MutableAdjlist>(
           [&](MutableAdjlist& item) {
-            u_int16_t old_data = 0;
+            u_int8_t old_data = 0;
             while (item.lock_.compare_exchange_weak(old_data, 1,
-                                                    std::memory_order_release,
+                                                    std::memory_order_acquire,
                                                     std::memory_order_relaxed))
               ;                    // 获得锁,锁住整个edge list的修改
             idx_new = item.size_;  // 获得当前边的相对插入位置
             if (item.capacity_ <= idx_new) {
-              // LOG(INFO) << "vertex_id: " << vertex_id << " " <<
-              // item.capacity_;
+              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_;
               item.capacity_ = item.capacity_ == 0 ? 4 : item.capacity_ * 2;
               auto new_start_idx =
                   gbp::as_atomic(
@@ -883,11 +883,10 @@ class Vertex {
                 }
               }
               item.start_idx_ = new_start_idx;  // 更新start_idx_
-              // assert(false);  // 没有空闲空间，需要重新分配
             }
             idx_new += item.start_idx_;  // 获得当前边的绝对插入位置
           },
-          item_t);
+          adj_list_item);
       // 插入边
       auto nbr_item =
           datas_of_all_column_family_[column_to_column_family.column_family_id]
@@ -896,10 +895,10 @@ class Vertex {
       InsertEdgeAtomicHelper(nbr_item, property, neighbor, timestamp);
       gbp::BufferBlock::UpdateContent<MutableAdjlist>(
           [&](MutableAdjlist& item) {
-            item.size_.fetch_add(1);  // 增加边的数量
-            item.lock_.store(0);      // 释放锁
+            item.size_++;
+            item.lock_.store(0);
           },
-          item_t);  // 释放锁
+          adj_list_item);  // 释放锁
       break;
     }
     case gs::PropertyType::kEdge: {
@@ -930,7 +929,7 @@ class Vertex {
             [edge_label_to_property_id_[value.first]];
     switch (column_to_column_family.column_type) {
     case gs::PropertyType::kDynamicEdgeList: {
-      auto item_t =
+      auto adj_list_item =
           datas_of_all_column_family_[column_to_column_family.column_family_id]
               .fixed_length_column_family->getColumn(
                   vertex_id,
@@ -939,27 +938,31 @@ class Vertex {
 
       gbp::BufferBlock::UpdateContent<MutableAdjlist>(
           [&](MutableAdjlist& item) {
-            u_int16_t old_data = 0;
+            u_int8_t old_data = 0;
             while (item.lock_.compare_exchange_weak(old_data, 1,
                                                     std::memory_order_release,
                                                     std::memory_order_relaxed))
-              ;                                 // 获得锁
-            idx_new = item.size_.fetch_add(1);  // 获得当前边的相对插入位置
+              ;                    // 获得锁
+            idx_new = item.size_;  // 获得当前边的相对插入位置
             if (item.capacity_ <= idx_new) {
-              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_<<" "<<item.size_;
+              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_
+                        << " " << item.size_;
               assert(false);  // 没有空闲空间，需要重新分配
             }
             idx_new += item.start_idx_;  // 获得当前边的绝对插入位置
           },
-          item_t);
+          adj_list_item);
       // 插入边
       datas_of_all_column_family_[column_to_column_family.column_family_id]
           .csr[column_to_column_family.edge_list_id_in_column_family]
           ->set_single_obj(idx_new, value.second);
 
       gbp::BufferBlock::UpdateContent<MutableAdjlist>(
-          [&](MutableAdjlist& item) { item.lock_.store(0); },
-          item_t);  // 释放锁
+          [&](MutableAdjlist& item) {
+            item.size_++;
+            item.lock_.store(0);
+          },
+          adj_list_item);  // 释放锁
       break;
     }
     case gs::PropertyType::kEdge: {
@@ -1085,15 +1088,21 @@ class Vertex {
 
   EdgeHandle getEdgeHandle(size_t edge_label_id) {
     // assert(edge_label_to_property_id_.count(edge_label_id) == 1);
-    // assert(property_id_to_ColumnToColumnFamily_configurations_.count(edge_label_to_property_id_[edge_label_id]) == 1);
+    // assert(property_id_to_ColumnToColumnFamily_configurations_.count(edge_label_to_property_id_[edge_label_id])
+    // == 1);
     auto column_to_column_family =
-        property_id_to_ColumnToColumnFamily_configurations_[edge_label_to_property_id_[edge_label_id]];
+        property_id_to_ColumnToColumnFamily_configurations_
+            [edge_label_to_property_id_[edge_label_id]];
     auto param1 =
-        datas_of_all_column_family_[column_to_column_family.column_family_id].fixed_length_column_family->getColumnHandle(column_to_column_family.column_id_in_column_family);
+        datas_of_all_column_family_[column_to_column_family.column_family_id]
+            .fixed_length_column_family->getColumnHandle(
+                column_to_column_family.column_id_in_column_family);
     gs::mmap_array_base* param2 = nullptr;
-    if (column_to_column_family.column_type == gs::PropertyType::kDynamicEdgeList) {
+    if (column_to_column_family.column_type ==
+        gs::PropertyType::kDynamicEdgeList) {
       param2 =
-        datas_of_all_column_family_[column_to_column_family.column_family_id].csr[column_to_column_family.edge_list_id_in_column_family];
+          datas_of_all_column_family_[column_to_column_family.column_family_id]
+              .csr[column_to_column_family.edge_list_id_in_column_family];
       assert(param2 != nullptr);
     }
     auto param3 = column_to_column_family.column_type;
@@ -1136,9 +1145,7 @@ class Vertex {
       switch (column_configuration.second.column_type) {
       case gs::PropertyType::kDynamicEdgeList: {
         MutableAdjlist empty_adjlist;
-        empty_adjlist.capacity_ = 0;
-        empty_adjlist.size_ = 0;
-        empty_adjlist.start_idx_ = 0;
+        empty_adjlist.init(0, 0, 0);
         std::string_view empty_adjlist_view(
             reinterpret_cast<char*>(&empty_adjlist), sizeof(MutableAdjlist));
         for (size_t row_id = capacity_in_row_; row_id < new_capacity_in_row;

@@ -1,37 +1,37 @@
 name: ldbc_snb
 store_type: mutable_csr
 stored_procedures:
-  directory: /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build
+  directory: /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build
   enable_lists:
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic1.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic4.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic6.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic7.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic8.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic9.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic10.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic11.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic12.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic13.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic14.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is1.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is3.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is4.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is6.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is7.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins1.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins3.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins4.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins6.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins7.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins8.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic1.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic2.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic4.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic5.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic6.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic7.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic8.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic9.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic10.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic11.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic12.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic13.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic14.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is1.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is2.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is3.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is4.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is5.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is6.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_is7.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins1.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins2.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins3.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins4.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins5.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins6.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins7.so
+    - /data/zhengyang/data/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ins8.so
 
 schema:
   vertex_types:

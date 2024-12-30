@@ -563,7 +563,7 @@ void MutablePropertyFragment::cgraph_open(
     }
     if (child_configs.count(vertex_id) == 0 &&
         parent_configs.count(vertex_id) == 0) {
-      LFIndexer<vid_t>* lf_indexer = new LFIndexer<vid_t>();
+      auto* lf_indexer = new LFIndexer<vid_t>();
       lf_indexer->open("hash_map",
                        snapshot_dir_path + "/snapshots/" + std::to_string(1) +
                            "/" + schema_.get_vertex_label_name(vertex_id),
@@ -571,8 +571,7 @@ void MutablePropertyFragment::cgraph_open(
                            schema_.get_vertex_label_name(vertex_id));
       cgraph_lf_indexers_.emplace_back(lf_indexer);
     } else if (child_configs.count(vertex_id) == 1) {
-      GroupedChildLFIndexer<vid_t>* lf_indexer =
-          new GroupedChildLFIndexer<vid_t>();
+      auto* lf_indexer = new GroupedChildLFIndexer<vid_t>();
       lf_indexer->open("hash_map",
                        snapshot_dir_path + "/snapshots/" + std::to_string(1) +
                            "/" + schema_.get_vertex_label_name(vertex_id),
@@ -580,8 +579,7 @@ void MutablePropertyFragment::cgraph_open(
                            schema_.get_vertex_label_name(vertex_id));
       cgraph_lf_indexers_.emplace_back(lf_indexer);
     } else {
-      GroupedParentLFIndexer<vid_t, 2>* lf_indexer =
-          new GroupedParentLFIndexer<vid_t, 2>();
+      auto* lf_indexer = new GroupedChildLFIndexer<vid_t>();
       lf_indexer->open("hash_map",
                        snapshot_dir_path + "/snapshots/" + std::to_string(1) +
                            "/" + schema_.get_vertex_label_name(vertex_id),
@@ -621,7 +619,7 @@ void MutablePropertyFragment::cgraph_open(
   }
 
   LOG(INFO) << "open vertex done";
-  // return;
+  return;
 
   size_t edge_size = 0;
   auto person_label_id = schema_.get_vertex_label_id("PERSON");
@@ -660,19 +658,21 @@ void MutablePropertyFragment::cgraph_open(
                true);
   }
 
-  auto edgehandle = vertices_[person_label_id].getEdgeHandle(edge_label_id_with_direction);
+  auto edgehandle =
+      vertices_[person_label_id].getEdgeHandle(edge_label_id_with_direction);
   auto item_th = edgehandle.getEdges(person_vid, edge_size);
   for (int i = 0; i < edge_size; i++) {
-    LOG(INFO) << "vid of nbr: "
-              << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_th, i).neighbor
-              << " oid of nbr: "
-              << cgraph_lf_indexers_[person_label_id]->get_key(
-                     gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_th, i)
-                         .neighbor);
+    LOG(INFO)
+        << "vid of nbr: "
+        << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_th, i).neighbor
+        << " oid of nbr: "
+        << cgraph_lf_indexers_[person_label_id]->get_key(
+               gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_th, i)
+                   .neighbor);
   }
 
   return;
-  
+
   person_oid = 1129;
   auto person_vid2 =
       cgraph_lf_indexers_[person_label_id]->get_index(person_oid);

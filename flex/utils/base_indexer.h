@@ -154,6 +154,12 @@ class index_key_item_grouped {
   int64_t key;
   std::array<value_with_lock<INDEX_T>, SIZE> extra_values;
 };
+template <typename INDEX_T, size_t SIZE>
+class child_index_in_parent {
+ public:
+  std::array<value_with_lock<INDEX_T>, SIZE> extra_values;
+};
+
 enum class op_status {
   op_status_success,
   op_status_failed,
@@ -175,12 +181,12 @@ class BaseIndexer {
   virtual int64_t get_key(const INDEX_T& index) const = 0;
 
   virtual bool get_child_index(size_t child_label_id, int64_t parent_oid,
-                                    INDEX_T& ret) = 0;
+                               INDEX_T& ret) = 0;
   // 设置新的kid范围，非常危险，少用！！！！
   virtual bool set_new_child_range(size_t kid_label_id,
-                                        int64_t max_kid_oid) = 0;
+                                   int64_t max_kid_oid) = 0;
   virtual bool set_parent_lf(BaseIndexer<INDEX_T>& parent_lf) {
-    assert(false);
+    // assert(false);
     return false;
   }
 };
