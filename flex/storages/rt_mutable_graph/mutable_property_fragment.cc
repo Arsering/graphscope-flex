@@ -327,12 +327,14 @@ void MutablePropertyFragment::ingest_edge(label_t src_label, vid_t src_lid,
   } else {
     if (oe_strategy != EdgeStrategy::kNone) {
       vertices_[src_label].InsertEdgeConcurrent(
-          src_lid, edge_label_with_direction_out, std::string(), dst_lid, ts);
+          src_lid, edge_label_with_direction_out, grape::EmptyType(), dst_lid,
+          ts);
     }
 
     if (ie_strategy != EdgeStrategy::kNone) {
       vertices_[dst_label].InsertEdgeConcurrent(
-          dst_lid, edge_label_with_direction_in, std::string(), src_lid, ts);
+          dst_lid, edge_label_with_direction_in, grape::EmptyType(), src_lid,
+          ts);
     }
   }
 }
@@ -385,7 +387,6 @@ void MutablePropertyFragment::ingest_vertex(label_t label, vid_t vertex_id,
     case PropertyType::kInt32: {
       int32_t data_int32;
       out_archive >> data_int32;
-      LOG(INFO) << "data_int32: " << data_int32;
       vertices_[label].InsertColumn(
           vertex_id, {vertex_prop_ids[i],
                       std::string_view(reinterpret_cast<char*>(&data_int32),
@@ -395,7 +396,6 @@ void MutablePropertyFragment::ingest_vertex(label_t label, vid_t vertex_id,
     case PropertyType::kInt64: {
       int64_t data_int64;
       out_archive >> data_int64;
-      LOG(INFO) << "data_int64: " << data_int64;
       vertices_[label].InsertColumn(
           vertex_id, {vertex_prop_ids[i],
                       std::string_view(reinterpret_cast<char*>(&data_int64),
@@ -405,7 +405,6 @@ void MutablePropertyFragment::ingest_vertex(label_t label, vid_t vertex_id,
     case PropertyType::kDouble: {
       double data_double;
       out_archive >> data_double;
-      LOG(INFO) << "data_double: " << data_double;
       vertices_[label].InsertColumn(
           vertex_id, {vertex_prop_ids[i],
                       std::string_view(reinterpret_cast<char*>(&data_double),
@@ -415,7 +414,6 @@ void MutablePropertyFragment::ingest_vertex(label_t label, vid_t vertex_id,
     case PropertyType::kString: {
       std::string data_string;
       out_archive >> data_string;
-      LOG(INFO) << "data_string: " << data_string;
       vertices_[label].InsertColumn(vertex_id,
                                     {vertex_prop_ids[i], data_string});
       break;
@@ -423,7 +421,6 @@ void MutablePropertyFragment::ingest_vertex(label_t label, vid_t vertex_id,
     case PropertyType::kDate: {
       gs::Date data_date;
       out_archive >> data_date;
-      LOG(INFO) << "data_date: " << data_date;
       vertices_[label].InsertColumn(
           vertex_id, {vertex_prop_ids[i],
                       std::string_view(reinterpret_cast<char*>(&data_date),
@@ -579,7 +576,7 @@ void MutablePropertyFragment::cgraph_open(
                            schema_.get_vertex_label_name(vertex_id));
       cgraph_lf_indexers_.emplace_back(lf_indexer);
     } else {
-      auto* lf_indexer = new GroupedChildLFIndexer<vid_t>();
+      auto* lf_indexer = new GroupedParentLFIndexer<vid_t, 2>();
       lf_indexer->open("hash_map",
                        snapshot_dir_path + "/snapshots/" + std::to_string(1) +
                            "/" + schema_.get_vertex_label_name(vertex_id),
@@ -600,10 +597,11 @@ void MutablePropertyFragment::cgraph_open(
     } else if (child_configs.count(vertex_id) == 1) {
       cgraph_lf_indexers_[vertex_id]->set_parent_lf(
           *cgraph_lf_indexers_[child_configs[vertex_id].first]);
+      gs::vid_t pre_child_vid = 0;
       // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-      //     3, 26388279066936);
+      //     3, 26388279066936, pre_child_vid);
       // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-      //     4, 2199023255922);
+      //     4, 2199023255922, pre_child_vid);
     } else {
       continue;
     }

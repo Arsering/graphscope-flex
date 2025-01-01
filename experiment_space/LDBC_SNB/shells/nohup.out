@@ -1,1 +1,3 @@
 start_graphscope.sh: line 37: 3797666 Segmentation fault      rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+Terminated
+start_graphscope.sh: line 56: 669484 Killed                  rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &>> ${LOG_DIR}/gs_log.log

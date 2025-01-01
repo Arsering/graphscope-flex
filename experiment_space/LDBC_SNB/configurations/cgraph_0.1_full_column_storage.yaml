@@ -124,13 +124,13 @@ schema:
     - type_id: 2
       type_name: COMMENT
       x_csr_params:
-        max_vertex_num: 300000
+        max_vertex_num: 30000000
       column_family_num: 12
       group_foreign_key:
         edge_type: HASCREATOR
         foreign_key_type: dst
         foreign_key_name: PERSON
-        group_size: 512
+        group_size: 128
       properties:
         - property_id: 0
           property_name: id
@@ -167,13 +167,13 @@ schema:
     - type_id: 3
       type_name: POST
       x_csr_params:
-        max_vertex_num: 200000
+        max_vertex_num: 2000000
       column_family_num: 14
       group_foreign_key:
         edge_type: HASCREATOR
         foreign_key_type: dst
         foreign_key_name: PERSON
-        group_size: 128
+        group_size: 64
       properties:
         - property_id: 0
           property_name: id
@@ -393,7 +393,7 @@ schema:
         - source_vertex: PERSON
           destination_vertex: TAG
           incoming_edge_strategy: None
-          outgoing_edge_column_family: 14
+          outgoing_edge_column_family: 13
           incoming_edge_column_family: 4
           relation: MANY_TO_ONE
     - type_id: 7

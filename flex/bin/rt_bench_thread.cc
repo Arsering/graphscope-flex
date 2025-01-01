@@ -239,11 +239,7 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-      auto query = std::string(buffer.data(), buffer.data() + length);
-      auto type = int(query.back());
-      // if (type == 16) {
       reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
-      // }
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
@@ -522,8 +518,6 @@ int main(int argc, char** argv) {
   pid_file.close();
 
   LOG(INFO) << "Launch Performance Logger";
-  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "nvme0n1");
   gbp::get_log_dir() = log_data_path;
   gbp::get_db_dir() = data_path;
 
@@ -587,6 +581,8 @@ int main(int argc, char** argv) {
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
   gbp::get_counter_global(20) = 0;
+  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
+      log_data_path + "/performance.log", "nvme0n1");
 
   for (size_t idx = 0; idx < 2; idx++) {
     gbp::PerformanceLogServer::GetPerformanceLogger().SetStartPoint();
@@ -636,6 +632,7 @@ int main(int argc, char** argv) {
     gbp::warmup_mark().store(1);
     gbp::DirectCache::CleanAllCache();
   }
+  LOG(INFO) << "19 = " << gbp::get_counter_global(19);
   LOG(INFO) << "20 = " << gbp::get_counter_global(20);
 
   Req::get().LoggerStop();

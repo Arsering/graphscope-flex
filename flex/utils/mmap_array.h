@@ -381,6 +381,8 @@ class mmap_array : public mmap_array_base {
 
   const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
 #if ASSERT_ENABLE
+    if (idx + len > size_)
+      LOG(INFO) << filename_;
     CHECK_LE(idx + len, size_);
 #endif
 

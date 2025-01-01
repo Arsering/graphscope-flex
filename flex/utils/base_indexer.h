@@ -213,7 +213,7 @@ void build_grouped_child_lf_indexer(const IdIndexer<int64_t, _INDEX_T>& input,
                                     const std::string& filename,
                                     GroupedChildLFIndexer<_INDEX_T>& output,
                                     size_t label_id_in_parent,
-                                    double rate = 0.8);
+                                    double rate = 0.4);
 
 template <typename _INDEX_T, size_t _SIZE>
 void build_grouped_parent_lf_indexer(

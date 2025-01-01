@@ -48,40 +48,19 @@ class AdjListView {
 #if ASSERT_ENABLE
     assert(current_index_ < size_);
 #endif
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
-    auto ret = gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
+
+    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
         .neighbor;
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(21) += end - start;
-    gbp::get_counter(22) += 1;
-    #endif
-    return ret;
-    // return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
-    //     .neighbor;
   }
 
   FORCE_INLINE const void* get_data() {
 #if ASSERT_ENABLE
     assert(current_index_ < size_);
 #endif
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
-    auto ret = static_cast<const void*>(
-      &(gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
+
+    return static_cast<const void*>(
+        &(gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
               .data));
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(19) += end - start;
-    gbp::get_counter(20) += 1;
-    #endif
-    return ret;
-    // return static_cast<const void*>(
-    //     &(gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
-    //           .data));
   }
 
   FORCE_INLINE timestamp_t get_timestamp() {
@@ -93,45 +72,20 @@ class AdjListView {
   }
 
   FORCE_INLINE void next() {
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
     current_index_++;
     while (current_index_ < size_ &&
            gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_)
                    .timestamp.load() > timestamp_) {
       current_index_++;
     }
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(15) += end - start;
-    gbp::get_counter(16) += 1;
-    #endif
   }
 
   FORCE_INLINE bool is_valid() {
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
-
     if (current_index_ < size_) {
       auto tmp =
           gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(edges_, current_index_);
-      auto ret = tmp.timestamp.load() <= timestamp_;
-
-      #if PROFILE_ENABLE
-      auto end = gbp::GetSystemTime();
-      gbp::get_counter(17) += end - start;
-      gbp::get_counter(18) += 1;
-      #endif
-      
-      return ret;
+      return tmp.timestamp.load() <= timestamp_;
     }
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(17) += end - start;
-    gbp::get_counter(18) += 1;
-    #endif
     return false;
   }
 
@@ -151,19 +105,12 @@ class GraphView {
   GraphView(label_t vertex_label, unsigned int edge_label_with_direction,
             timestamp_t timestamp, MutablePropertyFragment& graph)
       : timestamp_(timestamp),
-        edge_handle_(graph.get_vertices(vertex_label).getEdgeHandle(edge_label_with_direction)) {}
+        edge_handle_(graph.get_vertices(vertex_label)
+                         .getEdgeHandle(edge_label_with_direction)) {}
 
   AdjListView<EDATA_T> get_edges(vid_t v) {
-    #if PROFILE_ENABLE  
-    auto start = gbp::GetSystemTime();
-    #endif
     size_t edge_size;
     auto item_t = edge_handle_.getEdges(v, edge_size);
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(25) += end - start;
-    gbp::get_counter(26) += 1;
-    #endif
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
   timestamp_t timestamp() const { return timestamp_; }
@@ -179,9 +126,10 @@ class SingleGraphView {
 
  public:
   SingleGraphView(label_t vertex_label, unsigned int edge_label_with_direction,
-                 timestamp_t timestamp, MutablePropertyFragment& graph)
+                  timestamp_t timestamp, MutablePropertyFragment& graph)
       : timestamp_(timestamp),
-        edge_handle_(graph.get_vertices(vertex_label).getEdgeHandle(edge_label_with_direction)) {}
+        edge_handle_(graph.get_vertices(vertex_label)
+                         .getEdgeHandle(edge_label_with_direction)) {}
 
   FORCE_INLINE bool exist(vid_t v) const {
     size_t edge_size;
@@ -196,30 +144,12 @@ class SingleGraphView {
     return item;
   }
   FORCE_INLINE bool exist1(gbp::BufferBlock& item) const {
-    // LOG(INFO) << "exist1: " << gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() << " <= " << timestamp_;
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
-    auto ret = gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(5) += end - start;
-    gbp::get_counter(6) += 1;
-    #endif
-    return ret;
+    return gbp::BufferBlock::Ref<nbr_t>(item).timestamp.load() <= timestamp_;
   }
   FORCE_INLINE const gbp::BufferBlock get_edge(vid_t v) const {
     size_t edge_size;
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
-    auto item = edge_handle_.getEdges(v, edge_size);
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(3) += end - start;
-    gbp::get_counter(4) += 1;
-    #endif
-    return item;
+
+    return edge_handle_.getEdges(v, edge_size);
   }
 
   FORCE_INLINE timestamp_t timestamp() const { return timestamp_; }
@@ -313,25 +243,12 @@ class ReadTransaction {
   AdjListView<EDATA_T> GetOutgoingEdges(label_t v_label, vid_t v,
                                         label_t neighbor_label,
                                         label_t edge_label) const {
-    // auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
-    //     graph_.get_oe_csr(v_label, neighbor_label, edge_label));
-
-    // return AdjListView<EDATA_T>(csr->get_edges(v), timestamp_);
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             v_label, neighbor_label, edge_label, true);
     size_t edge_size;
     auto item_t = graph_.get_vertices(v_label).ReadEdges(
         v, edge_label_id_with_direction, edge_size);
-    // LOG(INFO) << "item size =" << item_t.GetSize();
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(13) += end - start;
-    gbp::get_counter(14) += 1;
-    #endif
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
 
@@ -339,20 +256,12 @@ class ReadTransaction {
   AdjListView<EDATA_T> GetIncomingEdges(label_t v_label, vid_t v,
                                         label_t neighbor_label,
                                         label_t edge_label) const {
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             neighbor_label, v_label, edge_label, false);
     size_t edge_size;
     auto item_t = graph_.get_vertices(v_label).ReadEdges(
         v, edge_label_id_with_direction, edge_size);
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(11) += end - start;
-    gbp::get_counter(12) += 1;
-    #endif
     return AdjListView<EDATA_T>(item_t, timestamp_, edge_size);
   }
 
@@ -383,7 +292,6 @@ class ReadTransaction {
   template <typename EDATA_T>
   SingleGraphView<EDATA_T> GetOutgoingSingleGraphView(
       label_t v_label, label_t neighbor_label, label_t edge_label) const {
-
     auto edge_label_id_with_direction =
         graph_.schema().generate_edge_label_with_direction(
             v_label, neighbor_label, edge_label, true);
@@ -403,30 +311,12 @@ class ReadTransaction {
 
   gbp::BufferBlock GetVertexProp(label_t label, vid_t v,
                                  std::string property_name) {
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
     auto property_id = graph_.schema().get_property_id(label, property_name);
-    auto item_t = graph_.get_vertices(label).ReadColumn(v, property_id);
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(7) += end - start;
-    gbp::get_counter(8) += 1;
-    #endif
-    return item_t;
+    return graph_.get_vertices(label).ReadColumn(v, property_id);
   }
 
   gbp::BufferBlock GetVertexProp(label_t label, vid_t v, int property_id) {
-    #if PROFILE_ENABLE
-    auto start = gbp::GetSystemTime();
-    #endif
-    auto item_t = graph_.get_vertices(label).ReadColumn(v, property_id);
-    #if PROFILE_ENABLE
-    auto end = gbp::GetSystemTime();
-    gbp::get_counter(9) += end - start;
-    gbp::get_counter(10) += 1;
-    #endif
-    return item_t;
+    return graph_.get_vertices(label).ReadColumn(v, property_id);
   }
 
  private:

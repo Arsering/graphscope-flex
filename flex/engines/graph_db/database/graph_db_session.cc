@@ -72,6 +72,9 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
 // #define likely(x) __builtin_expect(!!(x), 1)
 
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
+  constexpr bool store_query = false;
+  constexpr bool check_result = false;
+
   auto ts1 = gbp::GetSystemTime();
   uint8_t type = input.back();
   const char* str_data = input.data();
@@ -82,7 +85,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   auto query_id_t = gbp::get_query_id().load();
 
   // assert((int) type == 31);
-  // if ((int) type != 6)
+  // if ((int) type <= 21)
   //   return result_buffer;
   // // if (gbp::get_query_id() != 477)
   // //   return result_buffer;
@@ -114,6 +117,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       app = apps_[type];
     }
   }
+
 #ifdef DEBUG_1
   gbp::get_counter(1) = 0;
   gbp::get_counter(2) = 0;
@@ -130,11 +134,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << " | " << gbp::get_counter(11) << " | " << gbp::get_counter(12)
               << "]";
 #endif
-    constexpr bool store_query = false;
-    constexpr bool check_result = false;
 
     if constexpr (store_query) {
-      static const size_t max_query_num = 200000100;
+      static const size_t max_query_num = 20100;
       size_t cur_query_id = query_id.fetch_add(1);
       static std::atomic<size_t> query_tofile_count = 0;
 
@@ -185,7 +187,6 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     return result_buffer;
   }
   assert(false);
-
   LOG(INFO) << "[Query-" << (int) type << "][Thread-" << thread_id_
             << "] retry - 1 / 3";
   std::this_thread::sleep_for(std::chrono::milliseconds(1));

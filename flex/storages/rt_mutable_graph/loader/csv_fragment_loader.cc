@@ -900,18 +900,18 @@ void CSVFragmentLoader::LoadCGraph() {
                                          child_configs[vertex_id].second);
           cgraph_lf_indexers_[vertex_id] = lf_indexer;
         } else {
-          // std::vector<size_t> group_sizes;
-          // for (auto& [child_vertex_id, group_size] :
-          //      parent_configs[vertex_id]) {
-          //   group_sizes.emplace_back(group_size);
-          // }
-          // cgraph_lf_indexers_[vertex_id] =
-          //     GroupedParentLFIndexer_creation_helper(indexer, prefix,
-          //                                            group_sizes);
-          GroupedChildLFIndexer<vid_t>* lf_indexer =
-              new GroupedChildLFIndexer<vid_t>();
-          build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer, 0);
-          cgraph_lf_indexers_[vertex_id] = lf_indexer;
+          std::vector<size_t> group_sizes;
+          for (auto& [child_vertex_id, group_size] :
+               parent_configs[vertex_id]) {
+            group_sizes.emplace_back(group_size);
+          }
+          cgraph_lf_indexers_[vertex_id] =
+              GroupedParentLFIndexer_creation_helper(indexer, prefix,
+                                                     group_sizes);
+          // GroupedChildLFIndexer<vid_t>* lf_indexer =
+          //     new GroupedChildLFIndexer<vid_t>();
+          // build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer, 0);
+          // cgraph_lf_indexers_[vertex_id] = lf_indexer;
         }
       });
     }

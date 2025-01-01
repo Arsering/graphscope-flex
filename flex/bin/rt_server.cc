@@ -90,17 +90,13 @@ int main(int argc, char** argv) {
   pid_file.flush();
   pid_file.close();
 
-  LOG(INFO) << "Launch Performance Logger";
-  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "nvme0n1");
-
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 
   double t0 = -grape::GetCurrentTime();
 #if !OV
-  size_t pool_num = 8;
-  size_t io_server_num = 2;
+  size_t pool_num = 1;
+  size_t io_server_num = 1;
 
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
@@ -149,7 +145,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
@@ -161,6 +157,10 @@ int main(int argc, char** argv) {
   // start service
   LOG(INFO) << "GraphScope http server start to listen on port " << http_port;
   server::GraphDBService::get().init(shard_num, http_port, enable_dpdk);
+
+  LOG(INFO) << "Launch Performance Logger";
+  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
+      log_data_path + "/performance.log", "nvme0n1");
 
   server::GraphDBService::get().run_and_wait_for_exit();
 

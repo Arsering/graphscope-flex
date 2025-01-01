@@ -33,16 +33,7 @@ void ReadTransaction::Abort() { release(); }
 
 bool ReadTransaction::GetVertexIndex(label_t label, oid_t id,
                                      vid_t& index) const {
-  #if PROFILE_ENABLE
-  auto start = gbp::GetSystemTime();
-  #endif
-  auto ret = graph_.get_lid(label, id, index);
-  #if PROFILE_ENABLE
-  auto end = gbp::GetSystemTime();
-  gbp::get_counter(1) += end - start;
-  gbp::get_counter(2) += 1;
-  #endif
-  return ret;
+  return graph_.get_lid(label, id, index);
 }
 
 vid_t ReadTransaction::GetVertexNum(label_t label) const {
@@ -50,16 +41,7 @@ vid_t ReadTransaction::GetVertexNum(label_t label) const {
 }
 
 oid_t ReadTransaction::GetVertexId(label_t label, vid_t index) const {
-  #if PROFILE_ENABLE
-  auto start = gbp::GetSystemTime();
-  #endif
-  auto ret = graph_.get_oid(label, index);
-  #if PROFILE_ENABLE
-  auto end = gbp::GetSystemTime();
-  gbp::get_counter(23) += end - start;
-  gbp::get_counter(24) += 1;
-  #endif
-  return ret;
+  return graph_.get_oid(label, index);
 }
 
 const Schema& ReadTransaction::schema() const { return graph_.schema(); }

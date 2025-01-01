@@ -8,6 +8,9 @@
 #include "flex/storages/rt_mutable_graph/types.h"
 #include "flex/utils/mmap_array.h"
 #include "flex/utils/property/types.h"
+#include "grape/io/local_io_adaptor.h"
+#include "grape/serialization/in_archive.h"
+#include "grape/serialization/out_archive.h"
 #include "grape/types.h"
 
 namespace gs {
@@ -152,30 +155,33 @@ inline void InsertEdgeAtomicHelper(gbp::BufferBlock edges,
   }
 }
 
-template <typename PROPERTY_TYPE>
+// template <typename PROPERTY_TYPE>
+// void InsertEdgeAtomicHelper(gbp::BufferBlock edges, PROPERTY_TYPE e_property,
+//                             size_t e_neighbor, size_t e_timestamp);
+
+template <class PROPERTY_TYPE>
 inline void InsertEdgeAtomicHelper(gbp::BufferBlock edges,
                                    PROPERTY_TYPE e_property, size_t e_neighbor,
-                                   size_t e_timestamp,
-                                   size_t idx_in_edges = 0) {
+                                   size_t e_timestamp) {
   gbp::BufferBlock::UpdateContent<MutableNbr<PROPERTY_TYPE>>(
       [&](auto& item) {
         item.neighbor = e_neighbor;
         item.data = e_property;
         item.timestamp.store(e_timestamp);
       },
-      edges, idx_in_edges);
+      edges);
 }
 
 template <>
-inline void InsertEdgeAtomicHelper<grape::EmptyType>(
-    gbp::BufferBlock edges, grape::EmptyType e_property, size_t e_neighbor,
-    size_t e_timestamp, size_t idx_in_edges) {
+inline void InsertEdgeAtomicHelper(gbp::BufferBlock edges,
+                                   grape::EmptyType e_property,
+                                   size_t e_neighbor, size_t e_timestamp) {
   gbp::BufferBlock::UpdateContent<MutableNbr<grape::EmptyType>>(
       [&](auto& item) {
         item.neighbor = e_neighbor;
         item.timestamp.store(e_timestamp);
       },
-      edges, idx_in_edges);
+      edges);
 }
 
 class Vertex {
@@ -767,7 +773,7 @@ class Vertex {
                                                                   .second];
       if (column_to_column_family.column_type ==
           gs::PropertyType::kDynamicEdgeList) {
-        EdgeListInit(edge_label_id.first, vertex_id, 128);
+        EdgeListInit(edge_label_id.first, vertex_id, 4);
       } else if (column_to_column_family.column_type ==
                  gs::PropertyType::kEdge) {
         assert(ConstructEdgeNew(empty_edge, std::string(), 0,
@@ -821,6 +827,7 @@ class Vertex {
                   vertex_id,
                   column_to_column_family.column_id_in_column_family);
       size_t idx_new = 0;
+
       gbp::BufferBlock::UpdateContent<MutableAdjlist>(
           [&](MutableAdjlist& item) {
             u_int8_t old_data = 0;
@@ -829,8 +836,10 @@ class Vertex {
                                                     std::memory_order_relaxed))
               ;                    // 获得锁,锁住整个edge list的修改
             idx_new = item.size_;  // 获得当前边的相对插入位置
-            if (item.capacity_ <= idx_new) {
-              LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_;
+#if ASSERT_ENABLE
+            assert(item.capacity_ >= idx_new);
+#endif
+            if (item.capacity_ == idx_new) {
               item.capacity_ = item.capacity_ == 0 ? 4 : item.capacity_ * 2;
               auto new_start_idx =
                   gbp::as_atomic(
@@ -885,20 +894,19 @@ class Vertex {
               item.start_idx_ = new_start_idx;  // 更新start_idx_
             }
             idx_new += item.start_idx_;  // 获得当前边的绝对插入位置
+
+            // 插入边
+            auto nbr_item =
+                datas_of_all_column_family_[column_to_column_family
+                                                .column_family_id]
+                    .csr[column_to_column_family.edge_list_id_in_column_family]
+                    ->get(idx_new);
+            InsertEdgeAtomicHelper(nbr_item, property, neighbor, timestamp);
+
+            item.size_++;
+            item.lock_.store(0);  // 释放锁
           },
           adj_list_item);
-      // 插入边
-      auto nbr_item =
-          datas_of_all_column_family_[column_to_column_family.column_family_id]
-              .csr[column_to_column_family.edge_list_id_in_column_family]
-              ->get(idx_new);
-      InsertEdgeAtomicHelper(nbr_item, property, neighbor, timestamp);
-      gbp::BufferBlock::UpdateContent<MutableAdjlist>(
-          [&](MutableAdjlist& item) {
-            item.size_++;
-            item.lock_.store(0);
-          },
-          adj_list_item);  // 释放锁
       break;
     }
     case gs::PropertyType::kEdge: {
@@ -907,6 +915,7 @@ class Vertex {
               .fixed_length_column_family->getColumn(
                   vertex_id,
                   column_to_column_family.column_id_in_column_family);
+
       InsertEdgeAtomicHelper(edge_item, property, neighbor, timestamp);
       break;
     }
