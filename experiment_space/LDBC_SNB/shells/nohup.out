@@ -1,1 +1,16 @@
 start_graphscope.sh: line 37: 3797666 Segmentation fault      rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+I0101 01:05:13.463917 675456 rt_server.cc:88] /data/zhengyang/graphscope-flex//experiment_space/LDBC_SNB/logs/2025-01-01-01:05:11/server/graphscope_logs/graphscope.pid
+I0101 01:05:13.464984 675456 rt_server.cc:93] Launch Performance Logger
+I0101 01:05:13.465559 675456 rt_server.cc:108] pool_size_Byte = 10485760 Bytes
+I0101 01:05:13.466006 675456 rt_server.cc:114] Finished initializing BufferPoolManager, elapsed 0.000442028 s
+F0101 01:05:13.469308 675456 schema.cc:954] Failed to parse schema config file: /data/zhengyang/graphscope-flex//experiment_space/LDBC_SNB/logs/2025-01-01-01:05:11/server/configurations/graph.yaml
+*** Check failure stack trace: ***
+    @     0x7f94f23791c3  google::LogMessage::Fail()
+    @     0x7f94f237e25b  google::LogMessage::SendToLog()
+    @     0x7f94f2378ebf  google::LogMessage::Flush()
+    @     0x7f94f23796ef  google::LogMessageFatal::~LogMessageFatal()
+    @     0x7f94f2652478  gs::Schema::LoadFromYaml()
+    @     0x56329dac4c4d  main
+    @     0x7f94f176c083  __libc_start_main
+    @     0x56329dac83be  _start
+start_graphscope.sh: line 58: 675456 Aborted                 rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num}

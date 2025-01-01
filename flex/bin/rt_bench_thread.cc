@@ -528,18 +528,18 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
   gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
-  gbp::warmup_mark().store(0);
+  gbp::warmup_mark().store(1);
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);
-  Req::get().load_result(req_file);
+  // Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
@@ -592,7 +592,8 @@ int main(int argc, char** argv) {
     gbp::warmup_mark().store(1);
     gbp::DirectCache::CleanAllCache();
   }
-
+  LOG(INFO) << " 19 = " << gbp::get_counter_global(19);
+  LOG(INFO) << " 20 = " << gbp::get_counter_global(20);
   Req::get().LoggerStop();
   auto memory_usages =
       gbp::BufferPoolManager::GetGlobalInstance().GetMemoryUsage();
