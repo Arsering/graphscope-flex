@@ -54,6 +54,7 @@ void WalWriter::close() {
 
 void WalWriter::append(const char* data, size_t length) {
   return;
+
   if (unlikely(fd_ == -1)) {
     return;
   }

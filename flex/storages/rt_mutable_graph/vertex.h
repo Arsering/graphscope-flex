@@ -830,11 +830,12 @@ class Vertex {
 
       gbp::BufferBlock::UpdateContent<MutableAdjlist>(
           [&](MutableAdjlist& item) {
-            u_int8_t old_data = 0;
-            while (item.lock_.compare_exchange_weak(old_data, 1,
-                                                    std::memory_order_acquire,
-                                                    std::memory_order_relaxed))
-              ;                    // 获得锁,锁住整个edge list的修改
+            u_int8_t old_data;
+            do {
+              old_data = 0;
+            } while (!item.lock_.compare_exchange_weak(
+                old_data, 1, std::memory_order_release,
+                std::memory_order_relaxed));  // 获得锁,锁住整个edge list的修改
             idx_new = item.size_;  // 获得当前边的相对插入位置
 #if ASSERT_ENABLE
             assert(item.capacity_ >= idx_new);
@@ -871,14 +872,14 @@ class Vertex {
                                                     .column_family_id]
                         .csr[column_to_column_family
                                  .edge_list_id_in_column_family]
-                        ->get(item.start_idx_, item.size_);
+                        ->get(item.start_idx_, item.size_.load());
                 auto nbr_slice_new =
                     datas_of_all_column_family_[column_to_column_family
                                                     .column_family_id]
                         .csr[column_to_column_family
                                  .edge_list_id_in_column_family]
-                        ->get(new_start_idx, item.size_);
-                for (size_t i = 0; i < item.size_; i++) {
+                        ->get(new_start_idx, item.size_.load());
+                for (size_t i = 0; i < item.size_.load(); i++) {
                   gbp::BufferBlock::UpdateContent<MutableNbr<PROPERTY_TYPE>>(
                       [&](MutableNbr<PROPERTY_TYPE>& item) {
                         auto& item_old =
@@ -947,11 +948,12 @@ class Vertex {
 
       gbp::BufferBlock::UpdateContent<MutableAdjlist>(
           [&](MutableAdjlist& item) {
-            u_int8_t old_data = 0;
-            while (item.lock_.compare_exchange_weak(old_data, 1,
-                                                    std::memory_order_release,
-                                                    std::memory_order_relaxed))
-              ;                    // 获得锁
+            u_int8_t old_data;
+            do {
+              old_data = 0;
+            } while (!item.lock_.compare_exchange_weak(
+                old_data, 1, std::memory_order_release,
+                std::memory_order_relaxed));  // 获得锁
             idx_new = item.size_;  // 获得当前边的相对插入位置
             if (item.capacity_ <= idx_new) {
               LOG(INFO) << "vertex_id: " << vertex_id << " " << item.capacity_
@@ -1043,8 +1045,10 @@ class Vertex {
   // }
 
   gs::PropertyType GetColumnType(size_t property_id) {
+#if ASSERT_ENABLE
     assert(property_id_to_ColumnToColumnFamily_configurations_.count(
                property_id) == 1);
+#endif
     return property_id_to_ColumnToColumnFamily_configurations_[property_id]
         .column_type;
   }
@@ -1099,6 +1103,11 @@ class Vertex {
     // assert(edge_label_to_property_id_.count(edge_label_id) == 1);
     // assert(property_id_to_ColumnToColumnFamily_configurations_.count(edge_label_to_property_id_[edge_label_id])
     // == 1);
+#if ASSERT_ENABLE
+    assert(edge_label_to_property_id_.count(edge_label_id) == 1);
+    assert(property_id_to_ColumnToColumnFamily_configurations_.count(
+               edge_label_to_property_id_[edge_label_id]) == 1);
+#endif
     auto column_to_column_family =
         property_id_to_ColumnToColumnFamily_configurations_
             [edge_label_to_property_id_[edge_label_id]];

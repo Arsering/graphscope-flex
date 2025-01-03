@@ -597,11 +597,15 @@ void MutablePropertyFragment::cgraph_open(
     } else if (child_configs.count(vertex_id) == 1) {
       cgraph_lf_indexers_[vertex_id]->set_parent_lf(
           *cgraph_lf_indexers_[child_configs[vertex_id].first]);
-      gs::vid_t pre_child_vid = 0;
+      // gs::vid_t pre_child_vid = 0;
       // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
       //     3, 26388279066936, pre_child_vid);
       // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     5, 26388279066936, pre_child_vid);
+      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
       //     4, 2199023255922, pre_child_vid);
+      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     6, 2199023255922, pre_child_vid);
     } else {
       continue;
     }

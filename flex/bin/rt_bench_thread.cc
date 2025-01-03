@@ -154,6 +154,21 @@ void pre_compute_forum(const std::string dir_path) {
   }
 }
 
+std::string getFilePathFromFd(int fd) {
+  char path[PATH_MAX];
+  char fdPath[PATH_MAX];
+  snprintf(fdPath, sizeof(fdPath), "/proc/self/fd/%d", fd);
+
+  ssize_t len = readlink(fdPath, path, sizeof(path) - 1);
+  if (len != -1) {
+    path[len] = '\0';  // Null-terminate the string
+    return std::string(path);
+  } else {
+    perror("readlink");
+    return std::string();
+  }
+}
+
 class Req {
  public:
   static Req& get() {

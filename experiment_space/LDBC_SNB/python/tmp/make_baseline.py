@@ -172,8 +172,9 @@ def make_baseline_by_order_message_by_person(conn,person_csv,comment_csv,post_cs
 conn = duckdb.connect()
 conn.execute("SET enable_progress_bar = true")
 
-INPUT_DIR='/nvme0n1/00new_db/sf0.1/social_network/dynamic/'
-OUTPUT_DIR='/nvme0n1/sf0.1/'
+sf = 30
+INPUT_DIR=f'/nvme0n1/00new_db/sf{sf}/social_network/dynamic/'
+OUTPUT_DIR=f'/nvme0n1/sf{sf}/'
 person_csv=INPUT_DIR+'person_0_0.csv'
 person_baseline_csv=OUTPUT_DIR+'person_0_0_baseline.csv'
 forum_csv=INPUT_DIR+'forum_0_0.csv'

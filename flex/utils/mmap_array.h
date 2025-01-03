@@ -77,6 +77,7 @@ class mmap_array_base {
   virtual void set(size_t idx, std::string_view val, size_t len = 1) = 0;
   virtual void set_single_obj(size_t idx, std::string_view val) = 0;
   virtual const gbp::BufferBlock get(size_t idx, size_t len = 1) const = 0;
+  virtual size_t getItemSize() const = 0;
 };
 
 template <typename T>
@@ -385,7 +386,6 @@ class mmap_array : public mmap_array_base {
       LOG(INFO) << filename_;
     CHECK_LE(idx + len, size_);
 #endif
-
     size_t buf_size = 0;
     // size_t num_page = 0;
     const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
@@ -403,7 +403,6 @@ class mmap_array : public mmap_array_base {
                   len % OBJ_NUM_PERPAGE * sizeof(T);
       // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
     }
-
     return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
     // return buffer_pool_manager_->GetBlockWithDirectCacheSync(file_offset,
     //                                                          buf_size,
@@ -422,7 +421,7 @@ class mmap_array : public mmap_array_base {
     // }
     // return ret;
   }
-
+  size_t getItemSize() const override { return sizeof(T); }
   const std::future<gbp::BufferBlock> get_async(size_t idx,
                                                 size_t len = 1) const {
 #if ASSERT_ENABLE

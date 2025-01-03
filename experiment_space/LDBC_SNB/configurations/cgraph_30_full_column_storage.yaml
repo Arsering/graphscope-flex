@@ -66,7 +66,7 @@ schema:
     - type_id: 1
       type_name: PERSON
       x_csr_params:
-        max_vertex_num: 300000
+        max_vertex_num: 60000000
       column_family_num: 20
       properties:
         - property_id: 0 
@@ -393,7 +393,7 @@ schema:
         - source_vertex: PERSON
           destination_vertex: TAG
           incoming_edge_strategy: None
-          outgoing_edge_column_family: 14
+          outgoing_edge_column_family: 13
           incoming_edge_column_family: 4
           relation: MANY_TO_ONE
     - type_id: 7
