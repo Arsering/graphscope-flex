@@ -113,18 +113,6 @@ class LFIndexer : public BaseIndexer<INDEX_T> {
     return 0;
   }
 
-  bool get_child_index(size_t child_label_id, int64_t parent_oid,
-                       INDEX_T& ret) override {
-    LOG(FATAL) << "LFIndexer: get_child_index is not implemented";
-    return false;
-  }
-
-  bool set_new_child_range(size_t child_label_id,
-                           int64_t max_child_oid) override {
-    LOG(FATAL) << "LFIndexer: set_new_child_range is not implemented";
-    return false;
-  }
-
   INDEX_T get_index(int64_t oid) const override {
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);

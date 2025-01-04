@@ -850,8 +850,9 @@ void CSVFragmentLoader::LoadCGraph() {
   LOG(INFO) << "获得group的配置";
   std::map<size_t, std::vector<std::pair<size_t, size_t>>>
       parent_configs;  // vertex_id -> (child_vertex_id, group_size)
-  std::map<size_t, std::pair<size_t, size_t>>
-      child_configs;  // vertex_id -> (parent_vertex_id, label_Id_in_parent,)
+  std::map<size_t, std::tuple<size_t, size_t, size_t>>
+      child_configs;  // vertex_id -> (parent_vertex_id, label_Id_in_parent,
+                      // group_size)
   for (size_t vertex_id = 0;
        vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
     if (schema_.group_foreign_keys_1_.count(vertex_id) == 0) {
@@ -866,7 +867,7 @@ void CSVFragmentLoader::LoadCGraph() {
     auto label_id_in_parent = parent_configs[parent_vertex_id].size();
     parent_configs[parent_vertex_id].emplace_back(child_vertex_id, group_size);
     child_configs[child_vertex_id] =
-        std::make_pair(parent_vertex_id, label_id_in_parent);
+        std::make_tuple(parent_vertex_id, label_id_in_parent, group_size);
   }
 
   LOG(INFO) << "创建indexer";
@@ -897,17 +898,13 @@ void CSVFragmentLoader::LoadCGraph() {
           GroupedChildLFIndexer<vid_t>* lf_indexer =
               new GroupedChildLFIndexer<vid_t>();
           build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer,
-                                         child_configs[vertex_id].second);
+                                         std::get<1>(child_configs[vertex_id]),
+                                         std::get<2>(child_configs[vertex_id]));
           cgraph_lf_indexers_[vertex_id] = lf_indexer;
         } else {
-          std::vector<size_t> group_sizes;
-          for (auto& [child_vertex_id, group_size] :
-               parent_configs[vertex_id]) {
-            group_sizes.emplace_back(group_size);
-          }
           cgraph_lf_indexers_[vertex_id] =
-              GroupedParentLFIndexer_creation_helper(indexer, prefix,
-                                                     group_sizes);
+              GroupedParentLFIndexer_creation_helper(
+                  indexer, prefix, parent_configs[vertex_id].size());
           // GroupedChildLFIndexer<vid_t>* lf_indexer =
           //     new GroupedChildLFIndexer<vid_t>();
           // build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer, 0);
@@ -928,11 +925,8 @@ void CSVFragmentLoader::LoadCGraph() {
       }
       if (child_configs.count(vertex_id) == 1 &&
           parent_configs.count(vertex_id) == 0) {
-        cgraph_lf_indexers_[child_configs[vertex_id].first]
-            ->set_new_child_range(child_configs[vertex_id].second,
-                                  cgraph_lf_indexers_[vertex_id]->size());
         cgraph_lf_indexers_[vertex_id]->set_parent_lf(
-            *cgraph_lf_indexers_[child_configs[vertex_id].first]);
+            *cgraph_lf_indexers_[std::get<0>(child_configs[vertex_id])]);
       }
     }
   }

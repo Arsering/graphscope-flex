@@ -603,9 +603,11 @@ void MutablePropertyFragment::cgraph_open(
       // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
       //     5, 26388279066936, pre_child_vid);
       // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-      //     4, 2199023255922, pre_child_vid);
-      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
       //     6, 2199023255922, pre_child_vid);
+      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     4, 26388279066936, pre_child_vid);
+      // LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     7, 26388279066936, pre_child_vid);
     } else {
       continue;
     }

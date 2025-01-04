@@ -340,37 +340,56 @@ class mmap_array : public mmap_array_base {
 #else
 
   // FIXME: 无法保证atomic，也无法保证单个obj不跨页
-  void set(size_t idx, const T* val, size_t len = 1) {
+  void set(size_t idx, const T* val, size_t len) {
 #if ASSERT_ENABLE
     CHECK_LE(idx + len, size_);
 #endif
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
     buffer_pool_manager_->SetBlock(reinterpret_cast<const char*>(val),
-                                   idx * sizeof(T), len * sizeof(T), fd_gbp_,
+                                   file_offset, len * sizeof(T), fd_gbp_,
+                                   false);
+  }
+
+  void set(size_t idx, const T* val) {
+#if ASSERT_ENABLE
+    CHECK_LE(idx, size_);
+#endif
+
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+    buffer_pool_manager_->SetBlock(reinterpret_cast<const char*>(val),
+                                   file_offset, sizeof(T), fd_gbp_, false);
+  }
+
+  // FIXME: 无法保证atomic，也无法保证单个obj不跨页
+  void set(size_t idx, std::string_view val, size_t len) {
+#if ASSERT_ENABLE
+    assert(idx + len <= size_);
+    assert(sizeof(T) * len == val.size());
+#endif
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+    buffer_pool_manager_->SetBlock(reinterpret_cast<const char*>(val.data()),
+                                   file_offset, len * sizeof(T), fd_gbp_,
                                    false);
   }
 
   // FIXME: 无法保证atomic，也无法保证单个obj不跨页
-  void set(size_t idx, std::string_view val, size_t len = 1) {
+  void set(size_t idx, std::string_view val) {
 #if ASSERT_ENABLE
-    assert(idx + len <= size_);
-    if (sizeof(T) * len != val.size()) {
-      LOG(INFO) << "val.size(): " << val.size() << " " << sizeof(T) << " "
-                << len;
-    }
-    assert(sizeof(T) * len == val.size());
+    assert(idx <= size_);
+    assert(sizeof(T) == val.size());
 #endif
-
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
     buffer_pool_manager_->SetBlock(reinterpret_cast<const char*>(val.data()),
-                                   idx * sizeof(T), len * sizeof(T), fd_gbp_,
-                                   false);
+                                   file_offset, sizeof(T), fd_gbp_, false);
   }
 
   // FIXME: 无法保证atomic
   void set_single_obj(size_t idx, std::string_view val) {
 #if ASSERT_ENABLE
-    if (idx >= size_) {
-      LOG(INFO) << "idx: " << idx << " size_: " << size_;
-    }
     assert(idx < size_);
     assert(sizeof(T) == val.size());
 #endif
@@ -382,8 +401,6 @@ class mmap_array : public mmap_array_base {
 
   const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
 #if ASSERT_ENABLE
-    if (idx + len > size_)
-      LOG(INFO) << filename_;
     CHECK_LE(idx + len, size_);
 #endif
     size_t buf_size = 0;
