@@ -653,13 +653,13 @@ void MutablePropertyFragment::cgraph_open(
         << "vid of nbr: "
         << gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i).neighbor
         << " oid of nbr: "
-        << cgraph_lf_indexers_[person_label_id]->get_key(
+              << cgraph_lf_indexers_[person_label_id]->get_key(
                gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i).neighbor)
         << " timestamp of nbr: "
-        << gbp::TimeConverter::millisToDateString(
-               gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i)
-                   .data.milli_second,
-               true);
+            << gbp::TimeConverter::millisToDateString(
+                     gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(item_t, i)
+                         .data.milli_second,
+                     true);
   }
 
   auto edgehandle =
@@ -784,7 +784,7 @@ void MutablePropertyFragment::cgraph_open(
         LOG(INFO) << person_oid << "out knows lid is " << knows_id;
         if (knows_id < 1520) {
           LOG(INFO) << person_oid << "out knows oid is "
-                    << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
+                  << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
         }
       }
       auto knows_edge_label_id_with_direction_in =
@@ -799,7 +799,7 @@ void MutablePropertyFragment::cgraph_open(
         LOG(INFO) << person_oid << "in knows lid is " << knows_id;
         if (knows_id < 1520) {
           LOG(INFO) << person_oid << "in knows oid is "
-                    << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
+                  << cgraph_lf_indexers_[person_label_id]->get_key(knows_id);
         }
       }
     }

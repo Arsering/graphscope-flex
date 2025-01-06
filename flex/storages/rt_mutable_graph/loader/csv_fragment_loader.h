@@ -28,7 +28,7 @@
 #include "arrow/util/value_parsing.h"
 
 #include "grape/util.h"
-
+#include "flex/storages/rt_mutable_graph/loader/edge_reader.h"
 namespace gs {
 
 // LoadFragment for csv files.
@@ -89,6 +89,31 @@ class CSVFragmentLoader : public IFragmentLoader {
 
   void loadEdges_cgraph();
 
+  void loadCreatorEdges(label_t input_src_label_id,std::unordered_map<int64_t, int64_t>* message_to_person_map){
+    LOG(INFO)<<"load creator edges";
+    auto edge_sources=loading_config_.GetEdgeLoadingMeta();
+    for (auto iter = edge_sources.begin(); iter != edge_sources.end(); ++iter) {
+      auto& src_label_id = std::get<0>(iter->first);
+      auto& dst_label_id = std::get<1>(iter->first);
+      auto& e_label_id = std::get<2>(iter->first);
+      if(src_label_id==input_src_label_id)
+      {
+        if(dst_label_id==schema_.get_vertex_label_id("PERSON"))
+        {
+          if(e_label_id==schema_.get_edge_label_id("HASCREATOR"))
+          {
+            auto& e_files = iter->second;
+            for(auto& e_file:e_files){
+              assert(e_files.size()==1);
+              EdgeReader reader;
+              reader.build_comment_to_person_map(e_file, message_to_person_map);
+            }
+          }
+        }
+      }
+    }
+  } 
+
   void OpenCGraph();
 
   const LoadingConfig& loading_config_;
@@ -101,6 +126,7 @@ class CSVFragmentLoader : public IFragmentLoader {
   std::vector<LFIndexer<vid_t>> lf_indexers_;
   std::vector<cgraph::Vertex> cgraph_vertices_;
   std::vector<BaseIndexer<vid_t>*> cgraph_lf_indexers_;
+  
 };
 
 }  // namespace gs

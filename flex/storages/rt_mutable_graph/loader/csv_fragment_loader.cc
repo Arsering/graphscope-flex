@@ -1143,33 +1143,86 @@ void CSVFragmentLoader::loadVertices_cgraph(
 
 void CSVFragmentLoader::loadIndexer_cgraph(size_t vertex_label_id,
                                            IdIndexer<oid_t, vid_t>& indexer) {
-  // auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
-  auto v_sources = loading_config_.GetVertexLoadingMeta();
-  auto v_files = v_sources.at(vertex_label_id);
-  // LOG(INFO) << "v_file is : " << v_files[0];
-  auto reader = create_vertex_reader(
-      schema_, loading_config_, vertex_label_id, v_files[0],
-      false);  // 创建vertex label id对应的点的reader
-  gs::vid_t vid = 0;
-  while (true) {
-    auto record_batch = reader->Read();  // 按batch进行read
-    if (record_batch == nullptr) {
-      break;
-    }
-    auto columns = record_batch->columns();  // 将读到的数据转换成列
-    auto primary_key_ind = std::get<2>(schema_.get_vertex_primary_key(
-        vertex_label_id)[0]);  // 这里获取primary key的index
-    auto primary_key_column = columns[primary_key_ind];  // primary key对应的列
-    auto chunked_array_primary_key =
-        std::make_shared<arrow::ChunkedArray>(primary_key_column);
+  auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
+  auto post_label_id = schema_.get_vertex_label_id("POST");
+  if (vertex_label_id == comment_label_id || vertex_label_id == post_label_id) {
+    
+    auto v_sources = loading_config_.GetVertexLoadingMeta();
+    auto v_files = v_sources.at(vertex_label_id);
+    // LOG(INFO) << "v_file is : " << v_files[0];
+    auto reader = create_vertex_reader(
+        schema_, loading_config_, vertex_label_id, v_files[0],
+        false);  // 创建vertex label id对应的点的reader
+    std::unordered_map<int64_t, int64_t>* message_to_person_map =
+        new std::unordered_map<int64_t, int64_t>();
+    loadCreatorEdges(vertex_label_id, message_to_person_map);
+    int vid_global = 0;
+    int global_block_count = 0;
+    int block_size = 4;
+    std::unordered_map<int64_t, unsigned int> person_counters;
+    // gs::vid_t vid = 0;
+    while (true) {
+      auto record_batch = reader->Read();  // 按batch进行read
+      if (record_batch == nullptr) {
+        break;
+      }
+      auto columns = record_batch->columns();  // 将读到的数据转换成列
+      auto primary_key_ind = std::get<2>(schema_.get_vertex_primary_key(
+          vertex_label_id)[0]);  // 这里获取primary key的index
+      auto primary_key_column =
+          columns[primary_key_ind];  // primary key对应的列
+      auto chunked_array_primary_key =
+          std::make_shared<arrow::ChunkedArray>(primary_key_column);
+      for (auto j = 0; j < chunked_array_primary_key->num_chunks(); ++j) {
+        auto casted_primary_key = std::static_pointer_cast<arrow::Int64Array>(
+            chunked_array_primary_key->chunk(j));
+        for (auto k = 0; k < casted_primary_key->length(); ++k) {
 
-    for (auto j = 0; j < chunked_array_primary_key->num_chunks(); ++j) {
-      auto casted_primary_key = std::static_pointer_cast<arrow::Int64Array>(
-          chunked_array_primary_key->chunk(j));
-      for (auto k = 0; k < casted_primary_key->length(); ++k) {
-        gs::oid_t oid = casted_primary_key->Value(k);
-        indexer.add(oid, vid);
-        vid++;
+          gs::oid_t oid = casted_primary_key->Value(k);
+          auto person_oid=message_to_person_map->find(oid)->second;
+          auto it = person_counters.find(person_oid);
+          if (it == person_counters.end()) {
+            // 新的person，分配一个新的block
+            global_block_count++;
+            person_counters.insert({person_oid, global_block_count * block_size});
+            it = person_counters.find(person_oid);
+          }
+          unsigned int vid=it->second;
+          unsigned int new_counter=it->second+1;
+          person_counters[person_oid]=new_counter;
+          indexer.add(oid, vid);
+        }
+      }
+    }
+  } else {
+    auto v_sources = loading_config_.GetVertexLoadingMeta();
+    auto v_files = v_sources.at(vertex_label_id);
+    // LOG(INFO) << "v_file is : " << v_files[0];
+    auto reader = create_vertex_reader(
+        schema_, loading_config_, vertex_label_id, v_files[0],
+        false);  // 创建vertex label id对应的点的reader
+    gs::vid_t vid = 0;
+    while (true) {
+      auto record_batch = reader->Read();  // 按batch进行read
+      if (record_batch == nullptr) {
+        break;
+      }
+      auto columns = record_batch->columns();  // 将读到的数据转换成列
+      auto primary_key_ind = std::get<2>(schema_.get_vertex_primary_key(
+          vertex_label_id)[0]);  // 这里获取primary key的index
+      auto primary_key_column =
+          columns[primary_key_ind];  // primary key对应的列
+      auto chunked_array_primary_key =
+          std::make_shared<arrow::ChunkedArray>(primary_key_column);
+
+      for (auto j = 0; j < chunked_array_primary_key->num_chunks(); ++j) {
+        auto casted_primary_key = std::static_pointer_cast<arrow::Int64Array>(
+            chunked_array_primary_key->chunk(j));
+        for (auto k = 0; k < casted_primary_key->length(); ++k) {
+          gs::oid_t oid = casted_primary_key->Value(k);
+          indexer.add(oid, vid);
+          vid++;
+        }
       }
     }
   }
@@ -1428,7 +1481,7 @@ void CSVFragmentLoader::loadEdges_cgraph() {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
           for (auto vertex_id = 0; vertex_id < dst_degree.size(); vertex_id++) {
             edge_list_len.emplace_back(vertex_id,
-                                       (size_t) ((dst_degree[vertex_id]) * 1));
+                                       (size_t)((dst_degree[vertex_id]) * 1));
           }
           cgraph_vertices_[dst_label_id].EdgeListInitBatch(
               ie_label_id_with_direction, edge_list_len);
