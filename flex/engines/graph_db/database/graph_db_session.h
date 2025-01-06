@@ -23,6 +23,7 @@
 #include "flex/engines/graph_db/database/single_vertex_insert_transaction.h"
 #include "flex/engines/graph_db/database/update_transaction.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
+#include "flex/storages/rt_mutable_graph/types.h"
 #include "flex/utils/property/column.h"
 
 namespace gs {
@@ -93,6 +94,20 @@ class GraphDBSession {
   cgraph::PropertyHandle GetPropertyHandle(label_t label, const std::string& col_name) {
     auto col_id = schema().get_property_id(label, col_name);
     return graph().get_vertices(label).getPropertyHandle(col_id);
+  }
+
+  cgraph::EdgeHandle GetInEdgeHandle(label_t v_label, label_t neighbor_label, label_t edge_label) {
+    auto edge_label_id_with_direction =
+        schema().generate_edge_label_with_direction(
+            neighbor_label, v_label, edge_label, false);
+    return graph().get_vertices(v_label).getEdgeHandle(edge_label_id_with_direction);
+  }
+
+  cgraph::EdgeHandle GetOutEdgeHandle(label_t v_label, label_t neighbor_label, label_t edge_label) {
+    auto edge_label_id_with_direction =
+        schema().generate_edge_label_with_direction(
+            v_label, neighbor_label, edge_label, true);
+    return graph().get_vertices(v_label).getEdgeHandle(edge_label_id_with_direction);
   }
   
  private:
