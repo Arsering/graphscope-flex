@@ -12,7 +12,7 @@
 #include "flex/storages/rt_mutable_graph/types.h"
 
 namespace gs {
-#define INSERT_WITH_PARENT_OID_ENABLE true
+#define INSERT_WITH_PARENT_OID_ENABLE false
 
 template <typename INDEX_T, size_t SIZE>
 class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
@@ -354,6 +354,8 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
         ind_start =
             __sync_fetch_and_add(&group_config_.first, group_config_.second);
         new_ind_start = ind_start;
+        // LOG(INFO) << "update new_ind_start: " << new_ind_start
+        //           << " oid: " << oid;
         require_update = true;
       }
 
@@ -365,6 +367,8 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
             } else if ((item + 1) % group_config_.second == 0) {
               new_ind_start = __sync_fetch_and_add(&group_config_.first,
                                                    group_config_.second);
+              // LOG(INFO) << "update new_ind_start: " << new_ind_start
+              //           << " oid: " << oid;
               require_update = true;
 
               auto new_key_item =
@@ -380,8 +384,6 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
           key_items, group_config_.second - 1);
 
       if (unlikely(require_update)) {
-        LOG(INFO) << "update new_ind_start: " << new_ind_start
-                  << " oid: " << oid;
         gbp::BufferBlock::UpdateContent<value_with_lock<INDEX_T>>(
             [&](value_with_lock<INDEX_T>& item) {
               item.value = new_ind_start;
@@ -404,7 +406,7 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
   }
 #else
   // 不使用parent_oid插入
-  INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid,
+  INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid_,
                                  INDEX_T& previous_child_vid) override {
     INDEX_T ind = static_cast<INDEX_T>(num_elements_.fetch_add(1));
     {

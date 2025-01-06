@@ -1169,7 +1169,6 @@ void CSVFragmentLoader::loadIndexer_cgraph(size_t vertex_label_id,
       for (auto k = 0; k < casted_primary_key->length(); ++k) {
         gs::oid_t oid = casted_primary_key->Value(k);
         indexer.add(oid, vid);
-        vid++;
       }
     }
   }

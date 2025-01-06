@@ -161,7 +161,8 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
       log_data_path + "/performance.log", "nvme0n1");
-
+  gbp::warmup_mark() = 1;
+  gbp::get_counter_global(50) = 0;
   server::GraphDBService::get().run_and_wait_for_exit();
 
   return 0;

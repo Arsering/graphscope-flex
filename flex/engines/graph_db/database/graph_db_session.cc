@@ -72,6 +72,7 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
 // #define likely(x) __builtin_expect(!!(x), 1)
 
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
+  // gbp::get_counter_global(50)++;
   constexpr bool store_query = false;
   constexpr bool check_result = false;
 
