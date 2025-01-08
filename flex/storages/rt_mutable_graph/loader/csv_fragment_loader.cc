@@ -923,12 +923,22 @@ void CSVFragmentLoader::LoadCGraph() {
           parent_configs.count(vertex_id) == 1) {
         assert(false);
       }
+
       if (child_configs.count(vertex_id) == 1 &&
           parent_configs.count(vertex_id) == 0) {
-        cgraph_lf_indexers_[vertex_id]->set_parent_lf(
-            *cgraph_lf_indexers_[std::get<0>(child_configs[vertex_id])]);
+        thread_pool.emplace_back([vertex_id, &vertex_sources, &parent_configs,
+                                  &child_configs, this]() {
+          cgraph_lf_indexers_[vertex_id]->set_parent_lf(
+              *cgraph_lf_indexers_[std::get<0>(child_configs[vertex_id])]);
+          // loadIndexer_cgraph_grouped(vertex_id,
+          //                            *cgraph_lf_indexers_[vertex_id]);
+        });
       }
     }
+    for (auto& thread : thread_pool) {
+      thread.join();
+    }
+    thread_pool.clear();
   }
 
   // 插入property数据
@@ -1174,6 +1184,59 @@ void CSVFragmentLoader::loadIndexer_cgraph(size_t vertex_label_id,
   }
 }
 
+void CSVFragmentLoader::loadIndexer_cgraph_grouped(
+    size_t vertex_label_id, BaseIndexer<vid_t>& indexer) {
+  auto src_label_id = vertex_label_id;
+  auto dst_label_id = schema_.get_vertex_label_id("PERSON");
+  auto e_label_id = schema_.get_edge_label_id("HASCREATOR");
+  auto label_id =
+      schema_.generate_edge_label(src_label_id, dst_label_id, e_label_id);
+  auto e_files = loading_config_.GetEdgeLoadingMeta().at(
+      {src_label_id, dst_label_id, e_label_id});
+  LOG(INFO) << e_files[0];
+  auto reader = create_edge_reader(schema_, loading_config_, src_label_id,
+                                   dst_label_id, e_label_id, e_files[0],
+                                   false);  // 创建edge label id对应的边的reader
+  gs::vid_t vid_previous = 0;
+  while (true) {
+    auto record_batch = reader->Read();  // 按batch进行read
+    if (record_batch == nullptr) {
+      break;
+    }
+    auto columns = record_batch->columns();
+    auto src_col = columns[0];
+    auto dst_col = columns[1];
+    CHECK(src_col->type() == arrow::int64())
+        << "src_col type: " << src_col->type()->ToString();
+    CHECK(dst_col->type() == arrow::int64())
+        << "dst_col type: " << dst_col->type()->ToString();
+    std::vector<std::shared_ptr<arrow::Array>> property_cols;
+    for (auto i = 2; i < columns.size(); ++i) {
+      property_cols.emplace_back(columns[i]);
+    }
+    CHECK(property_cols.size() <= 1)
+        << "Currently only support at most one property on edge";
+    CHECK(src_col->length() == dst_col->length());
+    CHECK(src_col->type() == arrow::int64());
+    CHECK(dst_col->type() == arrow::int64());
+    auto src_casted_array =
+        std::static_pointer_cast<arrow::Int64Array>(src_col);
+    auto dst_casted_array =
+        std::static_pointer_cast<arrow::Int64Array>(dst_col);
+    if (property_cols.size() == 1) {
+      assert(false);
+    } else {
+      for (auto i = 0; i < src_casted_array->length(); ++i) {
+        // LOG(INFO) << "src: " << src_casted_array->Value(i)
+        //           << " dst: " << dst_casted_array->Value(i);
+        indexer.insert_with_parent_oid(src_casted_array->Value(i),
+                                       dst_casted_array->Value(i),
+                                       vid_previous);
+      }
+    }
+  }
+}
+
 void CSVFragmentLoader::test_csv_loader_vertex() {
   auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
   auto v_sources = loading_config_.GetVertexLoadingMeta();
@@ -1375,16 +1438,17 @@ void CSVFragmentLoader::loadEdges_cgraph() {
 
       auto e_files = iter->second;
       // LOG(INFO) << "e_file is : " << e_files[0];
-      std::vector<size_t> src_degree(cgraph_lf_indexers_[src_label_id]->size(),
-                                     0);
-      std::vector<size_t> dst_degree(cgraph_lf_indexers_[dst_label_id]->size(),
-                                     0);
+      std::vector<size_t> src_degree(
+          cgraph_lf_indexers_[src_label_id]->get_group_start(), 0);
+      std::vector<size_t> dst_degree(
+          cgraph_lf_indexers_[dst_label_id]->get_group_start(), 0);
 
       {
         auto reader =
             create_edge_reader(schema_, loading_config_, src_label_id,
                                dst_label_id, e_label_id, e_files[0],
                                false);  // 创建edge label id对应的边的reader
+
         while (true) {
           auto record_batch = reader->Read();  // 按batch进行read
           if (record_batch == nullptr) {
@@ -1426,8 +1490,10 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         if (ie_strategy == EdgeStrategy::kMultiple) {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
           for (auto vertex_id = 0; vertex_id < dst_degree.size(); vertex_id++) {
-            edge_list_len.emplace_back(vertex_id,
-                                       (size_t) ((dst_degree[vertex_id]) * 1));
+            if (dst_degree[vertex_id] > 0) {
+              edge_list_len.emplace_back(
+                  vertex_id, (size_t) ((dst_degree[vertex_id]) * 1));
+            }
           }
           cgraph_vertices_[dst_label_id].EdgeListInitBatch(
               ie_label_id_with_direction, edge_list_len);
@@ -1437,7 +1503,10 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         if (oe_strategy == EdgeStrategy::kMultiple) {
           std::vector<std::pair<size_t, size_t>> edge_list_len;
           for (auto vertex_id = 0; vertex_id < src_degree.size(); vertex_id++) {
-            edge_list_len.emplace_back(vertex_id, (src_degree[vertex_id]) * 1);
+            if (src_degree[vertex_id] > 0) {
+              edge_list_len.emplace_back(vertex_id,
+                                         (src_degree[vertex_id]) * 1);
+            }
           }
           cgraph_vertices_[src_label_id].EdgeListInitBatch(
               oe_label_id_with_direction, edge_list_len);
@@ -1641,7 +1710,6 @@ void CSVFragmentLoader::loadEdges_cgraph() {
         }
       }
     });
-    // thread_pool.back().join();
   }
   for (auto& thread : thread_pool) {
     thread.join();

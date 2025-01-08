@@ -81,6 +81,8 @@ class CSVFragmentLoader : public IFragmentLoader {
   void LoadCGraph();
   void loadIndexer_cgraph(size_t vertex_label_id,
                           IdIndexer<oid_t, vid_t>& indexer);
+  void loadIndexer_cgraph_grouped(size_t vertex_label_id,
+                                  BaseIndexer<vid_t>& indexer);
 
   void loadVertices_cgraph(
       size_t vertex_label_id,

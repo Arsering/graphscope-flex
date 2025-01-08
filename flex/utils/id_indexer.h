@@ -112,6 +112,7 @@ class LFIndexer : public BaseIndexer<INDEX_T> {
     LOG(FATAL) << "LFIndexer: insert_with_parent_oid is not implemented";
     return 0;
   }
+  size_t get_group_start() const override { return size(); }
 
   INDEX_T get_index(int64_t oid) const override {
     size_t index =

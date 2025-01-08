@@ -130,7 +130,7 @@ schema:
         edge_type: HASCREATOR
         foreign_key_type: dst
         foreign_key_name: PERSON
-        group_size: 4
+        group_size: 20
       properties:
         - property_id: 0
           property_name: id
@@ -169,11 +169,11 @@ schema:
       x_csr_params:
         max_vertex_num: 67764850
       column_family_num: 14
-      group_foreign_key:
-        edge_type: HASCREATOR
-        foreign_key_type: dst
-        foreign_key_name: PERSON
-        group_size: 4
+      # group_foreign_key:
+      #   edge_type: HASCREATOR
+      #   foreign_key_type: dst
+      #   foreign_key_name: PERSON
+      #   group_size: 4
       properties:
         - property_id: 0
           property_name: id

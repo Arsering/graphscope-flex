@@ -6,14 +6,12 @@ export SF=30
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
-export DB_ROOT_DIR=/nvme0n1/00new_db/${Scale_Factor}_db_BP_new
+export DB_ROOT_DIR=/nvme0n1/00new_db/${Scale_Factor}_db_BP_new_20
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
 export QUERY_FILE=/data/zhengyang/data/offline/${Scale_Factor}
 # export QUERY_FILE=/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-12-30-21:26:45/server/graphscope_logs
-
 # export QUERY_FILE=${INPUT_OUTPUT_DIR}/configurations/query.file
-
 
 rm -rf ${DB_ROOT_DIR}/runtime/tmp/*
 rm -rf ${DB_ROOT_DIR}/runtime/*

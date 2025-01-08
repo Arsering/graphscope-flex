@@ -12,7 +12,7 @@
 #include "flex/storages/rt_mutable_graph/types.h"
 
 namespace gs {
-#define INSERT_WITH_PARENT_OID_ENABLE false
+#define INSERT_WITH_PARENT_OID_ENABLE true
 
 template <typename INDEX_T, size_t SIZE>
 class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
@@ -85,6 +85,7 @@ class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
                   "implemented";
     return 0;
   }
+  size_t get_group_start() const override { return size(); }
 
   gbp::BufferBlock get_child_cur_start_index(size_t child_label_id,
                                              int64_t parent_oid) override {
@@ -404,6 +405,7 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
 
     return ret;
   }
+  size_t get_group_start() const override { return group_config_.first; }
 #else
   // 不使用parent_oid插入
   INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid_,
@@ -605,6 +607,11 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
       const IdIndexer<int64_t, _INDEX_T>& input, const std::string& filename,
       GroupedChildLFIndexer<_INDEX_T>& output, size_t label_id_in_parent,
       size_t group_size, double rate);
+  template <typename _INDEX_T>
+  friend void build_grouped_child_lf_indexer_new(
+      const IdIndexer<int64_t, _INDEX_T>& input, const std::string& filename,
+      GroupedChildLFIndexer<_INDEX_T>& output, size_t label_id_in_parent,
+      size_t group_size, double rate);
 };
 
 template <class INDEX_T, size_t SIZE>
@@ -799,6 +806,51 @@ void build_grouped_child_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
       index = (index + 1) % input.num_slots_minus_one_;
     }
   }
+
+  lf.dump_meta(filename + ".meta");
+}
+
+template <typename INDEX_T>
+void build_grouped_child_lf_indexer_new(
+    const IdIndexer<int64_t, INDEX_T>& input, const std::string& filename,
+    GroupedChildLFIndexer<INDEX_T>& lf, size_t label_id_in_parent,
+    size_t group_size, double rate) {
+  lf.kid_label_id_in_parent_ = label_id_in_parent;
+  lf.group_config_ = {0, group_size};
+
+  double indices_rate = static_cast<double>(input.keys_.size()) /
+                        static_cast<double>(input.indices_.size());
+  CHECK_LT(indices_rate, rate);
+
+  size_t size = input.keys_.size();
+  size_t lf_size = static_cast<double>(size) / rate + 1;
+  lf_size = std::max(lf_size, static_cast<size_t>(1024));
+
+  lf.keys_.open(filename + ".keys", false);
+  lf.keys_.resize(lf_size);
+
+  // FIXME: input.keys_是mmap分配的还是malloc分配的？？？
+  auto keys_item = lf.keys_.get(0, lf_size);
+  for (size_t t = 0; t < lf_size; t++) {
+    gbp::BufferBlock::UpdateContent<int64_t>(
+        [&](int64_t& item) { item = std::numeric_limits<int64_t>::max(); },
+        keys_item, t);
+  }
+
+  lf.num_elements_.store(size);
+
+  lf.indices_.open(filename + ".indices", false);
+  lf.indices_.resize(input.indices_.size());
+
+  index_key_item<INDEX_T> empty_value_1{std::numeric_limits<INDEX_T>::max(), 0};
+  for (size_t k = 0; k != lf.indices_.size(); ++k) {
+    lf.indices_.set(k, &empty_value_1);
+  }
+  lf.indices_size_ = lf.indices_.size();
+
+  lf.hash_policy_.set_mod_function_by_index(
+      input.hash_policy_.get_mod_function_index());
+  lf.num_slots_minus_one_ = input.num_slots_minus_one_;
 
   lf.dump_meta(filename + ".meta");
 }
