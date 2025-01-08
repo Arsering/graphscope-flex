@@ -1145,8 +1145,10 @@ void CSVFragmentLoader::loadIndexer_cgraph(size_t vertex_label_id,
                                            IdIndexer<oid_t, vid_t>& indexer) {
   auto comment_label_id = schema_.get_vertex_label_id("COMMENT");
   auto post_label_id = schema_.get_vertex_label_id("POST");
-  if (vertex_label_id == comment_label_id || vertex_label_id == post_label_id) {
-    
+  bool group_load=false;
+  if (group_load && (vertex_label_id == comment_label_id || vertex_label_id == post_label_id)) {
+    auto v_label_name=schema_.get_vertex_label_name(vertex_label_id);
+    LOG(INFO) << "load indexer for " << v_label_name;
     auto v_sources = loading_config_.GetVertexLoadingMeta();
     auto v_files = v_sources.at(vertex_label_id);
     // LOG(INFO) << "v_file is : " << v_files[0];
@@ -1155,12 +1157,15 @@ void CSVFragmentLoader::loadIndexer_cgraph(size_t vertex_label_id,
         false);  // 创建vertex label id对应的点的reader
     std::unordered_map<int64_t, int64_t>* message_to_person_map =
         new std::unordered_map<int64_t, int64_t>();
-    loadCreatorEdges(vertex_label_id, message_to_person_map);
+    std::unordered_map<int64_t, int64_t>* person_degree_map =
+        new std::unordered_map<int64_t, int64_t>();
+    loadCreatorEdges(vertex_label_id, message_to_person_map,person_degree_map);
     int vid_global = 0;
     int global_block_count = 0;
-    int block_size = 4;
+    int block_size = 64;
     std::unordered_map<int64_t, unsigned int> person_counters;
     // gs::vid_t vid = 0;
+    int count=0;
     while (true) {
       auto record_batch = reader->Read();  // 按batch进行read
       if (record_batch == nullptr) {
@@ -1183,17 +1188,30 @@ void CSVFragmentLoader::loadIndexer_cgraph(size_t vertex_label_id,
           auto it = person_counters.find(person_oid);
           if (it == person_counters.end()) {
             // 新的person，分配一个新的block
-            global_block_count++;
             person_counters.insert({person_oid, global_block_count * block_size});
+            global_block_count++;
             it = person_counters.find(person_oid);
           }
           unsigned int vid=it->second;
           unsigned int new_counter=it->second+1;
           person_counters[person_oid]=new_counter;
-          indexer.add(oid, vid);
+          if (new_counter%block_size==0) {
+            person_counters[person_oid]=global_block_count*block_size;
+            global_block_count++;
+          }
+          if (count<1000 && vertex_label_id==comment_label_id) {
+            LOG(INFO)<<"add indexer for oid: "<<oid<<" vid: "<<vid<<" person_oid: "<<person_oid<<" person_oid's vid: "<<person_counters[person_oid]<<" global_block_count: "<<global_block_count;
+            // count++;
+          }
+          assert(indexer.add(oid, vid));
+          if (count<1000 && vertex_label_id==comment_label_id) {
+            LOG(INFO)<<"add indexer for oid: "<<oid<<" vid: "<<vid<<" person_oid: "<<person_oid<<" person_oid's vid: "<<person_counters[person_oid]<<" global_block_count: "<<global_block_count;
+            count++;
+          }
         }
       }
     }
+    LOG(INFO) << "load indexer for " << v_label_name << " done";
   } else {
     auto v_sources = loading_config_.GetVertexLoadingMeta();
     auto v_files = v_sources.at(vertex_label_id);

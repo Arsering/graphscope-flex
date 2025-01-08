@@ -42,15 +42,19 @@ std::vector<Edge> EdgeReader::read_edges_from_csv(const std::string& file_path) 
 }
 
 void EdgeReader::build_comment_to_person_map(
-    const std::vector<Edge>& edges,std::unordered_map<int64_t, int64_t>* message_to_person_map) {
+    const std::vector<Edge>& edges,std::unordered_map<int64_t, int64_t>* message_to_person_map,std::unordered_map<int64_t, int64_t>* person_degree_map) {
     // std::unordered_map<int64_t, int64_t> comment_to_person;
-    
+    LOG(INFO)<<"build comment to person map, and edge length: "<<edges.size();
     for (const auto& edge : edges) {
         (*message_to_person_map)[edge.comment_id] = edge.person_id;
+        if(person_degree_map->find(edge.person_id)==person_degree_map->end()){
+            (*person_degree_map)[edge.person_id]=1;
+        }
+        (*person_degree_map)[edge.person_id]=(*person_degree_map)[edge.person_id]+1;
     }
 } 
 
-void EdgeReader::build_comment_to_person_map(const std::string& file_path,std::unordered_map<int64_t, int64_t>* message_to_person_map){
+void EdgeReader::build_comment_to_person_map(const std::string& file_path,std::unordered_map<int64_t, int64_t>* message_to_person_map,std::unordered_map<int64_t, int64_t>* person_degree_map){
     auto edges=read_edges_from_csv(file_path);
-    build_comment_to_person_map(edges,message_to_person_map);
+    build_comment_to_person_map(edges,message_to_person_map,person_degree_map);
 }

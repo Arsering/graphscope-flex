@@ -89,7 +89,7 @@ class CSVFragmentLoader : public IFragmentLoader {
 
   void loadEdges_cgraph();
 
-  void loadCreatorEdges(label_t input_src_label_id,std::unordered_map<int64_t, int64_t>* message_to_person_map){
+  void loadCreatorEdges(label_t input_src_label_id,std::unordered_map<int64_t, int64_t>* message_to_person_map,std::unordered_map<int64_t, int64_t>* person_degree_map){
     LOG(INFO)<<"load creator edges";
     auto edge_sources=loading_config_.GetEdgeLoadingMeta();
     for (auto iter = edge_sources.begin(); iter != edge_sources.end(); ++iter) {
@@ -106,7 +106,7 @@ class CSVFragmentLoader : public IFragmentLoader {
             for(auto& e_file:e_files){
               assert(e_files.size()==1);
               EdgeReader reader;
-              reader.build_comment_to_person_map(e_file, message_to_person_map);
+              reader.build_comment_to_person_map(e_file, message_to_person_map,person_degree_map);
             }
           }
         }
