@@ -16,7 +16,10 @@
 #include "flex/engines/graph_db/database/graph_db_session.h"
 #include "flex/engines/graph_db/app/app_base.h"
 #include "flex/engines/graph_db/database/graph_db.h"
+#include "flex/graphscope_bufferpool/include/logger.h"
 #include "flex/utils/app_utils.h"
+
+#define PROFILE_QUERY_LATENCY
 
 namespace gs {
 
@@ -76,7 +79,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   constexpr bool store_query = false;
   constexpr bool check_result = false;
 
-  auto ts1 = gbp::GetSystemTime();
+  // auto ts1 = gbp::GetSystemTime();
   uint8_t type = input.back();
   const char* str_data = input.data();
   size_t str_len = input.size() - 1;
@@ -127,13 +130,17 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   size_t ts = gbp::GetSystemTime();
 #endif
   // LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
+  #ifdef PROFILE_QUERY_LATENCY
+  auto ts1 = gbp::GetSystemTime();
+  #endif
   if (app->Query(decoder, encoder)) {
-#ifdef DEBUG_1
-    ts = gbp::GetSystemTime() - ts;
-    LOG(INFO) << "profiling: [" << gbp::get_query_id().load() << "][" << ts
-              << " | " << gbp::get_counter(1) << " | " << gbp::get_counter(2)
-              << " | " << gbp::get_counter(11) << " | " << gbp::get_counter(12)
-              << "]";
+#ifdef PROFILE_QUERY_LATENCY
+    auto ts2 = gbp::GetSystemTime();
+    gbp::get_thread_logfile()<<(int)type<<"|"<<ts2<<"|"<<ts1<<std::endl;
+    // LOG(INFO) << "profiling: [" << gbp::get_query_id().load() << "][" << ts
+    //           << " | " << gbp::get_counter(1) << " | " << gbp::get_counter(2)
+    //           << " | " << gbp::get_counter(11) << " | " << gbp::get_counter(12)
+    //           << "]";
 #endif
 
     if constexpr (store_query) {
@@ -181,9 +188,12 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
       }
     }
-    auto ts2 = gbp::GetSystemTime();
+    // auto ts2 = gbp::GetSystemTime();
     // gbp::get_thread_logfile()
     //     << ts2 << " " << ts1 << " " << (int) type << std::endl;
+    return result_buffer;
+  }else{
+    gbp::get_thread_logfile()<<(int)type<<" failed"<<std::endl;
     return result_buffer;
   }
   assert(false);
