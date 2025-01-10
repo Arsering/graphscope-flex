@@ -182,8 +182,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       }
     }
     auto ts2 = gbp::GetSystemTime();
-    // gbp::get_thread_logfile()
-    //     << ts2 << " " << ts1 << " " << (int) type << std::endl;
+    gbp::get_thread_logfile()
+        << ts2 << " " << ts1 << " " << (int) type << std::endl;
     return result_buffer;
   }
   assert(false);
