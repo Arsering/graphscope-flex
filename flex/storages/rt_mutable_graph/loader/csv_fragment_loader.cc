@@ -911,6 +911,7 @@ void CSVFragmentLoader::LoadCGraph() {
           // cgraph_lf_indexers_[vertex_id] = lf_indexer;
         }
       });
+      // thread_pool.back().join();
     }
     for (auto& thread : thread_pool) {
       thread.join();
