@@ -192,6 +192,15 @@ class BaseIndexer {
     return false;
   }
   virtual size_t get_group_start() const = 0;
+  virtual INDEX_T get_new_child_index_private(int64_t oid, int64_t parent_oid,
+                                              INDEX_T& previous_child_vid) {
+    assert(false);
+    return 0;
+  }
+  virtual bool change_index(int64_t oid, INDEX_T new_ind) {
+    assert(false);
+    return false;
+  }
 };
 
 template <typename KEY_T, typename INDEX_T>

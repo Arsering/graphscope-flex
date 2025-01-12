@@ -282,11 +282,79 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
   }
 
   size_t size() const override { return num_elements_.load(); }
+  bool change_index(int64_t oid, INDEX_T new_ind) override {
+    size_t index =
+        hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
+    static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
 
+    auto num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    num_get = std::min(num_get, indices_.size() - index);
+    uint32_t start_index = index, end_index = index + num_get;
+    auto items = indices_.get(index, num_get);
+    while (true) {
+      if (unlikely(index < start_index || index >= end_index)) {
+        num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        num_get = std::min(num_get, indices_.size() - index);
+        items = indices_.get(index, num_get);
+        start_index = index, end_index = index + num_get;
+      }
+
+      auto& ind = gbp::BufferBlock::Ref<index_key_item<INDEX_T>>(
+          items, index - start_index);
+      if (ind.index == sentinel) {
+        LOG(FATAL) << "cannot find " << oid << " in id_indexer";
+      } else {
+        if (ind.key == oid) {
+          gbp::BufferBlock::UpdateContent<index_key_item<INDEX_T>>(
+              [&](index_key_item<INDEX_T>& item) { item.index = new_ind; },
+              items, index - start_index);
+          return true;
+        }
+      }
+      index = (index + 1) % num_slots_minus_one_;
+    }
+  }
   INDEX_T insert(int64_t oid) override {
-    LOG(FATAL) << "GroupedChildLFIndexer: insert is not implemented and "
-                  "foreign_oid is required";
-    return 0;
+    INDEX_T ind = static_cast<INDEX_T>(start_index_buffer_.fetch_add(1));
+    num_elements_.fetch_add(1);
+    {
+      auto item1 = keys_.get(ind);
+      gbp::BufferBlock::UpdateContent<int64_t>(
+          [&](int64_t& item) { item = oid; }, item1);
+    }
+    size_t index =
+        hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
+    static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+
+    int mark = 0;
+    // TODO: 此处实现未被测试正确性
+    size_t num_get =
+        indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    num_get = std::min(num_get, indices_.size() - index);
+    uint32_t start_index = index, end_index = index + num_get;
+    auto items = indices_.get(index, num_get);
+    while (true) {
+      if (unlikely(index < start_index || index >= end_index)) {
+        num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        num_get = std::min(num_get, indices_.size() - index);
+        items = indices_.get(index, num_get);
+        start_index = index, end_index = index + num_get;
+      }
+
+      gbp::BufferBlock::UpdateContent<index_key_item<INDEX_T>>(
+          [&](index_key_item<INDEX_T>& item) {
+            mark = __sync_bool_compare_and_swap(&(item.index), sentinel, ind);
+            if (mark) {
+              item.key = oid;
+            }
+          },
+          items, index - start_index);
+      if (mark) {
+        break;
+      }
+      index = (index + 1) % num_slots_minus_one_;
+    }
+    return ind;
   }
 #if INSERT_WITH_PARENT_OID_ENABLE
   // 使用parent_oid插入
@@ -294,6 +362,7 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
                                  INDEX_T& previous_child_vid) override {
     const auto ind =
         get_new_child_index_private(oid, parent_oid, previous_child_vid);
+    num_elements_.fetch_add(1);
 
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
@@ -331,7 +400,7 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
   }
 
   INDEX_T get_new_child_index_private(int64_t oid, int64_t parent_oid,
-                                      INDEX_T& previous_child_vid) {
+                                      INDEX_T& previous_child_vid) override {
     INDEX_T ret;
     INDEX_T ind_start, new_ind_start;
     bool require_update = false;
@@ -553,7 +622,8 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     grape::InArchive arc;
     arc << class_name_this << num_slots_minus_one_
         << hash_policy_.get_mod_function_index() << num_elements_.load()
-        << kid_label_id_in_parent_ << group_config_;
+        << kid_label_id_in_parent_ << group_config_
+        << start_index_buffer_.load() << buffer_capacity_;
     FILE* fout = fopen(filename.c_str(), "wb");
     fwrite(arc.GetBuffer(), sizeof(char), arc.GetSize(), fout);
     fflush(fout);
@@ -574,8 +644,11 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     size_t mod_function_index;
     std::string class_name;
     size_t num_elements;
+    size_t start_index_buffer;
     arc >> class_name >> num_slots_minus_one_ >> mod_function_index >>
-        num_elements >> kid_label_id_in_parent_ >> group_config_;
+        num_elements >> kid_label_id_in_parent_ >> group_config_ >>
+        start_index_buffer >> buffer_capacity_;
+    start_index_buffer_ = start_index_buffer;
     num_elements_ = num_elements;
     if (class_name != class_name_this) {
       LOG(FATAL) << "class name mismatch: " << class_name << " vs "
@@ -601,6 +674,9 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
   BaseIndexer<INDEX_T>* parent_indexer_;
   int64_t kid_label_id_in_parent_;
   std::pair<int64_t, INDEX_T> group_config_;
+
+  std::atomic<size_t> start_index_buffer_;
+  size_t buffer_capacity_;
 
   template <typename _INDEX_T>
   friend void build_grouped_child_lf_indexer(
@@ -726,10 +802,15 @@ void build_grouped_child_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
                                     GroupedChildLFIndexer<INDEX_T>& lf,
                                     size_t label_id_in_parent,
                                     size_t group_size, double rate) {
+  const size_t start_index = 10000;
+
+  lf.start_index_buffer_ = 0;
+  lf.buffer_capacity_ = start_index;
+
   lf.kid_label_id_in_parent_ = label_id_in_parent;
-  lf.group_config_ = {
-      (input.keys_.size() + group_size - 1) / group_size * group_size,
-      group_size};
+  lf.group_config_ = {(input.keys_.size() + start_index + group_size - 1) /
+                          group_size * group_size,
+                      group_size};
 
   double indices_rate = static_cast<double>(input.keys_.size()) /
                         static_cast<double>(input.indices_.size());
@@ -737,7 +818,7 @@ void build_grouped_child_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
 
   size_t size = input.keys_.size();
   size_t lf_size = static_cast<double>(size) / rate + 1;
-  lf_size = std::max(lf_size, static_cast<size_t>(1024));
+  lf_size = std::max(lf_size, static_cast<size_t>(1024)) + start_index;
 
   lf.keys_.open(filename + ".keys", false);
   lf.keys_.resize(lf_size);
@@ -746,10 +827,17 @@ void build_grouped_child_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
   auto keys_item = lf.keys_.get(0, lf_size);
   for (size_t t = 0; t < size; t++) {
     gbp::BufferBlock::UpdateContent<int64_t>(
-        [&](int64_t& item) { item = input.keys_[t]; }, keys_item, t);
+        [&](int64_t& item) { item = input.keys_[t]; }, keys_item,
+        t + start_index);
   }
 
-  for (size_t k = size; k != lf_size; ++k) {
+  for (size_t k = 0; k != start_index; ++k) {
+    gbp::BufferBlock::UpdateContent<int64_t>(
+        [&](int64_t& item) { item = std::numeric_limits<int64_t>::max(); },
+        keys_item, k);
+  }
+
+  for (size_t k = size + start_index; k != lf_size; ++k) {
     gbp::BufferBlock::UpdateContent<int64_t>(
         [&](int64_t& item) { item = std::numeric_limits<int64_t>::max(); },
         keys_item, k);
@@ -781,7 +869,7 @@ void build_grouped_child_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         if (index >= input.num_slots_minus_one_) {
           extra.emplace_back(oid, ret);
         } else {
-          empty_value_1.index = ret;
+          empty_value_1.index = ret + start_index;
           empty_value_1.key = oid;
           lf.indices_.set(index, &empty_value_1);
         }

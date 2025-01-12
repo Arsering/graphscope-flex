@@ -11,3 +11,6 @@ start_graphscope.sh: line 56: 2837293 Killed                  rt_server -B ${mem
 Terminated
 start_graphscope.sh: line 40: 3067591 Killed                  rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 500000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
 start_graphscope.sh: line 54: 3075231 Aborted                 rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 54: 3420466 Killed                  rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 54: 3227099 Killed                  rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 54: 3127644 Killed                  rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &>> ${LOG_DIR}/gs_log.log
