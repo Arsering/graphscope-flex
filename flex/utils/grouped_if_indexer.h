@@ -12,7 +12,7 @@
 #include "flex/storages/rt_mutable_graph/types.h"
 
 namespace gs {
-#define INSERT_WITH_PARENT_OID_ENABLE true
+#define INSERT_WITH_PARENT_OID_ENABLE false
 
 template <typename INDEX_T, size_t SIZE>
 class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
@@ -475,7 +475,10 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     return ret;
   }
   size_t get_group_start() const override { return group_config_.first; }
+
 #else
+  size_t get_group_start() const override { return group_config_.first; }
+
   // 不使用parent_oid插入
   INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid_,
                                  INDEX_T& previous_child_vid) override {
@@ -802,7 +805,7 @@ void build_grouped_child_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
                                     GroupedChildLFIndexer<INDEX_T>& lf,
                                     size_t label_id_in_parent,
                                     size_t group_size, double rate) {
-  const size_t start_index = 10000;
+  const size_t start_index = 0;
 
   lf.start_index_buffer_ = 0;
   lf.buffer_capacity_ = start_index;
