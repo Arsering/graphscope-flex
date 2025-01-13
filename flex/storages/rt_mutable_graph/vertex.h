@@ -1,9 +1,12 @@
 #pragma once
 
+#include <sys/types.h>
 #include <cstddef>
 #include <vector>
 
 #include "column_family.h"
+#include "flex/graphscope_bufferpool/include/bufferblock/buffer_obj.h"
+#include "flex/graphscope_bufferpool/include/config.h"
 #include "flex/graphscope_bufferpool/include/mmap_array.h"
 #include "flex/storages/rt_mutable_graph/types.h"
 #include "flex/utils/mmap_array.h"
@@ -22,6 +25,9 @@ class EdgeHandle {
              PropertyType edge_type)
       : adj_list_(adj_list), csr_(csr), edge_type_(edge_type) {}
   ~EdgeHandle() = default;
+  FORCE_INLINE gbp::BufferBlock getAdjList(vid_t v_id) const {
+    return adj_list_.getColumn(v_id);
+  }
   FORCE_INLINE gbp::BufferBlock getEdges(vid_t v_id, size_t& edge_size) const {
     switch (edge_type_) {
     case PropertyType::kDynamicEdgeList: {
@@ -41,6 +47,8 @@ class EdgeHandle {
     }
   }
 
+  gs::PropertyType get_edge_type() const { return edge_type_; }
+
  private:
   ColumnHandle adj_list_;
   const mmap_array_base* csr_;
@@ -55,6 +63,13 @@ class PropertyHandle {
         stringpool_(stringpool),
         property_type_(property_type) {}
   ~PropertyHandle() = default;
+
+  PropertyType get_property_type() const { return property_type_; }
+
+  FORCE_INLINE gbp::BufferBlock getStringItem ( vid_t v_id) const {
+    auto position = column_.getColumn(v_id);
+    return position;
+  }
 
   FORCE_INLINE gbp::BufferBlock getProperty(vid_t v_id) const {
 #if PROFILE_ENABLE
@@ -728,6 +743,30 @@ class Vertex {
     }
     }
   }
+
+  void insert_string_item(size_t vertex_id, size_t property_id, string_item value){
+    #if ASSERT_ENABLE
+    assert(property_id_to_ColumnToColumnFamily_configurations_.count(
+               property_id) == 1);
+    #endif
+    auto column_to_column_family =
+        property_id_to_ColumnToColumnFamily_configurations_[property_id];
+    switch(column_to_column_family.column_type){
+      case gs::PropertyType::kString:
+      case gs::PropertyType::kDynamicString:{
+        // 存储string的position
+        string_item position = {value.offset, (uint32_t) value.length};
+        datas_of_all_column_family_[column_to_column_family.column_family_id]
+            .fixed_length_column_family->setColumn(
+                vertex_id, column_to_column_family.column_id_in_column_family,
+                {reinterpret_cast<char*>(&position), sizeof(string_item)});
+        break;
+      }
+      default:
+        assert(false);
+    }
+  }
+
   void EdgeListInit(size_t edge_label_id, size_t vertex_id, size_t degree_max) {
 #if ASSERT_ENABLE
     assert(edge_label_to_property_id_.count(edge_label_id) == 1);
@@ -760,6 +799,15 @@ class Vertex {
           item.size_ = 0;
         },
         item_t);
+  }
+
+  std::map<size_t,ColumnConfiguration> get_edge_config(){
+    std::map<size_t,ColumnConfiguration> edge_list_column_info;
+    for (auto edge_label_id:edge_label_to_property_id_){
+      auto column_to_column_family=property_id_to_ColumnToColumnFamily_configurations_[edge_label_id.second];
+      edge_list_column_info[edge_label_id.first]=column_to_column_family;
+    }
+    return edge_list_column_info;
   }
 
   // 1. 初始化所有的单边
@@ -811,6 +859,43 @@ class Vertex {
                                            .edge_list_id_in_column_family] *
                  10);
   }
+
+  void copy_edge_list(size_t old_vid, size_t new_vid,size_t column_family_id, size_t column_id_in_column_family){
+    auto old_item=datas_of_all_column_family_[column_family_id]
+              .fixed_length_column_family->getColumn(
+                  old_vid,
+                  column_id_in_column_family);
+    
+    gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+      [&](MutableAdjlist& old_item) {
+        u_int8_t old_data;
+        do{
+          old_data=0;
+        }while(!old_item.lock_.compare_exchange_weak(old_data,1,std::memory_order_release,std::memory_order_relaxed));
+        
+        auto new_item=datas_of_all_column_family_[column_family_id]
+                  .fixed_length_column_family->getColumn(
+                      new_vid,
+                      column_id_in_column_family);
+        gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+            [&](MutableAdjlist& new_item) {
+              assert(new_item.lock_.load()==0);
+              new_item.start_idx_=old_item.start_idx_;
+              new_item.size_.store(old_item.size_.load());
+              assert(new_item.size_.load()==old_item.size_.load());
+              new_item.capacity_=old_item.capacity_;
+            },
+            new_item);
+      },
+    old_item);
+    gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+          [&](MutableAdjlist& item) {
+            item.lock_.store(0);
+          },
+    old_item);  // 释放锁
+    
+  }
+
   template <typename PROPERTY_TYPE>
   void InsertEdgeConcurrent(size_t vertex_id, size_t edge_label_id,
                             PROPERTY_TYPE property, size_t neighbor,

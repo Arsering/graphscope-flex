@@ -3,6 +3,7 @@
 #include <bits/stdint-intn.h>
 #include <tbb/concurrent_unordered_map.h>
 #include <atomic>
+#include <cstddef>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -314,9 +315,38 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
       index = (index + 1) % num_slots_minus_one_;
     }
   }
+
+  void delete_old_indexers(size_t threshold) {
+    // auto actual_left_index = left_index_.load()%buffer_capacity_;
+    // if (actual_left_index > threshold) {
+    //   LOG(INFO) << "delete_old_indexers: actual left index > threshold, actual left index is : " << actual_left_index << ", threshold is : " << threshold;
+    //   allocated_index_num_.fetch_sub(threshold+buffer_capacity_-actual_left_index+1);
+    //   left_index_.store(threshold+1);
+    // } else {
+    //   LOG(INFO) << "delete_old_indexers: actual left index <= threshold, actual left index is : " << actual_left_index << ", threshold is : " << threshold;
+    //   allocated_index_num_.fetch_sub(threshold-actual_left_index+1);
+    //   left_index_.store((threshold + 1) % buffer_capacity_);
+    // }
+    assert(left_index_.load()<threshold);
+    allocated_index_num_.fetch_sub(threshold-left_index_.load()+1);
+    left_index_.store(threshold+1);
+    LOG(INFO) << "now left is : " << left_index_.load() << ", start index is : " << start_index_buffer_.load()%buffer_capacity_<<", allocated_index_num_ is : " << allocated_index_num_.load();
+  }
+
+  size_t get_allocated_index_num() const {
+    return allocated_index_num_.load();
+  }
+
+  size_t get_start_index_buffer() const {
+    return start_index_buffer_.load();
+  }
+
   INDEX_T insert(int64_t oid) override {
-    INDEX_T ind = static_cast<INDEX_T>(start_index_buffer_.fetch_add(1));
+    INDEX_T ind = static_cast<INDEX_T>(start_index_buffer_.fetch_add(1) % buffer_capacity_);
     num_elements_.fetch_add(1);
+    allocated_index_num_.fetch_add(1);
+    LOG(INFO) << "insert: allocated_index_num_ is : " << allocated_index_num_.load() << ", buffer_capacity_ is : " << buffer_capacity_<<"left_index_ is : "<<left_index_.load()<<", start_index_buffer_ is : "<<start_index_buffer_.load();
+    assert(allocated_index_num_.load() < buffer_capacity_);
     {
       auto item1 = keys_.get(ind);
       gbp::BufferBlock::UpdateContent<int64_t>(
@@ -630,6 +660,10 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     fclose(fout);
   }
 
+  size_t get_buffer_capacity() const {
+    return buffer_capacity_;
+  }
+
   void load_meta(const std::string& filename) {
     std::string class_name_this = "GroupedChildLFIndexer";
     grape::OutArchive arc;
@@ -649,6 +683,8 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
         num_elements >> kid_label_id_in_parent_ >> group_config_ >>
         start_index_buffer >> buffer_capacity_;
     start_index_buffer_ = start_index_buffer;
+    allocated_index_num_=0;
+    left_index_=0;
     num_elements_ = num_elements;
     if (class_name != class_name_this) {
       LOG(FATAL) << "class name mismatch: " << class_name << " vs "
@@ -676,6 +712,8 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
   std::pair<int64_t, INDEX_T> group_config_;
 
   std::atomic<size_t> start_index_buffer_;
+  std::atomic<size_t> left_index_;
+  std::atomic<size_t> allocated_index_num_;
   size_t buffer_capacity_;
 
   template <typename _INDEX_T>
@@ -802,9 +840,10 @@ void build_grouped_child_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
                                     GroupedChildLFIndexer<INDEX_T>& lf,
                                     size_t label_id_in_parent,
                                     size_t group_size, double rate) {
-  const size_t start_index = 10000;
+  const size_t start_index = 1000;
 
   lf.start_index_buffer_ = 0;
+  lf.left_index_ = 0;
   lf.buffer_capacity_ = start_index;
 
   lf.kid_label_id_in_parent_ = label_id_in_parent;

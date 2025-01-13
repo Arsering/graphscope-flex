@@ -702,6 +702,7 @@ int main(int argc, char** argv) {
   auto schema = gs::Schema::LoadFromYaml(graph_schema_path);
   LOG(INFO) << "Start loading graph";
   db.CGraphInit(schema, data_path, shard_num);
+  return 0;
 
   t0 += grape::GetCurrentTime();
   uint32_t warmup_num = vm["warmup-num"].as<uint32_t>();

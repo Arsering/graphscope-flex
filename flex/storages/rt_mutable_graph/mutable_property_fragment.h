@@ -16,6 +16,7 @@
 #ifndef GRAPHSCOPE_FRAGMENT_MUTABLE_PROPERTY_FRAGMENT_H_
 #define GRAPHSCOPE_FRAGMENT_MUTABLE_PROPERTY_FRAGMENT_H_
 
+#include <cstddef>
 #include <thread>
 #include <tuple>
 #include <vector>
@@ -28,6 +29,7 @@
 #include "flex/utils/arrow_utils.h"
 #include "flex/utils/id_indexer.h"
 #include "flex/utils/property/table.h"
+#include "flex/utils/property/types.h"
 #include "flex/utils/yaml_utils.h"
 #include "grape/io/local_io_adaptor.h"
 #include "grape/serialization/out_archive.h"
@@ -103,6 +105,17 @@ class MutablePropertyFragment {
   void ingest_edge(label_t src_label, vid_t src_lid, label_t dst_label,
                    vid_t dst_lid, label_t edge_label, timestamp_t ts,
                    grape::OutArchive& arc);
+  void test_dynamic_buffered_indexer(size_t vertex_id);
+  void test_vertex_copy_edge_list(size_t vertex_id);
+  void copy_vertex_column_data(size_t vertex_id,size_t property_id, cgraph::PropertyHandle& property_handle, size_t old_vid, size_t new_vid);
+  void copy_vertex_single_edge(size_t vertex_id,size_t edge_label_id,gs::PropertyType property_type, cgraph::EdgeHandle& edge_handle, size_t old_vid, size_t new_vid);
+  void copy_vertex_dynamic_edge(size_t vertex_id,size_t edge_label_id,size_t old_vid, size_t new_vid,
+                                               size_t column_family_id,
+                                               size_t column_id_in_column_family);
+  void range_copy_vertex_data(size_t vertex_label_id, std::vector<size_t> vertex_ids, std::map<size_t, size_t>* old_index_to_new_index);
+  void batch_reorder_indexer(size_t vertex_id);
+  void test_vertex_copy();
+  void check_copy_result(size_t vertex_label_id,std::vector<size_t> vertex_ids,std::map<size_t, size_t>* old_index_to_new_index);
 
   Schema schema_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;

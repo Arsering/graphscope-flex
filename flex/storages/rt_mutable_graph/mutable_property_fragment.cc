@@ -16,7 +16,9 @@
 #include <bits/stdint-uintn.h>
 #include <grape/types.h>
 #include <cstddef>
+#include "flex/storages/rt_mutable_graph/loading_config.h"
 #include "flex/storages/rt_mutable_graph/types.h"
+#include "flex/utils/base_indexer.h"
 #include "grape/util.h"
 
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
@@ -515,6 +517,416 @@ const MutableCsrBase* MutablePropertyFragment::get_ie_csr(
   return ie_[index];
 }
 
+void MutablePropertyFragment::copy_vertex_column_data(
+    size_t vertex_id, size_t property_id,
+    cgraph::PropertyHandle& property_handle, size_t old_vid, size_t new_vid) {
+  switch (property_handle.get_property_type()) {
+  case gs::PropertyType::kInt32: {
+    auto old_data = property_handle.getProperty(old_vid);
+    auto value = gbp::BufferBlock::Ref<int32_t>(old_data);
+    vertices_[vertex_id].InsertColumn(
+        new_vid, {property_id, std::string_view(reinterpret_cast<char*>(&value),
+                                                sizeof(int32_t))});
+    break;
+  }
+  case gs::PropertyType::kDate: {
+    auto old_data = property_handle.getProperty(old_vid);
+    auto value = gbp::BufferBlock::Ref<gs::Date>(old_data);
+    vertices_[vertex_id].InsertColumn(
+        new_vid, {property_id, std::string_view(reinterpret_cast<char*>(&value),
+                                                sizeof(gs::Date))});
+    break;
+  }
+  case gs::PropertyType::kInt64: {
+    auto old_data = property_handle.getProperty(old_vid);
+    auto value = gbp::BufferBlock::Ref<int64_t>(old_data);
+    vertices_[vertex_id].InsertColumn(
+        new_vid, {property_id, std::string_view(reinterpret_cast<char*>(&value),
+                                                sizeof(int64_t))});
+    break;
+  }
+  case gs::PropertyType::kString:
+  case gs::PropertyType::kDynamicString: {
+    auto item = property_handle.getStringItem(old_vid);
+    auto value=gbp::BufferBlock::Ref<string_item>(item);
+    vertices_[vertex_id].insert_string_item(new_vid, property_id, value);
+    break;
+  }
+  case gs::PropertyType::kDynamicEdgeList:
+  case gs::PropertyType::kEdge:
+  default:
+    assert(false);
+  }
+}
+
+void MutablePropertyFragment::copy_vertex_single_edge(
+    size_t vertex_id, size_t edge_label_id, gs::PropertyType property_type,
+    cgraph::EdgeHandle& edge_handle, size_t old_vid, size_t new_vid) {
+  size_t edge_size;
+  auto value = edge_handle.getEdges(old_vid, edge_size);
+  switch (property_type) {
+  case gs::PropertyType::kInt32: {
+    auto edge_item = gbp::BufferBlock::Ref<MutableNbr<int32_t>>(value);
+    vertices_[vertex_id].InsertEdgeConcurrent(
+        new_vid, edge_label_id, edge_item.data, edge_item.neighbor,
+        edge_item.timestamp.load());
+    break;
+  }
+  case gs::PropertyType::kInt64: {
+    auto edge_item = gbp::BufferBlock::Ref<MutableNbr<int64_t>>(value);
+    vertices_[vertex_id].InsertEdgeConcurrent(
+        new_vid, edge_label_id, edge_item.data, edge_item.neighbor,
+        edge_item.timestamp.load());
+    break;
+  }
+  case gs::PropertyType::kDouble: {
+    auto edge_item = gbp::BufferBlock::Ref<MutableNbr<double>>(value);
+    vertices_[vertex_id].InsertEdgeConcurrent(
+        new_vid, edge_label_id, edge_item.data, edge_item.neighbor,
+        edge_item.timestamp.load());
+    break;
+  }
+  case gs::PropertyType::kEmpty: {
+    auto edge_item = gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(value);
+    vertices_[vertex_id].InsertEdgeConcurrent(
+        new_vid, edge_label_id, grape::EmptyType(), edge_item.neighbor,
+        edge_item.timestamp.load());
+    break;
+  }
+  default:
+    assert(false);
+  }
+}
+
+void MutablePropertyFragment::copy_vertex_dynamic_edge(
+    size_t vertex_id, size_t edge_label_id, size_t old_vid, size_t new_vid,
+    size_t column_family_id, size_t column_id_in_column_family) {
+  vertices_[vertex_id].copy_edge_list(old_vid, new_vid, column_family_id,
+                                      column_id_in_column_family);
+}
+
+void MutablePropertyFragment::range_copy_vertex_data(
+    size_t vertex_label_id, std::vector<size_t> vertex_ids,
+    std::map<size_t, size_t>* old_index_to_new_index) {
+  // vertex properties
+  auto vertex_prop_ids = schema_.get_vertex_prop_ids(vertex_label_id);
+  for (auto i = 0; i < vertex_prop_ids.size(); i++) {
+    auto property_handle =
+        vertices_[vertex_label_id].getPropertyHandle(vertex_prop_ids[i]);
+    for (auto j = 0; j < vertex_ids.size(); j++) {
+      copy_vertex_column_data(vertex_label_id, vertex_prop_ids[i],
+                              property_handle, vertex_ids[j],
+                              old_index_to_new_index->at(vertex_ids[j]));
+    }
+  }
+  // vertex edges
+  auto edge_list_column_info = vertices_[vertex_label_id].get_edge_config();
+  for (auto edge_label_id : edge_list_column_info) {
+    switch (edge_label_id.second.column_type) {
+      case gs::PropertyType::kDynamicEdgeList: {
+        for (auto j = 0; j < vertex_ids.size(); j++) {
+          copy_vertex_dynamic_edge(
+              vertex_label_id, edge_label_id.first, vertex_ids[j],
+              old_index_to_new_index->at(vertex_ids[j]),
+              edge_label_id.second.column_family_id,
+              edge_label_id.second.edge_list_id_in_column_family);
+        }
+        break;
+      }
+      case gs::PropertyType::kEdge: {
+        auto edge_handle =
+            vertices_[vertex_label_id].getEdgeHandle(edge_label_id.first);
+        for (auto j = 0; j < vertex_ids.size(); j++) {
+          copy_vertex_single_edge(vertex_label_id, edge_label_id.first,
+                                  edge_label_id.second.edge_type, edge_handle,
+                                  vertex_ids[j],
+                                  old_index_to_new_index->at(vertex_ids[j]));
+        }
+        break;
+      }
+      default:
+        assert(false);
+    }
+  }
+}
+
+void MutablePropertyFragment::check_copy_result(size_t vertex_label_id,std::vector<size_t> vertex_ids,std::map<size_t, size_t>* old_index_to_new_index){
+  auto vertex_props = schema_.get_vertex_properties(vertex_label_id);
+  auto vertex_prop_ids = schema_.get_vertex_prop_ids(vertex_label_id);
+  for (auto i = 0; i < vertex_prop_ids.size(); i++) {
+    auto property_handle =
+        vertices_[vertex_label_id].getPropertyHandle(vertex_prop_ids[i]);
+    for(auto j=0;j<vertex_ids.size();j++){
+      auto old_index=vertex_ids[j];
+      switch(vertex_props[i]){
+        case PropertyType::kInt32:{
+          auto value_old=property_handle.getProperty(old_index);
+          auto value_new=property_handle.getProperty(old_index_to_new_index->at(old_index));
+          auto value1=gbp::BufferBlock::Ref<int32_t>(value_old);
+          auto value2=gbp::BufferBlock::Ref<int32_t>(value_new);
+          assert(value1==value2);
+          break;
+        }
+        case PropertyType::kDate:{
+          auto value_old=property_handle.getProperty(old_index);
+          auto value_new=property_handle.getProperty(old_index_to_new_index->at(old_index));
+          auto value1=gbp::BufferBlock::Ref<gs::Date>(value_old);
+          auto value2=gbp::BufferBlock::Ref<gs::Date>(value_new);
+          assert(value1.milli_second==value2.milli_second);
+          break;
+        }
+        case PropertyType::kInt64:{
+          auto value_old=property_handle.getProperty(old_index);
+          auto value_new=property_handle.getProperty(old_index_to_new_index->at(old_index));
+          auto value1=gbp::BufferBlock::Ref<int64_t>(value_old);
+          auto value2=gbp::BufferBlock::Ref<int64_t>(value_new);
+          assert(value1==value2);
+          break;
+        }
+        case PropertyType::kString:
+        case PropertyType::kDynamicString:{
+          auto value_old=property_handle.getStringItem(old_index);
+          auto value_new=property_handle.getStringItem(old_index_to_new_index->at(old_index));
+          auto value1=gbp::BufferBlock::Ref<string_item>(value_old);
+          auto value2=gbp::BufferBlock::Ref<string_item>(value_new);
+          assert(value1.length==value2.length);
+          assert(value1.offset==value2.offset);
+          break;
+        }
+        case PropertyType::kDynamicEdgeList:
+        case PropertyType::kEdge:
+        default:
+          break;
+      }
+    }
+  }
+  LOG(INFO)<<"check property copy result done";
+  auto edge_list_column_info = vertices_[vertex_label_id].get_edge_config();
+  for (auto edge_label_id : edge_list_column_info) {
+    switch (edge_label_id.second.column_type) {
+      case gs::PropertyType::kDynamicEdgeList: {
+        auto edge_handle=vertices_[vertex_label_id].getEdgeHandle(edge_label_id.first);
+        for (auto j = 0; j < vertex_ids.size(); j++) {
+          auto old_index=vertex_ids[j];
+          auto new_index=old_index_to_new_index->at(old_index);
+          auto comment_label_id=schema_.get_vertex_label_id("COMMENT");
+          auto old_oid=cgraph_lf_indexers_[comment_label_id]->get_key (old_index);
+          auto new_oid=cgraph_lf_indexers_[comment_label_id]->get_key(new_index);
+          // LOG(INFO)<<"old_index: "<<old_index<<" new_index: "<<new_index;
+          // LOG(INFO)<<"old_oid: "<<old_oid<<" new_oid: "<<new_oid;
+          auto value_old=edge_handle.getAdjList(old_index);
+          auto value_new=edge_handle.getAdjList(new_index);
+          auto& value1=gbp::BufferBlock::Ref<MutableAdjlist>(value_old);
+          auto& value2=gbp::BufferBlock::Ref<MutableAdjlist>(value_new);
+          assert(value1.start_idx_==value2.start_idx_);
+          assert(value1.size_.load()==value2.size_.load());
+          assert(value1.capacity_==value2.capacity_);
+        }
+        break;
+      }
+      case gs::PropertyType::kEdge: {
+        auto edge_handle =
+            vertices_[vertex_label_id].getEdgeHandle(edge_label_id.first);
+        for (auto j = 0; j < vertex_ids.size(); j++) {
+          auto old_index=vertex_ids[j];
+          auto new_index=old_index_to_new_index->at(old_index);
+          size_t edge_size;
+          auto value_old=edge_handle.getEdges(old_index,edge_size);
+          auto value_new=edge_handle.getEdges(new_index,edge_size);
+          switch (edge_label_id.second.edge_type) {
+          case PropertyType::kInt32:{
+            auto value1=gbp::BufferBlock::Ref<MutableNbr<int32_t>>(value_old);
+            auto value2=gbp::BufferBlock::Ref<MutableNbr<int32_t>>(value_new);
+            assert(value1.neighbor==value2.neighbor);
+            assert(value1.data==value2.data);
+            assert(value1.timestamp==value2.timestamp);
+            break;
+          }
+          case PropertyType::kInt64:{
+            auto value1=gbp::BufferBlock::Ref<MutableNbr<int64_t>>(value_old);
+            auto value2=gbp::BufferBlock::Ref<MutableNbr<int64_t>>(value_new);
+            assert(value1.neighbor==value2.neighbor);
+            assert(value1.data==value2.data);
+            assert(value1.timestamp==value2.timestamp);
+            break;
+          }
+          case PropertyType::kDouble:{
+            auto value1=gbp::BufferBlock::Ref<MutableNbr<double>>(value_old);
+            auto value2=gbp::BufferBlock::Ref<MutableNbr<double>>(value_new);
+            assert(value1.neighbor==value2.neighbor);
+            assert(value1.data==value2.data);
+            assert(value1.timestamp==value2.timestamp);
+            break;
+          }
+          case PropertyType::kDate:{
+            auto value1=gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(value_old);
+            auto value2=gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(value_new);
+            assert(value1.neighbor==value2.neighbor);
+            assert(value1.data.milli_second==value2.data.milli_second);
+            assert(value1.timestamp==value2.timestamp);
+            break;
+          }
+          case PropertyType::kEmpty:{
+            auto value1=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(value_old);
+            auto value2=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(value_new);
+            assert(value1.neighbor==value2.neighbor);
+            assert(value1.timestamp==value2.timestamp);
+            break;
+          }
+          default:
+            assert(false);
+          }
+          assert(value_old==value_new);
+        }
+        break;
+      }
+      default:
+        assert(false);
+    }
+  }
+  LOG(INFO)<<"check_copy_result done";
+}
+
+void MutablePropertyFragment::test_vertex_copy(){
+  size_t person_label_id=schema_.get_vertex_label_id("PERSON");
+  size_t person_oid=26388279066936;
+  auto person_lid=cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+  LOG(INFO)<<"person_lid: "<<person_lid;
+  auto comment_label_id=schema_.get_vertex_label_id("COMMENT");
+  auto edge_label_id=schema_.get_edge_label_id("HASCREATOR");
+  auto edge_label_id_with_direction=schema_.generate_edge_label_with_direction(comment_label_id,person_label_id,edge_label_id,false);
+  auto edge_handle=vertices_[person_label_id].getEdgeHandle(edge_label_id_with_direction);
+  size_t edge_size;
+  auto edge_item=edge_handle.getEdges(person_lid,edge_size);
+  size_t base_oid=1000;
+  std::map<size_t,size_t> old_index_to_new_index;
+  std::vector<size_t> old_index_vec;
+  for(size_t i=0;i<edge_size;i++){
+    auto comment_id=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(edge_item,i).neighbor;
+    LOG(INFO)<<"comment_id: "<<comment_id;
+    auto new_oid=base_oid+i;
+    auto buffered_ind=cgraph_lf_indexers_[comment_label_id]->insert(new_oid);
+    LOG(INFO)<<"buffered_ind: "<<buffered_ind;
+    auto new_ind=cgraph_lf_indexers_[comment_label_id]->get_new_child_index_private(new_oid,person_oid,buffered_ind);
+    LOG(INFO)<<"new_ind: "<<new_ind;
+    auto change_ret=cgraph_lf_indexers_[comment_label_id]->change_index(new_oid,new_ind);
+    LOG(INFO)<<"change_ret: "<<change_ret;
+    old_index_to_new_index.emplace(comment_id,new_ind);
+    old_index_vec.emplace_back(comment_id);
+    // auto new_ind=cgraph_lf_indexers_[comment_label_id]->insert_with_parent_oid(base_oid,comment_id,0);
+  }
+  range_copy_vertex_data(comment_label_id,old_index_vec,&old_index_to_new_index);
+  check_copy_result(comment_label_id,old_index_vec,&old_index_to_new_index);
+}
+
+void MutablePropertyFragment::test_dynamic_buffered_indexer(size_t vertex_id) {
+  std::vector<std::thread> threads;
+  const int num_threads = 11;
+  std::atomic<int> success_count{0};
+  std::atomic<bool> should_stop{false};
+
+  // 监控线程 - 检查和清理旧索引
+  threads.emplace_back([&]() {
+    while (!should_stop) {
+      auto allocated_index_num =
+          static_cast<GroupedChildLFIndexer<unsigned int>*>(
+              cgraph_lf_indexers_[vertex_id])
+              ->get_allocated_index_num();
+
+      LOG(INFO) << "Monitor thread: allocated_index_num = "
+                << allocated_index_num;
+
+      if (allocated_index_num > 100) {
+        auto start_index = static_cast<GroupedChildLFIndexer<unsigned int>*>(
+                               cgraph_lf_indexers_[vertex_id])
+                               ->get_start_index_buffer();
+        auto buffer_capacity =
+            static_cast<GroupedChildLFIndexer<unsigned int>*>(
+                cgraph_lf_indexers_[vertex_id])
+                ->get_buffer_capacity();
+
+        // 删除旧索引
+        size_t threshold = (start_index - 1);
+        LOG(INFO) << "Deleting old indices up to threshold: " << threshold;
+
+        static_cast<GroupedChildLFIndexer<unsigned int>*>(
+            cgraph_lf_indexers_[vertex_id])
+            ->delete_old_indexers(threshold);
+
+        // 验证删除后的状态
+        auto new_allocated_num =
+            static_cast<GroupedChildLFIndexer<unsigned int>*>(
+                cgraph_lf_indexers_[vertex_id])
+                ->get_allocated_index_num();
+        LOG(INFO) << "After deletion: allocated_index_num = "
+                  << new_allocated_num;
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+  });
+
+  // 工作线程 - 插入和更新索引
+  for (int i = 0; i < num_threads; i++) {
+    threads.emplace_back([&, i]() {
+      gs::vid_t pre_child_vid = 0;
+      int base_oid = 100 + i * 1000;  // 增大基础值避免ID冲突
+
+      // 测试基本插入
+      auto ret1 = cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+          base_oid, 26388279066936, pre_child_vid);
+      LOG(INFO) << "Thread " << i << " initial insert: oid=" << base_oid
+                << " ret=" << ret1;
+
+      // 循环测试更多操作
+      for (int j = 0; j < 200; j++) {
+        auto thread_oid = base_oid + j;
+
+        // 获取新索引
+        auto new_ind =
+            cgraph_lf_indexers_[vertex_id]->get_new_child_index_private(
+                thread_oid, 26388279066936, pre_child_vid);
+
+        // 插入并更改索引
+        auto ret2 = cgraph_lf_indexers_[vertex_id]->insert(thread_oid);
+        auto old_index = cgraph_lf_indexers_[vertex_id]->get_index(thread_oid);
+        auto change_ret =
+            cgraph_lf_indexers_[vertex_id]->change_index(thread_oid, new_ind);
+        auto new_index = cgraph_lf_indexers_[vertex_id]->get_index(thread_oid);
+
+        // 验证操作
+        if (ret2 != (size_t) -1 && change_ret && new_index == new_ind) {
+          success_count++;
+          LOG(INFO) << "Thread " << i << " success: oid=" << thread_oid
+                    << " old_index=" << old_index << " new_index=" << new_index;
+        } else {
+          LOG(ERROR) << "Thread " << i << " failed: oid=" << thread_oid
+                     << " ret2=" << ret2 << " change_ret=" << change_ret
+                     << " new_index=" << new_index << " expected=" << new_ind;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      }
+    });
+  }
+
+  // 等待所有操作完成
+  std::this_thread::sleep_for(std::chrono::seconds(30));
+  should_stop = true;
+
+  for (auto& t : threads) {
+    t.join();
+  }
+
+  // 最终验证
+  auto final_allocated = static_cast<GroupedChildLFIndexer<unsigned int>*>(
+                             cgraph_lf_indexers_[vertex_id])
+                             ->get_allocated_index_num();
+
+  LOG(INFO) << "Test completed:"
+            << "\nTotal successful operations: " << success_count
+            << "\nFinal allocated index num: " << final_allocated;
+}
+
 void MutablePropertyFragment::cgraph_open(
     const std::string& snapshot_dir_path) {
   loadSchema(
@@ -597,29 +1009,45 @@ void MutablePropertyFragment::cgraph_open(
     } else if (child_configs.count(vertex_id) == 1) {
       cgraph_lf_indexers_[vertex_id]->set_parent_lf(
           *cgraph_lf_indexers_[child_configs[vertex_id].first]);
-      gs::vid_t pre_child_vid = 0;
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-          3, 26388279066936, pre_child_vid);
-      auto new_ind =
-          cgraph_lf_indexers_[vertex_id]->get_new_child_index_private(
-              5, 26388279066936, pre_child_vid);
-      LOG(INFO) << new_ind;
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert(5);
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->get_index(5);
-
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->change_index(5, new_ind);
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->get_index(5);
-
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-          6, 2199023255922, pre_child_vid);
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-          4, 26388279066936, pre_child_vid);
-      LOG(INFO) << cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-          7, 26388279066936, pre_child_vid);
+      // gs::vid_t pre_child_vid = 0;
+      // auto new_ind = cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
+      //     3, 26388279066936, pre_child_vid);
+      // LOG(INFO) << "oid: 3, pid: 26388279066936, new_ind: " << new_ind;
+      // auto grouped_ind =
+      //     cgraph_lf_indexers_[vertex_id]->get_new_child_index_private(
+      //         5, 26388279066936, pre_child_vid);
+      // LOG(INFO) << "oid: 5, pid: 26388279066936, new_ind: " << grouped_ind;
+      // new_ind = cgraph_lf_indexers_[vertex_id]->insert(5);
+      // LOG(INFO) << "oid: 5, new_ind: " << new_ind;
+      // LOG(INFO) << "oid: 5, old_ind: "
+      //           << cgraph_lf_indexers_[vertex_id]->get_index(5);
+      // LOG(INFO) << "oid: 5, change_ret: "
+      //           << cgraph_lf_indexers_[vertex_id]->change_index(5, grouped_ind);
+      // LOG(INFO) << "oid: 5, new_ind: "
+      //           << cgraph_lf_indexers_[vertex_id]->get_index(5);
     } else {
       continue;
     }
   }
+
+  // for (size_t vertex_id = 0;
+  //      vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
+  //   if (child_configs.count(vertex_id) == 1 &&
+  //       parent_configs.count(vertex_id) == 1) {
+  //     assert(false);
+  //   }
+  //   if (child_configs.count(vertex_id) == 0 &&
+  //       parent_configs.count(vertex_id) == 0) {
+  //     continue;
+  //   } else if (child_configs.count(vertex_id) == 1) {
+  //     cgraph_lf_indexers_[vertex_id]->set_parent_lf(
+  //         *cgraph_lf_indexers_[child_configs[vertex_id].first]);
+  //     test_dynamic_buffered_indexer(vertex_id);
+  //   } else {
+  //     continue;
+  //   }
+  // }
+
 
   for (size_t vertex_id = 0;
        vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
@@ -631,6 +1059,8 @@ void MutablePropertyFragment::cgraph_open(
   }
 
   LOG(INFO) << "open vertex done";
+
+  test_vertex_copy();
   return;
 
   size_t edge_size = 0;
@@ -847,7 +1277,7 @@ void MutablePropertyFragment::cgraph_open(
   // {
   //   auto vertex_oid = 15527184033;
   //   auto vertex_id =
-  //   cgraph_lf_indexers_[person_label_id]->insert(vertex_oid); auto
+  //   cgraph_lf_indexers_[person_label_id]->get_index(vertex_oid); auto
   //   vertex_name = schema_.get_vertex_label_name(person_label_id); LOG(INFO)
   //   << "vertex name: " << vertex_name;
 
@@ -871,14 +1301,12 @@ void MutablePropertyFragment::cgraph_open(
   //   std::string email = "Carmen1129@gmail.com;Carmen1129@yahoo.com";
   //   // 1. 计算实际需要的buffer大小(包含字符串长度)
   //   size_t buffer_size = 0;
-  //   buffer_size += sizeof(size_t) + first_name.size();  // 字符串长度 + 内容
-  //   buffer_size += sizeof(size_t) + last_name.size();
-  //   buffer_size += sizeof(size_t) + gender.size();
-  //   buffer_size += sizeof(gs::Date);  // birthday
-  //   buffer_size += sizeof(gs::Date);  // creation_date
-  //   buffer_size += sizeof(size_t) + location_ip.size();
-  //   buffer_size += sizeof(size_t) + browser_used.size();
-  //   buffer_size += sizeof(size_t) + language.size();
+  //   buffer_size += sizeof(size_t) + first_name.size();  // 字符串长度 +
+  //   内容 buffer_size += sizeof(size_t) + last_name.size(); buffer_size +=
+  //   sizeof(size_t) + gender.size(); buffer_size += sizeof(gs::Date);  //
+  //   birthday buffer_size += sizeof(gs::Date);  // creation_date buffer_size
+  //   += sizeof(size_t) + location_ip.size(); buffer_size += sizeof(size_t) +
+  //   browser_used.size(); buffer_size += sizeof(size_t) + language.size();
   //   buffer_size += sizeof(size_t) + email.size();
 
   //   std::vector<char> buffer(buffer_size);
@@ -1022,11 +1450,14 @@ void MutablePropertyFragment::cgraph_open(
   //       schema_.get_edge_label_id("LIKES"));
   //   auto edge_with_direction = schema_.generate_edge_label_with_direction(
   //       person_label_id, comment_label_id, likes_label_id, true);
-  //   auto edge_with_direction_in = schema_.generate_edge_label_with_direction(
+  //   auto edge_with_direction_in =
+  //   schema_.generate_edge_label_with_direction(
   //       person_label_id, comment_label_id, likes_label_id, false);
-  //   auto flag1 = vertices_[person_label_id].edge_label_with_direction_exist(
+  //   auto flag1 =
+  //   vertices_[person_label_id].edge_label_with_direction_exist(
   //       edge_with_direction);
-  //   auto flag2 = vertices_[comment_label_id].edge_label_with_direction_exist(
+  //   auto flag2 =
+  //   vertices_[comment_label_id].edge_label_with_direction_exist(
   //       edge_with_direction_in);
   //   LOG(INFO) << "person to comment edge exist: " << flag1;
   //   LOG(INFO) << "comment to person edge exist: " << flag2;
@@ -1130,7 +1561,8 @@ void MutablePropertyFragment::cgraph_open(
   //   vertices_[person_label_id].InsertEdgeUnsafe(person_vid1,
   //   {person_isLocatedIn_place_edge_label_id_out, {reinterpret_cast<const
   //   char*>(&edge_out), sizeof(edge_out)}}); MutableNbr<grape::EmptyType>
-  //   edge_in; edge_in.neighbor = person_vid1; edge_in.timestamp = 0; LOG(INFO)
+  //   edge_in; edge_in.neighbor = person_vid1; edge_in.timestamp = 0;
+  //   LOG(INFO)
   //   << "place_label_id: " << (int) place_label_id; LOG(INFO)<<"place vid:
   //   "<<place_vid; LOG(INFO)<<"person_isLocatedIn_place_edge_label_id_in:
   //   "<<person_isLocatedIn_place_edge_label_id_in; LOG(INFO)<<"edge_in:
@@ -1139,8 +1571,8 @@ void MutablePropertyFragment::cgraph_open(
   //   {person_isLocatedIn_place_edge_label_id_in, {reinterpret_cast<const
   //   char*>(&edge_in), sizeof(edge_in)}}); auto item_place =
   //   vertices_[person_label_id].ReadEdges(person_vid1,
-  //   person_isLocatedIn_place_edge_label_id_out, edge_num); for (size_t i = 0;
-  //   i < edge_num; i++) {
+  //   person_isLocatedIn_place_edge_label_id_out, edge_num); for (size_t i =
+  //   0; i < edge_num; i++) {
   //     auto edge_data =
   //     gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_place, i);
   //     LOG(INFO) << "edge_data: " << edge_data.neighbor;
@@ -1148,8 +1580,8 @@ void MutablePropertyFragment::cgraph_open(
   //     cgraph_lf_indexers_[place_label_id]->get_key(edge_data.neighbor);
   //   }
   //   auto item_person = vertices_[place_label_id].ReadEdges(place_vid,
-  //   person_isLocatedIn_place_edge_label_id_in, edge_num); for (size_t i = 0;
-  //   i < edge_num; i++) {
+  //   person_isLocatedIn_place_edge_label_id_in, edge_num); for (size_t i =
+  //   0; i < edge_num; i++) {
   //     auto edge_data =
   //     gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(item_person, i);
   //     LOG(INFO) << "edge_data: " << edge_data.neighbor;
