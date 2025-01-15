@@ -115,6 +115,8 @@ class MutablePropertyFragment {
   void range_copy_vertex_data(size_t vertex_label_id, std::vector<size_t> vertex_ids, std::map<size_t, size_t>* old_index_to_new_index);
   void batch_reorder_indexer(size_t vertex_id);
   void test_vertex_copy();
+  void test_edge_list_change();
+  void change_edge_list_layout(size_t src_vertex_label,size_t dst_vertex_label,size_t edge_label_id,bool is_outgoing,size_t left, size_t right,std::map<size_t, size_t>* old_index_to_new_index);
   void check_copy_result(size_t vertex_label_id,std::vector<size_t> vertex_ids,std::map<size_t, size_t>* old_index_to_new_index);
 
   Schema schema_;

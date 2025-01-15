@@ -254,7 +254,11 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-      reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      // auto data=std::string(buffer.data(), buffer.data() + length);
+      // auto type=data.back();
+      // if(type==6){
+        reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      // }
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
@@ -728,9 +732,9 @@ int main(int argc, char** argv) {
 #endif
 
   std::string req_file = vm["req-file"].as<std::string>();
-  // Req::get().load_query(req_file);
-  Req::get().load_query_with_timestamp(req_file);
-  // Req::get().load_result(req_file);
+  Req::get().load_query(req_file);
+  // Req::get().load_query_with_timestamp(req_file);
+  Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
@@ -754,8 +758,8 @@ int main(int argc, char** argv) {
     auto begin = std::chrono::system_clock::now();
     gbp::warmup_mark().store(1);
 
-    // Req::get().simulate(shard_num);
-    Req::get().simulate_with_update_and_read(shard_num);
+    Req::get().simulate(shard_num);
+    // Req::get().simulate_with_update_and_read(shard_num);
     auto end = std::chrono::system_clock::now();
     auto cpu_cost_after = gbp::GetCPUTime();
 

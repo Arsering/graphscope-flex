@@ -810,6 +810,10 @@ class Vertex {
     return edge_list_column_info;
   }
 
+  ColumnConfiguration get_edge_config(size_t edge_label_with_direction){
+    return property_id_to_ColumnToColumnFamily_configurations_.at(edge_label_to_property_id_.at(edge_label_with_direction));
+  }
+
   // 1. 初始化所有的单边
   // 2. 初始化所有的多边：为多边分配空间
   void InitVertex(size_t vertex_id) {
@@ -1083,6 +1087,235 @@ class Vertex {
 
   std::map<size_t, size_t>& get_edge_label_to_property_id() {
     return edge_label_to_property_id_;
+  }
+
+  void change_edge_neighbor(size_t vertex_id,ColumnConfiguration column_configuration,size_t left,size_t right,std::map<size_t, size_t>* old_index_to_new_index){
+    switch(column_configuration.column_type){
+      case PropertyType::kDynamicEdgeList:{
+        auto adj_list_item=datas_of_all_column_family_[column_configuration.column_family_id]
+              .fixed_length_column_family->getColumn(
+                  vertex_id,
+                  column_configuration.column_id_in_column_family);
+        switch(column_configuration.edge_type){
+        case gs::PropertyType::kDate:{
+          gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+              [&](MutableAdjlist& item) {
+                //get lock
+                uint8_t old_data;
+                do{
+                  old_data=0;
+                }while(!item.lock_.compare_exchange_weak(old_data,1,std::memory_order_release,std::memory_order_relaxed));
+                //critical section
+                auto nbr_slice=datas_of_all_column_family_[column_configuration.column_family_id]
+                  .csr[column_configuration.edge_list_id_in_column_family]
+                  ->get(item.start_idx_,item.size_.load());
+                for(size_t i=0;i<item.size_.load();i++){
+                  auto& nbr_item=gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(nbr_slice,i);
+                  if(nbr_item.neighbor>=left&&nbr_item.neighbor<=right){
+                    gbp::BufferBlock::UpdateContent<MutableNbr<gs::Date>>(
+                        [&](MutableNbr<gs::Date>& item) {
+                          assert(item.neighbor==nbr_item.neighbor);
+                          item.neighbor=old_index_to_new_index->at(nbr_item.neighbor);
+                        },
+                      nbr_slice,i);
+                  }
+                }
+                //release lock
+                item.lock_.store(0);
+              },
+              adj_list_item);
+          break;
+        }
+        case gs::PropertyType::kInt32:{
+          gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+              [&](MutableAdjlist& item) {
+                //get lock
+                uint8_t old_data;
+                do{
+                  old_data=0;
+                }while(!item.lock_.compare_exchange_weak(old_data,1,std::memory_order_release,std::memory_order_relaxed));
+                //critical section
+                auto nbr_slice=datas_of_all_column_family_[column_configuration.column_family_id]
+                  .csr[column_configuration.edge_list_id_in_column_family]
+                  ->get(item.start_idx_,item.size_.load());
+                for(size_t i=0;i<item.size_.load();i++){
+                  auto& nbr_item=gbp::BufferBlock::Ref<MutableNbr<int32_t>>(nbr_slice,i);
+                  if(nbr_item.neighbor>=left&&nbr_item.neighbor<=right){
+                    gbp::BufferBlock::UpdateContent<MutableNbr<int32_t>>(
+                        [&](MutableNbr<int32_t>& item) {
+                          assert(item.neighbor==nbr_item.neighbor);
+                          item.neighbor=old_index_to_new_index->at(nbr_item.neighbor);
+                        },
+                      nbr_slice,i);
+                  }
+                }
+                //release lock
+                item.lock_.store(0);
+              },
+              adj_list_item);
+          break;
+        }
+        case gs::PropertyType::kInt64:{
+          gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+              [&](MutableAdjlist& item) {
+                //get lock
+                uint8_t old_data;
+                do{
+                  old_data=0;
+                }while(!item.lock_.compare_exchange_weak(old_data,1,std::memory_order_release,std::memory_order_relaxed));
+                //critical section
+                auto nbr_slice=datas_of_all_column_family_[column_configuration.column_family_id]
+                  .csr[column_configuration.edge_list_id_in_column_family]
+                  ->get(item.start_idx_,item.size_.load());
+                for(size_t i=0;i<item.size_.load();i++){
+                  auto& nbr_item=gbp::BufferBlock::Ref<MutableNbr<int64_t>>(nbr_slice,i);
+                  if(nbr_item.neighbor>=left&&nbr_item.neighbor<=right){
+                    gbp::BufferBlock::UpdateContent<MutableNbr<int64_t>>(
+                        [&](MutableNbr<int64_t>& item) {
+                          assert(item.neighbor==nbr_item.neighbor);
+                          item.neighbor=old_index_to_new_index->at(nbr_item.neighbor);
+                        },
+                      nbr_slice,i);
+                  }
+                }
+                //release lock
+                item.lock_.store(0);
+              },
+              adj_list_item);
+          break;
+        }
+        case gs::PropertyType::kDouble:{
+          gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+              [&](MutableAdjlist& item) {
+                //get lock
+                uint8_t old_data;
+                do{
+                  old_data=0;
+                }while(!item.lock_.compare_exchange_weak(old_data,1,std::memory_order_release,std::memory_order_relaxed));
+                //critical section
+                auto nbr_slice=datas_of_all_column_family_[column_configuration.column_family_id]
+                  .csr[column_configuration.edge_list_id_in_column_family]
+                  ->get(item.start_idx_,item.size_.load());
+                for(size_t i=0;i<item.size_.load();i++){
+                  auto& nbr_item=gbp::BufferBlock::Ref<MutableNbr<double>>(nbr_slice,i);
+                  if(nbr_item.neighbor>=left&&nbr_item.neighbor<=right){
+                    gbp::BufferBlock::UpdateContent<MutableNbr<double>>(
+                        [&](MutableNbr<double>& item) {
+                          assert(item.neighbor==nbr_item.neighbor);
+                          item.neighbor=old_index_to_new_index->at(nbr_item.neighbor);
+                        },
+                      nbr_slice,i);
+                  }
+                }
+                //release lock
+                item.lock_.store(0);
+              },
+              adj_list_item);
+          break;
+        }
+        case gs::PropertyType::kEmpty:{
+          gbp::BufferBlock::UpdateContent<MutableAdjlist>(
+              [&](MutableAdjlist& item) {
+                //get lock
+                uint8_t old_data;
+                do{
+                  old_data=0;
+                }while(!item.lock_.compare_exchange_weak(old_data,1,std::memory_order_release,std::memory_order_relaxed));
+                //critical section
+                auto nbr_slice=datas_of_all_column_family_[column_configuration.column_family_id]
+                  .csr[column_configuration.edge_list_id_in_column_family]
+                  ->get(item.start_idx_,item.size_.load());
+                for(size_t i=0;i<item.size_.load();i++){
+                  auto& nbr_item=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(nbr_slice,i);
+                  if(nbr_item.neighbor>=left&&nbr_item.neighbor<=right){
+                    gbp::BufferBlock::UpdateContent<MutableNbr<grape::EmptyType>>(
+                        [&](MutableNbr<grape::EmptyType>& item) {
+                          assert(item.neighbor==nbr_item.neighbor);
+                          item.neighbor=old_index_to_new_index->at(nbr_item.neighbor);
+                        },
+                      nbr_slice,i);
+                  }
+                }
+                //release lock
+                item.lock_.store(0);
+              },
+              adj_list_item);
+          break;
+        }
+        default:
+          assert(false);
+        }
+        break;
+      }
+      case PropertyType::kEdge:{
+        auto edge_item=datas_of_all_column_family_[column_configuration.column_family_id]
+              .fixed_length_column_family->getColumn(
+                  vertex_id,
+                  column_configuration.column_id_in_column_family);
+        switch (column_configuration.edge_type){
+        case gs::PropertyType::kDate:{
+          auto value=gbp::BufferBlock::Ref<MutableNbr<gs::Date>>(edge_item);
+          if(value.neighbor>=left&&value.neighbor<=right){
+            gbp::BufferBlock::UpdateContent<MutableNbr<gs::Date>>(
+                [&](MutableNbr<gs::Date>& item) {
+                  item.neighbor=old_index_to_new_index->at(value.neighbor);
+                },
+                edge_item);
+          }
+          break;
+        }
+        case gs::PropertyType::kInt32:{
+          auto value=gbp::BufferBlock::Ref<MutableNbr<int32_t>>(edge_item);
+          if(value.neighbor>=left&&value.neighbor<=right){
+            gbp::BufferBlock::UpdateContent<MutableNbr<int32_t>>(
+                [&](MutableNbr<int32_t>& item) {
+                  item.neighbor=old_index_to_new_index->at(value.neighbor);
+                },
+                edge_item);
+          }
+          break;
+        }
+        case gs::PropertyType::kInt64:{
+          auto value=gbp::BufferBlock::Ref<MutableNbr<int64_t>>(edge_item);
+          if(value.neighbor>=left&&value.neighbor<=right){
+            gbp::BufferBlock::UpdateContent<MutableNbr<int64_t>>(
+                [&](MutableNbr<int64_t>& item) {
+                  item.neighbor=old_index_to_new_index->at(value.neighbor);
+                },
+                edge_item);
+          }
+          break;
+        }
+        case gs::PropertyType::kDouble:{
+          auto value=gbp::BufferBlock::Ref<MutableNbr<double>>(edge_item);
+          if(value.neighbor>=left&&value.neighbor<=right){
+            gbp::BufferBlock::UpdateContent<MutableNbr<double>>(
+                [&](MutableNbr<double>& item) {
+                  item.neighbor=old_index_to_new_index->at(value.neighbor);
+                },
+                edge_item);
+          }
+          break;
+        }
+        case gs::PropertyType::kEmpty:{
+          auto value=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(edge_item);
+          if(value.neighbor>=left&&value.neighbor<=right){
+            gbp::BufferBlock::UpdateContent<MutableNbr<grape::EmptyType>>(
+                [&](MutableNbr<grape::EmptyType>& item) {
+                  item.neighbor=old_index_to_new_index->at(value.neighbor);
+                },
+                edge_item);
+          }
+          break;
+        }
+        default:
+          assert(false);
+        }
+        break;
+      }
+      default:
+        assert(false);
+    }
   }
 
   gbp::BufferBlock ReadEdges(size_t vertex_id, size_t edge_label_id,

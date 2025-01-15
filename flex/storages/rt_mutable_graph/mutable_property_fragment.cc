@@ -787,6 +787,22 @@ void MutablePropertyFragment::check_copy_result(size_t vertex_label_id,std::vect
   LOG(INFO)<<"check_copy_result done";
 }
 
+void MutablePropertyFragment::change_edge_list_layout(size_t src_vertex_label,size_t dst_vertex_label,size_t edge_label_id,bool is_outgoing,size_t left, size_t right,std::map<size_t, size_t>* old_index_to_new_index){
+  auto edge_label_id_with_direction=schema_.generate_edge_label_with_direction(src_vertex_label,dst_vertex_label,edge_label_id,is_outgoing);
+  auto column_configuration=vertices_[src_vertex_label].get_edge_config(edge_label_id_with_direction);
+  
+}
+
+// void MutablePropertyFragment::test_edge_list_change(){
+//   size_t person_label_id=schema_.get_vertex_label_id("PERSON");
+//   size_t person_oid=26388279066936;
+//   auto person_lid=cgraph_lf_indexers_[person_label_id]->get_index(person_oid);
+//   LOG(INFO)<<"person_lid: "<<person_lid;
+//   auto comment_label_id=schema_.get_vertex_label_id("COMMENT");
+//   auto edge_label_id=schema_.get_edge_label_id("HASCREATOR");
+//   change_edge_list_layout(comment_label_id,person_label_id,edge_label_id,false,0,100,nullptr);
+// }
+
 void MutablePropertyFragment::test_vertex_copy(){
   size_t person_label_id=schema_.get_vertex_label_id("PERSON");
   size_t person_oid=26388279066936;
@@ -801,6 +817,9 @@ void MutablePropertyFragment::test_vertex_copy(){
   size_t base_oid=1000;
   std::map<size_t,size_t> old_index_to_new_index;
   std::vector<size_t> old_index_vec;
+  size_t min_index=1000000000000000000;
+  size_t max_index=0;
+  std::vector<size_t> new_comment_ids;
   for(size_t i=0;i<edge_size;i++){
     auto comment_id=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(edge_item,i).neighbor;
     LOG(INFO)<<"comment_id: "<<comment_id;
@@ -813,10 +832,48 @@ void MutablePropertyFragment::test_vertex_copy(){
     LOG(INFO)<<"change_ret: "<<change_ret;
     old_index_to_new_index.emplace(comment_id,new_ind);
     old_index_vec.emplace_back(comment_id);
+    new_comment_ids.emplace_back(new_ind);
+    if(comment_id<min_index){
+      min_index=comment_id;
+    }
+    if(comment_id>max_index){
+      max_index=comment_id;
+    }
     // auto new_ind=cgraph_lf_indexers_[comment_label_id]->insert_with_parent_oid(base_oid,comment_id,0);
   }
   range_copy_vertex_data(comment_label_id,old_index_vec,&old_index_to_new_index);
   check_copy_result(comment_label_id,old_index_vec,&old_index_to_new_index);
+  LOG(INFO)<<"check copy result done, begin check edge list change";
+  auto reply_label_id=schema_.get_edge_label_id("REPLYOF");
+  auto reply_edge_label_id_in=schema_.generate_edge_label_with_direction(comment_label_id,comment_label_id,reply_label_id,false);
+  auto reply_edge_label_id_out=schema_.generate_edge_label_with_direction(comment_label_id,comment_label_id,reply_label_id,true);
+  auto reply_column_configuration_in=vertices_[comment_label_id].get_edge_config(reply_edge_label_id_in);
+  auto reply_column_configuration_out=vertices_[comment_label_id].get_edge_config(reply_edge_label_id_out);
+  auto reply_id=0;
+  auto new_reply_id=0;
+  for(auto comment_id:old_index_vec){
+    auto reply_item_in=vertices_[comment_label_id].ReadEdges(comment_id,reply_edge_label_id_in,edge_size);
+    if(edge_size>0){
+      reply_id=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(reply_item_in,0).neighbor;
+      new_reply_id=old_index_to_new_index[comment_id];
+      break;
+    }
+  }
+  auto column_configuration=vertices_[person_label_id].get_edge_config(edge_label_id_with_direction);
+  vertices_[person_label_id].change_edge_neighbor(person_lid,column_configuration,min_index,max_index,&old_index_to_new_index);
+  vertices_[comment_label_id].change_edge_neighbor(reply_id,reply_column_configuration_out,min_index,max_index,&old_index_to_new_index);
+  auto person_new_created_item=vertices_[person_label_id].ReadEdges(person_lid,edge_label_id_with_direction,edge_size);
+  for(size_t i=0;i<edge_size;i++){
+    auto comment_id=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(person_new_created_item,i).neighbor;
+    LOG(INFO)<<"create comment_id: "<<comment_id;
+    assert(comment_id==new_comment_ids[i]);
+  }
+  auto reply_new_created_item=vertices_[comment_label_id].ReadEdges(reply_id,reply_edge_label_id_out,edge_size);
+  for(size_t i=0;i<edge_size;i++){
+    auto comment_id=gbp::BufferBlock::Ref<MutableNbr<grape::EmptyType>>(reply_new_created_item,i).neighbor;
+    LOG(INFO)<<"replied comment id: "<<comment_id;
+    assert(comment_id==new_reply_id);
+  }
 }
 
 void MutablePropertyFragment::test_dynamic_buffered_indexer(size_t vertex_id) {
@@ -1009,45 +1066,10 @@ void MutablePropertyFragment::cgraph_open(
     } else if (child_configs.count(vertex_id) == 1) {
       cgraph_lf_indexers_[vertex_id]->set_parent_lf(
           *cgraph_lf_indexers_[child_configs[vertex_id].first]);
-      // gs::vid_t pre_child_vid = 0;
-      // auto new_ind = cgraph_lf_indexers_[vertex_id]->insert_with_parent_oid(
-      //     3, 26388279066936, pre_child_vid);
-      // LOG(INFO) << "oid: 3, pid: 26388279066936, new_ind: " << new_ind;
-      // auto grouped_ind =
-      //     cgraph_lf_indexers_[vertex_id]->get_new_child_index_private(
-      //         5, 26388279066936, pre_child_vid);
-      // LOG(INFO) << "oid: 5, pid: 26388279066936, new_ind: " << grouped_ind;
-      // new_ind = cgraph_lf_indexers_[vertex_id]->insert(5);
-      // LOG(INFO) << "oid: 5, new_ind: " << new_ind;
-      // LOG(INFO) << "oid: 5, old_ind: "
-      //           << cgraph_lf_indexers_[vertex_id]->get_index(5);
-      // LOG(INFO) << "oid: 5, change_ret: "
-      //           << cgraph_lf_indexers_[vertex_id]->change_index(5, grouped_ind);
-      // LOG(INFO) << "oid: 5, new_ind: "
-      //           << cgraph_lf_indexers_[vertex_id]->get_index(5);
     } else {
       continue;
     }
   }
-
-  // for (size_t vertex_id = 0;
-  //      vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {
-  //   if (child_configs.count(vertex_id) == 1 &&
-  //       parent_configs.count(vertex_id) == 1) {
-  //     assert(false);
-  //   }
-  //   if (child_configs.count(vertex_id) == 0 &&
-  //       parent_configs.count(vertex_id) == 0) {
-  //     continue;
-  //   } else if (child_configs.count(vertex_id) == 1) {
-  //     cgraph_lf_indexers_[vertex_id]->set_parent_lf(
-  //         *cgraph_lf_indexers_[child_configs[vertex_id].first]);
-  //     test_dynamic_buffered_indexer(vertex_id);
-  //   } else {
-  //     continue;
-  //   }
-  // }
-
 
   for (size_t vertex_id = 0;
        vertex_id < schema_.vprop_column_family_nums_.size(); vertex_id++) {

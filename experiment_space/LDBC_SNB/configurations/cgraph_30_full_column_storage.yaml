@@ -5,10 +5,10 @@ stored_procedures:
   enable_lists:
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic1.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3_new.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic4.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic6.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic6_new.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic7.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic8.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic9.so
@@ -401,7 +401,7 @@ schema:
       vertex_type_pair_relations:
         - source_vertex: COMMENT
           destination_vertex: PLACE
-          outgoing_edge_strategy: None
+          outgoing_edge_strategy: Single
           outgoing_edge_column_family: 10
           incoming_edge_column_family: 4
           relation: MANY_TO_ONE
@@ -413,7 +413,7 @@ schema:
           relation: MANY_TO_ONE
         - source_vertex: POST
           destination_vertex: PLACE
-          outgoing_edge_strategy: None
+          outgoing_edge_strategy: Single
           outgoing_edge_column_family: 12
           incoming_edge_column_family: 6
           relation: MANY_TO_ONE

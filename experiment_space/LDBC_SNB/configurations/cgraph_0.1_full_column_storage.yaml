@@ -5,10 +5,10 @@ stored_procedures:
   enable_lists:
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic1.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3_new.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic4.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic5.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic6.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic6_new.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic7.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic8.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic9.so
