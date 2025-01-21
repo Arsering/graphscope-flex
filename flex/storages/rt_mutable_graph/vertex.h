@@ -40,6 +40,24 @@ class EdgeHandle {
     }
     }
   }
+  FORCE_INLINE gbp::BufferBlockIndex getEdgesIndex(vid_t v_id, size_t& edge_size) const {
+    switch (edge_type_) {
+    case PropertyType::kDynamicEdgeList: {
+      auto adj_item = adj_list_.getColumn(v_id);
+      auto& adj_list = gbp::BufferBlock::Ref<MutableAdjlist>(adj_item);
+      edge_size = adj_list.size_;
+      return csr_->get_buffer_block_index(adj_list.start_idx_, adj_list.size_);
+    }
+    case PropertyType::kEdge: {
+      edge_size = 1;
+      return adj_list_.getColumnIndex(v_id);
+    }
+    default: {
+      assert(false);
+      return gbp::BufferBlockIndex();
+    }
+    }
+  }
 
  private:
   ColumnHandle adj_list_;
@@ -76,6 +94,38 @@ class PropertyHandle {
       auto position = column_.getColumn(v_id);
       auto& item = gbp::BufferBlock::Ref<string_item>(position);
       auto ret = stringpool_->get(item.offset, item.length);
+#if PROFILE_ENABLE
+      auto end = gbp::GetSystemTime();
+      gbp::get_counter(7) += end - start;
+      gbp::get_counter(8) += 1;
+#endif
+      return ret;
+    }
+    default: {
+      assert(false);
+    }
+    }
+  }
+  FORCE_INLINE gbp::BufferBlockIndex getPropertyIndex(vid_t v_id) const {
+#if PROFILE_ENABLE
+    auto start = gbp::GetSystemTime();
+#endif
+    switch (property_type_) {
+    case gs::PropertyType::kInt32:
+    case gs::PropertyType::kDate:
+    case gs::PropertyType::kInt64: {
+      auto ret = column_.getColumnIndex(v_id);
+#if PROFILE_ENABLE
+      auto end = gbp::GetSystemTime();
+      gbp::get_counter(7) += end - start;
+      gbp::get_counter(8) += 1;
+#endif
+      return ret;
+    }
+    case PropertyType::kString: {
+      auto position = column_.getColumn(v_id);
+      auto& item = gbp::BufferBlock::Ref<string_item>(position);
+      auto ret = stringpool_->get_buffer_block_index(item.offset, item.length);
 #if PROFILE_ENABLE
       auto end = gbp::GetSystemTime();
       gbp::get_counter(7) += end - start;

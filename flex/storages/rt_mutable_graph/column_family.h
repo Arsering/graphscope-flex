@@ -22,6 +22,9 @@ class ColumnHandle {
   FORCE_INLINE gbp::BufferBlock getColumn(size_t rowId) const {
     return property_buffer_.get_partial(rowId, offset_, columnLength_);
   }
+  FORCE_INLINE gbp::BufferBlockIndex getColumnIndex(size_t rowId) const {
+    return property_buffer_.get_partial_buffer_block_index(rowId, offset_, columnLength_);
+  }
 
  private:
   const gbp::mmap_array& property_buffer_;

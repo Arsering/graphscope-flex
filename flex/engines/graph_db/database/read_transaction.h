@@ -350,30 +350,6 @@ class ReadTransaction {
       label_t label_id, const std::vector<vid_t>& vids,
       const std::vector<cgraph::PropertyHandle>& prop_handles) const;
 
-  /* 批量获取出边
-  @param v_label: 顶点标签             
-  @param vids: 顶点ID组成的vector
-  @param neighbor_label: 邻居标签
-  @param edge_label: 边标签
-  @return: 出边列表
-  */
-  template <typename EDATA_T>
-  std::vector<AdjListView<EDATA_T>> BatchGetOutgoingEdges(
-      label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
-      label_t edge_label) const;
-
-  /* 批量获取入边
-  @param v_label: 顶点标签
-  @param vids: 顶点ID组成的vector
-  @param neighbor_label: 邻居标签
-  @param edge_label: 边标签
-  @return: 入边列表
-  */
-  template <typename EDATA_T>
-  std::vector<AdjListView<EDATA_T>> BatchGetIncomingEdges(
-      label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
-      label_t edge_label) const;
-
   /* 获取边指向的邻居
   @param src_label_id: 源顶点标签
   @param dst_label_id: 目标顶点标签

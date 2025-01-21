@@ -181,32 +181,6 @@ ReadTransaction::BatchGetVertexIndices(label_t label,
   }
   return {indices, exists};
 }
-
-template <typename EDATA_T>
-std::vector<AdjListView<EDATA_T>> ReadTransaction::BatchGetOutgoingEdges(
-    label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
-    label_t edge_label) const {
-  std::vector<AdjListView<EDATA_T>> results;
-  results.reserve(vids.size());
-  for (auto v : vids) {
-    results.push_back(
-        GetOutgoingEdges<EDATA_T>(v_label, v, neighbor_label, edge_label));
-  }
-  return results;
-}
-
-template <typename EDATA_T>
-std::vector<AdjListView<EDATA_T>> ReadTransaction::BatchGetIncomingEdges(
-    label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
-    label_t edge_label) const {
-  std::vector<AdjListView<EDATA_T>> results;
-  results.reserve(vids.size());
-  for (auto v : vids) {
-    results.push_back(
-        GetIncomingEdges<EDATA_T>(v_label, v, neighbor_label, edge_label));
-  }
-  return results;
-}
 template <typename EDATA_T>
 std::vector<std::vector<vid_t>> ReadTransaction::BatchGetVidsNeighbors(//这里需要区分out和in
     const label_t& v_label, const label_t& neighbor_label,
@@ -225,7 +199,8 @@ std::vector<std::vector<vid_t>> ReadTransaction::BatchGetVidsNeighbors(//这里�
   auto edge_handle=graph_.get_vertices(v_label).getEdgeHandle(edge_label_with_direction);
   for(int i=0;i<vids.size();i++){
     size_t edge_size;
-    auto item_t=edge_handle.getEdges(vids[i], edge_size);
+    auto item_t_index=edge_handle.getEdgesIndex(vids[i], edge_size);
+    auto item_t=gbp::BufferPoolManager::GetGlobalInstance().GetBlockSync(item_t_index.file_offset, item_t_index.buf_size, item_t_index.fd_gbp);
     ret[i].reserve(edge_size);
     for(int j=0;j<edge_size;j++){
       auto nbr=gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(item_t, j).neighbor;
@@ -255,7 +230,7 @@ std::vector<vid_t> ReadTransaction::BatchGetVidsNeighborsWithIndex(//这里需�
   int size=0;
   for(int i=0;i<vids.size();i++){
     size_t edge_size;
-    auto item_t=edge_handle.getEdges(vids[i], edge_size);
+    auto item_t=edge_handle.getEdgesIndex(vids[i], edge_size);
     size+=edge_size;
   }
   ret.reserve(size);
@@ -263,7 +238,8 @@ std::vector<vid_t> ReadTransaction::BatchGetVidsNeighborsWithIndex(//这里需�
     neighbors_index.push_back(std::make_pair(0,0));
     neighbors_index[i].first=ret.size();
     size_t edge_size;
-    auto item_t=edge_handle.getEdges(vids[i], edge_size);
+    auto item_t_index=edge_handle.getEdgesIndex(vids[i], edge_size);
+    auto item_t=gbp::BufferPoolManager::GetGlobalInstance().GetBlockSync(item_t_index.file_offset, item_t_index.buf_size, item_t_index.fd_gbp);
     for(int j=0;j<edge_size;j++){
       auto nbr=gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(item_t, j).neighbor;
       ret.push_back(nbr);
@@ -291,7 +267,8 @@ std::vector<std::vector<std::pair<vid_t,timestamp_t>>> ReadTransaction::BatchGet
   auto edge_handle=graph_.get_vertices(v_label).getEdgeHandle(edge_label_with_direction);
   for(int i=0;i<vids.size();i++){
     size_t edge_size;
-    auto item_t=edge_handle.getEdges(vids[i], edge_size);
+    auto item_t_index=edge_handle.getEdgesIndex(vids[i], edge_size);
+    auto item_t=gbp::BufferPoolManager::GetGlobalInstance().GetBlockSync(item_t_index.file_offset, item_t_index.buf_size, item_t_index.fd_gbp);
     ret[i].reserve(edge_size);
     for(int j=0;j<edge_size;j++){
       auto nbr=gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(item_t, j).neighbor;
@@ -311,7 +288,9 @@ std::vector<std::vector<gbp::BufferBlock>> ReadTransaction::BatchGetVertexPropsF
     results.push_back(std::vector<gbp::BufferBlock>());
     results[i].reserve(vids.size());
     for(auto vid:vids){
-      results[i].push_back(prop_handles[i].getProperty(vid));
+      // results[i].push_back(prop_handles[i].getProperty(vid));
+      auto item_t_index=prop_handles[i].getPropertyIndex(vid);
+      results[i].push_back(gbp::BufferPoolManager::GetGlobalInstance().GetBlockSync(item_t_index.file_offset, item_t_index.buf_size, item_t_index.fd_gbp));
     }
   }
   return results;
@@ -364,19 +343,6 @@ template std::vector<vid_t> ReadTransaction::BatchGetVidsNeighborsWithIndex<Date
     const label_t& edge_label, const std::vector<vid_t>& vids,
     std::vector<std::pair<int,int>>& neighbors_index,
     bool is_out) const;
-
-
-template std::vector<AdjListView<Date>>
-ReadTransaction::BatchGetOutgoingEdges<Date>(label_t, const std::vector<vid_t>&,
-                                             label_t, label_t) const;
-
-template std::vector<AdjListView<Date>>
-ReadTransaction::BatchGetIncomingEdges<Date>(label_t, const std::vector<vid_t>&,
-                                             label_t, label_t) const;
-
-template std::vector<AdjListView<grape::EmptyType>>
-ReadTransaction::BatchGetIncomingEdges<grape::EmptyType>(
-    label_t, const std::vector<vid_t>&, label_t, label_t) const;
 
 template <typename EDATA_T>
 std::vector<std::vector<std::pair<vid_t, EDATA_T>>> ReadTransaction::BatchGetEdgePropsFromSrcVids(

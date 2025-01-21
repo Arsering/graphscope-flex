@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -77,6 +78,7 @@ class mmap_array_base {
   virtual void set(size_t idx, std::string_view val, size_t len = 1) = 0;
   virtual void set_single_obj(size_t idx, std::string_view val) = 0;
   virtual const gbp::BufferBlock get(size_t idx, size_t len = 1) const = 0;
+  virtual const gbp::BufferBlockIndex get_buffer_block_index(size_t idx, size_t len = 1) const = 0;
   virtual size_t getItemSize() const = 0;
 };
 
@@ -399,6 +401,30 @@ class mmap_array : public mmap_array_base {
                                    file_offset, sizeof(T), fd_gbp_, false);
   }
 
+  const gbp::BufferBlockIndex get_buffer_block_index(size_t idx, size_t len = 1) const override {
+#if ASSERT_ENABLE
+    CHECK_LE(idx + len, size_);
+#endif
+    size_t buf_size = 0;
+    // size_t num_page = 0;
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+
+    size_t rest_filelen_firstpage =
+        gbp::PAGE_SIZE_MEMORY - file_offset % gbp::PAGE_SIZE_MEMORY;
+    if (rest_filelen_firstpage > len * sizeof(T)) {
+      buf_size += sizeof(T) * len;
+      // num_page = 1;
+    } else {
+      buf_size += rest_filelen_firstpage;
+      len -= rest_filelen_firstpage / sizeof(T);
+      buf_size += len / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_MEMORY +
+                  len % OBJ_NUM_PERPAGE * sizeof(T);
+      // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
+    }
+    return gbp::BufferBlockIndex{file_offset, buf_size, fd_gbp_};
+  }
+
   const gbp::BufferBlock get(size_t idx, size_t len = 1) const override {
 #if ASSERT_ENABLE
     CHECK_LE(idx + len, size_);
@@ -597,6 +623,12 @@ class mmap_array<std::string_view> {
     return std::string_view(data_.data() + item.offset, item.length);
   }
 #else
+  const gbp::BufferBlockIndex get_buffer_block_index(size_t idx, size_t len = 1) const {
+    auto value = items_.get(idx);
+    auto& item = gbp::BufferBlock::Ref<gs::string_item>(value);
+    return data_.get_buffer_block_index(item.offset, item.length);
+  }
+
   gbp::BufferBlock get(size_t idx) const {
     auto value = items_.get(idx);
     auto& item = gbp::BufferBlock::Ref<gs::string_item>(value);
