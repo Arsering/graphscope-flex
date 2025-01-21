@@ -5,7 +5,7 @@ stored_procedures:
   enable_lists:
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic1.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic2.so
-    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3.so
+    - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic3_location.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic4.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic5.so
     - /data-1/yichengzhang/data/latest_gs_bp/graphscope-flex/flex_ldbc_snb/cgraph_stored_procedures/build/libn_ic6.so
@@ -39,7 +39,7 @@ schema:
       type_name: PLACE
       x_csr_params:
         max_vertex_num: 1460
-      column_family_num: 10
+      column_family_num: 12
       properties:
         - property_id: 0
           property_name: id
@@ -67,7 +67,7 @@ schema:
       type_name: PERSON
       x_csr_params:
         max_vertex_num: 60000000
-      column_family_num: 20
+      column_family_num: 22
       properties:
         - property_id: 0 
           property_name: id
@@ -314,6 +314,102 @@ schema:
           column_family: 2
       primary_keys:
         - id
+    - type_id: 8
+      type_name: COMMENTX
+      x_csr_params:
+        max_vertex_num: 238859896
+      column_family_num: 12
+      group_foreign_key:
+        edge_type: ISLOCATEDIN
+        foreign_key_type: dst
+        foreign_key_name: PLACE
+        group_size: 512
+      properties:
+        - property_id: 0
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+          column_family: 0
+        - property_id: 1
+          property_name: creationDate
+          property_type:
+            date: "date"
+          column_family: 1
+        - property_id: 2
+          property_name: locationIP
+          property_type:
+            primitive_type: DT_STRING
+          column_family: 2
+        - property_id: 3
+          property_name: browserUsed
+          property_type:
+            primitive_type: DT_STRING
+          column_family: 3
+        - property_id: 4
+          property_name: content
+          property_type:
+            primitive_type: DT_STRING
+          column_family: 4
+        - property_id: 5
+          property_name: length
+          property_type:
+            primitive_type: DT_SIGNED_INT32
+          column_family: 5
+      primary_keys:
+        - id
+    - type_id: 9
+      type_name: POSTX
+      x_csr_params:
+        max_vertex_num: 67764850
+      column_family_num: 14
+      group_foreign_key:
+        edge_type: ISLOCATEDIN
+        foreign_key_type: dst
+        foreign_key_name: PLACE
+        group_size: 512
+      properties:
+        - property_id: 0
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+          column_family: 0
+        - property_id: 1
+          property_name: imageFile
+          property_type:
+            primitive_type: DT_STRING
+          column_family: 1
+        - property_id: 2
+          property_name: creationDate
+          property_type:
+            date: "date"
+          column_family: 2
+        - property_id: 3
+          property_name: locationIP
+          property_type:
+            primitive_type: DT_STRING
+          column_family: 3
+        - property_id: 4
+          property_name: browserUsed
+          property_type:
+            primitive_type: DT_STRING
+          column_family: 4
+        - property_id: 5
+          property_name: language
+          property_type:
+            primitive_type: DT_STRING
+          column_family: 5
+        - property_id: 6
+          property_name: content
+          property_type:
+            primitive_type: DT_STRING
+          column_family: 6
+        - property_id: 7
+          property_name: length
+          property_type:
+            primitive_type: DT_SIGNED_INT32
+          column_family: 7
+      primary_keys:
+        - id
   edge_types:
     - type_id: 0
       type_name: HASCREATOR
@@ -329,6 +425,18 @@ schema:
           outgoing_edge_strategy: Single
           outgoing_edge_column_family: 8
           incoming_edge_column_family: 11
+          relation: MANY_TO_ONE
+        - source_vertex: COMMENTX
+          destination_vertex: PERSON
+          outgoing_edge_strategy: Single
+          outgoing_edge_column_family: 6
+          incoming_edge_column_family: 20
+          relation: MANY_TO_ONE
+        - source_vertex: POSTX
+          destination_vertex: PERSON
+          outgoing_edge_strategy: Single
+          outgoing_edge_column_family: 8
+          incoming_edge_column_family: 21
           relation: MANY_TO_ONE
     - type_id: 1
       type_name: HASTAG
@@ -422,6 +530,18 @@ schema:
           outgoing_edge_strategy: Single
           outgoing_edge_column_family: 4
           incoming_edge_column_family: 7
+          relation: MANY_TO_ONE
+        - source_vertex: COMMENTX
+          destination_vertex: PLACE
+          outgoing_edge_strategy: Single
+          outgoing_edge_column_family: 7
+          incoming_edge_column_family: 10
+          relation: MANY_TO_ONE
+        - source_vertex: POSTX
+          destination_vertex: PLACE
+          outgoing_edge_strategy: Single
+          outgoing_edge_column_family: 9
+          incoming_edge_column_family: 11
           relation: MANY_TO_ONE
     - type_id: 8
       type_name: KNOWS
