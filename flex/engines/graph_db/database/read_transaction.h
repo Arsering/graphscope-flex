@@ -388,6 +388,12 @@ class ReadTransaction {
       const label_t& edge_label_id, const std::vector<vid_t>& vids,
       bool is_out) const;
   template <typename EDATA_T>
+  std::vector<vid_t> BatchGetVidsNeighborsWithIndex(//这里需要区分out和in
+    const label_t& v_label, const label_t& neighbor_label,
+    const label_t& edge_label, const std::vector<vid_t>& vids,
+    std::vector<std::pair<int,int>>& neighbors_index,
+    bool is_out) const;
+  template <typename EDATA_T>
   std::vector<std::vector<std::pair<vid_t,timestamp_t>>> BatchGetVidsNeighborsWithTimestamp(
       const label_t& src_label_id, const label_t& dst_label_id,
       const label_t& edge_label_id, const std::vector<vid_t>& vids,

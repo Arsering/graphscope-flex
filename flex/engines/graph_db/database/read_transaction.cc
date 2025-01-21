@@ -234,6 +234,45 @@ std::vector<std::vector<vid_t>> ReadTransaction::BatchGetVidsNeighbors(//这里�
   }
   return ret;
 }
+
+template <typename EDATA_T>
+std::vector<vid_t> ReadTransaction::BatchGetVidsNeighborsWithIndex(//这里需要区分out和in
+    const label_t& v_label, const label_t& neighbor_label,
+    const label_t& edge_label, const std::vector<vid_t>& vids,
+    std::vector<std::pair<int,int>>& neighbors_index,
+    bool is_out) const {
+  std::vector<vid_t> ret;
+  ret.resize(vids.size());
+  unsigned int edge_label_with_direction;
+  if(is_out){
+    edge_label_with_direction=graph_.schema().generate_edge_label_with_direction(
+    v_label, neighbor_label, edge_label, is_out);
+  }else {
+    edge_label_with_direction=graph_.schema().generate_edge_label_with_direction(
+    neighbor_label, v_label,  edge_label, is_out);
+  }
+  auto edge_handle=graph_.get_vertices(v_label).getEdgeHandle(edge_label_with_direction);
+  int size=0;
+  for(int i=0;i<vids.size();i++){
+    size_t edge_size;
+    auto item_t=edge_handle.getEdges(vids[i], edge_size);
+    size+=edge_size;
+  }
+  ret.reserve(size);
+  for(int i=0;i<vids.size();i++){
+    neighbors_index.push_back(std::make_pair(0,0));
+    neighbors_index[i].first=ret.size();
+    size_t edge_size;
+    auto item_t=edge_handle.getEdges(vids[i], edge_size);
+    for(int j=0;j<edge_size;j++){
+      auto nbr=gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(item_t, j).neighbor;
+      ret.push_back(nbr);
+    }
+    neighbors_index[i].second=ret.size();
+  }
+  return ret;
+}
+
 template <typename EDATA_T>
 std::vector<std::vector<std::pair<vid_t,timestamp_t>>> ReadTransaction::BatchGetVidsNeighborsWithTimestamp(//这里需要区分out和in
     const label_t& v_label, const label_t& neighbor_label,
@@ -306,6 +345,24 @@ template std::vector<std::vector<vid_t>> ReadTransaction::BatchGetVidsNeighbors<
 template std::vector<std::vector<vid_t>> ReadTransaction::BatchGetVidsNeighbors<Date>(
     const label_t& v_label, const label_t& neighbor_label,
     const label_t& edge_label, const std::vector<vid_t>& vids,
+    bool is_out) const;
+
+template std::vector<vid_t> ReadTransaction::BatchGetVidsNeighborsWithIndex<int>(
+    const label_t& v_label, const label_t& neighbor_label,
+    const label_t& edge_label, const std::vector<vid_t>& vids,
+    std::vector<std::pair<int,int>>& neighbors_index,
+    bool is_out) const;
+
+template std::vector<vid_t> ReadTransaction::BatchGetVidsNeighborsWithIndex<grape::EmptyType>(
+    const label_t& v_label, const label_t& neighbor_label,
+    const label_t& edge_label, const std::vector<vid_t>& vids,
+    std::vector<std::pair<int,int>>& neighbors_index,
+    bool is_out) const;
+
+template std::vector<vid_t> ReadTransaction::BatchGetVidsNeighborsWithIndex<Date>(
+    const label_t& v_label, const label_t& neighbor_label,
+    const label_t& edge_label, const std::vector<vid_t>& vids,
+    std::vector<std::pair<int,int>>& neighbors_index,
     bool is_out) const;
 
 
