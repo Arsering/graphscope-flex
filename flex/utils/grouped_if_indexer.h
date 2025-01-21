@@ -12,7 +12,7 @@
 #include "flex/storages/rt_mutable_graph/types.h"
 
 namespace gs {
-#define INSERT_WITH_PARENT_OID_ENABLE false
+#define INSERT_WITH_PARENT_OID_ENABLE true
 
 template <typename INDEX_T, size_t SIZE>
 class GroupedParentLFIndexer : public BaseIndexer<INDEX_T> {
