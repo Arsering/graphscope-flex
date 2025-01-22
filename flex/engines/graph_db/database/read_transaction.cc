@@ -217,7 +217,7 @@ std::vector<vid_t> ReadTransaction::BatchGetVidsNeighborsWithIndex(//这里需�
     std::vector<std::pair<int,int>>& neighbors_index,
     bool is_out) const {
   std::vector<vid_t> ret;
-  ret.resize(vids.size());
+  // ret.resize(vids.size());
   unsigned int edge_label_with_direction;
   if(is_out){
     edge_label_with_direction=graph_.schema().generate_edge_label_with_direction(
