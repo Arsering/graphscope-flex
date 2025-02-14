@@ -2,7 +2,7 @@ graph: ldbc_snb
 loading_config:
   data_source:
     scheme: file  # file, oss, s3, hdfs; only file is supported now
-    location: /data/zhengyang/data/experiment_space/LDBC_SNB/lgraph_db/sf0.1/social_network # specify it or use FLEX_DATA_DIR env.
+    location: /nvme0n1/100new_db/sf0.1/social_network # specify it or use FLEX_DATA_DIR env.
   import_option: init # append, overwrite, only init is supported now
   format:
     type: csv
@@ -348,3 +348,60 @@ edge_mappings:
           index: 2
           name: classYear
         property: classYear
+  - type_triplet:
+      edge: HASCREATOR_X
+      source_vertex: POST
+      destination_vertex: PERSON
+    inputs:
+      - dynamic/post_hasCreator_person_0_1.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: Forum.id
+        property: Forum.id
+  - type_triplet:
+      edge: REPLYOF_X
+      source_vertex: COMMENT
+      destination_vertex: COMMENT
+    inputs:
+      - dynamic/comment_replyOf_comment_0_1.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: creationDate
+        property: creationDate
+  - type_triplet:
+      edge: REPLYOF_X
+      source_vertex: COMMENT
+      destination_vertex: POST
+    inputs:
+      - dynamic/comment_replyOf_post_0_1.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: creationDate
+        property: creationDate

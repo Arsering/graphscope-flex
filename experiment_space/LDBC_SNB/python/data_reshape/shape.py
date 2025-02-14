@@ -64,7 +64,7 @@ def post_analysis(data_set_dir):
 
 
 if __name__ == "__main__":
-    sf_number = 0.1
+    sf_number = 30
     nbr_name = 'post'
 
     data_set_dir = f'/nvme0n1/100new_db/sf{sf_number}/social_network/dynamic'

@@ -410,6 +410,32 @@ class Vertex {
             }
             break;
           }
+          case PropertyType::kInt64: {
+            if (column_configuration.second.column_type ==
+                gs::PropertyType::kDynamicEdgeList) {
+              auto mmap_array_ptr = new mmap_array<MutableNbr<int64_t>>();
+              mmap_array_ptr->open(
+                  db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
+                      std::to_string(column_family_id) + "_" +
+                      column_configuration.second.column_name + "_" +
+                      column_configuration.second.nbr_name + "_" +
+                      std::to_string(static_cast<int>(
+                          column_configuration.second.nbr_direction)) +
+                      ".edgelist",
+                  false);
+              datas_of_all_column_family_[column_family_id]
+                  .csr[column_configuration.second
+                           .edge_list_id_in_column_family] = mmap_array_ptr;
+            } else if (column_configuration.second.column_type ==
+                       gs::PropertyType::kEdge) {
+              column_lengths[column_configuration.second
+                                 .column_id_in_column_family] =
+                  sizeof(MutableNbr<int64_t>);
+            } else {
+              assert(false);
+            }
+            break;
+          }
           case PropertyType::kDate: {
             if (column_configuration.second.column_type ==
                 gs::PropertyType::kDynamicEdgeList) {
@@ -583,6 +609,29 @@ class Vertex {
             } else if (column_configuration.column_type ==
                        gs::PropertyType::kEdge) {
               column_lengths.push_back(sizeof(MutableNbr<int32_t>));
+            } else {
+              assert(false);
+            }
+            break;
+          }
+          case PropertyType::kInt64: {
+            if (column_configuration.column_type ==
+                gs::PropertyType::kDynamicEdgeList) {
+              auto mmap_array_ptr = new mmap_array<MutableNbr<int64_t>>();
+              mmap_array_ptr->open(
+                  db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
+                      std::to_string(column_family_id) + "_" +
+                      column_configuration.column_name + "_" +
+                      column_configuration.nbr_name + "_" +
+                      std::to_string(static_cast<int>(
+                          column_configuration.nbr_direction)) +
+                      ".edgelist",
+                  false);
+              datas_of_all_column_family_[column_family_id].csr.emplace_back(
+                  mmap_array_ptr);
+            } else if (column_configuration.column_type ==
+                       gs::PropertyType::kEdge) {
+              column_lengths.push_back(sizeof(MutableNbr<int64_t>));
             } else {
               assert(false);
             }

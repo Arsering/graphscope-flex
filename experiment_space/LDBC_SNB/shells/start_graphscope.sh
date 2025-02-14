@@ -6,7 +6,7 @@ export SF=30
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
-export DB_ROOT_DIR=/nvme0n1/00new_db/${Scale_Factor}_db_BP_new_64
+export DB_ROOT_DIR=/nvme0n1/100new_db/${Scale_Factor}_db_BP_baseline_64
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
 export QUERY_FILE=/data/zhengyang/data/offline/${Scale_Factor}
@@ -47,11 +47,11 @@ do
     memory_capacity=$(python3 -c "print(int(1024*1024*1024*3))")
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
 
-    # rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 500000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
 done
 
 # cgexec -g memory:yz_variable
-rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &>> ${LOG_DIR}/gs_log.log 
+# rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &>> ${LOG_DIR}/gs_log.log 
 # rm -rf ${DB_ROOT_DIR}/* &&
 
 # nohup rt_server -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s 50 &> ${LOG_DIR}/gs_log.log &

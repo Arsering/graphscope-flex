@@ -739,7 +739,6 @@ void CSVFragmentLoader::LoadCGraph() {
     }
   }
 
-  LOG(INFO) << "获得edge的配置";
   {
     const auto& edge_sources = loading_config_.GetEdgeLoadingMeta();
     edge_property_ids.reserve(edge_sources.size());
@@ -789,7 +788,6 @@ void CSVFragmentLoader::LoadCGraph() {
               edge_property_ids[iter->first].first;
         }
       }
-
       // 获得oe的配置
       {
         auto oe_column_family_id = schema_.oe_column_family_.at(label_id);
@@ -797,18 +795,19 @@ void CSVFragmentLoader::LoadCGraph() {
         auto label_id_with_direction =
             schema_.generate_edge_label_with_direction(
                 src_label_id, dst_label_id, e_label_id, true);
+
         if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kMultiple) {
           oe_column_type = PropertyType::kDynamicEdgeList;
         } else if (schema_.oe_strategy_.at(label_id) == EdgeStrategy::kSingle) {
           oe_column_type = PropertyType::kEdge;
         }
-        if (schema_.oe_strategy_.at(label_id) != EdgeStrategy::kNone) {
-          // assert(oe_column_family_id == 2);
 
+        if (schema_.oe_strategy_.at(label_id) != EdgeStrategy::kNone) {
           assert(schema_.eproperties_.at(label_id).size() <= 1);
           auto e_property_type = schema_.eproperties_.at(label_id).size() == 0
                                      ? PropertyType::kEmpty
                                      : schema_.eproperties_.at(label_id)[0];
+
           column_configurations[src_label_id][oe_column_family_id].emplace_back(
               property_ids[src_label_id], oe_column_type, oe_column_family_id,
               e_property_type, schema_.get_edge_label_name(label_id),
@@ -1632,6 +1631,7 @@ void CSVFragmentLoader::loadEdges_cgraph() {
             break;
           }
           case PropertyType::kInt64: {
+            auto forum_label_id = schema_.get_vertex_label_id("FORUM");
             auto property_casted_array =
                 std::static_pointer_cast<arrow::Int64Array>(property_cols[0]);
 
@@ -1641,6 +1641,8 @@ void CSVFragmentLoader::loadEdges_cgraph() {
               auto src_obj_id = src_casted_array->Value(i);
               auto dst_obj_id = dst_casted_array->Value(i);
               edge.data = property_casted_array->Value(i);
+              edge.data =
+                  cgraph_lf_indexers_[forum_label_id]->get_index(edge.data);
 
               if (ie_strategy != EdgeStrategy::kNone) {  // 正向边
                 edge.neighbor =

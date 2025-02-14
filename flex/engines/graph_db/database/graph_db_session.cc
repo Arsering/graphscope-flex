@@ -86,7 +86,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   auto query_id_t = gbp::get_query_id().load();
 
   // assert((int) type == 31);
-  // if ((int) type != 1)
+  // if ((int) type != 5)
   //   return result_buffer;
   // // if (gbp::get_query_id() != 477)
   // //   return result_buffer;
