@@ -23,3 +23,8 @@ Terminated
 Terminated
 Terminated
 Terminated
+start_graphscope.sh: line 40: 2102951 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 500000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 40: 2106355 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 500000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+Terminated
+Terminated
+Terminated

@@ -896,9 +896,13 @@ void CSVFragmentLoader::LoadCGraph() {
         } else if (child_configs.count(vertex_id) == 1) {
           GroupedChildLFIndexer<vid_t>* lf_indexer =
               new GroupedChildLFIndexer<vid_t>();
-          build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer,
-                                         std::get<1>(child_configs[vertex_id]),
-                                         std::get<2>(child_configs[vertex_id]));
+          // build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer,
+          //                                std::get<1>(child_configs[vertex_id]),
+          //                                std::get<2>(child_configs[vertex_id]));
+          build_grouped_child_lf_indexer_new(
+              indexer, prefix, *lf_indexer,
+              std::get<1>(child_configs[vertex_id]),
+              std::get<2>(child_configs[vertex_id]));
           cgraph_lf_indexers_[vertex_id] = lf_indexer;
         } else {
           cgraph_lf_indexers_[vertex_id] =
@@ -930,8 +934,9 @@ void CSVFragmentLoader::LoadCGraph() {
                                   &child_configs, this]() {
           cgraph_lf_indexers_[vertex_id]->set_parent_lf(
               *cgraph_lf_indexers_[std::get<0>(child_configs[vertex_id])]);
-          // loadIndexer_cgraph_grouped(vertex_id,
-          //                            *cgraph_lf_indexers_[vertex_id]);
+
+          loadIndexer_cgraph_grouped(vertex_id,
+                                     *cgraph_lf_indexers_[vertex_id]);
         });
       }
     }
@@ -1273,7 +1278,7 @@ void CSVFragmentLoader::test_csv_loader_vertex() {
           [i];  // 获取当前属性，这里就是第i个属性对应的chunk,
                 // 这里是可以直接用index索引的
       auto chunked_array = std::make_shared<arrow::ChunkedArray>(
-          process_column);  // 将当前属性转换成arrow::ChunkedArray
+          process_column);                // 将当前属性转换成arrow::ChunkedArray
       auto type = chunked_array->type();  // 获取当前属性的类型
       auto col_type = schema_.get_vertex_properties(comment_label_id)[i];
       if (col_type == PropertyType::kDate) {

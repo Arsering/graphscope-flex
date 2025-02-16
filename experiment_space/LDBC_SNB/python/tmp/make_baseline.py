@@ -75,8 +75,56 @@ def order_item_by_person_sorted_by_date(conn, person_csv, item_hasCreator_person
     conn.execute("DROP TABLE IF EXISTS item_with_creator")
     conn.execute("DROP TABLE IF EXISTS sorted_item_with_creator")
 
+def order_item_by_comment(conn, comment_csv, item_csv, output_csv, item_id_name):
+    # 1. 读取 comment_csv 和 item_csv 为 DuckDB 表
+    conn.execute(f"CREATE TABLE comments AS SELECT *, ROW_NUMBER() OVER () AS row_num FROM read_csv_auto('{comment_csv}')")
+    conn.execute(f"CREATE TABLE items AS SELECT * FROM read_csv_auto('{item_csv}')")
+    
+    # 2. 按照 comment.id 列的顺序对 item.csv 进行排序
+    # 我们可以利用评论表中的 id 来确定 item 表的顺序
+    # query = f"""
+    #     SELECT items.*
+    #     FROM items
+    #     JOIN comments ON items."{item_id_name}"= comments.id
+    #     ORDER BY array_position(array(SELECT id FROM comments), comments.id)
+    # """
+    
+    print("Creating item_with_rownum table by joining item_table and item_person_order_table with row number")
+    conn.execute(f"""
+        CREATE TABLE item_with_rownum AS
+        SELECT items.*, comments.row_num
+        FROM items
+        JOIN comments
+        ON items."{item_id_name}"= comments.id
+    """)
+    
+    # 按 row_num 和 creationDateTime 进行排序
+    print("Sorting item_with_creator by row_num and creationDateTime")
+    conn.execute("""
+        CREATE TABLE sorted_item_with_rownum AS
+        SELECT * FROM item_with_rownum
+        ORDER BY row_num
+    """)
 
-def make_baseline(conn,person_csv,forum_csv,comment_csv,post_csv):
+    # # 获取 item_table 中的列（不包含 creationDateTime）
+    # columns_query = "SELECT column_name FROM information_schema.columns WHERE table_name = 'items'"
+    # columns = conn.execute(columns_query).fetchall()
+    # column_names = [col[0] for col in columns]
+    # columns_str = ', '.join(column_names)
+    # columns_str_quoted = ', '.join([f'"{col}"' for col in columns_str])
+
+    print(f"Exporting sorted results to {output_csv}")
+    conn.execute(f"""
+        COPY (SELECT "Comment.id","Person.id" FROM sorted_item_with_rownum) 
+        TO '{output_csv}' (DELIMITER '|')
+    """)
+
+    conn.execute("DROP TABLE IF EXISTS comments")
+    conn.execute("DROP TABLE IF EXISTS items")
+    conn.execute("DROP TABLE IF EXISTS sorted_item_with_rownum")
+    conn.execute("DROP TABLE IF EXISTS item_with_rownum")
+
+def make_baseline(conn,person_csv,forum_csv,comment_csv,post_csv,comment_hasCreator_csv):
     # 读取 person 表并排序
     print("Reading and sorting person table")
     conn.execute(f"""
@@ -148,7 +196,10 @@ def make_baseline(conn,person_csv,forum_csv,comment_csv,post_csv):
     conn.execute("DROP TABLE IF EXISTS comment_sorted")
     conn.execute("DROP TABLE IF EXISTS post_sorted")
 
-def make_baseline_by_order_message_by_person(conn,person_csv,comment_csv,post_csv):
+    comment_hasCreator_csv_baseline=OUTPUT_DIR+'comment_hasCreator_person_0_0_baseline.csv'
+    order_item_by_comment(conn,comment_output_csv,comment_hasCreator_csv,comment_hasCreator_csv_baseline,"Comment.id")
+
+def make_baseline_by_order_message_by_person(conn,person_csv,comment_csv,post_csv,comment_hasCreator_csv):
     # 读取 person_table 表并添加行号
     print("Reading person_table with row number")
     conn.execute(f"""
@@ -165,8 +216,10 @@ def make_baseline_by_order_message_by_person(conn,person_csv,comment_csv,post_cs
     post_hasCreator_person_csv=cur_dir+'post_hasCreator_person_0_0.csv'
     new_comment_csv=OUTPUT_DIR+'new_comment_0_0.csv'
     new_post_csv=OUTPUT_DIR+'new_post_0_0.csv'
+    new_comment_hasCreator_csv=OUTPUT_DIR+'new_comment_hasCreator_person_0_0.csv'
     order_item_by_person_sorted_by_date(conn,person_csv,comment_hasCreator_person_csv,comment_csv,new_comment_csv,"Comment.id")
     order_item_by_person_sorted_by_date(conn,person_csv,post_hasCreator_person_csv,post_csv,new_post_csv,"Post.id")
+    order_item_by_comment(conn,new_comment_csv,comment_hasCreator_csv,new_comment_hasCreator_csv,"Comment.id")
 
 
 conn = duckdb.connect()
@@ -180,6 +233,7 @@ person_baseline_csv=OUTPUT_DIR+'person_0_0_baseline.csv'
 forum_csv=INPUT_DIR+'forum_0_0.csv'
 comment_csv=INPUT_DIR+'comment_0_0.csv'
 post_csv=INPUT_DIR+'post_0_0.csv'
+comment_hasCreator_csv=INPUT_DIR+'comment_hasCreator_person_0_0.csv'
 types = {"creationDate": "VARCHAR"}
-make_baseline(conn,person_csv,forum_csv,comment_csv,post_csv)
-make_baseline_by_order_message_by_person(conn,person_baseline_csv,comment_csv,post_csv)
+make_baseline(conn,person_csv,forum_csv,comment_csv,post_csv,comment_hasCreator_csv)
+make_baseline_by_order_message_by_person(conn,person_baseline_csv,comment_csv,post_csv,comment_hasCreator_csv)

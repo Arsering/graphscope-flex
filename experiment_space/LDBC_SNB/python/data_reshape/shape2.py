@@ -115,7 +115,7 @@ def comment_analysis2(data_set_dir):
 if __name__ == "__main__":
     sf_number = 30
 
-    data_set_dir = f'/nvme0n1/100new_db/sf{sf_number}/social_network/dynamic'
+    data_set_dir = f'/nvme0n1/00new_db/sf{sf_number}/social_network/dynamic'
     comment_analysis(data_set_dir)
     comment_analysis2(data_set_dir)
 

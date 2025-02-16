@@ -130,7 +130,7 @@ schema:
         edge_type: HASCREATOR
         foreign_key_type: dst
         foreign_key_name: PERSON
-        group_size: 64
+        group_size: 32
       properties:
         - property_id: 0
           property_name: id

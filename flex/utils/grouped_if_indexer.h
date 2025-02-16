@@ -356,6 +356,50 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
     }
     return ind;
   }
+  INDEX_T insert_using_group(int64_t oid) {
+    INDEX_T ind =
+        static_cast<INDEX_T>(__sync_fetch_and_add(&group_config_.first, 1));
+    num_elements_.fetch_add(1);
+    {
+      auto item1 = keys_.get(ind);
+      gbp::BufferBlock::UpdateContent<int64_t>(
+          [&](int64_t& item) { item = oid; }, item1);
+    }
+    size_t index =
+        hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
+    static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
+
+    int mark = 0;
+    // TODO: 此处实现未被测试正确性
+    size_t num_get =
+        indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    num_get = std::min(num_get, indices_.size() - index);
+    uint32_t start_index = index, end_index = index + num_get;
+    auto items = indices_.get(index, num_get);
+    while (true) {
+      if (unlikely(index < start_index || index >= end_index)) {
+        num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        num_get = std::min(num_get, indices_.size() - index);
+        items = indices_.get(index, num_get);
+        start_index = index, end_index = index + num_get;
+      }
+
+      gbp::BufferBlock::UpdateContent<index_key_item<INDEX_T>>(
+          [&](index_key_item<INDEX_T>& item) {
+            mark = __sync_bool_compare_and_swap(&(item.index), sentinel, ind);
+            if (mark) {
+              item.key = oid;
+            }
+          },
+          items, index - start_index);
+      if (mark) {
+        break;
+      }
+      index = (index + 1) % num_slots_minus_one_;
+    }
+    return ind;
+  }
+
 #if INSERT_WITH_PARENT_OID_ENABLE
   // 使用parent_oid插入
   INDEX_T insert_with_parent_oid(int64_t oid, int64_t parent_oid,
@@ -434,7 +478,7 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
           [&](int64_t& item) {
             if (unlikely(require_update)) {
               item = ind_start;  // 更新item
-            } else if ((item + 1) % group_config_.second == 0) {
+            } else if (item + 1 == ind_start + group_config_.second) {
               new_ind_start = __sync_fetch_and_add(&group_config_.first,
                                                    group_config_.second);
               // LOG(INFO) << "update new_ind_start: " << new_ind_start
@@ -460,7 +504,6 @@ class GroupedChildLFIndexer : public BaseIndexer<INDEX_T> {
               item.lock.store(false, std::memory_order_relaxed);  // 释放锁
             },
             grouped_index_item);
-
       } else {
         gbp::BufferBlock::OperateContentAtomic<value_with_lock<INDEX_T>>(
             [&](value_with_lock<INDEX_T>& item) {
