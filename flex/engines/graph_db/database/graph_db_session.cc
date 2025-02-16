@@ -74,7 +74,7 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
   // gbp::get_counter_global(50)++;
   constexpr bool store_query = false;
-  constexpr bool check_result = false;
+  constexpr bool check_result = true;
 
   auto ts1 = gbp::GetSystemTime();
   uint8_t type = input.back();

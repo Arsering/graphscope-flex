@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "column_family.h"
+#include "flex/graphscope_bufferpool/include/buffer_pool_manager.h"
 #include "flex/graphscope_bufferpool/include/mmap_array.h"
 #include "flex/storages/rt_mutable_graph/types.h"
 #include "flex/utils/mmap_array.h"
@@ -316,7 +317,7 @@ class Vertex {
   ~Vertex() { Close(); }
   // tuple<property_id, column_family_id, column_type, edge_type>
 
-  void Open(const std::string& vertex_name, const std::string& db_dir_path) {
+  void Open(const std::string& vertex_name, const std::string& db_dir_path,bool is_exclusive=false) {
     db_dir_path_ = db_dir_path;
     // 打开metadata文件
     auto io_adaptor =
@@ -387,7 +388,9 @@ class Vertex {
           case PropertyType::kInt32: {
             if (column_configuration.second.column_type ==
                 gs::PropertyType::kDynamicEdgeList) {
+                  //TODO: 修改mmap_array的实现，让里面保存不同的gbp的实例
               auto mmap_array_ptr = new mmap_array<MutableNbr<int32_t>>();
+              
               mmap_array_ptr->open(
                   db_dir_path_ + "/" + vertex_name_ + "/column_family_" +
                       std::to_string(column_family_id) + "_" +
@@ -472,6 +475,11 @@ class Vertex {
         }
       }
       // 初始化固定长度的column family
+      if (is_exclusive) {
+        datas_of_all_column_family_[column_family_id]
+          .fixed_length_column_family->SetBPM(&gbp::BufferPoolManager::GetSecondGlobalInstance());
+        LOG(INFO)<<"redirect "<<vertex_name<<"'s column family "<<column_family_id<<" to second bufferpool";
+      }
       datas_of_all_column_family_[column_family_id]
           .fixed_length_column_family->Open(
               column_lengths,

@@ -16,6 +16,7 @@
 #include "flex/storages/rt_mutable_graph/schema.h"
 
 #include <yaml-cpp/yaml.h>
+#include "flex/utils/yaml_utils.h"
 
 namespace gs {
 
@@ -298,7 +299,7 @@ void Schema::Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) const {
       << eproperties_ << eprop_names_ << ie_strategy_ << oe_strategy_
       << ie_column_family_ << oe_column_family_ << max_vnum_ << plugin_list_
       << vprop_column_family_nums_ << vprop_column_family_ids_ << vprop_ids_
-      << group_foreign_keys_1_ << group_foreign_keys_2_ << vprop_id_map_;
+      << group_foreign_keys_1_ << group_foreign_keys_2_ << vprop_id_map_<<exclusive_bp_vertices;
   CHECK(writer->WriteArchive(arc));
 }
 
@@ -311,7 +312,7 @@ void Schema::Deserialize(std::unique_ptr<grape::LocalIOAdaptor>& reader) {
       eproperties_ >> eprop_names_ >> ie_strategy_ >> oe_strategy_ >>
       ie_column_family_ >> oe_column_family_ >> max_vnum_ >> plugin_list_ >>
       vprop_column_family_nums_ >> vprop_column_family_ids_ >> vprop_ids_ >>
-      group_foreign_keys_1_ >> group_foreign_keys_2_ >> vprop_id_map_;
+      group_foreign_keys_1_ >> group_foreign_keys_2_ >> vprop_id_map_>>exclusive_bp_vertices;
 }
 
 label_t Schema::vertex_label_to_index(const std::string& label) {
@@ -682,6 +683,16 @@ static bool parse_vertex_schema(YAML::Node node, Schema& schema) {
     return false;
   }
 
+  if (node["exclusive_bp"]){
+    auto is_exclusive_node = node["exclusive_bp"];
+    bool flag;
+    get_scalar(is_exclusive_node, "flag", flag);
+    if (flag) {
+      schema.exclusive_bp_vertices.emplace_back(label_id);
+      LOG(INFO)<<"exclusive bp vertices emplace back "<<(int)label_id<<" "<<label_name;
+    }
+  }
+
   if (node["group_foreign_key"]) {
     std::string edge_type, foreign_key_type, foreign_key_name;
     size_t group_size;
@@ -964,6 +975,15 @@ size_t Schema::get_property_id(label_t label,
 
 std::vector<size_t> Schema::get_vertex_prop_ids(label_t label) const {
   return vprop_ids_.at(label);
+}
+
+bool Schema::is_exclusive(label_t label_id){
+  for(auto i : exclusive_bp_vertices){
+    if (label_id==i) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace gs

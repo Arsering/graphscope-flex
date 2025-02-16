@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include "flex/graphscope_bufferpool/include/buffer_pool_manager.h"
 #include "grape/util.h"
 
 #include "flex/engines/graph_db/database/graph_db.h"
@@ -20,6 +21,7 @@
 #include "flex/engines/http_server/options.h"
 
 #include <boost/program_options.hpp>
+#include <cstddef>
 #include <seastar/core/alien.hh>
 
 #include <glog/logging.h>
@@ -30,6 +32,7 @@ namespace bpo = boost::program_options;
 int main(int argc, char** argv) {
   bpo::options_description desc("Usage:");
   size_t pool_size_Byte = 1024LU * 1024LU * 8;
+  size_t second_pool_size_Byte=1024LU * 1024LU * 8;
 
   desc.add_options()("help", "Display help message")(
       "version,v", "Display version")("shard-num,s",
@@ -42,6 +45,9 @@ int main(int argc, char** argv) {
       "log-data-path,l", bpo::value<std::string>(), "log data directory path")(
       "buffer-pool-size,B",
       bpo::value<uint64_t>()->default_value(pool_size_Byte),
+      "size of buffer pool")(
+      "second-buffer-pool-size,SB",
+      bpo::value<uint64_t>()->default_value(second_pool_size_Byte),
       "size of buffer pool");
 
   google::InitGoogleLogging(argv[0]);
@@ -102,8 +108,17 @@ int main(int argc, char** argv) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
   }
   LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
+  if (vm.count("second-buffer-pool-size")) {
+    second_pool_size_Byte = vm["second-buffer-pool-size"].as<uint64_t>();
+  }
+  LOG(INFO) << "pool_size_Byte = " << pool_size_Byte << " Bytes";
+  LOG(INFO) << "second_pool_size_Byte = " << second_pool_size_Byte << " Bytes";
+  //TODO: 创建多个gbp的实例
   gbp::BufferPoolManager::GetGlobalInstance().init(
       pool_num, CEIL(pool_size_Byte, gbp::PAGE_SIZE_MEMORY) / pool_num,
+      io_server_num);
+  gbp::BufferPoolManager::GetSecondGlobalInstance().init(
+      pool_num, CEIL(second_pool_size_Byte, gbp::PAGE_SIZE_MEMORY) / pool_num,
       io_server_num);
 
   t0 += grape::GetCurrentTime();

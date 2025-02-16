@@ -316,6 +316,8 @@ schema:
         - id
     - type_id: 8
       type_name: COMMENTX
+      exclusive_bp:
+        flag: true
       x_csr_params:
         max_vertex_num: 30000000
       column_family_num: 12

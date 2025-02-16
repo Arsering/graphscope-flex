@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "flex/graphscope_bufferpool/include/buffer_pool_manager.h"
 #include "flex/graphscope_bufferpool/include/mmap_array.h"
 #include "flex/utils/mmap_array.h"
 
@@ -40,6 +41,10 @@ class FixedLengthColumnFamily {
  public:
   FixedLengthColumnFamily() = default;
   ~FixedLengthColumnFamily() = default;
+
+  void SetBPM(gbp::BufferPoolManager* gbpm){
+    property_buffer_.set_buffer_pool_manager(gbpm);
+  }
 
   void Open(const std::vector<size_t>& ColumnLengths,
             const std::string& filename) {

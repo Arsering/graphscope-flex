@@ -96,6 +96,9 @@ class mmap_array : public mmap_array_base {
   }
   mmap_array(const mmap_array& other) = delete;
   mmap_array& operator=(const mmap_array&) = delete;
+  void set_buffer_pool_manager(gbp::BufferPoolManager* gbpm){
+    buffer_pool_manager_=gbpm;
+  }
 #endif
   mmap_array(mmap_array&& rhs) : mmap_array() { swap(rhs); }
 #if OV
@@ -116,14 +119,14 @@ class mmap_array : public mmap_array_base {
 #else
   ~mmap_array() { close(); }
 
-  void close() {
+  void close() override {
     // if (fd_gbp_ != gbp::INVALID_FILE_HANDLE) {
     //   buffer_pool_manager_->CloseFile(fd_gbp_);
     //   fd_gbp_ = gbp::INVALID_FILE_HANDLE;
     // }
   }
 
-  void reset() {
+  void reset() override{
     filename_ = "";
 
     close();
@@ -218,7 +221,7 @@ class mmap_array : public mmap_array_base {
     }
   }
 #else
-  void dump(const std::string& filename) {
+  void dump(const std::string& filename) override{
     assert(!filename_.empty());
     assert(std::filesystem::exists(filename_));
     std::string old_filename = filename_;
@@ -283,7 +286,7 @@ class mmap_array : public mmap_array_base {
     }
   }
 #else
-  void resize(size_t size) {
+  void resize(size_t size) override{
     assert(fd_gbp_ != -1);
     if (size == size_) {
       return;
@@ -308,7 +311,7 @@ class mmap_array : public mmap_array_base {
     }
   }
 #endif
-  bool read_only() const { return read_only_; }
+  bool read_only() const override{ return read_only_; }
 
 #if OV
   void touch(const std::string& filename) {
@@ -363,7 +366,7 @@ class mmap_array : public mmap_array_base {
   }
 
   // FIXME: 无法保证atomic，也无法保证单个obj不跨页
-  void set(size_t idx, std::string_view val, size_t len) {
+  void set(size_t idx, std::string_view val, size_t len) override{
 #if ASSERT_ENABLE
     assert(idx + len <= size_);
     assert(sizeof(T) * len == val.size());
@@ -388,7 +391,7 @@ class mmap_array : public mmap_array_base {
   }
 
   // FIXME: 无法保证atomic
-  void set_single_obj(size_t idx, std::string_view val) {
+  void set_single_obj(size_t idx, std::string_view val) override {
 #if ASSERT_ENABLE
     assert(idx < size_);
     assert(sizeof(T) == val.size());
@@ -399,7 +402,7 @@ class mmap_array : public mmap_array_base {
                                    file_offset, sizeof(T), fd_gbp_, false);
   }
 
-  const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
+  const gbp::BufferBlock get(size_t idx, size_t len = 1) const override {
 #if ASSERT_ENABLE
     CHECK_LE(idx + len, size_);
 #endif
@@ -474,7 +477,7 @@ class mmap_array : public mmap_array_base {
   const T& operator[](size_t idx) const { return data_[idx]; }
 #endif
 
-  size_t size() const { return size_; }
+  size_t size() const override{ return size_; }
 
 #if OV
   void swap(mmap_array<T>& rhs) {
@@ -501,7 +504,7 @@ class mmap_array : public mmap_array_base {
   }
 #endif
 
-  const std::string& filename() const { return filename_; }
+  const std::string& filename() const override{ return filename_; }
 #if !OV
   constexpr static uint16_t OBJ_NUM_PERPAGE = gbp::PAGE_SIZE_FILE / sizeof(T);
 #endif

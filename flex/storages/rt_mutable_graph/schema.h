@@ -152,6 +152,7 @@ class Schema {
   const std::vector<std::string>& GetPluginsList() const;
 
   void EmplacePlugin(const std::string& plugin_name);
+  bool is_exclusive(label_t label_id);
 
   //  private:
   label_t vertex_label_to_index(const std::string& label);
@@ -188,6 +189,7 @@ class Schema {
   std::map<uint32_t, size_t> oe_column_family_;
   std::map<uint32_t, size_t> ie_column_family_;
   std::vector<std::map<std::string, size_t>> vprop_id_map_;
+  std::vector<label_t> exclusive_bp_vertices;
   // vertex label id, edge label id, src label id, dst label id, is_out
   std::vector<size_t> max_vnum_;
   std::vector<std::string> plugin_list_;

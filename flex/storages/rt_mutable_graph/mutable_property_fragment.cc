@@ -626,8 +626,13 @@ void MutablePropertyFragment::cgraph_open(
     // create vertex
     vertices_.emplace_back();
     // 初始化vertex
-    vertices_.back().Open(schema_.get_vertex_label_name(vertex_id),
+    if (schema_.is_exclusive(vertex_id)) {
+      vertices_.back().Open(schema_.get_vertex_label_name(vertex_id),
+                          snapshot_dir_path + "/runtime/tmp",true);
+    }else{
+      vertices_.back().Open(schema_.get_vertex_label_name(vertex_id),
                           snapshot_dir_path + "/runtime/tmp");
+    }
   }
 
   LOG(INFO) << "open vertex done";
