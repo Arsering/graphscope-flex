@@ -28,3 +28,7 @@ start_graphscope.sh: line 40: 2106355 Aborted                 rt_bench_thread -B
 Terminated
 Terminated
 Terminated
+Terminated
+start_graphscope.sh: line 34: 2262595 Aborted                 bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 40: 2327563 Killed                  rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 500000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 40: 2371244 Killed                  rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 500000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log

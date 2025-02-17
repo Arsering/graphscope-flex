@@ -591,7 +591,6 @@ int main(int argc, char** argv) {
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);
-
   // Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
