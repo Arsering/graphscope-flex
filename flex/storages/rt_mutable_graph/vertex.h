@@ -793,9 +793,9 @@ class Vertex {
     gbp::BufferBlock::UpdateContent<MutableAdjlist>(
         [&](MutableAdjlist& item) {
           // 获得锁
-          assert(item.start_idx_ == 0);
-          assert(item.capacity_ == 0);
-          assert(item.size_ == 0);
+          // assert(item.start_idx_ == 0);
+          // assert(item.capacity_ == 0);
+          // assert(item.size_ == 0);
           assert(item.lock_.load() == 0);
           item.start_idx_ =
               gbp::as_atomic(

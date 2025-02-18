@@ -896,14 +896,20 @@ void CSVFragmentLoader::LoadCGraph() {
         } else if (child_configs.count(vertex_id) == 1) {
           GroupedChildLFIndexer<vid_t>* lf_indexer =
               new GroupedChildLFIndexer<vid_t>();
-          // build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer,
-          //                                std::get<1>(child_configs[vertex_id]),
-          //                                std::get<2>(child_configs[vertex_id]));
-          build_grouped_child_lf_indexer_new(
-              indexer, prefix, *lf_indexer,
-              std::get<1>(child_configs[vertex_id]),
-              std::get<2>(child_configs[vertex_id]));
+
+          //Append Only
+          build_grouped_child_lf_indexer(indexer, prefix, *lf_indexer,
+                                         std::get<1>(child_configs[vertex_id]),
+                                         std::get<2>(child_configs[vertex_id]));
+
+          //Online grouping
+          // build_grouped_child_lf_indexer_new(
+          //     indexer, prefix, *lf_indexer,
+          //     std::get<1>(child_configs[vertex_id]),
+          //     std::get<2>(child_configs[vertex_id]));
+          
           cgraph_lf_indexers_[vertex_id] = lf_indexer;
+
         } else {
           cgraph_lf_indexers_[vertex_id] =
               GroupedParentLFIndexer_creation_helper(
@@ -935,8 +941,9 @@ void CSVFragmentLoader::LoadCGraph() {
           cgraph_lf_indexers_[vertex_id]->set_parent_lf(
               *cgraph_lf_indexers_[std::get<0>(child_configs[vertex_id])]);
 
-          loadIndexer_cgraph_grouped(vertex_id,
-                                     *cgraph_lf_indexers_[vertex_id]);
+          //Online grouping
+          // loadIndexer_cgraph_grouped(vertex_id,
+          //                            *cgraph_lf_indexers_[vertex_id]);
         });
       }
     }
@@ -1199,10 +1206,25 @@ void CSVFragmentLoader::loadIndexer_cgraph_grouped(
   auto e_files = loading_config_.GetEdgeLoadingMeta().at(
       {src_label_id, dst_label_id, e_label_id});
   LOG(INFO) << e_files[0];
+  auto length_reader = create_edge_reader(schema_, loading_config_, src_label_id,
+                                   dst_label_id, e_label_id, e_files[0],
+                                   false);  // 创建edge label id对应的边的reader
+  size_t length = 0;
+  while (true) {
+    auto record_batch = length_reader->Read();
+    if (record_batch == nullptr) {
+      break;
+    }
+    length += record_batch->num_rows();
+  }
+  LOG(INFO) << "length: " << length;
+  auto filter_num = length*0.9;
+
   auto reader = create_edge_reader(schema_, loading_config_, src_label_id,
                                    dst_label_id, e_label_id, e_files[0],
                                    false);  // 创建edge label id对应的边的reader
   gs::vid_t vid_previous = 0;
+  size_t count = 0;
   while (true) {
     auto record_batch = reader->Read();  // 按batch进行read
     if (record_batch == nullptr) {
@@ -1234,9 +1256,15 @@ void CSVFragmentLoader::loadIndexer_cgraph_grouped(
       for (auto i = 0; i < src_casted_array->length(); ++i) {
         // LOG(INFO) << "src: " << src_casted_array->Value(i)
         //           << " dst: " << dst_casted_array->Value(i);
-        indexer.insert_with_parent_oid(src_casted_array->Value(i),
+        if (count >= filter_num) { 
+          indexer.insert_with_parent_oid(src_casted_array->Value(i),
                                        dst_casted_array->Value(i),
                                        vid_previous);
+          count++;
+        } else {
+          dynamic_cast<GroupedChildLFIndexer<vid_t>*>(&indexer)->insert_using_group(src_casted_array->Value(i));
+          count++;
+        }
       }
     }
   }

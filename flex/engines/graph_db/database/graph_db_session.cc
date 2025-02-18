@@ -18,6 +18,8 @@
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/utils/app_utils.h"
 
+// #define PROFILE_QUERY_LATENCY
+
 namespace gs {
 
 ReadTransaction GraphDBSession::GetReadTransaction() {
@@ -181,9 +183,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
       }
     }
-    auto ts2 = gbp::GetSystemTime();
+    auto ts3 = gbp::GetSystemTime();
     gbp::get_thread_logfile()
-        << ts2 << " " << ts1 << " " << (int) type << std::endl;
+        << ts3 << " " << ts1 << " " << (int) type << std::endl;
     return result_buffer;
   }
   assert(false);
