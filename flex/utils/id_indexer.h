@@ -221,11 +221,13 @@ class LFIndexer {
     // TODO: 此处实现未被测试正确性
     uint32_t num_get =
         indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+    num_get = std::min(size_t(num_get), indices_.size() - index);
     uint32_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
       if (unlikely(index < start_index || index >= end_index)) {
         num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+        num_get = std::min(size_t(num_get), indices_.size() - index);
         items = indices_.get(index, num_get);
         start_index = index, end_index = index + num_get;
       }

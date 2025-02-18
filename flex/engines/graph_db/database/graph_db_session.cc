@@ -18,6 +18,8 @@
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/utils/app_utils.h"
 
+#define PROFILE_QUERY_LATENCY
+
 namespace gs {
 
 ReadTransaction GraphDBSession::GetReadTransaction() {
@@ -72,7 +74,7 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
 // #define likely(x) __builtin_expect(!!(x), 1)
 
 std::vector<char> GraphDBSession::Eval(const std::string& input) {
-  auto ts1 = gbp::GetSystemTime();
+  // auto ts1 = gbp::GetSystemTime();
   uint8_t type = input.back();
   const char* str_data = input.data();
   size_t str_len = input.size() - 1;
@@ -121,6 +123,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   gbp::get_counter(12) = 0;
   size_t ts = gbp::GetSystemTime();
 #endif
+#ifdef PROFILE_QUERY_LATENCY
+  size_t ts1 = gbp::GetSystemTime();
+#endif
   // LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
   if (app->Query(decoder, encoder)) {
 #ifdef DEBUG_1
@@ -129,6 +134,10 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << " | " << gbp::get_counter(1) << " | " << gbp::get_counter(2)
               << " | " << gbp::get_counter(11) << " | " << gbp::get_counter(12)
               << "]";
+#endif
+#ifdef PROFILE_QUERY_LATENCY
+    size_t ts2 = gbp::GetSystemTime();
+    gbp::get_thread_logfile()<<(int)type<<"|"<<ts2<<"|"<<ts1<<std::endl;
 #endif
     constexpr bool store_query = false;
     constexpr bool check_result = false;
@@ -178,10 +187,13 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
       }
     }
-    auto ts2 = gbp::GetSystemTime();
+    // auto ts2 = gbp::GetSystemTime();
     // gbp::get_thread_logfile()
     //     << ts2 << " " << ts1 << " " << (int) type << std::endl;
 
+    return result_buffer;
+  }else{
+    gbp::get_thread_logfile()<<(int)type<<" failed"<<std::endl;
     return result_buffer;
   }
 

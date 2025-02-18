@@ -280,6 +280,131 @@ class Req {
     }
     return true;
   }
+  void do_update_query(size_t thread_id) {
+    size_t id;
+    gbp::get_thread_logfile();
+    
+    while (true) {
+      id = update_cur_.fetch_add(1);
+      
+      // 检查是否已经完成所有更新
+      if(id >= num_of_update_reqs_unique_) {
+        break;
+      }
+
+      // 等待read完成上一轮的read_limit条查询
+      while(id > 0 && (id / update_limit) > (read_cur_.load() / read_limit)) {
+        if(read_cur_.load() >= num_of_reqs_) {
+          return;
+        }
+      }
+
+      start_[id] = gbp::GetSystemTime();
+      // LOG(INFO)<<"update";
+      gbp::get_query_id().store(id % num_of_update_reqs_unique_);
+      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
+          update_list[id % num_of_update_reqs_unique_]);
+      end_[id] = gbp::GetSystemTime();
+    }
+    return;
+  }
+
+  void do_read_query(size_t thread_id) {
+    size_t id;
+    gbp::get_thread_logfile();
+    
+    while (true) {
+      id = read_cur_.fetch_add(1);
+
+      if (id >= num_of_reqs_) {
+        break;
+      }
+
+      // 等待update完成当前轮次的update_limit条更新
+      while((id / read_limit) >= (update_cur_.load() / update_limit)) {
+        if(update_cur_.load() >= num_of_update_reqs_unique_) {
+          break;
+        }
+      }
+
+      start_[id] = gbp::GetSystemTime();
+      gbp::get_query_id().store(id % num_of_read_reqs_unique_);
+      // LOG(INFO)<<"read";
+      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
+          read_list[id % num_of_read_reqs_unique_]);
+      end_[id] = gbp::GetSystemTime();
+    }
+    return;
+  }
+
+  bool simulate_with_update_and_read(size_t thread_num = 10) {
+    shard_num=thread_num-1;
+    std::vector<std::thread> workers;
+    assert(cur_ == 0);
+    
+    workers.emplace_back([this](){do_update_query(0);});
+
+    for (size_t i = 1; i < thread_num; i++) {
+      workers.emplace_back([this, i]() { do_read_query(i); });
+    }
+
+    for (auto& worker : workers) {
+      worker.join();
+    }
+    return true;
+  }
+
+  void load_query_with_timestamp(const std::string& file_path) {
+    LOG(INFO) << "load queries from " << file_path + "/query_file_string.log"
+              << "\n";
+    FILE* query_file_string =
+        ::fopen((file_path + "/query_file_string.log").c_str(), "r");
+    FILE* query_file_string_view =
+        ::fopen((file_path + "/query_file_string_view.log").c_str(), "r");
+    assert(query_file_string != nullptr);
+    assert(query_file_string_view != nullptr);
+
+    const size_t size = 4096;
+    std::vector<char> buffer(size);
+    size_t length = 0;
+    auto test_count=0;
+    while (true) {
+      auto ret = ::fread(&length, sizeof(size_t), 1, query_file_string_view);
+      if (ret == 0)
+        break;
+
+      if (length == 0)
+        assert(false);
+      size_t timestamp=0;
+      ::fread(&timestamp, sizeof(size_t), 1,query_file_string);
+      // std::cout<<timestamp<<std::endl;
+      size_t data_len=length-sizeof(size_t);
+      ::fread(buffer.data(), data_len, 1, query_file_string);
+      auto req=std::string(buffer.data(), buffer.data() + data_len);
+      // reqs_.emplace_back(std::string(buffer.data(), buffer.data() + data_len));
+      if(req.back()<=21){
+        assert(req.back()!=0);
+        if(read_list.size()>=1000000){
+          continue;
+        }
+        read_list.emplace_back(req);
+      }else{
+        update_list.emplace_back(req);
+      }
+    }
+    num_of_reqs_unique_ = update_list.size()+read_list.size();
+    num_of_read_reqs_unique_=read_list.size();
+    num_of_update_reqs_unique_=update_list.size();
+    // read_limit=read_list.size()/100;
+    // update_limit=update_list.size()/100;
+    read_limit=2000000;
+    update_limit=update_list.size()/100;
+    // update_limit=10;
+    // read_limit=10;
+    LOG(INFO) << "Number of query = " << num_of_reqs_unique_<<" \nNumber of read query = "<<num_of_read_reqs_unique_<<" \nNumber of update query = "<<num_of_update_reqs_unique_;
+
+  }
+
 
   void output() {
     // std::ofstream profiling_file(log_data_path + "/profiling.log",
@@ -390,11 +515,25 @@ class Req {
   }
 
   std::atomic<size_t> cur_;
+  std::atomic<size_t> update_cur_{0};
+  std::atomic<size_t> read_cur_{0};
+  std::atomic<bool> update_epoch_flag{false};  // 更新周期标记
+  std::atomic<size_t> read_epoch_counter{0};   // 读操作的计数器
+
+  unsigned long long read_limit=100000;
+  unsigned long long update_limit=100000;
+
+  size_t num_of_read_reqs_unique_;
+  size_t num_of_update_reqs_unique_;
+  size_t shard_num;
+
   size_t warmup_num_;
   size_t num_of_reqs_;
   size_t num_of_reqs_unique_;
 
   std::vector<std::string> reqs_;
+  std::vector<std::string> update_list;
+  std::vector<std::string> read_list;
   std::vector<size_t> run_time_req_ids_;
 
   // std::vector<std::chrono::system_clock::time_point> start_;
@@ -539,6 +678,7 @@ int main(int argc, char** argv) {
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);
+  // Req::get().load_query_with_timestamp(req_file);
   // Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
@@ -560,6 +700,7 @@ int main(int argc, char** argv) {
     auto begin = std::chrono::system_clock::now();
 
     Req::get().simulate(shard_num);
+    // Req::get().simulate_with_update_and_read(shard_num);
     auto end = std::chrono::system_clock::now();
     auto cpu_cost_after = gbp::GetCPUTime();
 
