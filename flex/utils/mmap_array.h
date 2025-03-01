@@ -35,7 +35,7 @@
 #include "glog/logging.h"
 
 namespace gs {
-#define OV true
+#define OV false
 #define FILE_FLAG O_DIRECT
 #define MMAP_ADVICE_l MADV_RANDOM
 
@@ -366,7 +366,7 @@ class mmap_array {
 
     size_t rest_filelen_firstpage =
         gbp::PAGE_SIZE_MEMORY - file_offset % gbp::PAGE_SIZE_MEMORY;
-    if (rest_filelen_firstpage / sizeof(T) > len) {
+    if (rest_filelen_firstpage >= len * sizeof(T)) {
       buf_size += sizeof(T) * len;
       // num_page = 1;
     } else {
@@ -377,10 +377,19 @@ class mmap_array {
       // num_page = 1 + CEIL(len, OBJ_NUM_PERPAGE);
     }
 
-    return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
     // return buffer_pool_manager_->GetBlockWithDirectCacheSync(file_offset,
     //                                                          buf_size,
     //                                                          fd_gbp_);
+
+    // return buffer_pool_manager_->GetBlockSync(file_offset, buf_size,
+    // fd_gbp_);
+
+#if USING_DIRECT_CACHE
+    return buffer_pool_manager_->GetBlockWithDirectCacheSync(file_offset,
+                                                             buf_size, fd_gbp_);
+#else
+    return buffer_pool_manager_->GetBlockSync(file_offset, buf_size, fd_gbp_);
+#endif
 
     // if (gbp::warmup_mark() == 1 && (fd_gbp_ == 165 || fd_gbp_ == 169)) {
     //   for (size_t id = 0; id < len; id++)

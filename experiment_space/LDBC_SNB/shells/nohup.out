@@ -14,3 +14,15 @@ F0101 01:05:13.469308 675456 schema.cc:954] Failed to parse schema config file: 
     @     0x7f94f176c083  __libc_start_main
     @     0x56329dac83be  _start
 start_graphscope.sh: line 58: 675456 Aborted                 rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num}
+start_graphscope.sh: line 40: 3300754 Killed                  rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 40: 3340929 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 20000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+Terminated
+Terminated
+start_graphscope.sh: line 40: 461969 Killed                  cgexec -g memory:yz_variable rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 1000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 40: 488142 Killed                  cgexec -g memory:yz_variable rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 1000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 40: 1188187 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 40: 1238130 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+Terminated
+Terminated
+start_graphscope.sh: line 40: 1510373 Killed                  rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+Terminated

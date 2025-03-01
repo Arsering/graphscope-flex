@@ -283,18 +283,18 @@ class Req {
   void do_update_query(size_t thread_id) {
     size_t id;
     gbp::get_thread_logfile();
-    
+
     while (true) {
       id = update_cur_.fetch_add(1);
-      
+
       // 检查是否已经完成所有更新
-      if(id >= num_of_update_reqs_unique_) {
+      if (id >= num_of_update_reqs_unique_) {
         break;
       }
 
       // 等待read完成上一轮的read_limit条查询
-      while(id > 0 && (id / update_limit) > (read_cur_.load() / read_limit)) {
-        if(read_cur_.load() >= num_of_reqs_) {
+      while (id > 0 && (id / update_limit) > (read_cur_.load() / read_limit)) {
+        if (read_cur_.load() >= num_of_reqs_) {
           return;
         }
       }
@@ -312,7 +312,7 @@ class Req {
   void do_read_query(size_t thread_id) {
     size_t id;
     gbp::get_thread_logfile();
-    
+
     while (true) {
       id = read_cur_.fetch_add(1);
 
@@ -321,8 +321,8 @@ class Req {
       }
 
       // 等待update完成当前轮次的update_limit条更新
-      while((id / read_limit) >= (update_cur_.load() / update_limit)) {
-        if(update_cur_.load() >= num_of_update_reqs_unique_) {
+      while ((id / read_limit) >= (update_cur_.load() / update_limit)) {
+        if (update_cur_.load() >= num_of_update_reqs_unique_) {
           break;
         }
       }
@@ -338,11 +338,11 @@ class Req {
   }
 
   bool simulate_with_update_and_read(size_t thread_num = 10) {
-    shard_num=thread_num-1;
+    shard_num = thread_num - 1;
     std::vector<std::thread> workers;
     assert(cur_ == 0);
-    
-    workers.emplace_back([this](){do_update_query(0);});
+
+    workers.emplace_back([this]() { do_update_query(0); });
 
     for (size_t i = 1; i < thread_num; i++) {
       workers.emplace_back([this, i]() { do_read_query(i); });
@@ -367,7 +367,7 @@ class Req {
     const size_t size = 4096;
     std::vector<char> buffer(size);
     size_t length = 0;
-    auto test_count=0;
+    auto test_count = 0;
     while (true) {
       auto ret = ::fread(&length, sizeof(size_t), 1, query_file_string_view);
       if (ret == 0)
@@ -375,36 +375,37 @@ class Req {
 
       if (length == 0)
         assert(false);
-      size_t timestamp=0;
-      ::fread(&timestamp, sizeof(size_t), 1,query_file_string);
+      size_t timestamp = 0;
+      ::fread(&timestamp, sizeof(size_t), 1, query_file_string);
       // std::cout<<timestamp<<std::endl;
-      size_t data_len=length-sizeof(size_t);
+      size_t data_len = length - sizeof(size_t);
       ::fread(buffer.data(), data_len, 1, query_file_string);
-      auto req=std::string(buffer.data(), buffer.data() + data_len);
-      // reqs_.emplace_back(std::string(buffer.data(), buffer.data() + data_len));
-      if(req.back()<=21){
-        assert(req.back()!=0);
-        if(read_list.size()>=1000000){
+      auto req = std::string(buffer.data(), buffer.data() + data_len);
+      // reqs_.emplace_back(std::string(buffer.data(), buffer.data() +
+      // data_len));
+      if (req.back() <= 21) {
+        assert(req.back() != 0);
+        if (read_list.size() >= 1000000) {
           continue;
         }
         read_list.emplace_back(req);
-      }else{
+      } else {
         update_list.emplace_back(req);
       }
     }
-    num_of_reqs_unique_ = update_list.size()+read_list.size();
-    num_of_read_reqs_unique_=read_list.size();
-    num_of_update_reqs_unique_=update_list.size();
+    num_of_reqs_unique_ = update_list.size() + read_list.size();
+    num_of_read_reqs_unique_ = read_list.size();
+    num_of_update_reqs_unique_ = update_list.size();
     // read_limit=read_list.size()/100;
     // update_limit=update_list.size()/100;
-    read_limit=2000000;
-    update_limit=update_list.size()/100;
+    read_limit = 2000000;
+    update_limit = update_list.size() / 100;
     // update_limit=10;
     // read_limit=10;
-    LOG(INFO) << "Number of query = " << num_of_reqs_unique_<<" \nNumber of read query = "<<num_of_read_reqs_unique_<<" \nNumber of update query = "<<num_of_update_reqs_unique_;
-
+    LOG(INFO) << "Number of query = " << num_of_reqs_unique_
+              << " \nNumber of read query = " << num_of_read_reqs_unique_
+              << " \nNumber of update query = " << num_of_update_reqs_unique_;
   }
-
 
   void output() {
     // std::ofstream profiling_file(log_data_path + "/profiling.log",
@@ -520,8 +521,8 @@ class Req {
   std::atomic<bool> update_epoch_flag{false};  // 更新周期标记
   std::atomic<size_t> read_epoch_counter{0};   // 读操作的计数器
 
-  unsigned long long read_limit=100000;
-  unsigned long long update_limit=100000;
+  unsigned long long read_limit = 100000;
+  unsigned long long update_limit = 100000;
 
   size_t num_of_read_reqs_unique_;
   size_t num_of_update_reqs_unique_;
@@ -627,8 +628,8 @@ int main(int argc, char** argv) {
   tzset();
 #if OV
 #else
-  size_t pool_num = 8;
-  size_t io_server_num = 2;
+  size_t pool_num = 4;
+  size_t io_server_num = 1;
 
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
@@ -667,7 +668,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
@@ -685,6 +686,11 @@ int main(int argc, char** argv) {
   // pre_compute_comment(data_path);
 
   for (size_t idx = 0; idx < 2; idx++) {
+    gbp::get_counter_global(9) = 0;
+    gbp::get_counter_global(10) = 0;
+    gbp::get_counter_global(11) = 0;
+    gbp::get_counter_global(12) = 0;
+
     gbp::PerformanceLogServer::GetPerformanceLogger().SetStartPoint();
 
     Req::get().init(warmup_num, benchmark_num);
@@ -725,11 +731,11 @@ int main(int argc, char** argv) {
               << "\n";
     Req::get().output();
 
-    LOG(INFO) << "10 = " << gbp::get_counter_global(10);
-    LOG(INFO) << "11 = " << gbp::get_counter_global(11);
+    LOG(INFO) << "global counter 9 = " << gbp::get_counter_global(9);
+    LOG(INFO) << "global counter 10 = " << gbp::get_counter_global(10);
+    LOG(INFO) << "global counter 11 = " << gbp::get_counter_global(11);
+    LOG(INFO) << "global counter 12 = " << gbp::get_counter_global(12);
 
-    gbp::get_counter_global(10) = 0;
-    gbp::get_counter_global(11) = 0;
     gbp::warmup_mark().store(1);
     gbp::DirectCache::CleanAllCache();
   }
