@@ -320,6 +320,93 @@ class ReadTransaction {
     return SingleGraphView<EDATA_T>(*csr, timestamp_);
   }
 
+/*
+  批量获取顶点ID
+  @param label: 顶点标签
+  @param indices: 顶点索引组成的vector
+  @return: 顶点ID组成的vector
+  */
+  std::vector<oid_t> BatchGetVertexIds(label_t label,
+                                       const std::vector<vid_t>& indices) const;
+
+  /*
+  批量查找顶点索引
+  @param label: 顶点标签
+  @param oids: 顶点ID组成的vector
+  @return: 顶点索引组成的vector和是否存在的vector
+  */
+  std::pair<std::vector<vid_t>, std::vector<bool>> BatchGetVertexIndices(
+      label_t label, const std::vector<oid_t>& oids) const;
+
+
+  /*
+  批量获取顶点属性
+  @param label_id: 顶点标签
+  @param vids: 顶点ID组成的vector
+  @param prop_names: 属性名称组成的vector
+  @return: 顶点属性组成的vector，先是属性后是顶点
+  */
+  // std::vector<std::vector<gbp::BufferBlock>> BatchGetVertexPropsFromVids(
+  //     label_t label_id, const std::vector<vid_t>& vids,
+  //     const std::vector<cgraph::PropertyHandle>& prop_handles) const;
+  std::vector<std::vector<gbp::BufferBlock>> BatchGetVertexPropsFromVids(
+      label_t label_id, const std::vector<vid_t>& vids,
+      const std::vector<ColumnBase*> prop_columns) const;
+
+  /* 获取边指向的邻居
+  @param src_label_id: 源顶点标签
+  @param dst_label_id: 目标顶点标签
+  @param edge_label_id: 边标签
+  @param vids: 顶点ID组成的vector
+  @param is_out: 方向
+  @return: 邻居列表
+  */
+  template <typename EDATA_T>
+  std::vector<std::vector<vid_t>> BatchGetVidsNeighbors(
+      const label_t& src_label_id, const label_t& dst_label_id,
+      const label_t& edge_label_id, const std::vector<vid_t>& vids,
+      bool is_out) const;
+  template <typename EDATA_T>
+  std::vector<vid_t> BatchGetVidsNeighborsWithIndex(//这里需要区分out和in
+    const label_t& v_label, const label_t& neighbor_label,
+    const label_t& edge_label, const std::vector<vid_t>& vids,
+    std::vector<std::pair<int,int>>& neighbors_index,
+    bool is_out) const;
+  template <typename EDATA_T>
+  std::vector<std::vector<std::pair<vid_t,timestamp_t>>> BatchGetVidsNeighborsWithTimestamp(
+      const label_t& src_label_id, const label_t& dst_label_id,
+      const label_t& edge_label_id, const std::vector<vid_t>& vids,
+      bool is_out) const;
+
+  /* 批量获取边属性
+  @param v_label: 顶点标签
+  @param neighbor_label: 邻居标签
+  @param edge_label: 边标签
+  @param vids: 顶点ID组成的vector
+  @param is_out: 方向
+  @return: 边属性组成的vector
+  */
+  template <typename EDATA_T>
+  std::vector<std::vector<std::pair<vid_t, EDATA_T>>> BatchGetEdgePropsFromSrcVids(
+      const label_t& v_label,
+      const label_t& neighbor_label, 
+      const label_t& edge_label,
+      const std::vector<vid_t>& vids,
+      bool is_out) const;
+
+  template<typename EDATA_T>
+  bool check_edge_exist(gbp::BufferBlock& item) const{
+    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(item).timestamp.load() <= timestamp_;
+  }
+
+  template<typename EDATA_T>
+  bool check_edge_exist(AdjListView<EDATA_T>& item,size_t index=0) const{
+    return gbp::BufferBlock::Ref<MutableNbr<EDATA_T>>(item.get_neighbor()).timestamp.load() <= timestamp_;
+  }
+
+  bool check_edge_exist(std::vector<std::pair<vid_t,timestamp_t>>& item,size_t index=0) const{
+    return item[index].second <= timestamp_;
+  }
  private:
   void release();
 
