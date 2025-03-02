@@ -57,7 +57,12 @@ class MutablePropertyFragment {
 
   bool get_lid(label_t label, oid_t oid, vid_t& lid) const;
 
+  gbp::batch_request_type get_lid_batch(label_t label, oid_t oid,
+                                        bool& success) const;
+
   oid_t get_oid(label_t label, vid_t lid) const;
+
+  gbp::batch_request_type get_oid_batch(label_t label, vid_t lid) const;
 
   vid_t add_vertex(label_t label, oid_t id);
   std::shared_ptr<MutableCsrConstEdgeIterBase> get_outgoing_edges(

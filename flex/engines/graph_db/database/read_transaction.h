@@ -101,6 +101,13 @@ class AdjListView {
     }
   }
 
+  AdjListView(const gbp::BufferBlock slice, int size, timestamp_t timestamp)
+      : edges_(sliceiter_t(slice, size)), timestamp_(timestamp) {
+    while (edges_.is_valid() && edges_.get_timestamp() > timestamp_) {
+      edges_.next();
+    }
+  }
+
   FORCE_INLINE vid_t get_neighbor() { return edges_.get_neighbor(); }
 
   FORCE_INLINE const void* get_data() { return edges_.get_data(); }
@@ -117,7 +124,7 @@ class AdjListView {
   FORCE_INLINE bool is_valid() {
     return edges_.is_valid() && edges_.get_timestamp() <= timestamp_;
   }
-
+  FORCE_INLINE void recover() { edges_.recover(); }
   int estimated_degree() const { return edges_.size(); }
   timestamp_t timestamp() const { return timestamp_; }
 
@@ -320,10 +327,87 @@ class ReadTransaction {
     return SingleGraphView<EDATA_T>(*csr, timestamp_);
   }
 
+  // ========================== batching 接口 ==========================
+
+  /**
+  批量获取顶点ID
+  @param label: 顶点标签
+  @param indices: 顶点索引组成的vector
+  @return: 顶点ID组成的vector
+  */
+  std::vector<oid_t> BatchGetVertexIds(label_t label,
+                                       const std::vector<vid_t>& indices) const;
+  /**
+  批量查找顶点索引
+  @param label: 顶点标签
+  @param oids: 顶点ID组成的vector
+  @return: 顶点索引组成的vector和是否存在的vector
+  */
+  std::pair<std::vector<vid_t>, std::vector<bool>> BatchGetVertexIndices(
+      label_t label, const std::vector<oid_t>& oids) const;
+
+  /**
+  批量获取顶点属性
+  @param label_id: 顶点标签
+  @param vids: 顶点ID组成的vector
+  @param prop_names: 属性名称组成的vector
+  @return: 顶点属性组成的vector
+  */
+  std::vector<std::vector<gbp::BufferBlock>> BatchGetVertexPropsFromVids(
+      label_t label_id, const std::vector<vid_t>& vids,
+      const std::vector<std::string>& prop_names) const;
+  // std::vector<std::vector<gbp::BufferBlock>> BatchGetVertexPropsFromVids(
+  //     label_t label_id, const std::vector<vid_t>& vids,
+  //     const std::vector<ColumnBase*>& prop_columns) const;
+
+  /** 批量获取出边
+  @param v_label: 顶点标签
+  @param vids: 顶点ID组成的vector
+  @param neighbor_label: 邻居标签
+  @param edge_label: 边标签
+  @return: 出边列表
+  */
+  template <typename EDATA_T>
+  std::vector<AdjListView<EDATA_T>> BatchGetOutgoingEdges(
+      label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
+      label_t edge_label) const;
+
+  /** 批量获取入边
+  @param v_label: 顶点标签
+  @param vids: 顶点ID组成的vector
+  @param neighbor_label: 邻居标签
+  @param edge_label: 边标签
+  @return: 入边列表
+  */
+  template <typename EDATA_T>
+  std::vector<AdjListView<EDATA_T>> BatchGetIncomingEdges(
+      label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
+      label_t edge_label) const;
+
+  template <typename EDATA_T>
+  std::vector<gbp::BufferBlock> BatchGetOutgoingSingleEdges(
+      const label_t& v_label, const label_t& neighbor_label,
+      const label_t& edge_label, const std::vector<vid_t>& vids) const;
+
+  template <typename EDATA_T>
+  std::vector<gbp::BufferBlock> BatchGetIncomingSingleEdges(
+      const label_t& v_label, const label_t& neighbor_label,
+      const label_t& edge_label, const std::vector<vid_t>& vids) const;
+
+  template <typename EDATA_T>
+  std::vector<gbp::BufferBlock> BatchGetEdgePropsFromSrcVids(
+      const label_t& v_label, const label_t& neighbor_label,
+      const label_t& edge_label, const std::vector<vid_t>& vids,
+      bool is_out) const;
+
+  // ========================== batching 接口 ==========================
+
  private:
   void release();
 
   const MutablePropertyFragment& graph_;
+  gbp::BufferPoolManager* buffer_pool_manager_ = nullptr;
+
   VersionManager& vm_;
   timestamp_t timestamp_;
 };

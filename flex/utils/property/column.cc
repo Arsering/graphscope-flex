@@ -49,6 +49,14 @@ class TypedEmptyColumn : public ColumnBase {
   gbp::BufferBlock get(size_t index) const override {
     return gbp::BufferBlock();
   }
+  gbp::batch_request_type get_batch(size_t idx, size_t len) const override {
+    assert(false);
+    return gbp::batch_request_type();
+  }
+  gbp::batch_request_type get_stringview_batch(size_t idx) const override {
+    assert(false);
+    return gbp::batch_request_type();
+  }
 #endif
   size_t get_size_in_byte() const override { return 0; }
 

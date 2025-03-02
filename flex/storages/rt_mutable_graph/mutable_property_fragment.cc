@@ -292,8 +292,19 @@ bool MutablePropertyFragment::get_lid(label_t label, oid_t oid,
   return lf_indexers_[label].get_index(oid, lid);
 }
 
+gbp::batch_request_type MutablePropertyFragment::get_lid_batch(
+    label_t label, oid_t oid, bool& success) const {
+  assert(false);
+  return gbp::batch_request_type();
+}
+
 oid_t MutablePropertyFragment::get_oid(label_t label, vid_t lid) const {
   return lf_indexers_[label].get_key(lid);
+}
+
+gbp::batch_request_type MutablePropertyFragment::get_oid_batch(
+    label_t label, vid_t lid) const {
+  return lf_indexers_[label].get_key_batch(lid);
 }
 
 vid_t MutablePropertyFragment::add_vertex(label_t label, oid_t id) {

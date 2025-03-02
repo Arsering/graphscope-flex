@@ -405,6 +405,28 @@ class mmap_array {
     // return ret;
   }
 
+  const gbp::batch_request_type get_batch(size_t idx, size_t len = 1) const {
+#if ASSERT_ENABLE
+    CHECK_LE(idx + len, size_);
+#endif
+
+    size_t buf_size = 0;
+    const size_t file_offset = idx / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_FILE +
+                               (idx % OBJ_NUM_PERPAGE) * sizeof(T);
+
+    size_t rest_filelen_firstpage =
+        gbp::PAGE_SIZE_MEMORY - file_offset % gbp::PAGE_SIZE_MEMORY;
+    if (rest_filelen_firstpage >= len * sizeof(T)) {
+      buf_size += sizeof(T) * len;
+    } else {
+      buf_size += rest_filelen_firstpage;
+      len -= rest_filelen_firstpage / sizeof(T);
+      buf_size += len / OBJ_NUM_PERPAGE * gbp::PAGE_SIZE_MEMORY +
+                  len % OBJ_NUM_PERPAGE * sizeof(T);
+    }
+    return {file_offset, buf_size, fd_gbp_};
+  }
+
   const std::future<gbp::BufferBlock> get_async(size_t idx,
                                                 size_t len = 1) const {
 #if ASSERT_ENABLE
@@ -573,6 +595,15 @@ class mmap_array<std::string_view> {
     auto& item = gbp::BufferBlock::Ref<gs::string_item>(value);
     return data_.get_async(item.offset, item.length);
   }
+
+  gbp::batch_request_type get_string_batch(size_t idx, size_t len) const {
+    return data_.get_batch(idx, len);
+  }
+
+  gbp::batch_request_type get_stringview_batch(size_t idx) const {
+    return items_.get_batch(idx);
+  }
+
 #endif
 
   size_t get_size_in_byte() const {

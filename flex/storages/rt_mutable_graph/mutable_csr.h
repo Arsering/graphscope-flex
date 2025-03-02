@@ -326,10 +326,6 @@ class MutableAdjlist {
 template <typename EDATA_T>
 struct MutableAdjlist {
  public:
-  // using nbr_t = MutableNbr<EDATA_T>;
-  // using slice_t = MutableNbrSlice<EDATA_T>;
-  // using mut_slice_t = MutableNbrSliceMut<EDATA_T>;
-
   MutableAdjlist() : start_idx_(0), size_(0), capacity_(0) {}
   ~MutableAdjlist() {}
 
@@ -587,6 +583,16 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
     objs_ = ma->get(start_idx, size);
 #endif
   }
+
+  explicit TypedMutableCsrConstEdgeIter(const gbp::BufferBlock objs,
+                                        size_t size)
+      : cur_idx_(0), size_(size) {
+#ifdef USING_EDGE_ITER
+    objs_ = gbp::BufferBlockIter<nbr_t>(objs);
+#else
+    objs_ = objs;
+#endif
+  }
   ~TypedMutableCsrConstEdgeIter() = default;
 
   FORCE_INLINE vid_t get_neighbor() const {
@@ -641,6 +647,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
     CHECK_LT(idx, size_);
     cur_idx_ = idx;
   }
+  FORCE_INLINE void recover() { cur_idx_ = 0; }
   FORCE_INLINE bool is_valid() const {
 #ifdef USING_EDGE_ITER
     return cur_idx_ < size_;
@@ -745,6 +752,11 @@ class TypedMutableCsrBase : public MutableCsrBase {
                               timestamp_t ts = 0) = 0;
 
   virtual const slice_t get_edges(vid_t i) const = 0;
+  // ========================== batching 接口 ==========================
+  virtual const gbp::batch_request_type get_edgelist_batch(vid_t i) const = 0;
+  virtual const gbp::batch_request_type get_edges_batch(size_t start_idx,
+                                                        size_t size) const = 0;
+  // ========================== batching 接口 ==========================
 };
 
 // FIXME: 目前是不支持EDATA_T是string的
@@ -1155,6 +1167,13 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     ret.size_ = adj_list.size_.load(std::memory_order_acquire);
     return ret;
   }
+  const gbp::batch_request_type get_edgelist_batch(vid_t i) const override {
+    return adj_lists_.get_batch(i);
+  }
+  const gbp::batch_request_type get_edges_batch(size_t start_idx,
+                                                size_t size) const override {
+    return nbr_list_.get_batch(start_idx, size);
+  }
 
   mut_slice_t get_edges_mut(vid_t i) {
     auto item = adj_lists_.get(i);
@@ -1393,6 +1412,16 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
     return ret;
   }
 
+  const gbp::batch_request_type get_edgelist_batch(vid_t i) const override {
+    assert(false);
+    return gbp::batch_request_type();
+  }
+
+  const gbp::batch_request_type get_edges_batch(size_t start_idx,
+                                                size_t size) const override {
+    return nbr_list_.get_batch(start_idx);
+  }
+
   mut_slice_t get_edges_mut(vid_t i) {
     mut_slice_t ret;
     auto item = nbr_list_.get(i);
@@ -1470,6 +1499,17 @@ class EmptyCsr : public TypedMutableCsrBase<EDATA_T> {
   size_t size() const override { return 0; }
 
   const slice_t get_edges(vid_t i) const override { return slice_t::empty(); }
+
+  const gbp::batch_request_type get_edgelist_batch(vid_t i) const override {
+    assert(false);
+    return gbp::batch_request_type();
+  }
+
+  const gbp::batch_request_type get_edges_batch(size_t start_idx,
+                                                size_t size) const override {
+    assert(false);
+    return gbp::batch_request_type();
+  }
 
   void put_generic_edge(vid_t src, vid_t dst, const Any& data, timestamp_t ts,
                         MMapAllocator&) override {}

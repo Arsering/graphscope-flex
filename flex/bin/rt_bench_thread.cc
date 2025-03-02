@@ -20,7 +20,6 @@
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <fstream>
-// #include <hiactor/core/actor-app.hh>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -28,14 +27,9 @@
 #include "flex/engines/graph_db/database/graph_db_session.h"
 #include "flex/engines/hqps_db/database/mutable_csr_interface.h"
 
-// #include "flex/engines/http_server/executor_group.actg.h"
-// #include "flex/engines/http_server/generated/executor_ref.act.autogen.h"
-// #include "flex/engines/http_server/graph_db_service.h"
-
 #include <glog/logging.h>
 
 namespace bpo = boost::program_options;
-// using namespace std::chrono_literals;
 
 void pre_compute_comment(const std::string dir_path) {
   gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
@@ -153,6 +147,126 @@ void pre_compute_forum(const std::string dir_path) {
     file.close();  // 关闭文件
   }
 }
+class BatchTest {
+ public:
+  // 测试BatchGetVertexIds接口
+  void test_BatchGetVertexIds() {
+    gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+    auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
+    auto txn = gs::GraphDB::get().GetSession(0).GetReadTransaction();
+    txn.BatchGetVertexIds(person_label_id, {1, 2, 3});
+    LOG(INFO) << "BatchGetVertexIds: Test Success";
+  }
+
+  // 测试BatchGetVertexIndices接口
+  void test_BatchGetVertexIndices() {
+    gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+    auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
+    auto txn = gs::GraphDB::get().GetSession(0).GetReadTransaction();
+    txn.BatchGetVertexIndices(person_label_id, {1129, 4194, 8333});
+    LOG(INFO) << "BatchGetVertexIndices: Test Success";
+  }
+
+  // 测试BatchGetOutgoingEdges接口
+  void test_BatchGetOutgoingEdges() {
+    gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+    auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
+    auto knows_label_id = graph.schema().get_edge_label_id("KNOWS");
+
+    auto txn = gs::GraphDB::get().GetSession(0).GetReadTransaction();
+    std::vector<gs::vid_t> vids = {1, 2, 3};
+    auto results = txn.BatchGetOutgoingEdges<gs::Date>(
+        person_label_id, vids, person_label_id, knows_label_id);
+
+    auto person_knows_person_out = txn.GetOutgoingGraphView<gs::Date>(
+        person_label_id, person_label_id, knows_label_id);
+    for (size_t i = 0; i < results.size(); i++) {
+      auto edges = person_knows_person_out.get_edges(vids[i]);
+      assert(results[i].estimated_degree() ==
+             edges.estimated_degree());  // 检查度数是否一致
+
+      assert(results[i].is_valid() ==
+             edges.is_valid());  // 检查第一个邻居是否有效
+      if (results[i].is_valid()) {
+        assert(results[i].get_neighbor() ==
+               edges.get_neighbor());  // 检查第一个邻居是否一致
+      }
+
+      results[i].next();
+      edges.next();
+      assert(results[i].is_valid() ==
+             edges.is_valid());  // 检查第二个邻居是否有效
+      if (results[i].is_valid()) {
+        assert(results[i].get_neighbor() ==
+               edges.get_neighbor());  // 检查第二个邻居是否一致
+      }
+    }
+    LOG(INFO) << "BatchGetOutgoingEdges: Test Success";
+  }
+
+  // 测试BatchGetIncomingEdges接口
+  void test_BatchGetIncomingEdges() {
+    gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+    auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
+    auto knows_label_id = graph.schema().get_edge_label_id("KNOWS");
+
+    auto txn = gs::GraphDB::get().GetSession(0).GetReadTransaction();
+    std::vector<gs::vid_t> vids = {1, 2, 3};
+    auto results = txn.BatchGetIncomingEdges<gs::Date>(
+        person_label_id, vids, person_label_id, knows_label_id);
+
+    auto person_knows_person_in = txn.GetIncomingGraphView<gs::Date>(
+        person_label_id, person_label_id, knows_label_id);
+    for (size_t i = 0; i < results.size(); i++) {
+      auto edges = person_knows_person_in.get_edges(vids[i]);
+      assert(results[i].estimated_degree() ==
+             edges.estimated_degree());  // 检查度数是否一致
+
+      assert(results[i].is_valid() ==
+             edges.is_valid());  // 检查第一个邻居是否有效
+      if (results[i].is_valid()) {
+        assert(results[i].get_neighbor() ==
+               edges.get_neighbor());  // 检查第一个邻居是否一致
+      }
+
+      results[i].next();
+      edges.next();
+      assert(results[i].is_valid() ==
+             edges.is_valid());  // 检查第二个邻居是否有效
+      if (results[i].is_valid()) {
+        assert(results[i].get_neighbor() ==
+               edges.get_neighbor());  // 检查第二个邻居是否一致
+      }
+    }
+    LOG(INFO) << "BatchGetOutgoingEdges: Test Success";
+  }
+
+  // 测试BatchGetVertexPropsFromVid接口
+  void test_BatchGetVertexPropsFromVid() {
+    gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
+    auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
+    auto txn = gs::GraphDB::get().GetSession(0).GetReadTransaction();
+    std::vector<gs::vid_t> vids = {1, 2, 3};
+
+    auto results = txn.BatchGetVertexPropsFromVids(
+        person_label_id, vids,
+        {"lastName", "creationDate", "browserUsed", "birthday"});
+    auto person_creationDate_col = std::dynamic_pointer_cast<gs::DateColumn>(
+        gs::GraphDB::get().GetSession(0).get_vertex_property_column(
+            person_label_id, "creationDate"));
+    auto person_browserUsed_col = std::dynamic_pointer_cast<gs::StringColumn>(
+        gs::GraphDB::get().GetSession(0).get_vertex_property_column(
+            person_label_id, "browserUsed"));
+
+    for (size_t i = 0; i < vids.size(); i++) {
+      auto creationDate = person_creationDate_col->get(vids[i]);
+      auto browserUsed = person_browserUsed_col->get(vids[i]);
+      assert(creationDate == results[1][i]);
+      assert(browserUsed == results[2][i]);
+    }
+    LOG(INFO) << "BatchGetVertexPropsFromVid: Test Success";
+  }
+};
 
 class Req {
  public:
@@ -676,6 +790,15 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Clean finish";
 #endif
   gbp::warmup_mark().store(1);
+
+  {
+    BatchTest test;
+    test.test_BatchGetVertexIds();
+    test.test_BatchGetOutgoingEdges();
+    test.test_BatchGetIncomingEdges();
+    test.test_BatchGetVertexPropsFromVid();
+    return 1;
+  }
 
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().load_query(req_file);

@@ -353,10 +353,19 @@ class LFIndexer {
 
     return false;
   }
+  gbp::batch_request_type get_index_batch(int64_t oid, INDEX_T& ret,
+                                          bool& success) const {
+    assert(false);
+    return gbp::batch_request_type();
+  }
 
   int64_t get_key(const INDEX_T& index) const {
     auto item = keys_.get(index);
     return gbp::BufferBlock::Ref<int64_t>(item);
+  }
+
+  gbp::batch_request_type get_key_batch(const INDEX_T& index) const {
+    return keys_.get_batch(index);
   }
 #endif
 
