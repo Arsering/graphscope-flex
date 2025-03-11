@@ -27,3 +27,15 @@ Terminated
 start_graphscope.sh: line 40: 1510373 Killed                  rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
 Terminated
 start_graphscope.sh: line 40: 2185050 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+Terminated
+Terminated
+Terminated
+start_graphscope.sh: line 18: m: command not found
+start_graphscope.sh: line 39: 3216651 Killed                  rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 3000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 39: 3215769 Killed                  rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 3000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+Terminated
+Wrong input parameters, try cgexec --help' for more information.
+Terminated
+start_graphscope.sh: line 39: 3911384 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 39: 4091224 Segmentation fault      rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+Terminated

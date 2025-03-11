@@ -588,6 +588,7 @@ class mmap_array<std::string_view> {
   gbp::BufferBlock get(size_t idx) const {
     auto value = items_.get(idx);
     auto& item = gbp::BufferBlock::Ref<gs::string_item>(value);
+
     return data_.get(item.offset, item.length);
   }
   std::future<gbp::BufferBlock> get_async(size_t idx) const {

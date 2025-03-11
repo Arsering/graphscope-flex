@@ -82,10 +82,10 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   auto query_id_t = gbp::get_query_id().load();
 
   // assert((int) type == 31);
-  // if ((int) type != 8)
+  if ((int) type != 14)
+    return result_buffer;
+  // if (gbp::get_query_id() != 38237)
   //   return result_buffer;
-  // // if (gbp::get_query_id() != 477)
-  // //   return result_buffer;
   // static size_t count = 0;
   // count++;
 
@@ -93,7 +93,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   //   return result_buffer;
   // // if ((int) type == 1)
   // //   assert(false);
-  // LOG(INFO) << (int) type << " " << gbp::get_query_id().load();
+  // LOG(INFO) << (int) type << " " << gbp::get_query_id().load() << " "
+  //           << gbp::get_thread_id();
   static std::atomic<size_t> query_id = 0;
   gbp::get_counter_query().fetch_add(1);
 
@@ -124,8 +125,15 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
 #ifdef PROFILE_QUERY_LATENCY
   size_t ts1 = gbp::GetSystemTime();
 #endif
+  // LOG(INFO) << "\n" << gbp::get_results_vec()[gbp::get_query_id().load()];
+  // assert(false);
   // LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
   if (app->Query(decoder, encoder)) {
+    // LOG(INFO) << "result_buffer.size() = " << result_buffer.size();
+    // LOG(INFO) << "\n"
+    //           << std::string_view{result_buffer.data(),
+    //           result_buffer.size()};
+    // assert(false);
 #ifdef DEBUG_1
     ts = gbp::GetSystemTime() - ts;
     LOG(INFO) << "profiling: [" << gbp::get_query_id().load() << "][" << ts
@@ -134,7 +142,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << "]";
 #endif
     constexpr bool store_query = false;
-    constexpr bool check_result = false;
+    constexpr bool check_result = true;
 
     if constexpr (store_query) {
       static const size_t max_query_num = 200000100;

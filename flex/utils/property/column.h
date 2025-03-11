@@ -47,7 +47,7 @@ class ColumnBase {
 #else
   virtual gbp::BufferBlock get(size_t index) const = 0;
   virtual void set(size_t index, const gbp::BufferBlock& value) = 0;
-  virtual gbp::batch_request_type get_batch(size_t idx,
+  virtual gbp::batch_request_type get_batch(size_t idx, size_t offset,
                                             size_t len = 1) const = 0;
   virtual gbp::batch_request_type get_stringview_batch(size_t idx) const = 0;
 #endif
@@ -248,7 +248,8 @@ class TypedColumn : public ColumnBase {
   }
   gbp::BufferBlock get(size_t idx) const override { return get_inner(idx); }
 
-  gbp::batch_request_type get_batch(size_t idx, size_t len = 1) const override {
+  gbp::batch_request_type get_batch(size_t idx, size_t offset = 0,
+                                    size_t len = 1) const override {
 #if ASSERT_ENABLE
     assert(idx < basic_size_ + extra_size_);
     assert(len == 1);
@@ -452,10 +453,10 @@ class StringColumn : public ColumnBase
                              : extra_buffer_.get(idx - basic_size_);
   }
   gbp::BufferBlock get(size_t idx) const override { return get_inner(idx); }
-  gbp::batch_request_type get_batch(size_t idx, size_t len) const override {
-    return idx < basic_size_
-               ? basic_buffer_.get_string_batch(idx, len)
-               : extra_buffer_.get_string_batch(idx - basic_size_, len);
+  gbp::batch_request_type get_batch(size_t idx, size_t offset,
+                                    size_t len) const override {
+    return idx < basic_size_ ? basic_buffer_.get_string_batch(offset, len)
+                             : extra_buffer_.get_string_batch(offset, len);
   }
   gbp::batch_request_type get_stringview_batch(size_t idx) const override {
     return idx < basic_size_

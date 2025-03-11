@@ -507,6 +507,12 @@ class MutableCsrBase {
 
   virtual size_t get_data_size_in_byte() const = 0;
   virtual void copy_before_insert(vid_t v) { assert(false); }
+
+  // ========================== batching 接口 ==========================
+  virtual const gbp::batch_request_type get_edgelist_batch(vid_t i) const = 0;
+  virtual const gbp::batch_request_type get_edges_batch(
+      size_t start_idx, size_t size = 1) const = 0;
+  // ========================== batching 接口 ==========================
 };
 
 #if OV
@@ -657,6 +663,11 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 #endif
   }
   FORCE_INLINE size_t size() const { return size_; }
+  FORCE_INLINE void free() {
+    objs_.free();
+    cur_idx_ = 0;
+    size_ = 0;
+  }
 
  private:
 #ifdef USING_EDGE_ITER
@@ -752,11 +763,6 @@ class TypedMutableCsrBase : public MutableCsrBase {
                               timestamp_t ts = 0) = 0;
 
   virtual const slice_t get_edges(vid_t i) const = 0;
-  // ========================== batching 接口 ==========================
-  virtual const gbp::batch_request_type get_edgelist_batch(vid_t i) const = 0;
-  virtual const gbp::batch_request_type get_edges_batch(size_t start_idx,
-                                                        size_t size) const = 0;
-  // ========================== batching 接口 ==========================
 };
 
 // FIXME: 目前是不支持EDATA_T是string的
@@ -998,10 +1004,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
                 item.timestamp = item_old.timestamp.load();
               },
               nbrs_new, i);
-        auto& aa = gbp::BufferBlock::Ref<nbr_t>(nbrs_old, i);
-        if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
-          LOG(INFO) << vnum << " " << aa.neighbor << " " << aa.data << " "
-                    << aa.timestamp;
         offset += item_tmp.size_;
       }
       fout.close();

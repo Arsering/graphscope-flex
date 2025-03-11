@@ -153,21 +153,27 @@ void ReadTransaction::release() {
 std::vector<oid_t> ReadTransaction::BatchGetVertexIds(
     label_t label, const std::vector<vid_t>& indices) const {
   std::vector<oid_t> oids(indices.size());
+  std::vector<gbp::BufferBlock> blocks;
+  blocks.reserve(indices.size());
+
   std::vector<gbp::batch_request_type> requests(indices.size());
   for (size_t i = 0; i < indices.size(); ++i) {
     requests[i] = graph_.get_oid_batch(label, indices[i]);
   }
-  auto blocks = buffer_pool_manager_->GetBlockBatch(requests);
+  buffer_pool_manager_->GetBlockBatch(requests, blocks);
   for (size_t i = 0; i < indices.size(); ++i) {
     oids[i] = gbp::BufferBlock::Ref<oid_t>(blocks[i]);
   }
-  return oids;
+
+  return std::move(oids);
 }
 
 // TODO: 该函数暂时不实现，其中包含查找过程，实现比较复杂
 std::pair<std::vector<vid_t>, std::vector<bool>>
 ReadTransaction::BatchGetVertexIndices(label_t label,
                                        const std::vector<oid_t>& oids) const {
+  assert(false);
+
   std::vector<vid_t> indices(oids.size());
   std::vector<bool> exists(oids.size());
   for (size_t i = 0; i < oids.size(); ++i) {
@@ -176,110 +182,38 @@ ReadTransaction::BatchGetVertexIndices(label_t label,
   return {indices, exists};
 }
 
-// TODO:
-// 实现思路：修改GetOutgoingEdges和AdjListView，其中AdjListView直接给构造函数传入一个bufferblock.
-template <typename EDATA_T>
-std::vector<AdjListView<EDATA_T>> ReadTransaction::BatchGetOutgoingEdges(
-    label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
-    label_t edge_label) const {
-  std::vector<gbp::batch_request_type> requests;
-  std::vector<AdjListView<EDATA_T>> results;
-  // results.reserve(vids.size());
-  // 获取所有邻接列表
-  for (auto v : vids) {
-    auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
-        graph_.get_oe_csr(v_label, neighbor_label, edge_label));
-    requests.emplace_back(csr->get_edgelist_batch(v));
-  }
-  auto adjlist_blocks = buffer_pool_manager_->GetBlockBatch(requests);
-
-  // 获取所有边列表
-  requests.clear();
-  for (size_t i = 0; i < adjlist_blocks.size(); ++i) {
-    auto& adj_list =
-        gbp::BufferBlock::Ref<MutableAdjlist<EDATA_T>>(adjlist_blocks[i]);
-    auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
-        graph_.get_oe_csr(v_label, neighbor_label, edge_label));
-    requests.emplace_back(
-        csr->get_edges_batch(adj_list.start_idx_, adj_list.size_));
-  }
-  auto edges_blocks = buffer_pool_manager_->GetBlockBatch(requests);
-
-  // 生成最后结果
-  for (size_t i = 0; i < edges_blocks.size(); ++i) {
-    results.emplace_back(
-        edges_blocks[i],
-        gbp::BufferBlock::Ref<MutableAdjlist<EDATA_T>>(adjlist_blocks[i]).size_,
-        timestamp_);
-  }
-
-  return results;
-}
-
-template <typename EDATA_T>
-std::vector<AdjListView<EDATA_T>> ReadTransaction::BatchGetIncomingEdges(
-    label_t v_label, const std::vector<vid_t>& vids, label_t neighbor_label,
-    label_t edge_label) const {
-  std::vector<gbp::batch_request_type> requests;
-  std::vector<AdjListView<EDATA_T>> results;
-  // results.reserve(vids.size());
-  // 获取所有邻接列表
-  for (auto v : vids) {
-    auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
-        graph_.get_ie_csr(v_label, neighbor_label, edge_label));
-    requests.emplace_back(csr->get_edgelist_batch(v));
-  }
-  auto adjlist_blocks = buffer_pool_manager_->GetBlockBatch(requests);
-  requests.clear();
-
-  // 获取所有边列表
-  for (size_t i = 0; i < adjlist_blocks.size(); ++i) {
-    auto& adj_list =
-        gbp::BufferBlock::Ref<MutableAdjlist<EDATA_T>>(adjlist_blocks[i]);
-    auto csr = dynamic_cast<const TypedMutableCsrBase<EDATA_T>*>(
-        graph_.get_ie_csr(v_label, neighbor_label, edge_label));
-    requests.emplace_back(
-        csr->get_edges_batch(adj_list.start_idx_, adj_list.size_));
-  }
-  auto edges_blocks = buffer_pool_manager_->GetBlockBatch(requests);
-
-  // 生成最后结果
-  for (size_t i = 0; i < edges_blocks.size(); ++i) {
-    results.emplace_back(
-        edges_blocks[i],
-        gbp::BufferBlock::Ref<MutableAdjlist<EDATA_T>>(adjlist_blocks[i]).size_,
-        timestamp_);
-  }
-
-  return results;
-}
-
-template <typename EDATA_T>
 std::vector<gbp::BufferBlock> ReadTransaction::BatchGetOutgoingSingleEdges(
     const label_t& v_label, const label_t& neighbor_label,
     const label_t& edge_label, const std::vector<vid_t>& vids) const {
+  std::vector<gbp::BufferBlock> blocks;
+  blocks.reserve(vids.size());
+
   std::vector<gbp::batch_request_type> requests;
 
   for (auto v : vids) {
-    auto csr = dynamic_cast<const SingleMutableCsr<EDATA_T>*>(
-        graph_.get_oe_csr(v_label, neighbor_label, edge_label));
+    auto csr = graph_.get_oe_csr(v_label, neighbor_label, edge_label);
     requests.emplace_back(csr->get_edges_batch(v));
   }
-  return buffer_pool_manager_->GetBlockBatch(requests);
+  buffer_pool_manager_->GetBlockBatch(requests, blocks);
+
+  return std::move(blocks);
 }
 
-template <typename EDATA_T>
 std::vector<gbp::BufferBlock> ReadTransaction::BatchGetIncomingSingleEdges(
     const label_t& v_label, const label_t& neighbor_label,
     const label_t& edge_label, const std::vector<vid_t>& vids) const {
+  std::vector<gbp::BufferBlock> blocks;
+  blocks.reserve(vids.size());
+
   std::vector<gbp::batch_request_type> requests;
 
   for (auto v : vids) {
-    auto csr = dynamic_cast<const SingleMutableCsr<EDATA_T>*>(
-        graph_.get_ie_csr(v_label, neighbor_label, edge_label));
+    auto csr = graph_.get_ie_csr(v_label, neighbor_label, edge_label);
     requests.emplace_back(csr->get_edges_batch(v));
   }
-  return buffer_pool_manager_->GetBlockBatch(requests);
+  buffer_pool_manager_->GetBlockBatch(requests, blocks);
+
+  return std::move(blocks);
 }
 
 std::vector<std::vector<gbp::BufferBlock>>
@@ -287,7 +221,7 @@ ReadTransaction::BatchGetVertexPropsFromVids(
     label_t label_id, const std::vector<vid_t>& vids,
     const std::vector<std::string>& prop_names) const {
   std::vector<gbp::batch_request_type> requests;
-  std::vector<std::pair<uint32_t, uint32_t>> string_column_idxs;
+  std::vector<std::tuple<uint32_t, uint32_t, uint32_t>> string_column_idxs;
   auto& table = graph_.get_vertex_table(label_id);
 
   // 获取所有列
@@ -307,7 +241,7 @@ ReadTransaction::BatchGetVertexPropsFromVids(
       CHECK(string_column != nullptr);
       for (auto vid : vids) {
         requests.emplace_back(string_column->get_stringview_batch(vid));
-        string_column_idxs.emplace_back(requests.size() - 1, column_idx);
+        string_column_idxs.emplace_back(column_idx, vid, requests.size() - 1);
       }
       break;
     }
@@ -343,35 +277,40 @@ ReadTransaction::BatchGetVertexPropsFromVids(
     }
   }
 
-  auto results = buffer_pool_manager_->GetBlockBatch(requests);
+  std::vector<gbp::BufferBlock> blocks;
+  blocks.reserve(requests.size());
+  buffer_pool_manager_->GetBlockBatch(requests, blocks);
 
   // 对string需要特别处理
   {
     requests.clear();
-    for (size_t i = 0; i < string_column_idxs.size(); ++i) {
+    for (size_t i = 0; i < string_column_idxs.size(); i++) {
       auto& item = gbp::BufferBlock::Ref<gs::string_item>(
-          results[string_column_idxs[i].first]);
+          blocks[std::get<2>(string_column_idxs[i])]);
       requests.emplace_back(std::dynamic_pointer_cast<StringColumn>(
-                                columns[string_column_idxs[i].second])
-                                ->get_batch(item.offset, item.length));
+                                columns[std::get<0>(string_column_idxs[i])])
+                                ->get_batch(std::get<1>(string_column_idxs[i]),
+                                            item.offset, item.length));
     }
-
-    auto string_blocks = buffer_pool_manager_->GetBlockBatch(requests);
-    for (size_t i = 0; i < string_column_idxs.size(); ++i) {
-      results[string_column_idxs[i].first] = string_blocks[i];
+    std::vector<gbp::BufferBlock> blocks_tmp;
+    blocks_tmp.reserve(requests.size());
+    buffer_pool_manager_->GetBlockBatch(requests, blocks_tmp);
+    for (size_t i = 0; i < string_column_idxs.size(); i++) {
+      blocks[std::get<2>(string_column_idxs[i])] = blocks_tmp[i];
     }
   }
+
   std::vector<std::vector<gbp::BufferBlock>> results_vec;
   uint32_t result_idx = 0;
   results_vec.resize(columns.size());
   for (size_t column_idx = 0; column_idx < columns.size(); column_idx++) {
     results_vec[column_idx].resize(vids.size());
     for (size_t vid_idx = 0; vid_idx < vids.size(); vid_idx++) {
-      results_vec[column_idx][vid_idx] = results[result_idx++];
+      results_vec[column_idx][vid_idx] = blocks[result_idx++];
     }
   }
 
-  return results_vec;
+  return std::move(results_vec);
 }
 
 // std::vector<std::vector<gbp::BufferBlock>>
@@ -396,17 +335,31 @@ ReadTransaction::BatchGetVertexPropsFromVids(
 //   return results;
 // }
 
-template std::vector<AdjListView<Date>>
-ReadTransaction::BatchGetOutgoingEdges<Date>(label_t, const std::vector<vid_t>&,
-                                             label_t, label_t) const;
+// template std::vector<AdjListView<Date>>
+// ReadTransaction::BatchGetOutgoingEdges<Date>(label_t, const
+// std::vector<vid_t>&,
+//                                              label_t, label_t) const;
+// template std::vector<AdjListView<Date>>
+// ReadTransaction::BatchGetIncomingEdges<Date>(label_t, const
+// std::vector<vid_t>&,
+//                                              label_t, label_t) const;
 
-template std::vector<AdjListView<Date>>
-ReadTransaction::BatchGetIncomingEdges<Date>(label_t, const std::vector<vid_t>&,
-                                             label_t, label_t) const;
+// template std::vector<AdjListView<grape::EmptyType>>
+// ReadTransaction::BatchGetOutgoingEdges<grape::EmptyType>(
+//     label_t, const std::vector<vid_t>&, label_t, label_t) const;
+// template std::vector<AdjListView<grape::EmptyType>>
+// ReadTransaction::BatchGetIncomingEdges<grape::EmptyType>(
+//     label_t, const std::vector<vid_t>&, label_t, label_t) const;
 
-template std::vector<AdjListView<grape::EmptyType>>
-ReadTransaction::BatchGetIncomingEdges<grape::EmptyType>(
-    label_t, const std::vector<vid_t>&, label_t, label_t) const;
+// template std::vector<AdjListView<int>>
+// ReadTransaction::BatchGetOutgoingEdges<int>(label_t, const
+// std::vector<vid_t>&,
+//                                             label_t, label_t) const;
+// template std::vector<AdjListView<int>>
+// ReadTransaction::BatchGetIncomingEdges<int>(label_t, const
+// std::vector<vid_t>&,
+//                                             label_t, label_t) const;
+
 // ========================== batching 接口 ==========================
 
 }  // namespace gs

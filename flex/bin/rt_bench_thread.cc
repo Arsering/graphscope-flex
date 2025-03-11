@@ -176,7 +176,7 @@ class BatchTest {
     auto txn = gs::GraphDB::get().GetSession(0).GetReadTransaction();
     std::vector<gs::vid_t> vids = {1, 2, 3};
     auto results = txn.BatchGetOutgoingEdges<gs::Date>(
-        person_label_id, vids, person_label_id, knows_label_id);
+        person_label_id, person_label_id, knows_label_id, vids);
 
     auto person_knows_person_out = txn.GetOutgoingGraphView<gs::Date>(
         person_label_id, person_label_id, knows_label_id);
@@ -213,7 +213,7 @@ class BatchTest {
     auto txn = gs::GraphDB::get().GetSession(0).GetReadTransaction();
     std::vector<gs::vid_t> vids = {1, 2, 3};
     auto results = txn.BatchGetIncomingEdges<gs::Date>(
-        person_label_id, vids, person_label_id, knows_label_id);
+        person_label_id, person_label_id, knows_label_id, vids);
 
     auto person_knows_person_in = txn.GetIncomingGraphView<gs::Date>(
         person_label_id, person_label_id, knows_label_id);
@@ -246,11 +246,12 @@ class BatchTest {
     gs::MutablePropertyFragment& graph = gs::GraphDB::get().graph();
     auto person_label_id = graph.schema().get_vertex_label_id("PERSON");
     auto txn = gs::GraphDB::get().GetSession(0).GetReadTransaction();
-    std::vector<gs::vid_t> vids = {1, 2, 3};
+    std::vector<gs::vid_t> vids = {1, 25556, 25557, 25558, 25559, 75559, 3, 4};
+    std::vector<std::string> person_property_names = {"creationDate",
+                                                      "browserUsed"};
 
-    auto results = txn.BatchGetVertexPropsFromVids(
-        person_label_id, vids,
-        {"lastName", "creationDate", "browserUsed", "birthday"});
+    auto results = txn.BatchGetVertexPropsFromVids(person_label_id, vids,
+                                                   person_property_names);
     auto person_creationDate_col = std::dynamic_pointer_cast<gs::DateColumn>(
         gs::GraphDB::get().GetSession(0).get_vertex_property_column(
             person_label_id, "creationDate"));
@@ -261,8 +262,8 @@ class BatchTest {
     for (size_t i = 0; i < vids.size(); i++) {
       auto creationDate = person_creationDate_col->get(vids[i]);
       auto browserUsed = person_browserUsed_col->get(vids[i]);
-      assert(creationDate == results[1][i]);
-      assert(browserUsed == results[2][i]);
+      assert(creationDate == results[0][i]);
+      assert(browserUsed == results[1][i]);
     }
     LOG(INFO) << "BatchGetVertexPropsFromVid: Test Success";
   }
@@ -278,9 +279,7 @@ class Req {
   void init(size_t warmup_num, size_t benchmark_num) {
     warmup_num_ = warmup_num;
     num_of_reqs_ = warmup_num + benchmark_num;
-    num_of_reqs_unique_ = reqs_.size();
 
-    // num_of_reqs_unique_ = 2000000;
     start_.resize(num_of_reqs_);
     end_.resize(num_of_reqs_);
     cur_ = 0;
@@ -326,6 +325,9 @@ class Req {
         ::fread(buffer.data(), length, 1, result_file_string);
         gbp::get_results_vec().emplace_back(
             std::string(buffer.data(), buffer.data() + length));
+        if (gbp::get_results_vec().size() == num_of_reqs_) {
+          break;
+        }
       }
     }
     LOG(INFO) << "Number of results = " << gbp::get_results_vec().size();
@@ -354,6 +356,9 @@ class Req {
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
       reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      if (reqs_.size() == num_of_reqs_) {
+        break;
+      }
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
@@ -742,8 +747,8 @@ int main(int argc, char** argv) {
   tzset();
 #if OV
 #else
-  size_t pool_num = 4;
-  size_t io_server_num = 1;
+  size_t pool_num = 8;
+  size_t io_server_num = 4;
 
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
@@ -791,19 +796,20 @@ int main(int argc, char** argv) {
 #endif
   gbp::warmup_mark().store(1);
 
-  {
-    BatchTest test;
-    test.test_BatchGetVertexIds();
-    test.test_BatchGetOutgoingEdges();
-    test.test_BatchGetIncomingEdges();
-    test.test_BatchGetVertexPropsFromVid();
-    return 1;
-  }
+  // {
+  //   BatchTest test;
+  //   test.test_BatchGetVertexIds();
+  //   test.test_BatchGetOutgoingEdges();
+  //   test.test_BatchGetIncomingEdges();
+  //   test.test_BatchGetVertexPropsFromVid();
+  //   // return 1;
+  // }
 
   std::string req_file = vm["req-file"].as<std::string>();
+  Req::get().init(warmup_num, benchmark_num);
   Req::get().load_query(req_file);
   // Req::get().load_query_with_timestamp(req_file);
-  // Req::get().load_result(req_file);
+  Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
