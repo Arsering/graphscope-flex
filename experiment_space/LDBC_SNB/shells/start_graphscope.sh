@@ -2,7 +2,7 @@
 DISK_DEVICE=/dev/vdb
 CUR_DIR=/data/zhengyang/data/graphscope-flex
 
-export SF=30
+export SF=100
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
@@ -36,7 +36,7 @@ cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
-for thread_num in 1
+for thread_num in 30
 do
     expression="(1.28 + 0.0131 * $thread_num + 3) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression))")
@@ -44,7 +44,7 @@ do
 
     echo 1 > /proc/sys/vm/drop_caches
     echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*10))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*6))")
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     
     # gdb --args 
