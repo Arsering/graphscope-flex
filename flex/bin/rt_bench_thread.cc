@@ -794,7 +794,7 @@ int main(int argc, char** argv) {
   gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
-  gbp::warmup_mark().store(1);
+  gbp::warmup_mark().store(0);
 
   // {
   //   BatchTest test;
@@ -852,7 +852,7 @@ int main(int argc, char** argv) {
     LOG(INFO) << "SSD IO(r/w) = " << ssd_io_r_byte << "/" << ssd_io_w_byte
               << "(Byte)";
 
-    gbp::warmup_mark().store(0);
+    // gbp::warmup_mark().store(0);
     std::cout << "cost time:"
               << std::chrono::duration_cast<std::chrono::milliseconds>(end -
                                                                        begin)

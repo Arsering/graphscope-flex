@@ -1,15 +1,15 @@
 #!/bin/bash
 DISK_DEVICE=/dev/vdb
-CUR_DIR=/data/zhengyang/data/graphscope-flex
+CUR_DIR=/mnt/nvme0n1/zyc/graphscope-flex
 
-export SF=100
+export SF=30
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
-export DB_ROOT_DIR=/nvme0n1/runtime_db/${Scale_Factor}_db_BP
+export DB_ROOT_DIR=/mnt/nvme0n1/zyc/data/${Scale_Factor}_db_BP
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
-export QUERY_FILE=/data/zhengyang/data/offline/${Scale_Factor}
+export QUERY_FILE=/mnt/nvme0n1/zyc/data/query_file
 # export QUERY_FILE=/data/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2024-11-04-14:34:11/server/graphscope_logs
 # export QUERY_FILE=${INPUT_OUTPUT_DIR}/configurations/query.file
 
@@ -31,7 +31,7 @@ cp ${INPUT_OUTPUT_DIR}/configurations/bulk_load_${SF}.yaml ${LOG_DIR}/configurat
 mkdir ${LOG_DIR}/shells
 cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 
-# rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
+rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
 # start iostat
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
@@ -48,7 +48,7 @@ do
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     
     # gdb --args 
-    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+    # rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
     # gdb --args 
     # rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
     # nohup cgexec -g memory:zyc_variable rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &

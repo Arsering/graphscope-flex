@@ -9,6 +9,7 @@ project (
   VERSION ${FLEX_VERSION}
   LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_HQPS "Whether to build HighQPS Engine" ON)
 option(BUILD_TEST "Whether to build test" OFF)
