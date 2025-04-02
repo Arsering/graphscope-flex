@@ -809,7 +809,7 @@ int main(int argc, char** argv) {
   Req::get().init(warmup_num, benchmark_num);
   Req::get().load_query(req_file);
   // Req::get().load_query_with_timestamp(req_file);
-  // Req::get().load_result(req_file);
+  Req::get().load_result(req_file);
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
