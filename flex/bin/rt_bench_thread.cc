@@ -147,6 +147,7 @@ void pre_compute_forum(const std::string dir_path) {
     file.close();  // 关闭文件
   }
 }
+#if !OV
 class BatchTest {
  public:
   // 测试BatchGetVertexIds接口
@@ -268,6 +269,7 @@ class BatchTest {
     LOG(INFO) << "BatchGetVertexPropsFromVid: Test Success";
   }
 };
+#endif
 
 class Req {
  public:

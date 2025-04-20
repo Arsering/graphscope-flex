@@ -6,7 +6,7 @@ export SF=30
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
-export DB_ROOT_DIR=/mnt/nvme/runtime_db/${Scale_Factor}_db_BP
+export DB_ROOT_DIR=/mnt/nvme/runtime_db/${Scale_Factor}_db_MMAP
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
 export QUERY_FILE=/data-2/query_file/${Scale_Factor}

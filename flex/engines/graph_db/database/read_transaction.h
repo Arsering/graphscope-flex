@@ -330,6 +330,7 @@ class ReadTransaction {
 
   // ========================== batching 接口 ==========================
 
+#if !OV
   /**
   批量获取顶点ID
   @param label: 顶点标签
@@ -475,7 +476,7 @@ class ReadTransaction {
   //     const label_t& v_label, const label_t& neighbor_label,
   //     const label_t& edge_label, const std::vector<vid_t>& vids,
   //     bool is_out) const;
-
+#endif
   // ========================== batching 接口 ==========================
 
  private:

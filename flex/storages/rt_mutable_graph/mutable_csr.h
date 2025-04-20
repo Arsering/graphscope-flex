@@ -508,10 +508,12 @@ class MutableCsrBase {
   virtual size_t get_data_size_in_byte() const = 0;
   virtual void copy_before_insert(vid_t v) { assert(false); }
 
-  // ========================== batching 接口 ==========================
+// ========================== batching 接口 ==========================
+#if !OV
   virtual const gbp::batch_request_type get_edgelist_batch(vid_t i) const = 0;
   virtual const gbp::batch_request_type get_edges_batch(
       size_t start_idx, size_t size = 1) const = 0;
+#endif
   // ========================== batching 接口 ==========================
 };
 
@@ -1501,7 +1503,7 @@ class EmptyCsr : public TypedMutableCsrBase<EDATA_T> {
   size_t size() const override { return 0; }
 
   const slice_t get_edges(vid_t i) const override { return slice_t::empty(); }
-
+#if !OV
   const gbp::batch_request_type get_edgelist_batch(vid_t i) const override {
     assert(false);
     return gbp::batch_request_type();
@@ -1512,7 +1514,7 @@ class EmptyCsr : public TypedMutableCsrBase<EDATA_T> {
     assert(false);
     return gbp::batch_request_type();
   }
-
+#endif
   void put_generic_edge(vid_t src, vid_t dst, const Any& data, timestamp_t ts,
                         MMapAllocator&) override {}
 

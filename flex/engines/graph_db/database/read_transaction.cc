@@ -150,6 +150,7 @@ void ReadTransaction::release() {
 
 // ========================== batching 接口 ==========================
 
+#if !OV
 std::vector<oid_t> ReadTransaction::BatchGetVertexIds(
     label_t label, const std::vector<vid_t>& indices) const {
   std::vector<oid_t> oids(indices.size());
@@ -312,7 +313,7 @@ ReadTransaction::BatchGetVertexPropsFromVids(
 
   return std::move(results_vec);
 }
-
+#endif
 // std::vector<std::vector<gbp::BufferBlock>>
 // ReadTransaction::BatchGetVertexPropsFromVids(
 //     label_t label_id, const std::vector<vid_t>& vids,
