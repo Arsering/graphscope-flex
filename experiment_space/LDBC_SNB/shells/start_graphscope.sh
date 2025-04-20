@@ -9,8 +9,8 @@ export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
 export DB_ROOT_DIR=/mnt/nvme/runtime_db/${Scale_Factor}_db_BP
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
-export QUERY_FILE=/data/zhengyang/data/offline/${Scale_Factor}
-export QUERY_FILE=/data-1/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2025-04-02-19:28:16/server/graphscope_logs
+export QUERY_FILE=/data-2/query_file/${Scale_Factor}
+# export QUERY_FILE=/data-1/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2025-04-02-19:28:16/server/graphscope_logs
 # export QUERY_FILE=${INPUT_OUTPUT_DIR}/configurations/query.file
 
 rm -rf ${DB_ROOT_DIR}/runtime/tmp/*
@@ -36,7 +36,7 @@ cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
 export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
-for thread_num in 1
+for thread_num in 30
 do
     expression="(1.28 + 0.0131 * $thread_num + 3) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression))")
@@ -44,11 +44,11 @@ do
 
     echo 1 > /proc/sys/vm/drop_caches
     echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*60))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*6))")
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     
     # gdb --args 
-    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 1000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 20000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
     # gdb --args 
     # rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
     # nohup cgexec -g memory:zyc_variable rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
