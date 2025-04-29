@@ -92,7 +92,8 @@ int main(int argc, char** argv) {
 
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "nvme0n1");
+      log_data_path + "/performance.log", "md0");
+  gbp::get_db_dir() = data_path;
 
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
@@ -100,7 +101,7 @@ int main(int argc, char** argv) {
   double t0 = -grape::GetCurrentTime();
 #if !OV
   size_t pool_num = 8;
-  size_t io_server_num = 2;
+  size_t io_server_num = 4;
 
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();
@@ -149,11 +150,11 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
-  gbp::CleanMAS();
+  // gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
 

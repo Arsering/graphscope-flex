@@ -91,7 +91,7 @@ class ArenaAllocator {
       typed_allocations_;
 };
 
-#if 0
+#if OV
 class MMapAllocator {
   static constexpr size_t batch_size = 128 * 1024 * 1024;
 

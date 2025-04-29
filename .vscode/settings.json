@@ -81,7 +81,8 @@
         "rope": "cpp",
         "slist": "cpp",
         "scoped_allocator": "cpp",
-        "charconv": "cpp"
+        "charconv": "cpp",
+        "ranges": "cpp"
     },
     "cmake.sourceDirectory": "/data-1/yichengzhang/data/latest_gs_bp/zed-graphscope-flex/flex/tests/hqps"
 }

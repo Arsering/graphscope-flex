@@ -348,6 +348,7 @@ class Req {
     const size_t size = 4096;
     std::vector<char> buffer(size);
     size_t length = 0;
+    int count = 0;
 
     while (true) {
       auto ret = ::fread(&length, sizeof(size_t), 1, query_file_string_view);
@@ -357,10 +358,20 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
+      // // uint8_t type = buffer.back();
+      // auto req_string = std::string(buffer.data(), buffer.data() + length);
+      // uint8_t type = req_string.back();
+      // if ((int)type == 2) {
+      //   reqs_.emplace_back(req_string);
+      //   count++;
+      // }
       reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
       if (reqs_.size() == num_of_reqs_) {
         break;
       }
+      // if (count == num_of_reqs_) {
+      //   break;
+      // }
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
@@ -372,7 +383,7 @@ class Req {
     while (true) {
       id = cur_.fetch_add(1);
 
-      if (id >= num_of_reqs_) {
+      if (id >= num_of_reqs_unique_) {
         // LOG(INFO) << gbp::get_thread_id();
         break;
       }
@@ -740,7 +751,7 @@ int main(int argc, char** argv) {
 
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "nvme0n1");
+      log_data_path + "/performance.log", "md0");
   gbp::get_log_dir() = log_data_path;
   gbp::get_db_dir() = data_path;
 
@@ -749,8 +760,8 @@ int main(int argc, char** argv) {
   tzset();
 #if OV
 #else
-  size_t pool_num = 8;
-  size_t io_server_num = 4;
+  size_t pool_num = 16;
+  size_t io_server_num = 8;
 
   if (vm.count("buffer-pool-size")) {
     pool_size_Byte = vm["buffer-pool-size"].as<uint64_t>();

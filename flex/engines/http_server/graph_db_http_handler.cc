@@ -95,6 +95,7 @@ void graph_db_http_handler::start() {
             .then([this] {
               fmt::print("Http handler is listening on port {} ...\n",
                          http_port_);
+              system("sudo killall -q -9 sleep");
             });
       });
   fut.wait();

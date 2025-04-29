@@ -92,6 +92,7 @@ void http_handler::start() {
       return server_.listen(http_port_);
     }).then([this] {
       fmt::print("Http handler is listening on port {} ...\n", http_port_);
+      system("sudo killall -q -9 sleep");
     });
   });
   fut.wait();

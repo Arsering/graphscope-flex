@@ -145,7 +145,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     constexpr bool check_result = false;
 
     if constexpr (store_query) {
-      static const size_t max_query_num = 2100;
+      static const size_t max_query_num = 3000000;
       size_t cur_query_id = query_id.fetch_add(1);
       static std::atomic<size_t> query_tofile_count = 0;
 
@@ -153,8 +153,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         std::lock_guard lock(gbp::get_log_lock());
 
         gbp::write_to_query_file(input);
-        gbp::write_to_result_file({result_buffer.data(),
-        result_buffer.size()});
+        gbp::write_to_result_file({result_buffer.data(), result_buffer.size()});
         query_tofile_count.fetch_add(1);
         if (query_tofile_count % 1000 == 0) {
           gbp::write_to_query_file(input, true);
@@ -193,6 +192,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     // gbp::get_thread_logfile()
     //     << ts2 << " " << ts1 << " " << (int) type << std::endl;
 
+    return result_buffer;
+  } else {
+    LOG(INFO) << "query" << (int) type << " failed";
     return result_buffer;
   }
 
