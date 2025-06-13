@@ -13,10 +13,15 @@
  * limitations under the License.
  */
 
+// #define PROFILE_PAGE_FAULT
+
 #include "flex/engines/graph_db/database/graph_db_session.h"
 #include "flex/engines/graph_db/app/app_base.h"
 #include "flex/engines/graph_db/database/graph_db.h"
 #include "flex/utils/app_utils.h"
+#ifdef PROFILE_PAGE_FAULT
+#include "flex/graphscope_bufferpool/include/page_fault_monitor.h"
+#endif
 
 namespace gs {
 
@@ -128,6 +133,11 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   // LOG(INFO) << "\n" << gbp::get_results_vec()[gbp::get_query_id().load()];
   // assert(false);
   // LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
+#ifdef PROFILE_PAGE_FAULT
+  if((int)type<=14){
+    gbp::resetPageFaultBaseline();
+  }
+#endif
   if (app->Query(decoder, encoder)) {
     // LOG(INFO) << "result_buffer.size() = " << result_buffer.size();
     // LOG(INFO) << "\n"
@@ -141,6 +151,14 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
               << " | " << gbp::get_counter(11) << " | " << gbp::get_counter(12)
               << "]";
 #endif
+
+#ifdef PROFILE_PAGE_FAULT
+  // gbp::get_thread_logfile() << "page fault stats = " << gbp::formatPageFaultStats(gbp::getPageFaultDelta())<<std::endl;
+  if((int)type<=14){
+    gbp::get_thread_logfile()<<gbp::getPageFaultDelta().major_faults<<std::endl;
+  }
+#endif
+
     constexpr bool store_query = false;
     constexpr bool check_result = false;
 

@@ -68,17 +68,17 @@ find_package(Boost 1.84 REQUIRED COMPONENTS system filesystem
              # required by folly
              context program_options regex thread fiber)
 #find numa----------------------------------------------------------------------
-find_package(NUMA)
-if (NOT NUMA_FOUND)
-    find_library(NUMA_LIBRARY numa)
-    if (NOT NUMA_LIBRARY)
-        message(FATAL_ERROR "NUMA library not found, please install libnuma-dev package")
-    else()
-        set(NUMA_LIBRARIES ${NUMA_LIBRARY})
-        message(STATUS "Found NUMA library: ${NUMA_LIBRARY}")
-    endif()
-endif()
-include_directories(SYSTEM ${NUMA_INCLUDE_DIRS})
+# find_package(NUMA)
+# if (NOT NUMA_FOUND)
+#     find_library(NUMA_LIBRARY numa)
+#     if (NOT NUMA_LIBRARY)
+#         message(FATAL_ERROR "NUMA library not found, please install libnuma-dev package")
+#     else()
+#         set(NUMA_LIBRARIES ${NUMA_LIBRARY})
+#         message(STATUS "Found NUMA library: ${NUMA_LIBRARY}")
+#     endif()
+# endif()
+# include_directories(SYSTEM ${NUMA_INCLUDE_DIRS})
 
 #find arrow----------------------------------------------------------------------
 include("cmake/FindArrow.cmake")

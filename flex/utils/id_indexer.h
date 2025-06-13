@@ -16,6 +16,8 @@ limitations under the License.
 #ifndef GRAPHSCOPE_GRAPH_ID_INDEXER_H_
 #define GRAPHSCOPE_GRAPH_ID_INDEXER_H_
 
+// #define IS_SF1000
+
 #include <algorithm>
 #include <atomic>
 #include <cassert>
@@ -219,10 +221,20 @@ class LFIndexer {
 
     int mark = 0;
     // TODO: 此处实现未被测试正确性
+#ifdef IS_SF1000
+    uint64_t num_get =
+        indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+#else
     uint32_t num_get =
         indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+#endif
+
     num_get = std::min(size_t(num_get), indices_.size() - index);
+#ifdef IS_SF1000
+    uint64_t start_index = index, end_index = index + num_get;
+#else
     uint32_t start_index = index, end_index = index + num_get;
+#endif
     auto items = indices_.get(index, num_get);
     while (true) {
       if (unlikely(index < start_index || index >= end_index)) {
@@ -267,7 +279,11 @@ class LFIndexer {
 #else
     auto num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
     num_get = std::min(num_get, indices_.size() - index);
+#ifdef IS_SF1000
+    uint64_t start_index = index, end_index = index + num_get;
+#else
     uint32_t start_index = index, end_index = index + num_get;
+#endif
     auto items = indices_.get(index, num_get);
     while (true) {
       if (unlikely(index < start_index || index >= end_index)) {
@@ -320,12 +336,21 @@ class LFIndexer {
     size_t index =
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
-
+    
+#ifdef IS_SF1000
+    uint64_t num_get =
+        indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+#else
     uint32_t num_get =
         indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
+#endif
     num_get =
         num_get > indices_.size() - index ? indices_.size() - index : num_get;
+#ifdef IS_SF1000
+    uint64_t start_index = index, end_index = index + num_get;
+#else
     uint32_t start_index = index, end_index = index + num_get;
+#endif
     auto items = indices_.get(index, num_get);
     while (true) {
       if (unlikely(index < start_index || index >= end_index)) {

@@ -84,5 +84,5 @@
         "charconv": "cpp",
         "ranges": "cpp"
     },
-    "cmake.sourceDirectory": "/data-1/yichengzhang/data/latest_gs_bp/zed-graphscope-flex/flex/tests/hqps"
+    "cmake.sourceDirectory": "/mnt/nvme0n1/zyc/TriCache_Space/graphscope-flex/flex/engines"
 }

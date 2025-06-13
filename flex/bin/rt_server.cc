@@ -159,6 +159,7 @@ int main(int argc, char** argv) {
 #endif
 
   gbp::PerformanceLogServer::GetPerformanceLogger().SetStartPoint();
+  gbp::warmup_mark().store(1);
   // start service
   LOG(INFO) << "GraphScope http server start to listen on port " << http_port;
   server::GraphDBService::get().init(shard_num, http_port, enable_dpdk);

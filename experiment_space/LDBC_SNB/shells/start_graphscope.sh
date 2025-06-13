@@ -7,6 +7,7 @@ export SF=300
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
 export DB_ROOT_DIR=/mnt/raid/${Scale_Factor}_db_BP
+# export DB_ROOT_DIR=/mnt/nvme0n1/zyc/data/${Scale_Factor}_db_BP
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
 export QUERY_FILE=/mnt/nvme0n1/zyc/data/query_file/${Scale_Factor}
@@ -40,24 +41,30 @@ for thread_num in 40
 do
     # expression="(1.28 + 0.0131 * $thread_num + 25) * 1024 * 1024 * 1024"
     # mem + 15
-    expression="1024*1024*1024*36"
+    # ro + 5.5
+    # rw + 6.3
+    # rw 6GB + 6.2
+    # sf1000 150GB
+    # sf1000 rw +17.5
+    expression="1024*1024*1024*35.5"
     memory_capacity=$(python3 -c "print(int($expression))")
     echo ${memory_capacity} > /sys/fs/cgroup/memory/zyc_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
     echo 1 > /proc/sys/vm/drop_caches
-    # numactl --cpunodebind=2 --membind=2 cgexec -g memory:zyc_variable rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
-    
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*29.8))")
-    # rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 1000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log&
+    # numactl --cpunodebind=0 --membind=0 rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log&
+    # numactl --cpunodebind=0 --membind=0 cgexec -g memory:zyc_variable rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log&
+    # numactl --cpunodebind=0 --membind=0 cgexec -g memory:zyc_variable rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 300000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log&
+    # memory_capacity=$(python3 -c "print(int(1024*1024*1024*80))")
+    # numactl --cpunodebind=0 --membind=0 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 300000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
     # 15.2
-    numactl --cpunodebind=2 --membind=2 rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
+    # numactl --cpunodebind=0 --membind=0 rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
     # 6 12 18 24 30 36
     # 5.85 
     # 27.2
-    # memory_capacity=$(python3 -c "print(int(1024*1024*1024*135.1))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*6))")
     # 15.2
-    # rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
+    numactl --cpunodebind=0 --membind=0 rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
     # sleep 1000000s
     # bash run_client.sh
 
