@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <filesystem>
 #include <type_traits>
 #include <vector>
@@ -172,6 +173,8 @@ class MutableAdjlist {
   }
 
   // FIXME:此处分配新的buffer的操作存在一致性问题吧
+  // 这里为什么要分配一段新的内存
+  // to check
   void put_edge(vid_t neighbor, const EDATA_T& data, timestamp_t ts,
                 MMapAllocator& allocator) {
     if (size_ == capacity_) {
@@ -184,7 +187,8 @@ class MutableAdjlist {
       if (size_ > 0) {
         UninitializedUtils<nbr_t>::copy(new_buffer, buffer_, size_);
       }
-      buffer_ = new_buffer;
+      // delete buffer_;//added
+      buffer_ = new_buffer;//to check, old buffer is not freed
     }
     auto& nbr = buffer_[size_.fetch_add(1)];
     nbr.neighbor = neighbor;

@@ -21,6 +21,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <thread>
 #include <vector>
 #include "flex/engines/graph_db/database/graph_db.h"
@@ -348,7 +349,7 @@ class Req {
     const size_t size = 4096;
     std::vector<char> buffer(size);
     size_t length = 0;
-
+    bool warmup = true;
     while (true) {
       auto ret = ::fread(&length, sizeof(size_t), 1, query_file_string_view);
       if (ret == 0)
@@ -357,16 +358,23 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-      reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
-      if (reqs_.size() == num_of_reqs_) {
-        break;
+      if (warmup) {
+        reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+        if (reqs_.size() == num_of_reqs_) {
+          warmup = false;
+        }
+      } else {
+        reqs_test.emplace_back(std::string(buffer.data(), buffer.data() + length));
+        if (reqs_test.size() == num_of_reqs_) {
+          break;
+        }
       }
     }
     num_of_reqs_unique_ = reqs_.size();
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
   }
 
-  void do_query(size_t thread_id) {
+  void do_query(size_t thread_id, bool warmup=true) {
     size_t id;
 
     while (true) {
@@ -380,20 +388,23 @@ class Req {
 
       start_[id] = gbp::GetSystemTime();
       gbp::get_query_id().store(id % num_of_reqs_unique_);
-
-      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
-          reqs_[id % num_of_reqs_unique_]);
-
+      if (warmup) {
+        auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
+            reqs_[id % num_of_reqs_unique_]);
+      } else {
+        auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
+            reqs_test[id % num_of_reqs_unique_]);
+      }
       end_[id] = gbp::GetSystemTime();
     }
     return;
   }
 
-  bool simulate(size_t thread_num = 10) {
+  bool simulate(size_t thread_num = 10, bool warmup=true) {
     std::vector<std::thread> workers;
     assert(cur_ == 0);
     for (size_t i = 0; i < thread_num; i++) {
-      workers.emplace_back([this, i]() { do_query(i); });
+      workers.emplace_back([this, i, warmup]() { do_query(i, warmup); });
     }
 
     for (auto& worker : workers) {
@@ -654,6 +665,7 @@ class Req {
   size_t num_of_reqs_unique_;
 
   std::vector<std::string> reqs_;
+  std::vector<std::string> reqs_test;
   std::vector<std::string> update_list;
   std::vector<std::string> read_list;
   std::vector<size_t> run_time_req_ids_;
@@ -749,6 +761,8 @@ int main(int argc, char** argv) {
   tzset();
 #if OV
 #else
+// gbp::MemoryPageLogger::get_memory_page_logger();
+
   size_t pool_num = 8;
   size_t io_server_num = 4;
 
@@ -796,7 +810,7 @@ int main(int argc, char** argv) {
   gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
-  gbp::warmup_mark().store(1);
+  // gbp::warmup_mark().store(1);
 
   // {
   //   BatchTest test;
@@ -815,7 +829,7 @@ int main(int argc, char** argv) {
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
-
+  gbp::warmup_mark().store(0);
   for (size_t idx = 0; idx < 2; idx++) {
     gbp::get_counter_global(9) = 0;
     gbp::get_counter_global(10) = 0;
@@ -829,20 +843,24 @@ int main(int argc, char** argv) {
     // hiactor::actor_app app;
     gbp::log_enable().store(true);
     sleep(1);
-    size_t ssd_io_r_byte = std::get<0>(gbp::SSD_io_bytes());
-    size_t ssd_io_w_byte = std::get<1>(gbp::SSD_io_bytes());
+    size_t ssd_io_r_byte = std::get<0>(gbp::SSD_io_bytes("nvme0n1"));
+    size_t ssd_io_w_byte = std::get<1>(gbp::SSD_io_bytes("nvme0n1"));
 
     auto cpu_cost_before = gbp::GetCPUTime();
 
     auto begin = std::chrono::system_clock::now();
-
-    Req::get().simulate(shard_num);
+    // gbp::MemoryPageLogger::get_memory_page_logger().reset(gbp::GetSystemTime());
+    if (idx == 0) {
+      Req::get().simulate(shard_num, true);
+    } else {
+      Req::get().simulate(shard_num, false);
+    }
     // Req::get().simulate_with_update_and_read(shard_num);
     auto end = std::chrono::system_clock::now();
     auto cpu_cost_after = gbp::GetCPUTime();
 
-    ssd_io_r_byte = std::get<0>(gbp::SSD_io_bytes()) - ssd_io_r_byte;
-    ssd_io_w_byte = std::get<1>(gbp::SSD_io_bytes()) - ssd_io_w_byte;
+    ssd_io_r_byte = std::get<0>(gbp::SSD_io_bytes("nvme0n1")) - ssd_io_r_byte;
+    ssd_io_w_byte = std::get<1>(gbp::SSD_io_bytes("nvme0n1")) - ssd_io_w_byte;
 
     LOG(INFO) << "CPU Cost = "
               << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /
@@ -854,7 +872,6 @@ int main(int argc, char** argv) {
     LOG(INFO) << "SSD IO(r/w) = " << ssd_io_r_byte << "/" << ssd_io_w_byte
               << "(Byte)";
 
-    gbp::warmup_mark().store(0);
     std::cout << "cost time:"
               << std::chrono::duration_cast<std::chrono::milliseconds>(end -
                                                                        begin)
@@ -866,10 +883,10 @@ int main(int argc, char** argv) {
     LOG(INFO) << "global counter 10 = " << gbp::get_counter_global(10);
     LOG(INFO) << "global counter 11 = " << gbp::get_counter_global(11);
     LOG(INFO) << "global counter 12 = " << gbp::get_counter_global(12);
-
-    gbp::warmup_mark().store(1);
     gbp::DirectCache::CleanAllCache();
+    gbp::warmup_mark().store(1);
   }
+  
   LOG(INFO) << " 19 = " << gbp::get_counter_global(19);
   LOG(INFO) << " 20 = " << gbp::get_counter_global(20);
   Req::get().LoggerStop();

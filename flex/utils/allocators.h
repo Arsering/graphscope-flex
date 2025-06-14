@@ -91,7 +91,7 @@ class ArenaAllocator {
       typed_allocations_;
 };
 
-#if 0
+#if OV
 class MMapAllocator {
   static constexpr size_t batch_size = 128 * 1024 * 1024;
 
@@ -196,6 +196,7 @@ class MMapAllocator {
   }
 
   void* allocate(size_t size) {
+    assert(false);
     if (cur_size_ - cur_loc_ >= size) {
       void* ret = (char*) cur_buffer_ + cur_loc_;
       cur_loc_ += size;

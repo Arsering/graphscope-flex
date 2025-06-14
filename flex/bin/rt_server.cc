@@ -94,6 +94,8 @@ int main(int argc, char** argv) {
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
       log_data_path + "/performance.log", "nvme0n1");
 
+  gbp::get_db_dir() = data_path;
+
   setenv("TZ", "Asia/Shanghai", 1);
   tzset();
 
@@ -149,11 +151,11 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
-  gbp::CleanMAS();
+  // gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
 

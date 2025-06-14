@@ -1,0 +1,13 @@
+fio --name=ssd_pread_test \
+    --filename=/mnt/nvme/test_file \
+    --direct=1 \
+    --rw=read \
+    --bs=4k \
+    --ioengine=psync \
+    --iodepth=1 \
+    --size=10G \
+    --numjobs=1 \
+    --runtime=60 \
+    --group_reporting \
+    --iodepth_batch_submit=1 \
+    --iodepth_batch_complete_min=1

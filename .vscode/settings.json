@@ -83,5 +83,8 @@
         "scoped_allocator": "cpp",
         "charconv": "cpp"
     },
-    "cmake.sourceDirectory": "/data-1/yichengzhang/data/latest_gs_bp/zed-graphscope-flex/flex/tests/hqps"
+    // "cmake.sourceDirectory": "/data-1/yichengzhang/data/latest_gs_bp/zed-graphscope-flex/flex/tests/hqps",
+    "clangd.arguments": [
+        "--compile-commands-dir=/data-1/zhengyang/data/graphscope-flex/flex/build"
+    ]
 }

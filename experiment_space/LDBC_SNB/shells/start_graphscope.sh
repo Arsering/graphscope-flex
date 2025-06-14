@@ -6,7 +6,7 @@ export SF=30
 
 export Scale_Factor=sf${SF}
 export INPUT_OUTPUT_DIR=${CUR_DIR}/experiment_space/LDBC_SNB
-export DB_ROOT_DIR=/mnt/nvme/runtime_db/${Scale_Factor}_db_MMAP
+export DB_ROOT_DIR=/mnt/nvme/runtime_db/${Scale_Factor}_db_BP
 # export DB_ROOT_DIR=/nvme0n1/Anew_db/${Scale_Factor}_db_BP
 
 export QUERY_FILE=/data-2/query_file/${Scale_Factor}
@@ -35,20 +35,33 @@ cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 # start iostat
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
-export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
+# export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
+# export LD_PRELOAD="/usr/local/lib/libtcmalloc.so"
+# export HEAPPROFILE=${LOG_DIR}/heap_profile.log
 for thread_num in 30
 do
-    expression="(1.28 + 0.0131 * $thread_num + 3) * 1024 * 1024 * 1024"
+    expression="(1 + 0.0131 * $thread_num + 1.3) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression))")
     echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
     echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*6))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*1.81))")
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
+    # cgexec -g memory:yz_variable rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
     
     # gdb --args 
-    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 20000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+    # cgexec -g memory:yz_variable 
+    # LD_PRELOAD=/usr/local/lib/libprofiler.so 
+    # rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log&
+    # sudo valgrind --tool=massif \
+    #              --unbuffered-fd=all \
+    #              --fullpath-after= \
+    #              --smc-check=all \
+    #              --trace-syscalls=yes \
+    #              rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 300000 -r ${QUERY_FILE} 
+    # &>> ${LOG_DIR}/gs_log.log
     # gdb --args 
     # rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
     # nohup cgexec -g memory:zyc_variable rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &

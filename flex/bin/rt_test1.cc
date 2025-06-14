@@ -453,7 +453,7 @@ int main(int argc, char** argv) {
     // hiactor::actor_app app;
     gbp::log_enable().store(true);
     sleep(1);
-    size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes());
+    size_t ssd_io_byte = std::get<0>(gbp::SSD_io_bytes("nvme0n1"));
     auto cpu_cost_before = gbp::GetCPUTime();
 
     auto begin = std::chrono::system_clock::now();
@@ -462,7 +462,7 @@ int main(int argc, char** argv) {
     auto end = std::chrono::system_clock::now();
     auto cpu_cost_after = gbp::GetCPUTime();
 
-    ssd_io_byte = std::get<0>(gbp::SSD_io_bytes()) - ssd_io_byte;
+    ssd_io_byte = std::get<0>(gbp::SSD_io_bytes("nvme0n1")) - ssd_io_byte;
     LOG(INFO) << "CPU Cost = "
               << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /
                      1000000.0

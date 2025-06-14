@@ -1,0 +1,1530 @@
+desc: (none)
+cmd: rt_bench_thread -B 3221225472 -l /data-1/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2025-04-27-10:22:06/server/graphscope_logs -g /data-1/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2025-04-27-10:22:06/server/configurations/graph.yaml -d /mnt/nvme/runtime_db/sf30_db_BP -s 30 -w 0 -b 300000 -r /data-2/query_file/sf30
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=37160163
+mem_heap_B=232
+mem_heap_extra_B=16
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=37194186
+mem_heap_B=17739
+mem_heap_extra_B=2637
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=37255331
+mem_heap_B=48592
+mem_heap_extra_B=7640
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=4
+#-----------
+time=37317931
+mem_heap_B=81460
+mem_heap_extra_B=12604
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=37468083
+mem_heap_B=81980
+mem_heap_extra_B=12684
+mem_stacks_B=0
+heap_tree=detailed
+n4: 81980 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72656 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n1: 72656 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+ n1: 7648 0x80E462D: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n1: 7648 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 7648 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 7648 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 7648 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 7648 0x4011CA0: call_init (dl-init.c:30)
+       n1: 7648 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 7648 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 7648 0x10: ???
+          n1: 7648 0x1FFEFFFFE2: ???
+           n1: 7648 0x1FFEFFFFF2: ???
+            n1: 7648 0x1FFEFFFFF5: ???
+             n1: 7648 0x1FFF000000: ???
+              n1: 7648 0x1FFF000003: ???
+               n1: 7648 0x1FFF000074: ???
+                n1: 7648 0x1FFF000077: ???
+                 n1: 7648 0x1FFF0000F2: ???
+                  n1: 7648 0x1FFF0000F5: ???
+                   n1: 7648 0x1FFF000115: ???
+                    n1: 7648 0x1FFF000118: ???
+                     n1: 7648 0x1FFF00011B: ???
+                      n1: 7648 0x1FFF00011E: ???
+                       n1: 7648 0x1FFF000120: ???
+                        n1: 7648 0x1FFF000123: ???
+                         n1: 7648 0x1FFF00012A: ???
+                          n0: 7648 0x1FFF00012D: ???
+ n1: 1411 0x80E49A7: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n1: 1411 0x80E5E25: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 1411 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 1411 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 1411 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 1411 0x4011CA0: call_init (dl-init.c:30)
+       n1: 1411 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 1411 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 1411 0x10: ???
+          n1: 1411 0x1FFEFFFFE2: ???
+           n1: 1411 0x1FFEFFFFF2: ???
+            n1: 1411 0x1FFEFFFFF5: ???
+             n1: 1411 0x1FFF000000: ???
+              n1: 1411 0x1FFF000003: ???
+               n1: 1411 0x1FFF000074: ???
+                n1: 1411 0x1FFF000077: ???
+                 n1: 1411 0x1FFF0000F2: ???
+                  n1: 1411 0x1FFF0000F5: ???
+                   n1: 1411 0x1FFF000115: ???
+                    n1: 1411 0x1FFF000118: ???
+                     n1: 1411 0x1FFF00011B: ???
+                      n1: 1411 0x1FFF00011E: ???
+                       n1: 1411 0x1FFF000120: ???
+                        n1: 1411 0x1FFF000123: ???
+                         n1: 1411 0x1FFF00012A: ???
+                          n0: 1411 0x1FFF00012D: ???
+ n0: 265 in 2 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=6
+#-----------
+time=37540767
+mem_heap_B=94355
+mem_heap_extra_B=11837
+mem_stacks_B=0
+heap_tree=detailed
+n4: 94355 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 90592 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 90592 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+   n1: 17936 0x7B8E934: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 17936 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 17936 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 17936 0x4011CA0: call_init (dl-init.c:30)
+       n1: 17936 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 17936 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 17936 0x10: ???
+          n1: 17936 0x1FFEFFFFE2: ???
+           n1: 17936 0x1FFEFFFFF2: ???
+            n1: 17936 0x1FFEFFFFF5: ???
+             n1: 17936 0x1FFF000000: ???
+              n1: 17936 0x1FFF000003: ???
+               n1: 17936 0x1FFF000074: ???
+                n1: 17936 0x1FFF000077: ???
+                 n1: 17936 0x1FFF0000F2: ???
+                  n1: 17936 0x1FFF0000F5: ???
+                   n1: 17936 0x1FFF000115: ???
+                    n1: 17936 0x1FFF000118: ???
+                     n1: 17936 0x1FFF00011B: ???
+                      n1: 17936 0x1FFF00011E: ???
+                       n1: 17936 0x1FFF000120: ???
+                        n1: 17936 0x1FFF000123: ???
+                         n1: 17936 0x1FFF00012A: ???
+                          n0: 17936 0x1FFF00012D: ???
+ n1: 1888 0x80E462D: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 1888 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 1888 0x7B8E934: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 1888 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 1888 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 1888 0x4011CA0: call_init (dl-init.c:30)
+       n1: 1888 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 1888 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 1888 0x10: ???
+          n1: 1888 0x1FFEFFFFE2: ???
+           n1: 1888 0x1FFEFFFFF2: ???
+            n1: 1888 0x1FFEFFFFF5: ???
+             n1: 1888 0x1FFF000000: ???
+              n1: 1888 0x1FFF000003: ???
+               n1: 1888 0x1FFF000074: ???
+                n1: 1888 0x1FFF000077: ???
+                 n1: 1888 0x1FFF0000F2: ???
+                  n1: 1888 0x1FFF0000F5: ???
+                   n1: 1888 0x1FFF000115: ???
+                    n1: 1888 0x1FFF000118: ???
+                     n1: 1888 0x1FFF00011B: ???
+                      n1: 1888 0x1FFF00011E: ???
+                       n1: 1888 0x1FFF000120: ???
+                        n1: 1888 0x1FFF000123: ???
+                         n1: 1888 0x1FFF00012A: ???
+                          n0: 1888 0x1FFF00012D: ???
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 1610 0x80E49A7: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 1610 0x80E5E25: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 1411 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 1411 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 1411 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 1411 0x4011CA0: call_init (dl-init.c:30)
+       n1: 1411 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 1411 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 1411 0x10: ???
+          n1: 1411 0x1FFEFFFFE2: ???
+           n1: 1411 0x1FFEFFFFF2: ???
+            n1: 1411 0x1FFEFFFFF5: ???
+             n1: 1411 0x1FFF000000: ???
+              n1: 1411 0x1FFF000003: ???
+               n1: 1411 0x1FFF000074: ???
+                n1: 1411 0x1FFF000077: ???
+                 n1: 1411 0x1FFF0000F2: ???
+                  n1: 1411 0x1FFF0000F5: ???
+                   n1: 1411 0x1FFF000115: ???
+                    n1: 1411 0x1FFF000118: ???
+                     n1: 1411 0x1FFF00011B: ???
+                      n1: 1411 0x1FFF00011E: ???
+                       n1: 1411 0x1FFF000120: ???
+                        n1: 1411 0x1FFF000123: ???
+                         n1: 1411 0x1FFF00012A: ???
+                          n0: 1411 0x1FFF00012D: ???
+   n0: 199 in 1 place, below massif's threshold (1.00%)
+ n0: 265 in 2 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=7
+#-----------
+time=37578844
+mem_heap_B=167907
+mem_heap_extra_B=11213
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=8
+#-----------
+time=37718791
+mem_heap_B=167923
+mem_heap_extra_B=11221
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=9
+#-----------
+time=37767030
+mem_heap_B=173576
+mem_heap_extra_B=12296
+mem_stacks_B=0
+heap_tree=detailed
+n4: 173576 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 90592 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 90592 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+   n1: 17936 0x7B8E934: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 17936 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 17936 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 17936 0x4011CA0: call_init (dl-init.c:30)
+       n1: 17936 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 17936 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 17936 0x10: ???
+          n1: 17936 0x1FFEFFFFE2: ???
+           n1: 17936 0x1FFEFFFFF2: ???
+            n1: 17936 0x1FFEFFFFF5: ???
+             n1: 17936 0x1FFF000000: ???
+              n1: 17936 0x1FFF000003: ???
+               n1: 17936 0x1FFF000074: ???
+                n1: 17936 0x1FFF000077: ???
+                 n1: 17936 0x1FFF0000F2: ???
+                  n1: 17936 0x1FFF0000F5: ???
+                   n1: 17936 0x1FFF000115: ???
+                    n1: 17936 0x1FFF000118: ???
+                     n1: 17936 0x1FFF00011B: ???
+                      n1: 17936 0x1FFF00011E: ???
+                       n1: 17936 0x1FFF000120: ???
+                        n1: 17936 0x1FFF000123: ???
+                         n1: 17936 0x1FFF00012A: ???
+                          n0: 17936 0x1FFF00012D: ???
+ n1: 72704 0x4CDBA69: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 72704 0x4011B99: call_init.part.0 (dl-init.c:72)
+   n1: 72704 0x4011CA0: call_init (dl-init.c:30)
+    n1: 72704 0x4011CA0: _dl_init (dl-init.c:119)
+     n1: 72704 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+      n1: 72704 0x10: ???
+       n1: 72704 0x1FFEFFFFE2: ???
+        n1: 72704 0x1FFEFFFFF2: ???
+         n1: 72704 0x1FFEFFFFF5: ???
+          n1: 72704 0x1FFF000000: ???
+           n1: 72704 0x1FFF000003: ???
+            n1: 72704 0x1FFF000074: ???
+             n1: 72704 0x1FFF000077: ???
+              n1: 72704 0x1FFF0000F2: ???
+               n1: 72704 0x1FFF0000F5: ???
+                n1: 72704 0x1FFF000115: ???
+                 n1: 72704 0x1FFF000118: ???
+                  n1: 72704 0x1FFF00011B: ???
+                   n1: 72704 0x1FFF00011E: ???
+                    n1: 72704 0x1FFF000120: ???
+                     n1: 72704 0x1FFF000123: ???
+                      n1: 72704 0x1FFF00012A: ???
+                       n0: 72704 0x1FFF00012D: ???
+ n0: 8232 in 28 places, all below massif's threshold (1.00%)
+ n2: 2048 0x7354C0D: CRYPTO_zalloc (in /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1)
+  n2: 1928 0x7293CC8: ??? (in /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1)
+   n1: 1920 0x729414E: BN_bin2bn (in /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1)
+    n0: 1920 in 4 places, all below massif's threshold (1.00%)
+   n0: 8 in 1 place, below massif's threshold (1.00%)
+  n0: 120 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=10
+#-----------
+time=37852327
+mem_heap_B=198935
+mem_heap_extra_B=16241
+mem_stacks_B=0
+heap_tree=detailed
+n7: 198935 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 90592 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 90592 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+   n1: 17936 0x7B8E934: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 17936 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 17936 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 17936 0x4011CA0: call_init (dl-init.c:30)
+       n1: 17936 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 17936 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 17936 0x10: ???
+          n1: 17936 0x1FFEFFFFE2: ???
+           n1: 17936 0x1FFEFFFFF2: ???
+            n1: 17936 0x1FFEFFFFF5: ???
+             n1: 17936 0x1FFF000000: ???
+              n1: 17936 0x1FFF000003: ???
+               n1: 17936 0x1FFF000074: ???
+                n1: 17936 0x1FFF000077: ???
+                 n1: 17936 0x1FFF0000F2: ???
+                  n1: 17936 0x1FFF0000F5: ???
+                   n1: 17936 0x1FFF000115: ???
+                    n1: 17936 0x1FFF000118: ???
+                     n1: 17936 0x1FFF00011B: ???
+                      n1: 17936 0x1FFF00011E: ???
+                       n1: 17936 0x1FFF000120: ???
+                        n1: 17936 0x1FFF000123: ???
+                         n1: 17936 0x1FFF00012A: ???
+                          n0: 17936 0x1FFF00012D: ???
+ n1: 72704 0x4CDBA69: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 72704 0x4011B99: call_init.part.0 (dl-init.c:72)
+   n1: 72704 0x4011CA0: call_init (dl-init.c:30)
+    n1: 72704 0x4011CA0: _dl_init (dl-init.c:119)
+     n1: 72704 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+      n1: 72704 0x10: ???
+       n1: 72704 0x1FFEFFFFE2: ???
+        n1: 72704 0x1FFEFFFFF2: ???
+         n1: 72704 0x1FFEFFFFF5: ???
+          n1: 72704 0x1FFF000000: ???
+           n1: 72704 0x1FFF000003: ???
+            n1: 72704 0x1FFF000074: ???
+             n1: 72704 0x1FFF000077: ???
+              n1: 72704 0x1FFF0000F2: ???
+               n1: 72704 0x1FFF0000F5: ???
+                n1: 72704 0x1FFF000115: ???
+                 n1: 72704 0x1FFF000118: ???
+                  n1: 72704 0x1FFF00011B: ???
+                   n1: 72704 0x1FFF00011E: ???
+                    n1: 72704 0x1FFF000120: ???
+                     n1: 72704 0x1FFF000123: ???
+                      n1: 72704 0x1FFF00012A: ???
+                       n0: 72704 0x1FFF00012D: ???
+ n0: 11911 in 28 places, all below massif's threshold (1.00%)
+ n1: 8736 0x65755B9: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 8736 0x657C03B: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 8736 0x657CBF7: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 8736 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 8736 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 8736 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 8736 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+        n1: 8736 0x4011B99: call_init.part.0 (dl-init.c:72)
+         n1: 8736 0x4011CA0: call_init (dl-init.c:30)
+          n1: 8736 0x4011CA0: _dl_init (dl-init.c:119)
+           n1: 8736 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+            n1: 8736 0x10: ???
+             n1: 8736 0x1FFEFFFFE2: ???
+              n1: 8736 0x1FFEFFFFF2: ???
+               n1: 8736 0x1FFEFFFFF5: ???
+                n1: 8736 0x1FFF000000: ???
+                 n1: 8736 0x1FFF000003: ???
+                  n1: 8736 0x1FFF000074: ???
+                   n1: 8736 0x1FFF000077: ???
+                    n1: 8736 0x1FFF0000F2: ???
+                     n1: 8736 0x1FFF0000F5: ???
+                      n1: 8736 0x1FFF000115: ???
+                       n1: 8736 0x1FFF000118: ???
+                        n1: 8736 0x1FFF00011B: ???
+                         n1: 8736 0x1FFF00011E: ???
+                          n1: 8736 0x1FFF000120: ???
+                           n1: 8736 0x1FFF000123: ???
+                            n1: 8736 0x1FFF00012A: ???
+                             n0: 8736 0x1FFF00012D: ???
+ n1: 6728 0x65754D9: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 6728 0x657CC68: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 6728 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 6728 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 6728 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 6728 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 6728 0x4011B99: call_init.part.0 (dl-init.c:72)
+        n1: 6728 0x4011CA0: call_init (dl-init.c:30)
+         n1: 6728 0x4011CA0: _dl_init (dl-init.c:119)
+          n1: 6728 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+           n1: 6728 0x10: ???
+            n1: 6728 0x1FFEFFFFE2: ???
+             n1: 6728 0x1FFEFFFFF2: ???
+              n1: 6728 0x1FFEFFFFF5: ???
+               n1: 6728 0x1FFF000000: ???
+                n1: 6728 0x1FFF000003: ???
+                 n1: 6728 0x1FFF000074: ???
+                  n1: 6728 0x1FFF000077: ???
+                   n1: 6728 0x1FFF0000F2: ???
+                    n1: 6728 0x1FFF0000F5: ???
+                     n1: 6728 0x1FFF000115: ???
+                      n1: 6728 0x1FFF000118: ???
+                       n1: 6728 0x1FFF00011B: ???
+                        n1: 6728 0x1FFF00011E: ???
+                         n1: 6728 0x1FFF000120: ???
+                          n1: 6728 0x1FFF000123: ???
+                           n1: 6728 0x1FFF00012A: ???
+                            n0: 6728 0x1FFF00012D: ???
+ n2: 5984 0x64B9259: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 3744 0x657B729: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 3744 0x657C071: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 3744 0x657CBF7: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 3744 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 3744 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 3744 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+        n1: 3744 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+         n1: 3744 0x4011B99: call_init.part.0 (dl-init.c:72)
+          n1: 3744 0x4011CA0: call_init (dl-init.c:30)
+           n1: 3744 0x4011CA0: _dl_init (dl-init.c:119)
+            n1: 3744 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+             n1: 3744 0x10: ???
+              n1: 3744 0x1FFEFFFFE2: ???
+               n1: 3744 0x1FFEFFFFF2: ???
+                n1: 3744 0x1FFEFFFFF5: ???
+                 n1: 3744 0x1FFF000000: ???
+                  n1: 3744 0x1FFF000003: ???
+                   n1: 3744 0x1FFF000074: ???
+                    n1: 3744 0x1FFF000077: ???
+                     n1: 3744 0x1FFF0000F2: ???
+                      n1: 3744 0x1FFF0000F5: ???
+                       n1: 3744 0x1FFF000115: ???
+                        n1: 3744 0x1FFF000118: ???
+                         n1: 3744 0x1FFF00011B: ???
+                          n1: 3744 0x1FFF00011E: ???
+                           n1: 3744 0x1FFF000120: ???
+                            n1: 3744 0x1FFF000123: ???
+                             n1: 3744 0x1FFF00012A: ???
+                              n0: 3744 0x1FFF00012D: ???
+  n0: 2240 in 4 places, all below massif's threshold (1.00%)
+ n1: 2280 0x64CB054: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 2280 0x64CB0FC: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n0: 2280 in 4 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=11
+#-----------
+time=37907562
+mem_heap_B=208071
+mem_heap_extra_B=17833
+mem_stacks_B=0
+heap_tree=detailed
+n9: 208071 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 90592 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 90592 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+   n1: 17936 0x7B8E934: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 17936 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 17936 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 17936 0x4011CA0: call_init (dl-init.c:30)
+       n1: 17936 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 17936 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 17936 0x10: ???
+          n1: 17936 0x1FFEFFFFE2: ???
+           n1: 17936 0x1FFEFFFFF2: ???
+            n1: 17936 0x1FFEFFFFF5: ???
+             n1: 17936 0x1FFF000000: ???
+              n1: 17936 0x1FFF000003: ???
+               n1: 17936 0x1FFF000074: ???
+                n1: 17936 0x1FFF000077: ???
+                 n1: 17936 0x1FFF0000F2: ???
+                  n1: 17936 0x1FFF0000F5: ???
+                   n1: 17936 0x1FFF000115: ???
+                    n1: 17936 0x1FFF000118: ???
+                     n1: 17936 0x1FFF00011B: ???
+                      n1: 17936 0x1FFF00011E: ???
+                       n1: 17936 0x1FFF000120: ???
+                        n1: 17936 0x1FFF000123: ???
+                         n1: 17936 0x1FFF00012A: ???
+                          n0: 17936 0x1FFF00012D: ???
+ n1: 72704 0x4CDBA69: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 72704 0x4011B99: call_init.part.0 (dl-init.c:72)
+   n1: 72704 0x4011CA0: call_init (dl-init.c:30)
+    n1: 72704 0x4011CA0: _dl_init (dl-init.c:119)
+     n1: 72704 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+      n1: 72704 0x10: ???
+       n1: 72704 0x1FFEFFFFE2: ???
+        n1: 72704 0x1FFEFFFFF2: ???
+         n1: 72704 0x1FFEFFFFF5: ???
+          n1: 72704 0x1FFF000000: ???
+           n1: 72704 0x1FFF000003: ???
+            n1: 72704 0x1FFF000074: ???
+             n1: 72704 0x1FFF000077: ???
+              n1: 72704 0x1FFF0000F2: ???
+               n1: 72704 0x1FFF0000F5: ???
+                n1: 72704 0x1FFF000115: ???
+                 n1: 72704 0x1FFF000118: ???
+                  n1: 72704 0x1FFF00011B: ???
+                   n1: 72704 0x1FFF00011E: ???
+                    n1: 72704 0x1FFF000120: ???
+                     n1: 72704 0x1FFF000123: ???
+                      n1: 72704 0x1FFF00012A: ???
+                       n0: 72704 0x1FFF00012D: ???
+ n1: 11424 0x65755B9: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 11424 0x657C03B: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 11424 0x657CBF7: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 11424 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 11424 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 11424 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 11424 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+        n1: 11424 0x4011B99: call_init.part.0 (dl-init.c:72)
+         n1: 11424 0x4011CA0: call_init (dl-init.c:30)
+          n1: 11424 0x4011CA0: _dl_init (dl-init.c:119)
+           n1: 11424 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+            n1: 11424 0x10: ???
+             n1: 11424 0x1FFEFFFFE2: ???
+              n1: 11424 0x1FFEFFFFF2: ???
+               n1: 11424 0x1FFEFFFFF5: ???
+                n1: 11424 0x1FFF000000: ???
+                 n1: 11424 0x1FFF000003: ???
+                  n1: 11424 0x1FFF000074: ???
+                   n1: 11424 0x1FFF000077: ???
+                    n1: 11424 0x1FFF0000F2: ???
+                     n1: 11424 0x1FFF0000F5: ???
+                      n1: 11424 0x1FFF000115: ???
+                       n1: 11424 0x1FFF000118: ???
+                        n1: 11424 0x1FFF00011B: ???
+                         n1: 11424 0x1FFF00011E: ???
+                          n1: 11424 0x1FFF000120: ???
+                           n1: 11424 0x1FFF000123: ???
+                            n1: 11424 0x1FFF00012A: ???
+                             n0: 11424 0x1FFF00012D: ???
+ n0: 9520 in 32 places, all below massif's threshold (1.00%)
+ n2: 8160 0x64B9259: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 5088 0x657B729: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 5088 0x657C071: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 5088 0x657CBF7: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 5088 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 5088 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 5088 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+        n1: 5088 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+         n1: 5088 0x4011B99: call_init.part.0 (dl-init.c:72)
+          n1: 5088 0x4011CA0: call_init (dl-init.c:30)
+           n1: 5088 0x4011CA0: _dl_init (dl-init.c:119)
+            n1: 5088 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+             n1: 5088 0x10: ???
+              n1: 5088 0x1FFEFFFFE2: ???
+               n1: 5088 0x1FFEFFFFF2: ???
+                n1: 5088 0x1FFEFFFFF5: ???
+                 n1: 5088 0x1FFF000000: ???
+                  n1: 5088 0x1FFF000003: ???
+                   n1: 5088 0x1FFF000074: ???
+                    n1: 5088 0x1FFF000077: ???
+                     n1: 5088 0x1FFF0000F2: ???
+                      n1: 5088 0x1FFF0000F5: ???
+                       n1: 5088 0x1FFF000115: ???
+                        n1: 5088 0x1FFF000118: ???
+                         n1: 5088 0x1FFF00011B: ???
+                          n1: 5088 0x1FFF00011E: ???
+                           n1: 5088 0x1FFF000120: ???
+                            n1: 5088 0x1FFF000123: ???
+                             n1: 5088 0x1FFF00012A: ???
+                              n0: 5088 0x1FFF00012D: ???
+  n0: 3072 in 5 places, all below massif's threshold (1.00%)
+ n1: 7656 0x65754D9: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 7656 0x657CC68: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 7656 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 7656 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 7656 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 7656 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 7656 0x4011B99: call_init.part.0 (dl-init.c:72)
+        n1: 7656 0x4011CA0: call_init (dl-init.c:30)
+         n1: 7656 0x4011CA0: _dl_init (dl-init.c:119)
+          n1: 7656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+           n1: 7656 0x10: ???
+            n1: 7656 0x1FFEFFFFE2: ???
+             n1: 7656 0x1FFEFFFFF2: ???
+              n1: 7656 0x1FFEFFFFF5: ???
+               n1: 7656 0x1FFF000000: ???
+                n1: 7656 0x1FFF000003: ???
+                 n1: 7656 0x1FFF000074: ???
+                  n1: 7656 0x1FFF000077: ???
+                   n1: 7656 0x1FFF0000F2: ???
+                    n1: 7656 0x1FFF0000F5: ???
+                     n1: 7656 0x1FFF000115: ???
+                      n1: 7656 0x1FFF000118: ???
+                       n1: 7656 0x1FFF00011B: ???
+                        n1: 7656 0x1FFF00011E: ???
+                         n1: 7656 0x1FFF000120: ???
+                          n1: 7656 0x1FFF000123: ???
+                           n1: 7656 0x1FFF00012A: ???
+                            n0: 7656 0x1FFF00012D: ???
+ n1: 3048 0x64CB054: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 3048 0x64CB0FC: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n0: 3048 in 5 places, all below massif's threshold (1.00%)
+ n1: 2544 0x6575779: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 2544 0x6579984: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n0: 2544 in 2 places, all below massif's threshold (1.00%)
+ n2: 2423 0x4D7838D: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_mutate(unsigned long, unsigned long, char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 2392 0x4D792B5: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_replace(unsigned long, unsigned long, char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+   n1: 2392 0x64C7F87: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n0: 2392 in 4 places, all below massif's threshold (1.00%)
+  n0: 31 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=12
+#-----------
+time=37972539
+mem_heap_B=209829
+mem_heap_extra_B=18419
+mem_stacks_B=0
+heap_tree=detailed
+n9: 209829 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 90592 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 90592 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+   n1: 17936 0x7B8E934: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 17936 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 17936 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 17936 0x4011CA0: call_init (dl-init.c:30)
+       n1: 17936 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 17936 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 17936 0x10: ???
+          n1: 17936 0x1FFEFFFFE2: ???
+           n1: 17936 0x1FFEFFFFF2: ???
+            n1: 17936 0x1FFEFFFFF5: ???
+             n1: 17936 0x1FFF000000: ???
+              n1: 17936 0x1FFF000003: ???
+               n1: 17936 0x1FFF000074: ???
+                n1: 17936 0x1FFF000077: ???
+                 n1: 17936 0x1FFF0000F2: ???
+                  n1: 17936 0x1FFF0000F5: ???
+                   n1: 17936 0x1FFF000115: ???
+                    n1: 17936 0x1FFF000118: ???
+                     n1: 17936 0x1FFF00011B: ???
+                      n1: 17936 0x1FFF00011E: ???
+                       n1: 17936 0x1FFF000120: ???
+                        n1: 17936 0x1FFF000123: ???
+                         n1: 17936 0x1FFF00012A: ???
+                          n0: 17936 0x1FFF00012D: ???
+ n1: 72704 0x4CDBA69: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 72704 0x4011B99: call_init.part.0 (dl-init.c:72)
+   n1: 72704 0x4011CA0: call_init (dl-init.c:30)
+    n1: 72704 0x4011CA0: _dl_init (dl-init.c:119)
+     n1: 72704 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+      n1: 72704 0x10: ???
+       n1: 72704 0x1FFEFFFFE2: ???
+        n1: 72704 0x1FFEFFFFF2: ???
+         n1: 72704 0x1FFEFFFFF5: ???
+          n1: 72704 0x1FFF000000: ???
+           n1: 72704 0x1FFF000003: ???
+            n1: 72704 0x1FFF000074: ???
+             n1: 72704 0x1FFF000077: ???
+              n1: 72704 0x1FFF0000F2: ???
+               n1: 72704 0x1FFF0000F5: ???
+                n1: 72704 0x1FFF000115: ???
+                 n1: 72704 0x1FFF000118: ???
+                  n1: 72704 0x1FFF00011B: ???
+                   n1: 72704 0x1FFF00011E: ???
+                    n1: 72704 0x1FFF000120: ???
+                     n1: 72704 0x1FFF000123: ???
+                      n1: 72704 0x1FFF00012A: ???
+                       n0: 72704 0x1FFF00012D: ???
+ n1: 11424 0x65755B9: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 11424 0x657C03B: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 11424 0x657CBF7: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 11424 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 11424 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 11424 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 11424 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+        n1: 11424 0x4011B99: call_init.part.0 (dl-init.c:72)
+         n1: 11424 0x4011CA0: call_init (dl-init.c:30)
+          n1: 11424 0x4011CA0: _dl_init (dl-init.c:119)
+           n1: 11424 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+            n1: 11424 0x10: ???
+             n1: 11424 0x1FFEFFFFE2: ???
+              n1: 11424 0x1FFEFFFFF2: ???
+               n1: 11424 0x1FFEFFFFF5: ???
+                n1: 11424 0x1FFF000000: ???
+                 n1: 11424 0x1FFF000003: ???
+                  n1: 11424 0x1FFF000074: ???
+                   n1: 11424 0x1FFF000077: ???
+                    n1: 11424 0x1FFF0000F2: ???
+                     n1: 11424 0x1FFF0000F5: ???
+                      n1: 11424 0x1FFF000115: ???
+                       n1: 11424 0x1FFF000118: ???
+                        n1: 11424 0x1FFF00011B: ???
+                         n1: 11424 0x1FFF00011E: ???
+                          n1: 11424 0x1FFF000120: ???
+                           n1: 11424 0x1FFF000123: ???
+                            n1: 11424 0x1FFF00012A: ???
+                             n0: 11424 0x1FFF00012D: ???
+ n0: 11243 in 32 places, all below massif's threshold (1.00%)
+ n2: 8160 0x64B9259: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 5088 0x657B729: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 5088 0x657C071: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 5088 0x657CBF7: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 5088 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 5088 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 5088 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+        n1: 5088 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+         n1: 5088 0x4011B99: call_init.part.0 (dl-init.c:72)
+          n1: 5088 0x4011CA0: call_init (dl-init.c:30)
+           n1: 5088 0x4011CA0: _dl_init (dl-init.c:119)
+            n1: 5088 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+             n1: 5088 0x10: ???
+              n1: 5088 0x1FFEFFFFE2: ???
+               n1: 5088 0x1FFEFFFFF2: ???
+                n1: 5088 0x1FFEFFFFF5: ???
+                 n1: 5088 0x1FFF000000: ???
+                  n1: 5088 0x1FFF000003: ???
+                   n1: 5088 0x1FFF000074: ???
+                    n1: 5088 0x1FFF000077: ???
+                     n1: 5088 0x1FFF0000F2: ???
+                      n1: 5088 0x1FFF0000F5: ???
+                       n1: 5088 0x1FFF000115: ???
+                        n1: 5088 0x1FFF000118: ???
+                         n1: 5088 0x1FFF00011B: ???
+                          n1: 5088 0x1FFF00011E: ???
+                           n1: 5088 0x1FFF000120: ???
+                            n1: 5088 0x1FFF000123: ???
+                             n1: 5088 0x1FFF00012A: ???
+                              n0: 5088 0x1FFF00012D: ???
+  n0: 3072 in 5 places, all below massif's threshold (1.00%)
+ n1: 7656 0x65754D9: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 7656 0x657CC68: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 7656 0x64C60E3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 7656 0x658B5BB: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 7656 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 7656 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 7656 0x4011B99: call_init.part.0 (dl-init.c:72)
+        n1: 7656 0x4011CA0: call_init (dl-init.c:30)
+         n1: 7656 0x4011CA0: _dl_init (dl-init.c:119)
+          n1: 7656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+           n1: 7656 0x10: ???
+            n1: 7656 0x1FFEFFFFE2: ???
+             n1: 7656 0x1FFEFFFFF2: ???
+              n1: 7656 0x1FFEFFFFF5: ???
+               n1: 7656 0x1FFF000000: ???
+                n1: 7656 0x1FFF000003: ???
+                 n1: 7656 0x1FFF000074: ???
+                  n1: 7656 0x1FFF000077: ???
+                   n1: 7656 0x1FFF0000F2: ???
+                    n1: 7656 0x1FFF0000F5: ???
+                     n1: 7656 0x1FFF000115: ???
+                      n1: 7656 0x1FFF000118: ???
+                       n1: 7656 0x1FFF00011B: ???
+                        n1: 7656 0x1FFF00011E: ???
+                         n1: 7656 0x1FFF000120: ???
+                          n1: 7656 0x1FFF000123: ???
+                           n1: 7656 0x1FFF00012A: ???
+                            n0: 7656 0x1FFF00012D: ???
+ n1: 3048 0x64CB054: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 3048 0x64CB0FC: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n0: 3048 in 5 places, all below massif's threshold (1.00%)
+ n1: 2544 0x6575779: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n1: 2544 0x6579984: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n0: 2544 in 2 places, all below massif's threshold (1.00%)
+ n2: 2458 0x4D7838D: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_mutate(unsigned long, unsigned long, char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 2392 0x4D792B5: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_replace(unsigned long, unsigned long, char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+   n1: 2392 0x64C7F87: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n0: 2392 in 4 places, all below massif's threshold (1.00%)
+  n0: 66 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=13
+#-----------
+time=38026723
+mem_heap_B=194775
+mem_heap_extra_B=16025
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=38116505
+mem_heap_B=193159
+mem_heap_extra_B=16105
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=15
+#-----------
+time=38192049
+mem_heap_B=211710
+mem_heap_extra_B=19514
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=16
+#-----------
+time=38270611
+mem_heap_B=200369
+mem_heap_extra_B=17727
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=38365372
+mem_heap_B=199178
+mem_heap_extra_B=16566
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=18
+#-----------
+time=38431831
+mem_heap_B=200210
+mem_heap_extra_B=16774
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=38471513
+mem_heap_B=201355
+mem_heap_extra_B=16997
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=20
+#-----------
+time=38529604
+mem_heap_B=202580
+mem_heap_extra_B=17196
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=21
+#-----------
+time=38593564
+mem_heap_B=220898
+mem_heap_extra_B=19662
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=22
+#-----------
+time=38643011
+mem_heap_B=237891
+mem_heap_extra_B=22301
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=38729508
+mem_heap_B=254986
+mem_heap_extra_B=23734
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=24
+#-----------
+time=38863581
+mem_heap_B=255402
+mem_heap_extra_B=23742
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=25
+#-----------
+time=38933532
+mem_heap_B=255419
+mem_heap_extra_B=23765
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=26
+#-----------
+time=39024608
+mem_heap_B=327992
+mem_heap_extra_B=24920
+mem_stacks_B=0
+heap_tree=detailed
+n12: 327992 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 90592 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 90592 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+   n1: 17936 0x7B8E934: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 17936 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 17936 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 17936 0x4011CA0: call_init (dl-init.c:30)
+       n1: 17936 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 17936 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 17936 0x10: ???
+          n1: 17936 0x1FFEFFFFE2: ???
+           n1: 17936 0x1FFEFFFFF2: ???
+            n1: 17936 0x1FFEFFFFF5: ???
+             n1: 17936 0x1FFF000000: ???
+              n1: 17936 0x1FFF000003: ???
+               n1: 17936 0x1FFF000074: ???
+                n1: 17936 0x1FFF000077: ???
+                 n1: 17936 0x1FFF0000F2: ???
+                  n1: 17936 0x1FFF0000F5: ???
+                   n1: 17936 0x1FFF000115: ???
+                    n1: 17936 0x1FFF000118: ???
+                     n1: 17936 0x1FFF00011B: ???
+                      n1: 17936 0x1FFF00011E: ???
+                       n1: 17936 0x1FFF000120: ???
+                        n1: 17936 0x1FFF000123: ???
+                         n1: 17936 0x1FFF00012A: ???
+                          n0: 17936 0x1FFF00012D: ???
+ n1: 72704 0x4CDBA69: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 72704 0x4011B99: call_init.part.0 (dl-init.c:72)
+   n1: 72704 0x4011CA0: call_init (dl-init.c:30)
+    n1: 72704 0x4011CA0: _dl_init (dl-init.c:119)
+     n1: 72704 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+      n1: 72704 0x10: ???
+       n1: 72704 0x1FFEFFFFE2: ???
+        n1: 72704 0x1FFEFFFFF2: ???
+         n1: 72704 0x1FFEFFFFF5: ???
+          n1: 72704 0x1FFF000000: ???
+           n1: 72704 0x1FFF000003: ???
+            n1: 72704 0x1FFF000074: ???
+             n1: 72704 0x1FFF000077: ???
+              n1: 72704 0x1FFF0000F2: ???
+               n1: 72704 0x1FFF0000F5: ???
+                n1: 72704 0x1FFF000115: ???
+                 n1: 72704 0x1FFF000118: ???
+                  n1: 72704 0x1FFF00011B: ???
+                   n1: 72704 0x1FFF00011E: ???
+                    n1: 72704 0x1FFF000120: ???
+                     n1: 72704 0x1FFF000123: ???
+                      n1: 72704 0x1FFF00012A: ???
+                       n0: 72704 0x1FFF00012D: ???
+ n1: 65536 0x48D9718: std::vector<gbp::DirectCacheImpl1::Node, std::allocator<gbp::DirectCacheImpl1::Node> >::_M_default_append(unsigned long) (in /usr/local/lib/libbufferpool.so)
+  n1: 65536 0x48C499B: _GLOBAL__sub_I_direct_cache.cpp (in /usr/local/lib/libbufferpool.so)
+   n1: 65536 0x4011B99: call_init.part.0 (dl-init.c:72)
+    n1: 65536 0x4011CA0: call_init (dl-init.c:30)
+     n1: 65536 0x4011CA0: _dl_init (dl-init.c:119)
+      n1: 65536 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+       n1: 65536 0x10: ???
+        n1: 65536 0x1FFEFFFFE2: ???
+         n1: 65536 0x1FFEFFFFF2: ???
+          n1: 65536 0x1FFEFFFFF5: ???
+           n1: 65536 0x1FFF000000: ???
+            n1: 65536 0x1FFF000003: ???
+             n1: 65536 0x1FFF000074: ???
+              n1: 65536 0x1FFF000077: ???
+               n1: 65536 0x1FFF0000F2: ???
+                n1: 65536 0x1FFF0000F5: ???
+                 n1: 65536 0x1FFF000115: ???
+                  n1: 65536 0x1FFF000118: ???
+                   n1: 65536 0x1FFF00011B: ???
+                    n1: 65536 0x1FFF00011E: ???
+                     n1: 65536 0x1FFF000120: ???
+                      n1: 65536 0x1FFF000123: ???
+                       n1: 65536 0x1FFF00012A: ???
+                        n0: 65536 0x1FFF00012D: ???
+ n1: 24533 0x5960BDC: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n0: 24533 in 236 places, all below massif's threshold (1.00%)
+ n0: 22081 in 71 places, all below massif's threshold (1.00%)
+ n1: 16640 0x4E7AC41: __new_exitfn (cxa_atexit.c:114)
+  n1: 16640 0x4E7AE26: __internal_atexit (cxa_atexit.c:44)
+   n1: 16640 0x4E7AE26: __cxa_atexit (cxa_atexit.c:70)
+    n0: 16640 in 15 places, all below massif's threshold (1.00%)
+ n1: 15128 0x5D6F94C: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n0: 15128 in 165 places, all below massif's threshold (1.00%)
+ n1: 4479 0x578F55C: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n0: 4479 in 35 places, all below massif's threshold (1.00%)
+ n1: 4448 0x561E37F: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n0: 4448 in 102 places, all below massif's threshold (1.00%)
+ n1: 4176 0x65909BE: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n2: 4176 0x658A737: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+   n1: 3888 0x6591639: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+    n1: 3888 0x658B5D3: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+     n1: 3888 0x652E1BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+      n1: 3888 0x64E480E: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+       n1: 3888 0x4011B99: call_init.part.0 (dl-init.c:72)
+        n1: 3888 0x4011CA0: call_init (dl-init.c:30)
+         n1: 3888 0x4011CA0: _dl_init (dl-init.c:119)
+          n1: 3888 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+           n1: 3888 0x10: ???
+            n1: 3888 0x1FFEFFFFE2: ???
+             n1: 3888 0x1FFEFFFFF2: ???
+              n1: 3888 0x1FFEFFFFF5: ???
+               n1: 3888 0x1FFF000000: ???
+                n1: 3888 0x1FFF000003: ???
+                 n1: 3888 0x1FFF000074: ???
+                  n1: 3888 0x1FFF000077: ???
+                   n1: 3888 0x1FFF0000F2: ???
+                    n1: 3888 0x1FFF0000F5: ???
+                     n1: 3888 0x1FFF000115: ???
+                      n1: 3888 0x1FFF000118: ???
+                       n1: 3888 0x1FFF00011B: ???
+                        n1: 3888 0x1FFF00011E: ???
+                         n1: 3888 0x1FFF000120: ???
+                          n1: 3888 0x1FFF000123: ???
+                           n1: 3888 0x1FFF00012A: ???
+                            n0: 3888 0x1FFF00012D: ???
+   n0: 288 in 1 place, below massif's threshold (1.00%)
+ n1: 3867 0x4D7838D: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_mutate(unsigned long, unsigned long, char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n0: 3867 in 3 places, all below massif's threshold (1.00%)
+ n1: 3808 0x56267BF: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n0: 3808 in 78 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=27
+#-----------
+time=39074192
+mem_heap_B=459064
+mem_heap_extra_B=24952
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=39123776
+mem_heap_B=590136
+mem_heap_extra_B=24984
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=39173360
+mem_heap_B=721208
+mem_heap_extra_B=25016
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=39222944
+mem_heap_B=852280
+mem_heap_extra_B=25048
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=31
+#-----------
+time=39272528
+mem_heap_B=983352
+mem_heap_extra_B=25080
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=39322112
+mem_heap_B=1114424
+mem_heap_extra_B=25112
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=33
+#-----------
+time=39371696
+mem_heap_B=1245496
+mem_heap_extra_B=25144
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=39421280
+mem_heap_B=1376568
+mem_heap_extra_B=25176
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=35
+#-----------
+time=39470864
+mem_heap_B=1507640
+mem_heap_extra_B=25208
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=39520448
+mem_heap_B=1638712
+mem_heap_extra_B=25240
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=37
+#-----------
+time=39570032
+mem_heap_B=1769784
+mem_heap_extra_B=25272
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=38
+#-----------
+time=39619616
+mem_heap_B=1900856
+mem_heap_extra_B=25304
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=39
+#-----------
+time=39669200
+mem_heap_B=2031928
+mem_heap_extra_B=25336
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=40
+#-----------
+time=39718784
+mem_heap_B=2163000
+mem_heap_extra_B=25368
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=39768368
+mem_heap_B=2294072
+mem_heap_extra_B=25400
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=39838614
+mem_heap_B=2362816
+mem_heap_extra_B=25456
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=43
+#-----------
+time=39899562
+mem_heap_B=2367669
+mem_heap_extra_B=26131
+mem_stacks_B=0
+heap_tree=detailed
+n5: 2367669 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2097152 0x48D9718: std::vector<gbp::DirectCacheImpl1::Node, std::allocator<gbp::DirectCacheImpl1::Node> >::_M_default_append(unsigned long) (in /usr/local/lib/libbufferpool.so)
+  n1: 2097152 0x48C499B: _GLOBAL__sub_I_direct_cache.cpp (in /usr/local/lib/libbufferpool.so)
+   n1: 2097152 0x4011B99: call_init.part.0 (dl-init.c:72)
+    n1: 2097152 0x4011CA0: call_init (dl-init.c:30)
+     n1: 2097152 0x4011CA0: _dl_init (dl-init.c:119)
+      n1: 2097152 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+       n1: 2097152 0x10: ???
+        n1: 2097152 0x1FFEFFFFE2: ???
+         n1: 2097152 0x1FFEFFFFF2: ???
+          n1: 2097152 0x1FFEFFFFF5: ???
+           n1: 2097152 0x1FFF000000: ???
+            n1: 2097152 0x1FFF000003: ???
+             n1: 2097152 0x1FFF000074: ???
+              n1: 2097152 0x1FFF000077: ???
+               n1: 2097152 0x1FFF0000F2: ???
+                n1: 2097152 0x1FFF0000F5: ???
+                 n1: 2097152 0x1FFF000115: ???
+                  n1: 2097152 0x1FFF000118: ???
+                   n1: 2097152 0x1FFF00011B: ???
+                    n1: 2097152 0x1FFF00011E: ???
+                     n1: 2097152 0x1FFF000120: ???
+                      n1: 2097152 0x1FFF000123: ???
+                       n1: 2097152 0x1FFF00012A: ???
+                        n0: 2097152 0x1FFF00012D: ???
+ n1: 90592 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 90592 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+   n0: 17936 in 1 place, below massif's threshold (1.00%)
+ n0: 82688 in 85 places, all below massif's threshold (1.00%)
+ n1: 72704 0x4CDBA69: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 72704 0x4011B99: call_init.part.0 (dl-init.c:72)
+   n1: 72704 0x4011CA0: call_init (dl-init.c:30)
+    n1: 72704 0x4011CA0: _dl_init (dl-init.c:119)
+     n1: 72704 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+      n1: 72704 0x10: ???
+       n1: 72704 0x1FFEFFFFE2: ???
+        n1: 72704 0x1FFEFFFFF2: ???
+         n1: 72704 0x1FFEFFFFF5: ???
+          n1: 72704 0x1FFF000000: ???
+           n1: 72704 0x1FFF000003: ???
+            n1: 72704 0x1FFF000074: ???
+             n1: 72704 0x1FFF000077: ???
+              n1: 72704 0x1FFF0000F2: ???
+               n1: 72704 0x1FFF0000F5: ???
+                n1: 72704 0x1FFF000115: ???
+                 n1: 72704 0x1FFF000118: ???
+                  n1: 72704 0x1FFF00011B: ???
+                   n1: 72704 0x1FFF00011E: ???
+                    n1: 72704 0x1FFF000120: ???
+                     n1: 72704 0x1FFF000123: ???
+                      n1: 72704 0x1FFF00012A: ???
+                       n0: 72704 0x1FFF00012D: ???
+ n1: 24533 0x5960BDC: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n0: 24533 in 236 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=44
+#-----------
+time=39950750
+mem_heap_B=2371571
+mem_heap_extra_B=26821
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=40028616
+mem_heap_B=2373799
+mem_heap_extra_B=27153
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=46
+#-----------
+time=40086869
+mem_heap_B=2374897
+mem_heap_extra_B=27231
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=40166349
+mem_heap_B=2375542
+mem_heap_extra_B=27402
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=40254255
+mem_heap_B=2418344
+mem_heap_extra_B=27416
+mem_stacks_B=0
+heap_tree=detailed
+n6: 2418344 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2097152 0x48D9718: std::vector<gbp::DirectCacheImpl1::Node, std::allocator<gbp::DirectCacheImpl1::Node> >::_M_default_append(unsigned long) (in /usr/local/lib/libbufferpool.so)
+  n1: 2097152 0x48C499B: _GLOBAL__sub_I_direct_cache.cpp (in /usr/local/lib/libbufferpool.so)
+   n1: 2097152 0x4011B99: call_init.part.0 (dl-init.c:72)
+    n1: 2097152 0x4011CA0: call_init (dl-init.c:30)
+     n1: 2097152 0x4011CA0: _dl_init (dl-init.c:119)
+      n1: 2097152 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+       n1: 2097152 0x10: ???
+        n1: 2097152 0x1FFEFFFFE2: ???
+         n1: 2097152 0x1FFEFFFFF2: ???
+          n1: 2097152 0x1FFEFFFFF5: ???
+           n1: 2097152 0x1FFF000000: ???
+            n1: 2097152 0x1FFF000003: ???
+             n1: 2097152 0x1FFF000074: ???
+              n1: 2097152 0x1FFF000077: ???
+               n1: 2097152 0x1FFF0000F2: ???
+                n1: 2097152 0x1FFF0000F5: ???
+                 n1: 2097152 0x1FFF000115: ???
+                  n1: 2097152 0x1FFF000118: ???
+                   n1: 2097152 0x1FFF00011B: ???
+                    n1: 2097152 0x1FFF00011E: ???
+                     n1: 2097152 0x1FFF000120: ???
+                      n1: 2097152 0x1FFF000123: ???
+                       n1: 2097152 0x1FFF00012A: ???
+                        n0: 2097152 0x1FFF00012D: ???
+ n0: 102859 in 144 places, all below massif's threshold (1.00%)
+ n1: 90592 0x80E461B: ??? (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+  n2: 90592 0x80E5DEB: asn1_array2tree (in /usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.0)
+   n1: 72656 0x7B8E888: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+    n1: 72656 0x7B625A4: ??? (in /usr/lib/x86_64-linux-gnu/libgnutls.so.30.27.0)
+     n1: 72656 0x4011B99: call_init.part.0 (dl-init.c:72)
+      n1: 72656 0x4011CA0: call_init (dl-init.c:30)
+       n1: 72656 0x4011CA0: _dl_init (dl-init.c:119)
+        n1: 72656 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+         n1: 72656 0x10: ???
+          n1: 72656 0x1FFEFFFFE2: ???
+           n1: 72656 0x1FFEFFFFF2: ???
+            n1: 72656 0x1FFEFFFFF5: ???
+             n1: 72656 0x1FFF000000: ???
+              n1: 72656 0x1FFF000003: ???
+               n1: 72656 0x1FFF000074: ???
+                n1: 72656 0x1FFF000077: ???
+                 n1: 72656 0x1FFF0000F2: ???
+                  n1: 72656 0x1FFF0000F5: ???
+                   n1: 72656 0x1FFF000115: ???
+                    n1: 72656 0x1FFF000118: ???
+                     n1: 72656 0x1FFF00011B: ???
+                      n1: 72656 0x1FFF00011E: ???
+                       n1: 72656 0x1FFF000120: ???
+                        n1: 72656 0x1FFF000123: ???
+                         n1: 72656 0x1FFF00012A: ???
+                          n0: 72656 0x1FFF00012D: ???
+   n0: 17936 in 1 place, below massif's threshold (1.00%)
+ n1: 72704 0x4CDBA69: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+  n1: 72704 0x4011B99: call_init.part.0 (dl-init.c:72)
+   n1: 72704 0x4011CA0: call_init (dl-init.c:30)
+    n1: 72704 0x4011CA0: _dl_init (dl-init.c:119)
+     n1: 72704 0x4001139: ??? (in /usr/lib/x86_64-linux-gnu/ld-2.31.so)
+      n1: 72704 0x10: ???
+       n1: 72704 0x1FFEFFFFE2: ???
+        n1: 72704 0x1FFEFFFFF2: ???
+         n1: 72704 0x1FFEFFFFF5: ???
+          n1: 72704 0x1FFF000000: ???
+           n1: 72704 0x1FFF000003: ???
+            n1: 72704 0x1FFF000074: ???
+             n1: 72704 0x1FFF000077: ???
+              n1: 72704 0x1FFF0000F2: ???
+               n1: 72704 0x1FFF0000F5: ???
+                n1: 72704 0x1FFF000115: ???
+                 n1: 72704 0x1FFF000118: ???
+                  n1: 72704 0x1FFF00011B: ???
+                   n1: 72704 0x1FFF00011E: ???
+                    n1: 72704 0x1FFF000120: ???
+                     n1: 72704 0x1FFF000123: ???
+                      n1: 72704 0x1FFF00012A: ???
+                       n0: 72704 0x1FFF00012D: ???
+ n1: 30504 0x4BA559D: google::LogMessage::Init(char const*, int, int, void (google::LogMessage::*)()) (in /usr/lib/x86_64-linux-gnu/libglog.so.0.0.0)
+  n0: 30504 0x124FED: main (in /usr/local/bin/rt_bench_thread)
+ n1: 24533 0x5960BDC: ??? (in /usr/lib/x86_64-linux-gnu/libarrow.so.600.1.0)
+  n0: 24533 in 236 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=49
+#-----------
+time=40273538
+mem_heap_B=2413949
+mem_heap_extra_B=27475
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=40310380
+mem_heap_B=2374781
+mem_heap_extra_B=27435
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=51
+#-----------
+time=40349139
+mem_heap_B=2415170
+mem_heap_extra_B=27590
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=40384283
+mem_heap_B=3223624093
+mem_heap_extra_B=27747
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=40384398
+mem_heap_B=3223624093
+mem_heap_extra_B=27747
+mem_stacks_B=0
+heap_tree=peak
+n2: 3223624093 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3221225472 0x48D3AB9: gbp::BufferPoolManager::init(unsigned short, unsigned long, unsigned short, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /usr/local/lib/libbufferpool.so)
+  n0: 3221225472 0x125272: main (in /usr/local/bin/rt_bench_thread)
+ n0: 2398621 in 162 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=54
+#-----------
+time=40423136
+mem_heap_B=3223629361
+mem_heap_extra_B=27855
+mem_stacks_B=0
+heap_tree=empty

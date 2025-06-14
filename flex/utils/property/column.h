@@ -301,7 +301,7 @@ class StringColumn : public ColumnBase
   ~StringColumn() {}
 
   void open(const std::string& name, const std::string& snapshot_dir,
-            const std::string& work_dir) {
+            const std::string& work_dir) override {
     std::string basic_path = snapshot_dir + "/" + name;
     if (std::filesystem::exists(basic_path + ".items")) {
       basic_buffer_.open(basic_path, true);
