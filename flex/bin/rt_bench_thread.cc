@@ -288,7 +288,7 @@ class Req {
     cur_ = 0;
 
     LOG(INFO) << "warmup count: " << warmup_num_
-              << "; benchmark count: " << num_of_reqs_ << "\n";
+              << "; benchmark count: " << benchmark_num << "\n";
 
     run_time_req_ids_.resize(num_of_reqs_);
     std::iota(run_time_req_ids_.begin(), run_time_req_ids_.end(), 0);
@@ -349,7 +349,6 @@ class Req {
     const size_t size = 4096;
     std::vector<char> buffer(size);
     size_t length = 0;
-    bool warmup = true;
     while (true) {
       auto ret = ::fread(&length, sizeof(size_t), 1, query_file_string_view);
       if (ret == 0)
@@ -358,16 +357,9 @@ class Req {
       if (length == 0)
         assert(false);
       ::fread(buffer.data(), length, 1, query_file_string);
-      if (warmup) {
-        reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
-        if (reqs_.size() == num_of_reqs_) {
-          warmup = false;
-        }
-      } else {
-        reqs_test.emplace_back(std::string(buffer.data(), buffer.data() + length));
-        if (reqs_test.size() == num_of_reqs_) {
-          break;
-        }
+      reqs_.emplace_back(std::string(buffer.data(), buffer.data() + length));
+      if (reqs_.size() == num_of_reqs_) {
+        break;
       }
     }
     num_of_reqs_unique_ = reqs_.size();
@@ -376,25 +368,32 @@ class Req {
 
   void do_query(size_t thread_id, bool warmup=true) {
     size_t id;
+    size_t req_id = 0;
 
     while (true) {
       id = cur_.fetch_add(1);
 
-      if (id >= num_of_reqs_) {
-        // LOG(INFO) << gbp::get_thread_id();
-        break;
-      }
+      // if (id >= num_of_reqs_) {
+      //   // LOG(INFO) << gbp::get_thread_id();
+      //   break;
+      // }
       // id = run_time_req_ids_[id];
-
-      start_[id] = gbp::GetSystemTime();
-      gbp::get_query_id().store(id % num_of_reqs_unique_);
-      if (warmup) {
-        auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
-            reqs_[id % num_of_reqs_unique_]);
-      } else {
-        auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
-            reqs_test[id % num_of_reqs_unique_]);
+      if(warmup){
+        req_id = id% num_of_reqs_unique_;
+        if (id >= warmup_num_) {
+          break;
+        }
       }
+      else{
+        req_id = (id+warmup_num_)% num_of_reqs_unique_;
+        if (id >= num_of_reqs_-warmup_num_) {
+          break;
+        }
+      }
+      start_[id] = gbp::GetSystemTime();
+      gbp::get_query_id().store(req_id);
+      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
+          reqs_[req_id]);
       end_[id] = gbp::GetSystemTime();
     }
     return;
@@ -412,6 +411,8 @@ class Req {
     }
     return true;
   }
+
+
   void do_update_query(size_t thread_id) {
     size_t id;
     gbp::get_thread_logfile();
@@ -539,7 +540,7 @@ class Req {
               << " \nNumber of update query = " << num_of_update_reqs_unique_;
   }
 
-  void output() {
+  void output(bool warmup=true) {
     // std::ofstream profiling_file(log_data_path + "/profiling.log",
     //                              std::ios::out);
     // profiling_file << "LOG Format: Query Type | latency (OV)" << std::endl;
@@ -547,8 +548,14 @@ class Req {
     std::vector<long long> vec(29, 0);
     std::vector<int> count(29, 0);
     std::vector<std::vector<long long>> ts(29);
-    for (size_t idx = 0; idx < num_of_reqs_; idx++) {
-      auto& s = reqs_[idx % num_of_reqs_unique_];
+    auto s = reqs_[0];
+    for (size_t idx = 0; idx < cur_; idx++) {
+      if(warmup){
+        s = reqs_[idx % num_of_reqs_unique_];
+        }
+        else{
+          s = reqs_[(idx+warmup_num_) % num_of_reqs_unique_];
+        }
       size_t id = static_cast<size_t>(s.back()) - 1;
       // auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
       //                end_[idx] - start_[idx])
@@ -665,7 +672,6 @@ class Req {
   size_t num_of_reqs_unique_;
 
   std::vector<std::string> reqs_;
-  std::vector<std::string> reqs_test;
   std::vector<std::string> update_list;
   std::vector<std::string> read_list;
   std::vector<size_t> run_time_req_ids_;
@@ -829,7 +835,7 @@ int main(int argc, char** argv) {
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
-  gbp::warmup_mark().store(0);
+  gbp::warmup_mark().store(1);
   for (size_t idx = 0; idx < 2; idx++) {
     gbp::get_counter_global(9) = 0;
     gbp::get_counter_global(10) = 0;
@@ -853,7 +859,7 @@ int main(int argc, char** argv) {
     if (idx == 0) {
       Req::get().simulate(shard_num, true);
     } else {
-      Req::get().simulate(shard_num, false);
+      Req::get().simulate(shard_num, true);
     }
     // Req::get().simulate_with_update_and_read(shard_num);
     auto end = std::chrono::system_clock::now();
@@ -877,7 +883,11 @@ int main(int argc, char** argv) {
                                                                        begin)
                      .count()
               << "\n";
-    Req::get().output();
+    if (idx == 0) {
+      Req::get().output(true);
+    } else {
+      Req::get().output(true);
+    }
 
     LOG(INFO) << "global counter 9 = " << gbp::get_counter_global(9);
     LOG(INFO) << "global counter 10 = " << gbp::get_counter_global(10);

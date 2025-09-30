@@ -61,13 +61,18 @@ else ()
 endif ()
 
 #find boost----------------------------------------------------------------------
-# set(BOOST_ROOT "/usr/local")
-# set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
-# set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
-find_package(Boost 1.84 REQUIRED COMPONENTS system filesystem
+find_package(Boost 1.84.0 REQUIRED COMPONENTS system filesystem
              # required by folly
              context program_options regex thread fiber)
+if (Boost_FOUND)
+    message(STATUS "Found Boost: ${Boost_VERSION} at ${Boost_INCLUDE_DIRS}")
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
+else()
+    message(FATAL_ERROR "Boost 1.84.0 not found!")
+endif()
 #find arrow----------------------------------------------------------------------
+
 include("cmake/FindArrow.cmake")
 if (NOT ARROW_FOUND)
     message(FATAL_ERROR "arrow not found, please install the arrow library")

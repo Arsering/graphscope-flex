@@ -575,34 +575,30 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   using nbr_t = MutableNbr<EDATA_T>;
 
  public:
-  TypedMutableCsrConstEdgeIter() : objs_(), cur_idx_(0), size_(0) {}
+  TypedMutableCsrConstEdgeIter() : cur_idx_(0), size_(0) {}
   explicit TypedMutableCsrConstEdgeIter(const MutableNbrSlice<EDATA_T>& slice)
       : cur_idx_(0), size_(slice.size_) {
+            objs_ = slice.mmap_array_->get(slice.start_idx_, size_);
 #ifdef USING_EDGE_ITER
-    auto tmp = slice.get_mmap_array()->get(slice.get_start_idx(), slice.size());
-    objs_ = gbp::BufferBlockIter<nbr_t>(tmp);
-#else
-    objs_ = slice.mmap_array_->get(slice.start_idx_, size_);
+    iter_ = gbp::BufferBlockIter<nbr_t>(objs_);
 #endif
   }
   explicit TypedMutableCsrConstEdgeIter(const mmap_array<nbr_t>* ma,
                                         size_t start_idx, size_t size)
       : cur_idx_(0), size_(size) {
+            objs_ = ma->get(start_idx, size);
+
 #ifdef USING_EDGE_ITER
-    auto tmp = ma->get(start_idx, size);
-    objs_ = gbp::BufferBlockIter<nbr_t>(tmp);
-#else
-    objs_ = ma->get(start_idx, size);
+    iter_ = gbp::BufferBlockIter<nbr_t>(objs_);
 #endif
   }
 
   explicit TypedMutableCsrConstEdgeIter(const gbp::BufferBlock objs,
                                         size_t size)
       : cur_idx_(0), size_(size) {
+        objs_ = objs;
 #ifdef USING_EDGE_ITER
-    objs_ = gbp::BufferBlockIter<nbr_t>(objs);
-#else
-    objs_ = objs;
+    iter_ = gbp::BufferBlockIter<nbr_t>(objs_);
 #endif
   }
   ~TypedMutableCsrConstEdgeIter() = default;
@@ -612,7 +608,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
     assert(is_valid());
 #endif
 #ifdef USING_EDGE_ITER
-    return objs_.current()->neighbor;
+    return iter_.current()->neighbor;
 #else
     return gbp::BufferBlock::Ref<nbr_t>(objs_, cur_idx_).neighbor;
 #endif
@@ -630,7 +626,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 //          sizeof(EDATA_T));
 // return ret;
 #ifdef USING_EDGE_ITER
-    return &(objs_.current()->data);
+    return &(iter_.current()->data);
 #else
     return &(gbp::BufferBlock::Ref<nbr_t>(objs_, cur_idx_).data);
 #endif
@@ -641,7 +637,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
     assert(is_valid());
 #endif
 #ifdef USING_EDGE_ITER
-    return objs_.current()->timestamp.load();
+    return iter_.current()->timestamp.load();
 #else
     return gbp::BufferBlock::Ref<nbr_t>(objs_, cur_idx_).timestamp.load();
 #endif
@@ -649,11 +645,9 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 
   FORCE_INLINE void next() {
 #ifdef USING_EDGE_ITER
-    objs_.next();
-    ++cur_idx_;
-#else
-    ++cur_idx_;
+    iter_.next();
 #endif
+  cur_idx_++;
   }
   FORCE_INLINE void set_cur(size_t idx) {
     CHECK_LT(idx, size_);
@@ -661,26 +655,22 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   }
   FORCE_INLINE void recover() { cur_idx_ = 0; }
   FORCE_INLINE bool is_valid() const {
-#ifdef USING_EDGE_ITER
     return cur_idx_ < size_;
-    // return objs_.current() != nullptr;
-#else
-    return cur_idx_ < size_;
-#endif
   }
   FORCE_INLINE size_t size() const { return size_; }
   FORCE_INLINE void free() {
-    objs_.free();
+#ifdef USING_EDGE_ITER
+    iter_.free();
+#endif
     cur_idx_ = 0;
     size_ = 0;
   }
 
  private:
 #ifdef USING_EDGE_ITER
-  gbp::BufferBlockIter<nbr_t> objs_;
-#else
-  gbp::BufferBlock objs_;
+  gbp::BufferBlockIter<nbr_t> iter_;
 #endif
+  gbp::BufferBlock objs_;
   size_t cur_idx_;
   size_t size_;
 };

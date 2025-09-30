@@ -30,7 +30,7 @@ class LDBCTimeStampParser : public arrow::TimestampParser {
   ~LDBCTimeStampParser() override {}
 
   bool operator()(const char* s, size_t length, arrow::TimeUnit::type out_unit,
-                  int64_t* out) const override {
+                  int64_t* out,bool* out_zone_offset_present) const override {
     using seconds_type = std::chrono::duration<arrow::TimestampType::c_type>;
 
     // We allow the following formats for all units:
@@ -55,7 +55,7 @@ class LDBCTimeStampParser : public arrow::TimestampParser {
       return false;
 
     seconds_type seconds_since_epoch;
-    if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseYYYY_MM_DD(
+    if (ARROW_PREDICT_FALSE(!arrow::internal::ParseYYYY_MM_DD(
             s, &seconds_since_epoch))) {
       return false;
     }

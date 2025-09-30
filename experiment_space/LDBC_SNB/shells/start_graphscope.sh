@@ -1,5 +1,7 @@
 #!/bin/bash
 DISK_DEVICE=/dev/vdb
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib:/usr/local/boost-1.84/lib:/usr/local/boost_1_84_0/lib
+
 CUR_DIR=/data-1/zhengyang/data/graphscope-flex
 
 export SF=30
@@ -31,25 +33,24 @@ cp ${INPUT_OUTPUT_DIR}/configurations/bulk_load_${SF}.yaml ${LOG_DIR}/configurat
 mkdir ${LOG_DIR}/shells
 cp -r ${INPUT_OUTPUT_DIR}/shells/$0 ${LOG_DIR}/shells/
 
-# rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 30 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
+# rm -rf ${DB_ROOT_DIR}/* && bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 28 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
 # start iostat
 # nohup iostat -d ${DISK_DEVICE} -t 1 > ${LOG_DIR}/iostat.log &
 
-# export LD_LIBRARY_PATH=#LD_LIBRARY_PATH:/usr/local/lib
 # export LD_PRELOAD="/usr/local/lib/libtcmalloc.so"
 # export HEAPPROFILE=${LOG_DIR}/heap_profile.log
 for thread_num in 30
 do
-    expression="(1 + 0.0131 * $thread_num + 1.3) * 1024 * 1024 * 1024"
+    expression="(0 + 0.0131 * $thread_num + 6) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression))")
     echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
     echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*1.81))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*5.079))")
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     # cgexec -g memory:yz_variable rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
-    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 1000000 -b 1000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
     
     # gdb --args 
     # cgexec -g memory:yz_variable 

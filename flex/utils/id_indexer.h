@@ -361,7 +361,7 @@ class LFIndexer {
 
   int64_t get_key(const INDEX_T& index) const {
     auto item = keys_.get(index);
-    return gbp::BufferBlock::Ref<int64_t>(item);
+    return gbp::BufferBlock::RefSingle<int64_t>(item);
   }
 
   gbp::batch_request_type get_key_batch(const INDEX_T& index) const {
@@ -385,7 +385,7 @@ class LFIndexer {
       }
 #else
       auto item = keys_.get(k);
-      if (gbp::BufferBlock::Ref<int64_t>(item) !=
+      if (gbp::BufferBlock::RefSingle<int64_t>(item) !=
           std::numeric_limits<int64_t>::max()) {
         num_elements_.store(k + 1);
         break;
@@ -1031,7 +1031,7 @@ void build_lf_indexer(const IdIndexer<int64_t, INDEX_T>& input,
         input.hasher_(pair.first), input.num_slots_minus_one_);
     while (true) {
       auto item = lf.indices_.get(index);
-      if (gbp::BufferBlock::Ref<index_key_item<INDEX_T>>(item).index ==
+      if (gbp::BufferBlock::RefSingle<index_key_item<INDEX_T>>(item).index ==
           sentinel) {
         empty_value_1.index = pair.second;
         empty_value_1.key = pair.first;

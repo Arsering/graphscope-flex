@@ -42,3 +42,7 @@ Terminated
 Terminated
 Terminated
 start_graphscope.sh: line 41: 2386758 Killed                  cgexec -g memory:yz_variable rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 2000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 34: 2834269 Aborted                 bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 1 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 34: 2868838 Aborted                 bulk_loader -B $[1024*1024*1024*70] -g ${LOG_DIR}/configurations/graph.yaml -l ${LOG_DIR}/configurations/bulk_load.yaml -p 1 -d ${DB_ROOT_DIR} &> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 42: 1216982 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 1000000 -b 1000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+start_graphscope.sh: line 42: 1614700 Aborted                 rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 1000000 -b 1000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log

@@ -81,9 +81,9 @@ def plot_figure(means_list):
 
 if __name__ == '__main__':
     # MMAP 50%
-    log_path_1 = '/data-1/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2025-06-14-15:46:15/server/gs_log.log'
+    log_path_1 = 
     # GoCache 50%
-    log_path_2 = '/data-1/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2025-06-14-15:24:47/server/gs_log.log'    
+    log_path_2 = '/data-1/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2025-06-15-23:41:44/server/gs_log.log'
     # MMAP 30%
     log_path_3 = '/data-1/zhengyang/data/graphscope-flex/experiment_space/LDBC_SNB/logs/2025-06-14-16:32:08/server/gs_log.log'
     # GoCache 30%
@@ -104,4 +104,4 @@ if __name__ == '__main__':
     print(means_4)
     print(means_5)
     print(means_6)
-    plot_figure([means_5, means_6])
+    plot_figure([means_1, means_2])

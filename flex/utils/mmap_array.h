@@ -106,7 +106,7 @@ class mmap_array {
     //   buffer_pool_manager_->CloseFile(fd_gbp_);
     //   fd_gbp_ = gbp::INVALID_FILE_HANDLE;
     // }
-  }
+      }
 
   void reset() {
     filename_ = "";
@@ -352,10 +352,6 @@ class mmap_array {
 
   const gbp::BufferBlock get(size_t idx, size_t len = 1) const {
 #if ASSERT_ENABLE
-    if (idx + len > size_) {
-      LOG(INFO) << idx << " " << len << " " << size_;
-      LOG(INFO) << gbp::get_stack_trace();
-    }
     CHECK_LE(idx + len, size_);
 #endif
 
