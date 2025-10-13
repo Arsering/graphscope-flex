@@ -180,12 +180,12 @@ void InsertTransaction::clear() {
 bool InsertTransaction::get_vertex_with_retries(MutablePropertyFragment& graph,
                                                 label_t label, oid_t oid,
                                                 vid_t& lid) {
-  if (likely(graph.get_lid(label, oid, lid))) {
+  if (GS_likely(graph.get_lid(label, oid, lid))) {
     return true;
   }
   for (int i = 0; i < 10; ++i) {
     std::this_thread::sleep_for(std::chrono::microseconds(1000000));
-    if (likely(graph.get_lid(label, oid, lid))) {
+    if (GS_likely(graph.get_lid(label, oid, lid))) {
       return true;
     }
   }

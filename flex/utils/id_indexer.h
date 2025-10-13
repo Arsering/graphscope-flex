@@ -225,7 +225,7 @@ class LFIndexer {
     uint32_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
-      if (unlikely(index < start_index || index >= end_index)) {
+      if (GS_unlikely(index < start_index || index >= end_index)) {
         num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
         num_get = std::min(size_t(num_get), indices_.size() - index);
         items = indices_.get(index, num_get);
@@ -270,7 +270,7 @@ class LFIndexer {
     uint32_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
-      if (unlikely(index < start_index || index >= end_index)) {
+      if (GS_unlikely(index < start_index || index >= end_index)) {
         num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
         num_get = std::min(num_get, indices_.size() - index);
         items = indices_.get(index, num_get);
@@ -328,7 +328,7 @@ class LFIndexer {
     uint32_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
-      if (unlikely(index < start_index || index >= end_index)) {
+      if (GS_unlikely(index < start_index || index >= end_index)) {
         num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
         num_get = num_get > indices_.size() - index ? indices_.size() - index
                                                     : num_get;

@@ -50,11 +50,14 @@ void WalWriter::close() {
   }
 }
 
-#define unlikely(x) __builtin_expect(!!(x), 0)
+// #define unlikely(x) __builtin_expect(!!(x), 0)
 
 void WalWriter::append(const char* data, size_t length) {
   return;
-  if (unlikely(fd_ == -1)) {
+  // if (unlikely(fd_ == -1)) {
+  //   return;
+  // }
+  if (__builtin_expect(!!(fd_ == -1), 0)) {
     return;
   }
   size_t expected_size = file_used_ + length;
@@ -86,7 +89,7 @@ void WalWriter::append(const char* data, size_t length) {
 #endif
 }
 
-#undef unlikely
+// #undef unlikely
 
 static constexpr size_t MAX_WALS_NUM = 134217728;
 

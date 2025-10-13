@@ -35,7 +35,7 @@ void VersionManager::init_ts(uint32_t ts) {
 
 uint32_t VersionManager::acquire_read_timestamp() {
   auto pr = pending_reqs_.fetch_add(1);
-  if (likely(pr >= 0)) {
+  if (GS_likely(pr >= 0)) {
     return read_ts_.load();
   } else {
     while (true) {
@@ -48,13 +48,14 @@ uint32_t VersionManager::acquire_read_timestamp() {
       }
     }
   }
+  return 0;
 }
 
 void VersionManager::release_read_timestamp() { pending_reqs_.fetch_sub(1); }
 
 uint32_t VersionManager::acquire_insert_timestamp() {
   auto pr = pending_reqs_.fetch_add(1);
-  if (likely(pr >= 0)) {
+  if (GS_likely(pr >= 0)) {
     return write_ts_.fetch_add(1);
   } else {
     while (true) {

@@ -41,5 +41,5 @@ apt update -y
 # cd /tmp && apt-get install -y -V ca-certificates lsb-release wget
 curl -o apache-arrow-apt-source-latest.deb https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 apt-get install ./apache-arrow-apt-source-latest.deb
-# apt-get update
-apt-get install -y libarrow-dev=6.0.1-1
+apt-get update
+apt-get install -y libarrow-dev

@@ -103,7 +103,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   Encoder encoder(result_buffer);
 
   AppBase* app = nullptr;
-  if (likely(apps_[type] != nullptr)) {
+  if (GS_likely(apps_[type] != nullptr)) {
     app = apps_[type];
   } else {
     app_wrappers_[type] = db_.CreateApp(type, thread_id_);
@@ -178,7 +178,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     // LOG(INFO) << std::string_view{result_buffer.data(),
     // result_buffer.size()};
     if constexpr (check_result) {
-      // LOG(INFO) << "\n" << gbp::get_results_vec()[gbp::get_query_id().load()];
+      // LOG(INFO) << "\n" <<
+      // gbp::get_results_vec()[gbp::get_query_id().load()];
       if (gbp::get_results_vec()[gbp::get_query_id().load()].size() != 0 &&
           gbp::get_results_vec()[gbp::get_query_id().load()] !=
               std::string_view{result_buffer.data(), result_buffer.size()}) {
@@ -194,7 +195,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       }
     }
     auto ts2 = gbp::GetSystemTime();
-    // gbp::get_thread_logfile() <<gbp::get_counter_local(10)<<" "<<gbp::get_counter_local(11)<< " " << (int) type << std::endl;
+    // gbp::get_thread_logfile() <<gbp::get_counter_local(10)<<"
+    // "<<gbp::get_counter_local(11)<< " " << (int) type << std::endl;
 
     // auto cur_query_id = query_id.fetch_add(1);
     // if (cur_query_id > 500000) {

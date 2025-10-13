@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include <optional>
 #include "glog/logging.h"
 
 #include "proto_generated_gie/job_service.pb.h"
@@ -33,7 +34,7 @@ namespace server {
 class CodegenProxy {
  public:
   static CodegenProxy& get();
-  CodegenProxy() : initialized_(false){};
+  CodegenProxy() : initialized_(false) {};
 
   ~CodegenProxy() = default;
 
