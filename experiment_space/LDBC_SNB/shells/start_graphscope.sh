@@ -43,14 +43,14 @@ for thread_num in 30
 do
     expression="(0 + 0.0131 * $thread_num + 6) * 1024 * 1024 * 1024"
     memory_capacity=$(python3 -c "print(int($expression))")
-    echo ${memory_capacity} > /sys/fs/cgroup/memory/yz_variable/memory.limit_in_bytes
+    # echo ${memory_capacity} > /sys/fs/cgroup/yz_variable/memory.limit_in_bytes
 
     echo 1 > /proc/sys/vm/drop_caches
     echo 1 > /proc/sys/vm/drop_caches
-    memory_capacity=$(python3 -c "print(int(1024*1024*1024*5.079))")
+    memory_capacity=$(python3 -c "print(int(1024*1024*1024*4.5*0.2))")
     # nohup rt_test1 -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${INPUT_OUTPUT_DIR}/configurations/graph_${SF}_bench.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 0 -b 10000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log &
     # cgexec -g memory:yz_variable rt_server -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} &> ${LOG_DIR}/gs_log.log &
-    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 1000000 -b 1000000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
+    rt_bench_thread -B ${memory_capacity} -l ${LOG_DIR}/graphscope_logs -g ${LOG_DIR}/configurations/graph.yaml -d ${DB_ROOT_DIR} -s ${thread_num} -w 700000 -b 700000 -r ${QUERY_FILE} &>> ${LOG_DIR}/gs_log.log
     
     # gdb --args 
     # cgexec -g memory:yz_variable 

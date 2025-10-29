@@ -106,7 +106,7 @@ class mmap_array {
     //   buffer_pool_manager_->CloseFile(fd_gbp_);
     //   fd_gbp_ = gbp::INVALID_FILE_HANDLE;
     // }
-      }
+  }
 
   void reset() {
     filename_ = "";
@@ -381,7 +381,6 @@ class mmap_array {
     // fd_gbp_);
 
     return buffer_pool_manager_->GetBlock(file_offset, buf_size, fd_gbp_);
-
 
     // if (gbp::warmup_mark() == 1 && (fd_gbp_ == 165 || fd_gbp_ == 169)) {
     //   for (size_t id = 0; id < len; id++)

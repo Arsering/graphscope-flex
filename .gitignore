@@ -1,4 +1,6 @@
 flex/build/
+build/
 flex/docs/html/
 experiment_space/LDBC_SNB/logs/
 experiment_space/LDBC_SNB/python/figs/
+experiment_space/LDBC_SNB/python/db_dir\(duckdb\)

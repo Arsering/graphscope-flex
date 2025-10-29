@@ -366,7 +366,7 @@ class Req {
     LOG(INFO) << "Number of query = " << num_of_reqs_unique_;
   }
 
-  void do_query(size_t thread_id, bool warmup=true) {
+  void do_query(size_t thread_id, bool warmup = true) {
     size_t id;
     size_t req_id = 0;
 
@@ -378,28 +378,26 @@ class Req {
       //   break;
       // }
       // id = run_time_req_ids_[id];
-      if(warmup){
-        req_id = id% num_of_reqs_unique_;
+      if (warmup) {
+        req_id = id % num_of_reqs_unique_;
         if (id >= warmup_num_) {
           break;
         }
-      }
-      else{
-        req_id = (id+warmup_num_)% num_of_reqs_unique_;
-        if (id >= num_of_reqs_-warmup_num_) {
+      } else {
+        req_id = (id + warmup_num_) % num_of_reqs_unique_;
+        if (id >= num_of_reqs_ - warmup_num_) {
           break;
         }
       }
       start_[id] = gbp::GetSystemTime();
       gbp::get_query_id().store(req_id);
-      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(
-          reqs_[req_id]);
+      auto ret = gs::GraphDB::get().GetSession(thread_id).Eval(reqs_[req_id]);
       end_[id] = gbp::GetSystemTime();
     }
     return;
   }
 
-  bool simulate(size_t thread_num = 10, bool warmup=true) {
+  bool simulate(size_t thread_num = 10, bool warmup = true) {
     std::vector<std::thread> workers;
     assert(cur_ == 0);
     for (size_t i = 0; i < thread_num; i++) {
@@ -412,10 +410,8 @@ class Req {
     return true;
   }
 
-
   void do_update_query(size_t thread_id) {
     size_t id;
-    gbp::get_thread_logfile();
 
     while (true) {
       id = update_cur_.fetch_add(1);
@@ -444,7 +440,6 @@ class Req {
 
   void do_read_query(size_t thread_id) {
     size_t id;
-    gbp::get_thread_logfile();
 
     while (true) {
       id = read_cur_.fetch_add(1);
@@ -540,7 +535,7 @@ class Req {
               << " \nNumber of update query = " << num_of_update_reqs_unique_;
   }
 
-  void output(bool warmup=true) {
+  void output(bool warmup = true) {
     // std::ofstream profiling_file(log_data_path + "/profiling.log",
     //                              std::ios::out);
     // profiling_file << "LOG Format: Query Type | latency (OV)" << std::endl;
@@ -550,12 +545,11 @@ class Req {
     std::vector<std::vector<long long>> ts(29);
     auto s = reqs_[0];
     for (size_t idx = 0; idx < cur_; idx++) {
-      if(warmup){
+      if (warmup) {
         s = reqs_[idx % num_of_reqs_unique_];
-        }
-        else{
-          s = reqs_[(idx+warmup_num_) % num_of_reqs_unique_];
-        }
+      } else {
+        s = reqs_[(idx + warmup_num_) % num_of_reqs_unique_];
+      }
       size_t id = static_cast<size_t>(s.back()) - 1;
       // auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(
       //                end_[idx] - start_[idx])
@@ -767,7 +761,7 @@ int main(int argc, char** argv) {
   tzset();
 #if OV
 #else
-// gbp::MemoryPageLogger::get_memory_page_logger();
+  // gbp::MemoryPageLogger::get_memory_page_logger();
 
   size_t pool_num = 8;
   size_t io_server_num = 4;
@@ -809,7 +803,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
@@ -835,12 +829,25 @@ int main(int argc, char** argv) {
   gbp::DirectCache::CleanAllCache();
   // pre_compute_post(data_path);
   // pre_compute_comment(data_path);
-  gbp::warmup_mark().store(1);
-  for (size_t idx = 0; idx < 2; idx++) {
+  gbp::warmup_mark().store(0);
+
+  auto keepRunning = true;
+  auto statFn = [&]() {
+    // while (keepRunning) {
+    //   std::this_thread::sleep_for(std::chrono::microseconds(10));
+    //   gbp::BufferPoolManager::GetGlobalInstance().CreateSnapshot(0);
+    // }
+  };
+  std::thread cache_snapshot_thread(statFn);
+
+  for (size_t idx = 0; idx < 1; idx++) {
     gbp::get_counter_global(9) = 0;
     gbp::get_counter_global(10) = 0;
     gbp::get_counter_global(11) = 0;
     gbp::get_counter_global(12) = 0;
+
+    gbp::get_counter_global(15) = 0;
+    gbp::get_counter_global(16) = 0;
 
     gbp::PerformanceLogServer::GetPerformanceLogger().SetStartPoint();
 
@@ -891,12 +898,14 @@ int main(int argc, char** argv) {
 
     LOG(INFO) << "global counter 9 = " << gbp::get_counter_global(9);
     LOG(INFO) << "global counter 10 = " << gbp::get_counter_global(10);
-    LOG(INFO) << "global counter 11 = " << gbp::get_counter_global(11);
-    LOG(INFO) << "global counter 12 = " << gbp::get_counter_global(12);
+    LOG(INFO) << "global counter 15 = " << gbp::get_counter_global(15);
+    LOG(INFO) << "global counter 16 = " << gbp::get_counter_global(16);
     gbp::DirectCache::CleanAllCache();
     gbp::warmup_mark().store(1);
   }
-  
+  keepRunning = false;
+  cache_snapshot_thread.join();
+
   LOG(INFO) << " 19 = " << gbp::get_counter_global(19);
   LOG(INFO) << " 20 = " << gbp::get_counter_global(20);
   Req::get().LoggerStop();

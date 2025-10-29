@@ -16,6 +16,7 @@
 #include "flex/engines/graph_db/database/graph_db_session.h"
 #include "flex/engines/graph_db/app/app_base.h"
 #include "flex/engines/graph_db/database/graph_db.h"
+#include "flex/graphscope_bufferpool/include/logger.h"
 #include "flex/utils/app_utils.h"
 
 namespace gs {
@@ -81,9 +82,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   std::vector<char> result_buffer;
 
   auto query_id_t = gbp::get_query_id().load();
-
+  gbp::get_counter_local(20) = 0;
   // assert((int) type == 31);
-  // if (!((int) type == 9 ))
+  // if (((int) type <= 14))
   //   return result_buffer;
   // if (gbp::get_query_id() != 38237)
   //   return result_buffer;
@@ -197,7 +198,9 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     auto ts2 = gbp::GetSystemTime();
     // gbp::get_thread_logfile() <<gbp::get_counter_local(10)<<"
     // "<<gbp::get_counter_local(11)<< " " << (int) type << std::endl;
-
+    // if ((int) type < 15)
+    //   gbp::get_thread_logfile()
+    //       << gbp::get_counter_local(20) << " " << (int) type << std::endl;
     // auto cur_query_id = query_id.fetch_add(1);
     // if (cur_query_id > 500000) {
     //   latency_sum += ts2 - ts1;
