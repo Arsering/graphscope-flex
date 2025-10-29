@@ -1,6 +1,6 @@
 [submodule "flex_ldbc_snb"]
 	path = flex_ldbc_snb
 	url =  git@github.com:Arsering/flex_ldbc_snb.git
-[submodule "flex/graphscope_bufferpool"]
-	path = flex/graphscope_bufferpool
-	url =  git@github.com:Arsering/graphscope_bufferpool.git
+[submodule "flex/GoCache"]
+	path = flex/GoCache
+	url =  git@github.com:Arsering/GoCache.git
