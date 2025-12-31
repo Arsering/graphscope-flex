@@ -14,9 +14,9 @@
  */
 
 #include "flex/engines/graph_db/database/graph_db_session.h"
+#include "flex/GoCache/include/logger.h"
 #include "flex/engines/graph_db/app/app_base.h"
 #include "flex/engines/graph_db/database/graph_db.h"
-#include "flex/graphscope_bufferpool/include/logger.h"
 #include "flex/utils/app_utils.h"
 
 namespace gs {
@@ -82,7 +82,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   std::vector<char> result_buffer;
 
   auto query_id_t = gbp::get_query_id().load();
-  gbp::get_counter_local(20) = 0;
+
   // assert((int) type == 31);
   // if (((int) type <= 14))
   //   return result_buffer;
@@ -117,70 +117,42 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
       app = apps_[type];
     }
   }
-#ifdef DEBUG_1
-  gbp::get_counter(1) = 0;
-  gbp::get_counter(2) = 0;
-  gbp::get_counter(11) = 0;
-  gbp::get_counter(12) = 0;
-  size_t ts = gbp::GetSystemTime();
-#endif
-#ifdef PROFILE_QUERY_LATENCY
-  size_t ts1 = gbp::GetSystemTime();
-#endif
-  // LOG(INFO) << "\n" << gbp::get_results_vec()[gbp::get_query_id().load()];
-  // assert(false);
-  // LOG(INFO) << "query id = " << query_id.load() << " | " << (int) type;
-  gbp::get_counter_local(10) = 0;
-  gbp::get_counter_local(11) = 0;
+  constexpr bool store_query = false;
+  constexpr bool check_result = false;
 
-  if (app->Query(decoder, encoder)) {
-    // LOG(INFO) << "result_buffer.size() = " << result_buffer.size();
-    // LOG(INFO) << "\n"
-    //           << std::string_view{result_buffer.data(),
-    //           result_buffer.size()};
-    // assert(false);
-#ifdef DEBUG_1
-    ts = gbp::GetSystemTime() - ts;
-    LOG(INFO) << "profiling: [" << gbp::get_query_id().load() << "][" << ts
-              << " | " << gbp::get_counter(1) << " | " << gbp::get_counter(2)
-              << " | " << gbp::get_counter(11) << " | " << gbp::get_counter(12)
-              << "]";
-#endif
-    constexpr bool store_query = false;
-    constexpr bool check_result = false;
+  if constexpr (store_query) {
+    static const size_t max_query_num = 150000;
+    size_t cur_query_id = query_id.fetch_add(1);
+    static std::atomic<size_t> query_tofile_count = 0;
 
-    if constexpr (store_query) {
-      static const size_t max_query_num = 2100;
-      size_t cur_query_id = query_id.fetch_add(1);
-      static std::atomic<size_t> query_tofile_count = 0;
+    if (cur_query_id < max_query_num) {
+      std::lock_guard lock(gbp::get_log_lock());
 
-      if (cur_query_id < max_query_num) {
-        std::lock_guard lock(gbp::get_log_lock());
+      gbp::write_to_query_file(input);
+      gbp::write_to_result_file({result_buffer.data(), result_buffer.size()});
+      query_tofile_count.fetch_add(1);
 
-        gbp::write_to_query_file(input);
-        gbp::write_to_result_file({result_buffer.data(), result_buffer.size()});
-        query_tofile_count.fetch_add(1);
-        if (query_tofile_count % 1000 == 0) {
-          gbp::write_to_query_file(input, true);
-          gbp::write_to_result_file(
-              {result_buffer.data(), result_buffer.size()}, true);
-        }
-        if (query_tofile_count % 1000000 == 0) {
-          LOG(INFO) << query_tofile_count / 1000000 << "M";
-        }
-        if (query_tofile_count == max_query_num) {
-          gbp::write_to_query_file(input, true);
-          gbp::write_to_result_file(
-              {result_buffer.data(), result_buffer.size()}, true);
-          LOG(INFO) << "file content has flushed to the file";
-        }
+      if (query_tofile_count % 1000 == 0) {
+        gbp::write_to_query_file(input, true);
+        gbp::write_to_result_file({result_buffer.data(), result_buffer.size()},
+                                  true);
+      }
+      if (query_tofile_count % 10000 == 0) {
+        LOG(INFO) << query_tofile_count;
+      }
+      if (query_tofile_count == max_query_num) {
+        gbp::write_to_query_file(input, true);
+        gbp::write_to_result_file({result_buffer.data(), result_buffer.size()},
+                                  true);
+        LOG(INFO) << "file content has flushed to the file";
       }
     }
-    // LOG(INFO) << std::string_view{result_buffer.data(),
-    // result_buffer.size()};
+  }
+
+  if (app->Query(decoder, encoder)) {
+    // ts = gbp::GetSystemTime() - ts;
+
     if constexpr (check_result) {
-      // LOG(INFO) << "\n" <<
-      // gbp::get_results_vec()[gbp::get_query_id().load()];
       if (gbp::get_results_vec()[gbp::get_query_id().load()].size() != 0 &&
           gbp::get_results_vec()[gbp::get_query_id().load()] !=
               std::string_view{result_buffer.data(), result_buffer.size()}) {
@@ -195,7 +167,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
       }
     }
-    auto ts2 = gbp::GetSystemTime();
+    // auto ts2 = gbp::GetSystemTime();
     // gbp::get_thread_logfile() <<gbp::get_counter_local(10)<<"
     // "<<gbp::get_counter_local(11)<< " " << (int) type << std::endl;
     // if ((int) type < 15)

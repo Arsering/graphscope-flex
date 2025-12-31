@@ -25,17 +25,22 @@ BasicFragmentLoader::BasicFragmentLoader(const Schema& schema,
       work_dir_(prefix),
       vertex_label_num_(schema_.vertex_label_num()),
       edge_label_num_(schema_.edge_label_num()) {
+  gbp::GBPLOG << "cp";
+
   vertex_data_.resize(vertex_label_num_);
   ie_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   oe_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   lf_indexers_.resize(vertex_label_num_);
+  gbp::GBPLOG << "cp";
 
   std::filesystem::create_directories(runtime_dir(prefix));
   std::filesystem::create_directories(snapshot_dir(prefix, 0));
   std::filesystem::create_directories(wal_dir(prefix));
   std::filesystem::create_directories(tmp_dir(prefix));
+  gbp::GBPLOG << "cp";
 
   init_vertex_data();
+  gbp::GBPLOG << "cp";
 }
 
 void BasicFragmentLoader::init_vertex_data() {
@@ -44,9 +49,13 @@ void BasicFragmentLoader::init_vertex_data() {
     auto label_name = schema_.get_vertex_label_name(v_label);
     auto& property_types = schema_.get_vertex_properties(v_label);
     auto& property_names = schema_.get_vertex_property_names(v_label);
+    gbp::GBPLOG << "cp";
+
     v_data.init(vertex_table_prefix(label_name), tmp_dir(work_dir_),
                 property_names, property_types,
                 schema_.get_vertex_storage_strategies(label_name));
+    gbp::GBPLOG << "cp";
+
     v_data.resize(schema_.get_max_vnum(label_name));
   }
 
@@ -54,6 +63,8 @@ void BasicFragmentLoader::init_vertex_data() {
 }
 
 void BasicFragmentLoader::LoadFragment() {
+  gbp::GBPLOG << "cp";
+
   std::string schema_filename = schema_path(work_dir_);
   auto io_adaptor = std::unique_ptr<grape::LocalIOAdaptor>(
       new grape::LocalIOAdaptor(schema_filename));

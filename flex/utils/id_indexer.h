@@ -219,10 +219,10 @@ class LFIndexer {
 
     int mark = 0;
     // TODO: 此处实现未被测试正确性
-    uint32_t num_get =
+    uint64_t num_get =
         indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
     num_get = std::min(size_t(num_get), indices_.size() - index);
-    uint32_t start_index = index, end_index = index + num_get;
+    uint64_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
       if (GS_unlikely(index < start_index || index >= end_index)) {
@@ -267,7 +267,7 @@ class LFIndexer {
 #else
     auto num_get = indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
     num_get = std::min(num_get, indices_.size() - index);
-    uint32_t start_index = index, end_index = index + num_get;
+    uint64_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
       if (GS_unlikely(index < start_index || index >= end_index)) {
@@ -321,11 +321,11 @@ class LFIndexer {
         hash_policy_.index_for_hash(hasher_(oid), num_slots_minus_one_);
     static constexpr INDEX_T sentinel = std::numeric_limits<INDEX_T>::max();
 
-    uint32_t num_get =
+    uint64_t num_get =
         indices_.OBJ_NUM_PERPAGE - index % indices_.OBJ_NUM_PERPAGE;
     num_get =
         num_get > indices_.size() - index ? indices_.size() - index : num_get;
-    uint32_t start_index = index, end_index = index + num_get;
+    uint64_t start_index = index, end_index = index + num_get;
     auto items = indices_.get(index, num_get);
     while (true) {
       if (GS_unlikely(index < start_index || index >= end_index)) {

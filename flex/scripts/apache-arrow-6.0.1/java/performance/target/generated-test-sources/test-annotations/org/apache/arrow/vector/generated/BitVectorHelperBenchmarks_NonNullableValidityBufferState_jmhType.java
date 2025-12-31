@@ -1,0 +1,4 @@
+package org.apache.arrow.vector.generated;
+public class BitVectorHelperBenchmarks_NonNullableValidityBufferState_jmhType extends BitVectorHelperBenchmarks_NonNullableValidityBufferState_jmhType_B3 {
+}
+

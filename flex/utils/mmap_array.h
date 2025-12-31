@@ -31,7 +31,7 @@
 #include <string>
 #include <string_view>
 
-#include "flex/graphscope_bufferpool/include/buffer_pool_manager.h"
+#include "flex/GoCache/include/buffer_pool_manager.h"
 #include "glog/logging.h"
 
 namespace gs {

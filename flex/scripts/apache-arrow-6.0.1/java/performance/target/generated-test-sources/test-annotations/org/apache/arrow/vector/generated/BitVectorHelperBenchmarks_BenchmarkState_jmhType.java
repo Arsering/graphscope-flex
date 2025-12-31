@@ -1,0 +1,4 @@
+package org.apache.arrow.vector.generated;
+public class BitVectorHelperBenchmarks_BenchmarkState_jmhType extends BitVectorHelperBenchmarks_BenchmarkState_jmhType_B3 {
+}
+

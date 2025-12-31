@@ -41,6 +41,6 @@ sysctl -p /etc/sysctl.conf
 # cd /tmp && apt-get install -y -V ca-certificates lsb-release wget
 
 # curl -o apache-arrow-apt-source-latest.deb https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-# apt-get install ./apache-arrow-apt-source-latest.deb
-# apt-get update
-# apt-get install -y libarrow-dev
+apt-get install ./apache-arrow-apt-source-latest.deb
+apt-get update
+apt-get install -y libarrow-dev

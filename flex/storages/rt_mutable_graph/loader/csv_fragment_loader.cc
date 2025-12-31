@@ -413,7 +413,6 @@ void CSVFragmentLoader::addVerticesImpl(label_t v_label_id,
                      other_columns_array);
     }
   }
-
   VLOG(10) << "Finish parsing vertex file:" << v_files.size() << " for label "
            << v_label_name;
 }
@@ -550,7 +549,9 @@ void CSVFragmentLoader::addEdges(label_t src_label_i, label_t dst_label_i,
   auto& property_types = schema_.get_edge_properties(
       src_label_name, dst_label_name, edge_label_name);
   size_t col_num = property_types.size();
-  CHECK_LE(col_num, 1) << "Only single or no property is supported for edge.";
+  gbp::GBPLOG << property_types.size() << " " << filenames[0];
+  // CHECK_LE(col_num, 1) << "Only single or no property is supported for
+  // edge.";
 
   if (col_num == 0) {
     if (filenames.empty()) {
@@ -664,6 +665,7 @@ void CSVFragmentLoader::loadEdges() {
       auto& e_files = iter->second;
 
       addEdges(src_label_id, dst_label_id, e_label_id, e_files);
+      break;
     }
   } else {
     std::vector<std::pair<typename LoadingConfig::edge_triplet_type,

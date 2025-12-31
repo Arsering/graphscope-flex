@@ -17,6 +17,7 @@
 
 #include <arrow/api.h>
 #include <arrow/util/value_parsing.h>
+#include <iostream>
 #include <memory>
 #include "flex/utils/property/types.h"
 
@@ -30,7 +31,8 @@ class LDBCTimeStampParser : public arrow::TimestampParser {
   ~LDBCTimeStampParser() override {}
 
   bool operator()(const char* s, size_t length, arrow::TimeUnit::type out_unit,
-                  int64_t* out,bool* out_zone_offset_present) const override {
+                  int64_t* out) const override {
+    assert(false);
     using seconds_type = std::chrono::duration<arrow::TimestampType::c_type>;
 
     // We allow the following formats for all units:
@@ -50,19 +52,23 @@ class LDBCTimeStampParser : public arrow::TimestampParser {
     //
     // UTC is always assumed, and the DataType's timezone is ignored.
     //
+    assert(false);
 
-    if (ARROW_PREDICT_FALSE(length < 10))
+    if (ARROW_PREDICT_FALSE(length < 10)) {
       return false;
-
+    }
+    assert(false);
     seconds_type seconds_since_epoch;
-    if (ARROW_PREDICT_FALSE(!arrow::internal::ParseYYYY_MM_DD(
+    if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseYYYY_MM_DD(
             s, &seconds_since_epoch))) {
       return false;
     }
+    assert(false);
 
     if (length == 10) {
       *out =
           arrow::util::CastSecondsToUnit(out_unit, seconds_since_epoch.count());
+
       return true;
     }
 
@@ -70,7 +76,6 @@ class LDBCTimeStampParser : public arrow::TimestampParser {
         ARROW_PREDICT_FALSE(s[10] != 'T')) {
       return false;
     }
-
     if (s[length - 1] == 'Z') {
       --length;
     }
@@ -82,6 +87,7 @@ class LDBCTimeStampParser : public arrow::TimestampParser {
     }
 
     seconds_type seconds_since_midnight;
+
     switch (length) {
     case 13:  // YYYY-MM-DD[ T]hh
       if (ARROW_PREDICT_FALSE(!arrow::internal::detail::ParseHH(

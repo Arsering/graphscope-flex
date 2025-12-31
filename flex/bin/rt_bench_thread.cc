@@ -752,7 +752,7 @@ int main(int argc, char** argv) {
 
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "nvme0n1");
+      data_path, log_data_path + "/performance.log");
   gbp::get_log_dir() = log_data_path;
   gbp::get_db_dir() = data_path;
 
@@ -803,7 +803,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
@@ -839,6 +839,7 @@ int main(int argc, char** argv) {
     // }
   };
   std::thread cache_snapshot_thread(statFn);
+  gbp::warmup_mark().store(1);
 
   for (size_t idx = 0; idx < 1; idx++) {
     gbp::get_counter_global(9) = 0;
@@ -856,8 +857,10 @@ int main(int argc, char** argv) {
     // hiactor::actor_app app;
     gbp::log_enable().store(true);
     sleep(1);
-    size_t ssd_io_r_byte = std::get<0>(gbp::SSD_io_bytes("nvme0n1"));
-    size_t ssd_io_w_byte = std::get<1>(gbp::SSD_io_bytes("nvme0n1"));
+    size_t ssd_io_r_byte = std::get<0>(
+        gbp::PerformanceLogServer::GetPerformanceLogger().SSD_io_bytes());
+    size_t ssd_io_w_byte = std::get<1>(
+        gbp::PerformanceLogServer::GetPerformanceLogger().SSD_io_bytes());
 
     auto cpu_cost_before = gbp::GetCPUTime();
 
@@ -872,8 +875,14 @@ int main(int argc, char** argv) {
     auto end = std::chrono::system_clock::now();
     auto cpu_cost_after = gbp::GetCPUTime();
 
-    ssd_io_r_byte = std::get<0>(gbp::SSD_io_bytes("nvme0n1")) - ssd_io_r_byte;
-    ssd_io_w_byte = std::get<1>(gbp::SSD_io_bytes("nvme0n1")) - ssd_io_w_byte;
+    ssd_io_r_byte =
+        std::get<0>(
+            gbp::PerformanceLogServer::GetPerformanceLogger().SSD_io_bytes()) -
+        ssd_io_r_byte;
+    ssd_io_w_byte =
+        std::get<1>(
+            gbp::PerformanceLogServer::GetPerformanceLogger().SSD_io_bytes()) -
+        ssd_io_w_byte;
 
     LOG(INFO) << "CPU Cost = "
               << (std::get<0>(cpu_cost_after) - std::get<0>(cpu_cost_before)) /

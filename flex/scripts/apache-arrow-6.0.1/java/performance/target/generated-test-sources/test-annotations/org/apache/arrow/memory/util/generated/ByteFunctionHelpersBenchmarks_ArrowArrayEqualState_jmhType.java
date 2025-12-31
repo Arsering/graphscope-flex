@@ -1,0 +1,4 @@
+package org.apache.arrow.memory.util.generated;
+public class ByteFunctionHelpersBenchmarks_ArrowArrayEqualState_jmhType extends ByteFunctionHelpersBenchmarks_ArrowArrayEqualState_jmhType_B3 {
+}
+

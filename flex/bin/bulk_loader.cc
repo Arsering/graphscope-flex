@@ -126,6 +126,7 @@ int main(int argc, char** argv) {
 
   auto loader = gs::LoaderFactory::CreateFragmentLoader(
       data_dir_path.string(), schema, loading_config, parallelism);
+
   loader->LoadFragment();
 
   t0 += grape::GetCurrentTime();

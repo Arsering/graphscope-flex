@@ -78,6 +78,9 @@ include("cmake/FindArrow.cmake")
 if (NOT ARROW_FOUND)
     message(FATAL_ERROR "arrow not found, please install the arrow library")
 else ()
+   message(STATUS "Arrow include directories: ${ARROW_INCLUDE_DIRS}")  # 头文件路径
+    message(STATUS "Arrow library directories: ${ARROW_LIBRARY_DIRS}")  # 库文件路径（若有）
+    message(STATUS "Arrow libraries: ${ARROW_LIBRARIES}")  # 具体库文件（如 libarrow.so）
     include_directories(SYSTEM ${ARROW_INCLUDE_DIRS})
     if (TARGET arrow_shared)
         set(ARROW_SHARED_LIB arrow_shared)
@@ -102,7 +105,7 @@ endif ()
 #                 VERBATIM)
 #     endif(DOXYGEN_FOUND)
 # endif()
-add_subdirectory(graphscope_bufferpool/src)
+add_subdirectory(GoCache/src)
 add_subdirectory(utils)
 add_subdirectory(codegen)
 add_subdirectory(storages)

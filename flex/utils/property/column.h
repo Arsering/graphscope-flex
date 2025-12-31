@@ -289,6 +289,7 @@ class TypedColumn : public ColumnBase {
 using IntColumn = TypedColumn<int>;
 using LongColumn = TypedColumn<int64_t>;
 using DateColumn = TypedColumn<Date>;
+using DoubleColumn = TypedColumn<double>;
 
 class StringColumn : public ColumnBase
 #if !OV

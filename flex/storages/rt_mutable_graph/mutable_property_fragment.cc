@@ -17,8 +17,8 @@
 
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
+#include "flex/GoCache/include/buffer_pool_manager.h"
 #include "flex/engines/hqps_db/core/utils/hqps_utils.h"
-#include "flex/graphscope_bufferpool/include/buffer_pool_manager.h"
 #include "flex/storages/rt_mutable_graph/file_names.h"
 #include "flex/utils/property/types.h"
 

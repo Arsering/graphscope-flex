@@ -1,0 +1,4 @@
+package org.apache.arrow.vector.generated;
+public class BitVectorHelperBenchmarks_ClearBitStateState_jmhType extends BitVectorHelperBenchmarks_ClearBitStateState_jmhType_B3 {
+}
+

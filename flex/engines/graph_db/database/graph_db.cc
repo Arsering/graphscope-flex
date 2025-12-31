@@ -53,7 +53,7 @@ GraphDB& GraphDB::get() {
 void GraphDB::Init(const Schema& schema, const std::string& data_dir,
                    int thread_num) {
   if (!std::filesystem::exists(data_dir)) {
-    LOG(FATAL) << "Data directory does not exist";
+    LOG(FATAL) << "Data directory does not exist: " << data_dir;
   }
 
   std::string schema_file = schema_path(data_dir);

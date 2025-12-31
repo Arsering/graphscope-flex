@@ -142,7 +142,10 @@ class BasicFragmentLoader {
     CHECK(ind < vertex_data_.size());
     return vertex_data_[ind];
   }
-
+  Table& GetEdgeTable(size_t ind) {
+    CHECK(ind < vertex_data_.size());
+    return vertex_data_[ind];
+  }
   // get lf_indexer
   const LFIndexer<vid_t>& GetLFIndexer(label_t v_label) const;
 

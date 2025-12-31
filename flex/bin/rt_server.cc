@@ -92,8 +92,8 @@ int main(int argc, char** argv) {
 
   LOG(INFO) << "Launch Performance Logger";
   gbp::PerformanceLogServer::GetPerformanceLogger().Start(
-      log_data_path + "/performance.log", "nvme0n1");
-
+      data_path, log_data_path + "/performance.log");
+  gbp::get_log_dir() = log_data_path;
   gbp::get_db_dir() = data_path;
 
   setenv("TZ", "Asia/Shanghai", 1);
