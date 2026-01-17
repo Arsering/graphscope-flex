@@ -169,6 +169,15 @@ struct CppTypeToArrowType<int32_t> {
 };
 
 template <>
+struct CppTypeToArrowType<uint32_t> {
+  using Type = arrow::UInt32Type;
+  using ArrayType = arrow::UInt32Array;
+  static std::shared_ptr<arrow::DataType> TypeValue() {
+    return arrow::uint32();
+  }
+};
+
+template <>
 struct CppTypeToArrowType<double> {
   using Type = arrow::DoubleType;
   using ArrayType = arrow::DoubleArray;

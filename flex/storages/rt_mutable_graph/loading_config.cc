@@ -467,6 +467,7 @@ static bool parse_bulk_load_config_file(const std::string& config_file,
     LOG(ERROR) << "Only support init method now";
     return false;
   }
+
   if (data_location.empty()) {
     LOG(WARNING) << "No data location is configured, If it is intended, "
                     "please ignore this warning. Proceeding assuming all files "
@@ -493,6 +494,7 @@ static bool parse_bulk_load_config_file(const std::string& config_file,
       return false;
     }
   }
+
   if (root["edge_mappings"]) {
     VLOG(10) << "edge_mappings is set";
     if (!parse_edges_files_schema(root["edge_mappings"], schema, data_location,

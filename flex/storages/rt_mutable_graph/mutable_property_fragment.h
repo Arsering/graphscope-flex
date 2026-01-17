@@ -50,8 +50,12 @@ class MutablePropertyFragment {
   const Schema& schema() const;
 
   Table& get_vertex_table(label_t vertex_label);
-
   const Table& get_vertex_table(label_t vertex_label) const;
+
+  Table& get_edge_table(label_t src_label, label_t dst_label,
+                        label_t edge_label);
+  const Table& get_edge_table(label_t src_label, label_t dst_label,
+                              label_t edge_label) const;
 
   vid_t vertex_num(label_t vertex_label) const;
 
@@ -99,10 +103,19 @@ class MutablePropertyFragment {
 
   void loadSchema(const std::string& filename);
 
+  size_t get_edge_index(label_t src_label, label_t dst_label,
+                        label_t edge_label) const {
+    return src_label * vertex_label_num_ * edge_label_num_ +
+           dst_label * edge_label_num_ + edge_label;
+  }
+
   Schema schema_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;
   std::vector<MutableCsrBase*> ie_, oe_;
   std::vector<Table> vertex_data_;
+  std::vector<Table> edge_data_;
+  std::vector<std::pair<std::atomic<size_t>*, std::atomic<size_t>*>>
+      edge_data_sizes_;
 
   size_t vertex_label_num_, edge_label_num_;
 };

@@ -40,6 +40,8 @@ enum class PropertyType {
   kInt64,
   kDouble,
   kBufferObject,
+  kMultipleProperties,
+  kUint32,
 };
 
 struct Date {

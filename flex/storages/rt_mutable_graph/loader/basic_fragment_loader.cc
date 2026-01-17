@@ -25,22 +25,19 @@ BasicFragmentLoader::BasicFragmentLoader(const Schema& schema,
       work_dir_(prefix),
       vertex_label_num_(schema_.vertex_label_num()),
       edge_label_num_(schema_.edge_label_num()) {
-  gbp::GBPLOG << "cp";
-
   vertex_data_.resize(vertex_label_num_);
+  edge_data_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_);
   ie_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   oe_.resize(vertex_label_num_ * vertex_label_num_ * edge_label_num_, NULL);
   lf_indexers_.resize(vertex_label_num_);
-  gbp::GBPLOG << "cp";
 
   std::filesystem::create_directories(runtime_dir(prefix));
   std::filesystem::create_directories(snapshot_dir(prefix, 0));
   std::filesystem::create_directories(wal_dir(prefix));
   std::filesystem::create_directories(tmp_dir(prefix));
-  gbp::GBPLOG << "cp";
 
   init_vertex_data();
-  gbp::GBPLOG << "cp";
+  init_edge_data();
 }
 
 void BasicFragmentLoader::init_vertex_data() {
@@ -49,22 +46,19 @@ void BasicFragmentLoader::init_vertex_data() {
     auto label_name = schema_.get_vertex_label_name(v_label);
     auto& property_types = schema_.get_vertex_properties(v_label);
     auto& property_names = schema_.get_vertex_property_names(v_label);
-    gbp::GBPLOG << "cp";
 
     v_data.init(vertex_table_prefix(label_name), tmp_dir(work_dir_),
                 property_names, property_types,
                 schema_.get_vertex_storage_strategies(label_name));
-    gbp::GBPLOG << "cp";
 
     v_data.resize(schema_.get_max_vnum(label_name));
   }
 
   VLOG(10) << "Finish init vertex data";
 }
+void BasicFragmentLoader::init_edge_data() {}
 
 void BasicFragmentLoader::LoadFragment() {
-  gbp::GBPLOG << "cp";
-
   std::string schema_filename = schema_path(work_dir_);
   auto io_adaptor = std::unique_ptr<grape::LocalIOAdaptor>(
       new grape::LocalIOAdaptor(schema_filename));
@@ -85,8 +79,10 @@ void BasicFragmentLoader::LoadFragment() {
       std::string dst_label_name = schema_.get_vertex_label_name(dst_label);
       for (size_t edge_label = 0; edge_label < edge_label_num_; edge_label++) {
         std::string edge_label_name = schema_.get_edge_label_name(edge_label);
-        size_t index = src_label * vertex_label_num_ * edge_label_num_ +
-                       dst_label * edge_label_num_ + edge_label;
+        size_t index = get_index(src_label, dst_label, edge_label);
+        assert(src_label * vertex_label_num_ * edge_label_num_ +
+                   dst_label * edge_label_num_ + edge_label ==
+               index);
         if (schema_.exist(src_label_name, dst_label_name, edge_label_name)) {
           if (ie_[index] != NULL) {
             ie_[index]->dump(
@@ -96,6 +92,22 @@ void BasicFragmentLoader::LoadFragment() {
           if (oe_[index] != NULL) {
             oe_[index]->dump(
                 oe_prefix(src_label_name, dst_label_name, edge_label_name),
+                snapshot_dir(work_dir_, 0));
+          }
+
+          if (schema_
+                  .get_edge_property_names(src_label_name, dst_label_name,
+                                           edge_label_name)
+                  .size() > 1) {
+            edge_data_[index].resize(schema_
+                                         .get_max_enum(src_label_name,
+                                                       dst_label_name,
+                                                       edge_label_name)
+                                         .second);
+
+            edge_data_[index].dump(
+                edge_table_prefix(src_label_name, dst_label_name,
+                                  edge_label_name),
                 snapshot_dir(work_dir_, 0));
           }
         }

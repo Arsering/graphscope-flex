@@ -138,9 +138,9 @@ bool UpdateTransaction::AddEdge(label_t src_label, oid_t src, label_t dst_label,
   if (!oid_to_lid(dst_label, dst, dst_lid)) {
     return false;
   }
-  PropertyType type =
+  const std::vector<PropertyType>& type =
       graph_.schema().get_edge_property(src_label, dst_label, edge_label);
-  if (type != value.type) {
+  if (type[0] != value.type) {
     return false;
   }
   size_t in_csr_index = get_in_csr_index(src_label, dst_label, edge_label);
@@ -545,9 +545,10 @@ void UpdateTransaction::IngestWal(MutablePropertyFragment& graph,
                                                  edge_label);
       }
       Any value;
-      value.type = graph.schema().get_edge_property(
+      const std::vector<PropertyType>& types = graph.schema().get_edge_property(
           dir == 0 ? neighbor_label : label, dir == 0 ? label : neighbor_label,
           label);
+      value.type = types[0];
       while (edge_iter->is_valid()) {
         if (edge_iter->get_neighbor() == nbr_lid) {
           deserialize_field(arc, value);

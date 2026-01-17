@@ -115,6 +115,7 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
     }
 
     output.put_int(0);
+    gbp::GBPLOG << "cp";
     return false;
   } else if (op == "QUERY_EDGE") {
     std::string src_label = std::string(input.get_string());
@@ -132,27 +133,32 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
       uint8_t src_label_id, dst_label_id, edge_label_id;
       if (!txn.schema().contains_vertex_label(src_label)) {
         output.put_int(0);
+        gbp::GBPLOG << "cp";
         return false;
       }
       src_label_id = txn.schema().get_vertex_label_id(src_label);
       if (!txn.schema().contains_vertex_label(dst_label)) {
         output.put_int(0);
+        gbp::GBPLOG << "cp";
         return false;
       }
       dst_label_id = txn.schema().get_vertex_label_id(dst_label);
       if (!txn.schema().contains_edge_label(edge_label)) {
         output.put_int(0);
+        gbp::GBPLOG << "cp";
         return false;
       }
       edge_label_id = txn.schema().get_edge_label_id(edge_label);
       uint32_t src_vid = get_vertex_vid(txn, src_label_id, src_id);
       if (src_vid == std::numeric_limits<uint32_t>::max()) {
         output.put_int(0);
+        gbp::GBPLOG << "cp";
         return false;
       }
       uint32_t dst_vid = get_vertex_vid(txn, dst_label_id, dst_id);
       if (dst_vid == std::numeric_limits<uint32_t>::max()) {
         output.put_int(0);
+        gbp::GBPLOG << "cp";
         return false;
       }
 
@@ -303,7 +309,8 @@ bool ServerApp::Query(Decoder& input, Encoder& output) {
       return true;
     }
   }
-  return false;
+
+  return true;
 }
 
 AppWrapper ServerAppFactory::CreateApp(GraphDBSession& graph) {

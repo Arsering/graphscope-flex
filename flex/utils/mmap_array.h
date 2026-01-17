@@ -46,7 +46,6 @@ inline void copy_file(const std::string& src, const std::string& dst) {
   }
 
   size_t len = std::filesystem::file_size(src);
-
   int src_fd = ::open(src.c_str(), O_RDONLY, 0777);
   int dst_fd = ::open(dst.c_str(), O_WRONLY | O_CREAT, 0777);
 
@@ -245,6 +244,7 @@ class mmap_array {
         madvise(data_, size_ * sizeof(T),
                 MMAP_ADVICE_l);  // Turn off readahead
       } else {
+        gbp::GBPLOG << filename_ << " " << size << " " << size_;
         LOG(FATAL)
             << "cannot resize read-only mmap_array to larger size than file";
       }

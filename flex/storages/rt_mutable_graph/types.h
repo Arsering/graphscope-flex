@@ -37,6 +37,10 @@ static constexpr const char* DT_DOUBLE = "DT_DOUBLE";
 static constexpr const char* DT_STRING = "DT_STRING";
 static constexpr const char* DT_DATE = "DT_DATE";
 
+struct multi_property_t {
+  using property_id_internal_type = int64_t;
+  property_id_internal_type eid;
+};
 }  // namespace gs
 
 #endif  // STORAGES_RT_MUTABLE_GRAPH_TYPES_H_

@@ -69,6 +69,12 @@ std::shared_ptr<RefColumnBase> GraphDBSession::get_vertex_id_column(
   return std::make_shared<TypedRefColumn<oid_t>>(
       db_.graph().lf_indexers_[label].get_keys(), StorageStrategy::kMem);
 }
+std::shared_ptr<ColumnBase> GraphDBSession::get_edge_property_column(
+    label_t src_label, label_t dst_label, label_t edge_label,
+    const std::string& col_name) const {
+  return db_.get_edge_property_column(src_label, dst_label, edge_label,
+                                      col_name);
+}
 
 // #define likely(x) __builtin_expect(!!(x), 1)
 
@@ -82,10 +88,10 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   std::vector<char> result_buffer;
 
   auto query_id_t = gbp::get_query_id().load();
-
+  // gbp::GBPLOG << (int) type;
   // assert((int) type == 31);
-  // if (((int) type <= 14))
-  //   return result_buffer;
+  if (((int) type == 0))
+    return result_buffer;
   // if (gbp::get_query_id() != 38237)
   //   return result_buffer;
   // static size_t count = 0;
@@ -120,37 +126,37 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   constexpr bool store_query = false;
   constexpr bool check_result = false;
 
-  if constexpr (store_query) {
-    static const size_t max_query_num = 150000;
-    size_t cur_query_id = query_id.fetch_add(1);
-    static std::atomic<size_t> query_tofile_count = 0;
-
-    if (cur_query_id < max_query_num) {
-      std::lock_guard lock(gbp::get_log_lock());
-
-      gbp::write_to_query_file(input);
-      gbp::write_to_result_file({result_buffer.data(), result_buffer.size()});
-      query_tofile_count.fetch_add(1);
-
-      if (query_tofile_count % 1000 == 0) {
-        gbp::write_to_query_file(input, true);
-        gbp::write_to_result_file({result_buffer.data(), result_buffer.size()},
-                                  true);
-      }
-      if (query_tofile_count % 10000 == 0) {
-        LOG(INFO) << query_tofile_count;
-      }
-      if (query_tofile_count == max_query_num) {
-        gbp::write_to_query_file(input, true);
-        gbp::write_to_result_file({result_buffer.data(), result_buffer.size()},
-                                  true);
-        LOG(INFO) << "file content has flushed to the file";
-      }
-    }
-  }
-
   if (app->Query(decoder, encoder)) {
     // ts = gbp::GetSystemTime() - ts;
+
+    if constexpr (store_query) {
+      static const size_t max_query_num = 3000000;
+      size_t cur_query_id = query_id.fetch_add(1);
+      static std::atomic<size_t> query_tofile_count = 0;
+
+      if (cur_query_id < max_query_num) {
+        std::lock_guard lock(gbp::get_log_lock());
+
+        gbp::write_to_query_file(input);
+        gbp::write_to_result_file({result_buffer.data(), result_buffer.size()});
+        query_tofile_count.fetch_add(1);
+
+        if (query_tofile_count % 1000 == 0) {
+          gbp::write_to_query_file(input, true);
+          gbp::write_to_result_file(
+              {result_buffer.data(), result_buffer.size()}, true);
+        }
+        if (query_tofile_count % 10000 == 0) {
+          LOG(INFO) << query_tofile_count;
+        }
+        if (query_tofile_count == max_query_num) {
+          gbp::write_to_query_file(input, true);
+          gbp::write_to_result_file(
+              {result_buffer.data(), result_buffer.size()}, true);
+          LOG(INFO) << "file content has flushed to the file";
+        }
+      }
+    }
 
     if constexpr (check_result) {
       if (gbp::get_results_vec()[gbp::get_query_id().load()].size() != 0 &&

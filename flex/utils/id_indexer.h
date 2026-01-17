@@ -375,9 +375,10 @@ class LFIndexer {
     keys_.touch(work_dir + "/" + name + ".keys");
     indices_.open(snapshot_dir + "/" + name + ".indices", true);
     indices_.touch(work_dir + "/" + name + ".indices");
-
     indices_size_ = indices_.size();
-    for (size_t k = keys_.size() - 1; k >= 0; --k) {
+
+    size_t k = keys_.size() - 1;
+    while (true) {
 #if OV
       if (keys_.get(k) != std::numeric_limits<int64_t>::max()) {
         num_elements_.store(k + 1);
@@ -391,8 +392,11 @@ class LFIndexer {
         break;
       }
 #endif
+      if (k == 0) {
+        break;
+      }
+      --k;
     }
-
     load_meta(snapshot_dir + "/" + name + ".meta");
   }
 

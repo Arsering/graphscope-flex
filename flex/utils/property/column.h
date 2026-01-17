@@ -137,7 +137,7 @@ class TypedColumn : public ColumnBase {
   void dump(const std::string& filename) override {
     if (basic_size_ != 0 && extra_size_ == 0) {
       basic_buffer_.dump(filename);
-    } else if (basic_size_ == 0 && extra_size_ != 0) {
+    } else if (basic_size_ == 0) {
       extra_buffer_.dump(filename);
     } else {
       mmap_array<T> tmp;
@@ -155,7 +155,7 @@ class TypedColumn : public ColumnBase {
   void dump(const std::string& filename) override {
     if (basic_size_ != 0 && extra_size_ == 0) {
       basic_buffer_.dump(filename);
-    } else if (basic_size_ == 0 && extra_size_ != 0) {
+    } else if (basic_size_ == 0) {
       extra_buffer_.dump(filename);
     } else {
       mmap_array<T> tmp;
@@ -222,15 +222,15 @@ class TypedColumn : public ColumnBase {
 #else
   void set_value(size_t index, const T& val) {
 #if ASSERT_ENABLE
+    if (!(index >= basic_size_ && index < basic_size_ + extra_size_)) {
+      gbp::GBPLOG << index << " " << basic_size_ << " " << extra_size_;
+    }
     assert(index >= basic_size_ && index < basic_size_ + extra_size_);
 #endif
     // 为了防止一个obj跨两个页
-    if constexpr (gbp::PAGE_SIZE_FILE / sizeof(T) == 0)
-      extra_buffer_.set(index - basic_size_, val);
-    else {
-      auto item_t = extra_buffer_.get(index - basic_size_);
-      gbp::BufferBlock::UpdateContent<T>([&](T& item) { item = val; }, item_t);
-    }
+
+    auto item_t = extra_buffer_.get(index - basic_size_);
+    gbp::BufferBlock::UpdateContent<T>([&](T& item) { item = val; }, item_t);
   }
 
   void set_any(size_t index, const Any& value) override {
@@ -243,6 +243,12 @@ class TypedColumn : public ColumnBase {
   }
 
   FORCE_INLINE gbp::BufferBlock get_inner(size_t idx) const {
+#if ASSERT_ENABLE
+    // if (idx >= basic_size_ + extra_size_) {
+    //   gbp::GBPLOG << idx << " " << basic_size_ << " " << extra_size_;
+    // }
+    assert(idx < basic_size_ + extra_size_);
+#endif
     return idx < basic_size_ ? basic_buffer_.get(idx)
                              : extra_buffer_.get(idx - basic_size_);
   }
@@ -371,7 +377,7 @@ class StringColumn : public ColumnBase
   void dump(const std::string& filename) override {
     if (basic_size_ != 0 && extra_size_ == 0) {
       basic_buffer_.dump(filename);
-    } else if (basic_size_ == 0 && extra_size_ != 0) {
+    } else if (basic_size_ == 0) {
       extra_buffer_.resize(extra_size_, pos_.load());
       extra_buffer_.dump(filename);
     } else {

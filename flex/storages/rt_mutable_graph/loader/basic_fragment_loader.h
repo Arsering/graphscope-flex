@@ -77,8 +77,7 @@ class BasicFragmentLoader {
                           label_t edge_label_id) {
     size_t index = src_label_id * vertex_label_num_ * edge_label_num_ +
                    dst_label_id * edge_label_num_ + edge_label_id;
-    CHECK(ie_[index] == NULL);
-    CHECK(oe_[index] == NULL);
+
     auto src_label_name = schema_.get_vertex_label_name(src_label_id);
     auto dst_label_name = schema_.get_vertex_label_name(dst_label_id);
     auto edge_label_name = schema_.get_edge_label_name(edge_label_id);
@@ -86,14 +85,8 @@ class BasicFragmentLoader {
         src_label_name, dst_label_name, edge_label_name);
     EdgeStrategy ie_strategy = schema_.get_incoming_edge_strategy(
         src_label_name, dst_label_name, edge_label_name);
-    ie_[index] = create_typed_csr<EDATA_T>(ie_strategy);
-    oe_[index] = create_typed_csr<EDATA_T>(oe_strategy);
-    ie_[index]->batch_init(
-        ie_prefix(src_label_name, dst_label_name, edge_label_name),
-        tmp_dir(work_dir_), {});
-    oe_[index]->batch_init(
-        oe_prefix(src_label_name, dst_label_name, edge_label_name),
-        tmp_dir(work_dir_), {});
+    ie_[index]->batch_init({});
+    oe_[index]->batch_init({});
   }
 
   template <typename EDATA_T>
@@ -106,35 +99,32 @@ class BasicFragmentLoader {
                    dst_label_id * edge_label_num_ + edge_label_id;
     auto& src_indexer = lf_indexers_[src_label_id];
     auto& dst_indexer = lf_indexers_[dst_label_id];
-    CHECK(ie_[index] == NULL);
-    CHECK(oe_[index] == NULL);
-    auto src_label_name = schema_.get_vertex_label_name(src_label_id);
-    auto dst_label_name = schema_.get_vertex_label_name(dst_label_id);
-    auto edge_label_name = schema_.get_edge_label_name(edge_label_id);
-    EdgeStrategy oe_strategy = schema_.get_outgoing_edge_strategy(
-        src_label_name, dst_label_name, edge_label_name);
-    EdgeStrategy ie_strategy = schema_.get_incoming_edge_strategy(
-        src_label_name, dst_label_name, edge_label_name);
-    auto ie_csr = create_typed_csr<EDATA_T>(ie_strategy);
-    auto oe_csr = create_typed_csr<EDATA_T>(oe_strategy);
+    CHECK(ie_[index] != NULL);
+    CHECK(oe_[index] != NULL);
+    auto* ie_csr = static_cast<TypedMutableCsrBase<EDATA_T>*>(ie_[index]);
+    auto* oe_csr = static_cast<TypedMutableCsrBase<EDATA_T>*>(oe_[index]);
     CHECK(ie_degree.size() == dst_indexer.size());
     CHECK(oe_degree.size() == src_indexer.size());
 
-    ie_csr->batch_init(
-        ie_prefix(src_label_name, dst_label_name, edge_label_name),
-        tmp_dir(work_dir_), ie_degree);
-    oe_csr->batch_init(
-        oe_prefix(src_label_name, dst_label_name, edge_label_name),
-        tmp_dir(work_dir_), oe_degree);
+    std::thread ie_thread([&, &edges = as_const(edges)]() {
+      ie_csr->batch_init(ie_degree);
+      for (auto& edge : edges) {
+        ie_csr->batch_put_edge(std::get<1>(edge), std::get<0>(edge),
+                               std::get<2>(edge));
+      }
+    });
 
-    for (auto& edge : edges) {
-      ie_csr->batch_put_edge(std::get<1>(edge), std::get<0>(edge),
-                             std::get<2>(edge));
-      oe_csr->batch_put_edge(std::get<0>(edge), std::get<1>(edge),
-                             std::get<2>(edge));
-    }
-    ie_[index] = ie_csr;
-    oe_[index] = oe_csr;
+    std::thread oe_thread([&, &edges = as_const(edges)]() {
+      oe_csr->batch_init(oe_degree);
+      for (auto& edge : edges) {
+        oe_csr->batch_put_edge(std::get<0>(edge), std::get<1>(edge),
+                               std::get<2>(edge));
+      }
+    });
+
+    ie_thread.join();
+    oe_thread.join();
+
     VLOG(10) << "Finish adding edge batch of size: " << edges.size();
   }
 
@@ -142,21 +132,54 @@ class BasicFragmentLoader {
     CHECK(ind < vertex_data_.size());
     return vertex_data_[ind];
   }
-  Table& GetEdgeTable(size_t ind) {
-    CHECK(ind < vertex_data_.size());
-    return vertex_data_[ind];
-  }
+
   // get lf_indexer
   const LFIndexer<vid_t>& GetLFIndexer(label_t v_label) const;
+  std::string work_dir() const { return work_dir_; }
+
+  Table& GetEdgeTable(label_t ind) {
+    CHECK(ind < edge_data_.size());
+    return edge_data_[ind];
+  }
+
+  size_t get_index(label_t src_label, label_t dst_label, label_t edge_label) {
+    return src_label * vertex_label_num_ * edge_label_num_ +
+           dst_label * edge_label_num_ + edge_label;
+  }
+  template <typename EDATA_T>
+  void InitEdges(label_t src_label_id, label_t dst_label_id,
+                 label_t edge_label_id) {
+    size_t index = src_label_id * vertex_label_num_ * edge_label_num_ +
+                   dst_label_id * edge_label_num_ + edge_label_id;
+    CHECK(ie_[index] == NULL);
+    CHECK(oe_[index] == NULL);
+    auto src_label_name = schema_.get_vertex_label_name(src_label_id);
+    auto dst_label_name = schema_.get_vertex_label_name(dst_label_id);
+    auto edge_label_name = schema_.get_edge_label_name(edge_label_id);
+
+    EdgeStrategy oe_strategy = schema_.get_outgoing_edge_strategy(
+        src_label_name, dst_label_name, edge_label_name);
+    EdgeStrategy ie_strategy = schema_.get_incoming_edge_strategy(
+        src_label_name, dst_label_name, edge_label_name);
+    ie_[index] = create_typed_csr<EDATA_T>(ie_strategy);
+    oe_[index] = create_typed_csr<EDATA_T>(oe_strategy);
+    ie_[index]->init(ie_prefix(src_label_name, dst_label_name, edge_label_name),
+                     tmp_dir(work_dir_));
+    oe_[index]->init(oe_prefix(src_label_name, dst_label_name, edge_label_name),
+                     tmp_dir(work_dir_));
+  }
 
  private:
   void init_vertex_data();
+  void init_edge_data();
+
   const Schema& schema_;
   std::string work_dir_;
   size_t vertex_label_num_, edge_label_num_;
   std::vector<LFIndexer<vid_t>> lf_indexers_;
   std::vector<MutableCsrBase*> ie_, oe_;
   std::vector<Table> vertex_data_;
+  std::vector<Table> edge_data_;
 };
 }  // namespace gs
 

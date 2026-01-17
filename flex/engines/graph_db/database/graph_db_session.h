@@ -79,6 +79,9 @@ class GraphDBSession {
 
   // Get vertex id column.
   std::shared_ptr<RefColumnBase> get_vertex_id_column(uint8_t label) const;
+  std::shared_ptr<ColumnBase> get_edge_property_column(
+      label_t src_label, label_t dst_label, label_t edge_label,
+      const std::string& col_name) const;
 
   std::vector<char> Eval(const std::string& input);
 

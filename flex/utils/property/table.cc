@@ -32,6 +32,8 @@ void Table::initColumns(const std::vector<std::string>& col_name,
   for (size_t i = 0; i < col_num; ++i) {
     int col_id;
     col_id_indexer_.add(col_name[i], col_id);
+    gbp::GBPLOG << col_name[i] << " " << static_cast<int>(property_types[i])
+                << " " << static_cast<int>(strategies[i]);
     columns_[col_id] = CreateColumn(property_types[i], strategies[i]);
   }
   columns_.resize(col_id_indexer_.size());
@@ -78,9 +80,11 @@ void Table::touch(const std::string& name, const std::string& work_dir) {
 
 void Table::dump(const std::string& name, const std::string& snapshot_dir) {
   int i = 0;
+
   for (auto col : columns_) {
     col->dump(snapshot_dir + "/" + name + ".col_" + std::to_string(i++));
   }
+
   columns_.clear();
   column_ptrs_.clear();
 }
@@ -149,7 +153,6 @@ const std::shared_ptr<ColumnBase> Table::get_column(
       return columns_[col_id];
     }
   }
-
   return nullptr;
 }
 #if OV

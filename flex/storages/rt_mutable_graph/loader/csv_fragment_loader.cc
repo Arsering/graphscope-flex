@@ -14,6 +14,7 @@
  */
 
 #include "flex/storages/rt_mutable_graph/loader/csv_fragment_loader.h"
+#include <thread>
 #include "flex/engines/hqps_db/core/utils/hqps_utils.h"
 #include "flex/storages/rt_mutable_graph/loader/csv_reader_factory.h"
 
@@ -27,9 +28,9 @@ static void check_edge_invariant(
     label_t dst_label_i, label_t edge_label_i) {
   // TODO(zhanglei): Check column mappings after multiple property on edge is
   // supported
-  if (column_mappings.size() > 1) {
-    LOG(FATAL) << "Edge column mapping must be less than 1";
-  }
+  // if (column_mappings.size() > 1) {
+  //   LOG(FATAL) << "Edge column mapping must be less than 1";
+  // }
   if (column_mappings.size() > 0) {
     auto& mapping = column_mappings[0];
     if (std::get<0>(mapping) == src_col_ind ||
@@ -49,115 +50,7 @@ static void check_edge_invariant(
     }
   }
 }
-#if OV
-static void set_vertex_properties(gs::ColumnBase* col,
-                                  std::shared_ptr<arrow::ChunkedArray> array,
-                                  const std::vector<vid_t>& vids) {
-  auto type = array->type();
-  auto col_type = col->type();
-  size_t cur_ind = 0;
-  if (col_type == PropertyType::kInt64) {
-    CHECK(type == arrow::int64())
-        << "Inconsistent data type, expect int64, but got " << type->ToString();
-    for (auto j = 0; j < array->num_chunks(); ++j) {
-      auto casted =
-          std::static_pointer_cast<arrow::Int64Array>(array->chunk(j));
-      for (auto k = 0; k < casted->length(); ++k) {
-        col->set_any(
-            vids[cur_ind++],
-            std::move(AnyConverter<int64_t>::to_any(casted->Value(k))));
-      }
-    }
-  } else if (col_type == PropertyType::kInt32) {
-    CHECK(type == arrow::int32())
-        << "Inconsistent data type, expect int32, but got " << type->ToString();
-    for (auto j = 0; j < array->num_chunks(); ++j) {
-      auto casted =
-          std::static_pointer_cast<arrow::Int32Array>(array->chunk(j));
-      for (auto k = 0; k < casted->length(); ++k) {
-        col->set_any(
-            vids[cur_ind++],
-            std::move(AnyConverter<int32_t>::to_any(casted->Value(k))));
-      }
-    }
-  } else if (col_type == PropertyType::kDouble) {
-    CHECK(type == arrow::float64())
-        << "Inconsistent data type, expect double, but got "
-        << type->ToString();
-    for (auto j = 0; j < array->num_chunks(); ++j) {
-      auto casted =
-          std::static_pointer_cast<arrow::DoubleArray>(array->chunk(j));
-      for (auto k = 0; k < casted->length(); ++k) {
-        col->set_any(vids[cur_ind++],
-                     std::move(AnyConverter<double>::to_any(casted->Value(k))));
-      }
-    }
-  } else if (col_type == PropertyType::kString) {
-    CHECK(type == arrow::large_utf8() || type == arrow::utf8())
-        << "Inconsistent data type, expect string, but got "
-        << type->ToString();
-    if (type == arrow::large_utf8()) {
-      for (auto j = 0; j < array->num_chunks(); ++j) {
-        auto casted =
-            std::static_pointer_cast<arrow::LargeStringArray>(array->chunk(j));
-        for (auto k = 0; k < casted->length(); ++k) {
-          auto str = casted->GetView(k);
-          std::string_view str_view(str.data(), str.size());
-          col->set_any(
-              vids[cur_ind++],
-              std::move(AnyConverter<std::string_view>::to_any(str_view)));
-        }
-      }
-    } else {
-      for (auto j = 0; j < array->num_chunks(); ++j) {
-        auto casted =
-            std::static_pointer_cast<arrow::StringArray>(array->chunk(j));
-        for (auto k = 0; k < casted->length(); ++k) {
-          auto str = casted->GetView(k);
-          std::string_view str_view(str.data(), str.size());
-          col->set_any(
-              vids[cur_ind++],
-              std::move(AnyConverter<std::string_view>::to_any(str_view)));
-        }
-      }
-    }
-  } else if (col_type == PropertyType::kDate) {
-    if (type->Equals(arrow::int64())) {
-      for (auto j = 0; j < array->num_chunks(); ++j) {
-        auto casted =
-            std::static_pointer_cast<arrow::Int64Array>(array->chunk(j));
-        for (auto k = 0; k < casted->length(); ++k) {
-          col->set_any(vids[cur_ind++],
-                       std::move(AnyConverter<Date>::to_any(casted->Value(k))));
-        }
-      }
-    } else if (type->Equals(arrow::timestamp(arrow::TimeUnit::MILLI))) {
-      for (auto j = 0; j < array->num_chunks(); ++j) {
-        auto casted =
-            std::static_pointer_cast<arrow::TimestampArray>(array->chunk(j));
-        for (auto k = 0; k < casted->length(); ++k) {
-          col->set_any(vids[cur_ind++],
-                       std::move(AnyConverter<Date>::to_any(casted->Value(k))));
-        }
-      }
-    } else if (type->Equals(arrow::timestamp(arrow::TimeUnit::MICRO))) {
-      for (auto j = 0; j < array->num_chunks(); ++j) {
-        auto casted =
-            std::static_pointer_cast<arrow::TimestampArray>(array->chunk(j));
-        for (auto k = 0; k < casted->length(); ++k) {
-          col->set_any(vids[cur_ind++],
-                       std::move(AnyConverter<Date>::to_any(casted->Value(k))));
-        }
-      }
-    } else {
-      LOG(FATAL) << "Inconsistent data type, expect date, but got "
-                 << type->ToString();
-    }
-  } else {
-    LOG(FATAL) << "Not support type: " << type->ToString();
-  }
-}
-#else
+
 static void set_vertex_properties(gs::ColumnBase* col,
                                   std::shared_ptr<arrow::ChunkedArray> array,
                                   const std::vector<vid_t>& vids) {
@@ -266,7 +159,7 @@ static void set_vertex_properties(gs::ColumnBase* col,
     LOG(FATAL) << "Not support type: " << type->ToString();
   }
 }
-#endif
+
 template <typename EDATA_T>
 static void append_edges(
     std::shared_ptr<arrow::Int64Array> src_col,
@@ -274,7 +167,8 @@ static void append_edges(
     const LFIndexer<vid_t>& src_indexer, const LFIndexer<vid_t>& dst_indexer,
     std::vector<std::shared_ptr<arrow::Array>>& edata_cols,
     std::vector<std::tuple<vid_t, vid_t, EDATA_T>>& parsed_edges,
-    std::vector<int32_t>& ie_degree, std::vector<int32_t>& oe_degree) {
+    std::vector<int32_t>& ie_degree, std::vector<int32_t>& oe_degree,
+    bool is_multiple_properties = false) {
   CHECK(src_col->length() == dst_col->length());
 
   auto old_size = parsed_edges.size();
@@ -303,43 +197,44 @@ static void append_edges(
 
   // if EDATA_T is grape::EmptyType, no need to read columns
   if constexpr (!std::is_same<EDATA_T, grape::EmptyType>::value) {
-    CHECK(edata_cols.size() == 1);
-    auto edata_col = edata_cols[0];
-    CHECK(src_col->length() == edata_col->length());
-    size_t cur_ind = old_size;
-    auto type = edata_col->type();
-    // if (type != CppTypeToArrowType<EDATA_T>::TypeValue()) {
-    //   LOG(FATAL) << "Inconsistent data type, expect "
-    //              << CppTypeToArrowType<EDATA_T>::TypeValue()->ToString()
-    //              << ", but got " << type->ToString();
-    // }
+    if (!is_multiple_properties) {
+      CHECK(edata_cols.size() == 1);
+      auto edata_col = edata_cols[0];
+      CHECK(src_col->length() == edata_col->length());
+      size_t cur_ind = old_size;
+      auto type = edata_col->type();
 
-    using arrow_array_type =
-        typename gs::CppTypeToArrowType<EDATA_T>::ArrayType;
-    if (type->Equals(arrow::timestamp(arrow::TimeUnit::MICRO))) {
-      auto casted_chunk = std::static_pointer_cast<arrow_array_type>(edata_col);
-      for (auto j = 0; j < casted_chunk->length(); ++j) {
-        std::get<2>(parsed_edges[cur_ind++]) = casted_chunk->Value(j);
+      using arrow_array_type =
+          typename gs::CppTypeToArrowType<EDATA_T>::ArrayType;
+      if (type->Equals(arrow::timestamp(arrow::TimeUnit::MICRO))) {
+        auto casted_chunk =
+            std::static_pointer_cast<arrow_array_type>(edata_col);
+        for (auto j = 0; j < casted_chunk->length(); ++j) {
+          std::get<2>(parsed_edges[cur_ind++]) = casted_chunk->Value(j);
+        }
+      } else if (type->Equals(arrow::timestamp(arrow::TimeUnit::MILLI))) {
+        auto casted_chunk =
+            std::static_pointer_cast<arrow_array_type>(edata_col);
+        for (auto j = 0; j < casted_chunk->length(); ++j) {
+          std::get<2>(parsed_edges[cur_ind++]) = casted_chunk->Value(j);
+        }
+      } else if (type->Equals(arrow::large_utf8()) ||
+                 type->Equals(arrow::utf8())) {
+        auto casted_chunk =
+            std::static_pointer_cast<arrow_array_type>(edata_col);
+        for (auto j = 0; j < casted_chunk->length(); ++j) {
+          std::get<2>(parsed_edges[cur_ind++]) = casted_chunk->GetView(j);
+        }
+      } else {
+        auto casted_chunk =
+            std::static_pointer_cast<arrow_array_type>(edata_col);
+        for (auto j = 0; j < casted_chunk->length(); ++j) {
+          std::get<2>(parsed_edges[cur_ind++]) = casted_chunk->Value(j);
+        }
       }
-    } else if (type->Equals(arrow::timestamp(arrow::TimeUnit::MILLI))) {
-      auto casted_chunk = std::static_pointer_cast<arrow_array_type>(edata_col);
-      for (auto j = 0; j < casted_chunk->length(); ++j) {
-        std::get<2>(parsed_edges[cur_ind++]) = casted_chunk->Value(j);
-      }
-    } else if (type->Equals(arrow::large_utf8()) ||
-               type->Equals(arrow::utf8())) {
-      auto casted_chunk = std::static_pointer_cast<arrow_array_type>(edata_col);
-      for (auto j = 0; j < casted_chunk->length(); ++j) {
-        std::get<2>(parsed_edges[cur_ind++]) = casted_chunk->GetView(j);
-      }
-    } else {
-      auto casted_chunk = std::static_pointer_cast<arrow_array_type>(edata_col);
-      for (auto j = 0; j < casted_chunk->length(); ++j) {
-        std::get<2>(parsed_edges[cur_ind++]) = casted_chunk->Value(j);
-      }
+
+      VLOG(10) << "Finish inserting:  " << src_col->length() << " edges";
     }
-
-    VLOG(10) << "Finish inserting:  " << src_col->length() << " edges";
   }
 }
 
@@ -362,19 +257,29 @@ void CSVFragmentLoader::addVertexBatch(
   vids.reserve(row_num);
 
   for (auto i = 0; i < row_num; ++i) {
-    if (!indexer.add(casted_array->Value(i), vid)) {
+    auto mark = indexer.add(casted_array->Value(i), vid);
+    if (!mark && property_cols.size() != 0) {
       LOG(FATAL) << "Duplicate vertex id: " << casted_array->Value(i) << " for "
                  << schema_.get_vertex_label_name(v_label_id);
     }
-    vids.emplace_back(vid);
+
+    if (mark)
+      vids.emplace_back(vid);
   }
 
-  for (auto j = 0; j < property_cols.size(); ++j) {
+  auto addVertexBatchInner = [&](size_t j) {
     auto array = property_cols[j];
     auto chunked_array = std::make_shared<arrow::ChunkedArray>(array);
     set_vertex_properties(
         basic_fragment_loader_.GetVertexTable(v_label_id).column_ptrs()[j],
         chunked_array, vids);
+  };
+  std::vector<std::thread> workers;
+  for (size_t j = 0; j < property_cols.size(); ++j) {
+    workers.emplace_back(addVertexBatchInner, j);
+  }
+  for (auto& worker : workers) {
+    worker.join();
   }
 
   VLOG(10) << "Insert rows: " << row_num;
@@ -386,6 +291,9 @@ void CSVFragmentLoader::addVerticesImpl(label_t v_label_id,
                                         IdIndexer<oid_t, vid_t>& indexer) {
   VLOG(10) << "Parsing vertex file:" << v_files.size() << " for label "
            << v_label_name;
+#if ONLINE_LOADING_ENABLE
+  return;
+#endif
 
   for (auto& v_file : v_files) {
     auto vertex_column_mappings =
@@ -465,7 +373,13 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
   check_edge_invariant(schema_, edge_column_mappings, src_col_ind, dst_col_ind,
                        src_label_id, dst_label_id, e_label_id);
 
-  std::vector<std::tuple<vid_t, vid_t, EDATA_T>> parsed_edges;
+  using property_type = std::conditional_t<
+      std::is_same<EDATA_T, multi_property_t>::value,  // 编译期条件（bool）
+      multi_property_t::property_id_internal_type,     // 条件为true时的类型
+      EDATA_T                                          // 条件为false时的类型
+      >;
+  std::vector<std::tuple<vid_t, vid_t, property_type>> parsed_edges;
+
   std::vector<int32_t> ie_degree, oe_degree;
   const auto& src_indexer = basic_fragment_loader_.GetLFIndexer(src_label_id);
   const auto& dst_indexer = basic_fragment_loader_.GetLFIndexer(dst_label_id);
@@ -473,6 +387,7 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
   oe_degree.resize(src_indexer.size());
   VLOG(10) << "src indexer size: " << src_indexer.size()
            << " dst indexer size: " << dst_indexer.size();
+  std::vector<std::shared_ptr<arrow::Array>> property_cols;
 
   for (auto filename : e_files) {
     VLOG(10) << "processing " << filename << " with src_col_id " << src_col_ind
@@ -487,9 +402,11 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
 
     while (true) {
       std::shared_ptr<arrow::RecordBatch> record_batch = reader->Read();
+
       if (record_batch == nullptr) {
         break;
       }
+
       auto columns = record_batch->columns();
       CHECK(columns.size() >= 2);
       auto src_col = columns[0];
@@ -499,12 +416,9 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
       CHECK(dst_col->type() == arrow::int64())
           << "dst_col type: " << dst_col->type()->ToString();
 
-      std::vector<std::shared_ptr<arrow::Array>> property_cols;
       for (auto i = 2; i < columns.size(); ++i) {
         property_cols.emplace_back(columns[i]);
       }
-      CHECK(property_cols.size() <= 1)
-          << "Currently only support at most one property on edge";
       {
         // add edges to vector
         CHECK(src_col->length() == dst_col->length());
@@ -514,9 +428,56 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
             std::static_pointer_cast<arrow::Int64Array>(src_col);
         auto dst_casted_array =
             std::static_pointer_cast<arrow::Int64Array>(dst_col);
+
         append_edges(src_casted_array, dst_casted_array, src_indexer,
                      dst_indexer, property_cols, parsed_edges, ie_degree,
-                     oe_degree);
+                     oe_degree, true);
+      }
+    }
+  }
+  if constexpr (std::is_same<EDATA_T, multi_property_t>::value) {
+    auto max_enum =
+        schema_.get_max_enum(src_label_id, dst_label_id, e_label_id);
+
+    for (auto i = 0; i < parsed_edges.size(); ++i) {
+      assert(max_enum.second < max_enum.first);
+      std::get<2>(parsed_edges[i]) =
+          max_enum.second++;  // assign unique eid for each edge
+    }
+
+    schema_.set_max_enum(src_label_id, dst_label_id, e_label_id, max_enum);
+    auto index = basic_fragment_loader_.get_index(src_label_id, dst_label_id,
+                                                  e_label_id);
+    auto property_num =
+        schema_.get_edge_properties(src_label_id, dst_label_id, e_label_id)
+            .size();
+
+    auto addEdgesImplInner = [&](size_t j, const std::vector<vid_t>& eids) {
+      auto column_id = j % property_num;
+
+      auto chunked_array =
+          std::make_shared<arrow::ChunkedArray>(property_cols[j]);
+      set_vertex_properties(
+          basic_fragment_loader_.GetEdgeTable(index).column_ptrs()[column_id],
+          chunked_array, eids);
+    };
+
+    std::vector<vid_t> eids;
+    size_t edge_cursor = 0;
+    for (auto j = 0; j < property_cols.size(); j += property_num) {
+      auto chunked_array =
+          std::make_shared<arrow::ChunkedArray>(property_cols[j]);
+      eids.clear();
+      for (auto i = 0; i < chunked_array->length(); ++i) {
+        eids.emplace_back(std::get<2>(parsed_edges[edge_cursor++]));
+      }
+
+      std::vector<std::thread> workers;
+      for (size_t k = 0; k < property_num; ++k) {
+        workers.emplace_back(addEdgesImplInner, j + k, eids);
+      }
+      for (auto& worker : workers) {
+        worker.join();
       }
     }
   }
@@ -548,56 +509,94 @@ void CSVFragmentLoader::addEdges(label_t src_label_i, label_t dst_label_i,
            << " filenames: " << filenames.size();
   auto& property_types = schema_.get_edge_properties(
       src_label_name, dst_label_name, edge_label_name);
+  auto& property_names = schema_.get_edge_property_names(
+      src_label_name, dst_label_name, edge_label_name);
   size_t col_num = property_types.size();
-  gbp::GBPLOG << property_types.size() << " " << filenames[0];
+
   // CHECK_LE(col_num, 1) << "Only single or no property is supported for
   // edge.";
 
-  if (col_num == 0) {
-    if (filenames.empty()) {
-      basic_fragment_loader_.AddNoPropEdgeBatch<grape::EmptyType>(
+  if (col_num < 2) {
+    if (col_num == 0) {
+      basic_fragment_loader_.InitEdges<grape::EmptyType>(
           src_label_i, dst_label_i, edge_label_i);
+      if (filenames.empty()) {
+        basic_fragment_loader_.AddNoPropEdgeBatch<grape::EmptyType>(
+            src_label_i, dst_label_i, edge_label_i);
+      } else {
+        addEdgesImpl<grape::EmptyType>(src_label_i, dst_label_i, edge_label_i,
+                                       filenames);
+      }
+    } else if (property_types[0] == PropertyType::kDate) {
+      basic_fragment_loader_.InitEdges<Date>(src_label_i, dst_label_i,
+                                             edge_label_i);
+      if (filenames.empty()) {
+        basic_fragment_loader_.AddNoPropEdgeBatch<Date>(
+            src_label_i, dst_label_i, edge_label_i);
+      } else {
+        addEdgesImpl<Date>(src_label_i, dst_label_i, edge_label_i, filenames);
+      }
+    } else if (property_types[0] == PropertyType::kInt32) {
+      basic_fragment_loader_.InitEdges<int>(src_label_i, dst_label_i,
+                                            edge_label_i);
+      if (filenames.empty()) {
+        basic_fragment_loader_.AddNoPropEdgeBatch<int>(src_label_i, dst_label_i,
+                                                       edge_label_i);
+      } else {
+        addEdgesImpl<int>(src_label_i, dst_label_i, edge_label_i, filenames);
+      }
+    } else if (property_types[0] == PropertyType::kInt64) {
+      basic_fragment_loader_.InitEdges<int64_t>(src_label_i, dst_label_i,
+                                                edge_label_i);
+      if (filenames.empty()) {
+        basic_fragment_loader_.AddNoPropEdgeBatch<int64_t>(
+            src_label_i, dst_label_i, edge_label_i);
+      } else {
+        addEdgesImpl<int64_t>(src_label_i, dst_label_i, edge_label_i,
+                              filenames);
+      }
+    } else if (property_types[0] == PropertyType::kString) {
+      basic_fragment_loader_.InitEdges<std::string>(src_label_i, dst_label_i,
+                                                    edge_label_i);
+      if (filenames.empty()) {
+        basic_fragment_loader_.AddNoPropEdgeBatch<std::string>(
+            src_label_i, dst_label_i, edge_label_i);
+      } else {
+        LOG(FATAL) << "Unsupported edge property type.";
+      }
+    } else if (property_types[0] == PropertyType::kDouble) {
+      basic_fragment_loader_.InitEdges<double>(src_label_i, dst_label_i,
+                                               edge_label_i);
+      if (filenames.empty()) {
+        basic_fragment_loader_.AddNoPropEdgeBatch<double>(
+            src_label_i, dst_label_i, edge_label_i);
+      } else {
+        addEdgesImpl<double>(src_label_i, dst_label_i, edge_label_i, filenames);
+      }
     } else {
-      addEdgesImpl<grape::EmptyType>(src_label_i, dst_label_i, edge_label_i,
-                                     filenames);
-    }
-  } else if (property_types[0] == PropertyType::kDate) {
-    if (filenames.empty()) {
-      basic_fragment_loader_.AddNoPropEdgeBatch<Date>(src_label_i, dst_label_i,
-                                                      edge_label_i);
-    } else {
-      addEdgesImpl<Date>(src_label_i, dst_label_i, edge_label_i, filenames);
-    }
-  } else if (property_types[0] == PropertyType::kInt32) {
-    if (filenames.empty()) {
-      basic_fragment_loader_.AddNoPropEdgeBatch<int>(src_label_i, dst_label_i,
-                                                     edge_label_i);
-    } else {
-      addEdgesImpl<int>(src_label_i, dst_label_i, edge_label_i, filenames);
-    }
-  } else if (property_types[0] == PropertyType::kInt64) {
-    if (filenames.empty()) {
-      basic_fragment_loader_.AddNoPropEdgeBatch<int64_t>(
-          src_label_i, dst_label_i, edge_label_i);
-    } else {
-      addEdgesImpl<int64_t>(src_label_i, dst_label_i, edge_label_i, filenames);
-    }
-  } else if (property_types[0] == PropertyType::kString) {
-    if (filenames.empty()) {
-      basic_fragment_loader_.AddNoPropEdgeBatch<std::string>(
-          src_label_i, dst_label_i, edge_label_i);
-    } else {
-      LOG(FATAL) << "Unsupported edge property type.";
-    }
-  } else if (property_types[0] == PropertyType::kDouble) {
-    if (filenames.empty()) {
-      basic_fragment_loader_.AddNoPropEdgeBatch<double>(
-          src_label_i, dst_label_i, edge_label_i);
-    } else {
-      addEdgesImpl<double>(src_label_i, dst_label_i, edge_label_i, filenames);
+      LOG(FATAL) << "Unsupported edge property type." << property_types[0];
     }
   } else {
-    LOG(FATAL) << "Unsupported edge property type." << property_types[0];
+    basic_fragment_loader_
+        .InitEdges<multi_property_t::property_id_internal_type>(
+            src_label_i, dst_label_i, edge_label_i);
+    auto index = basic_fragment_loader_.get_index(src_label_i, dst_label_i,
+                                                  edge_label_i);
+
+    basic_fragment_loader_.GetEdgeTable(index).init(
+        edge_table_prefix(src_label_name, dst_label_name, edge_label_name),
+        tmp_dir(basic_fragment_loader_.work_dir()), property_names,
+        property_types,
+        std::vector<StorageStrategy>(col_num, StorageStrategy::kMem));
+
+    basic_fragment_loader_.GetEdgeTable(index).resize(
+        schema_.get_max_enum(src_label_name, dst_label_name, edge_label_name)
+            .first);
+#if ONLINE_LOADING_ENABLE
+    return;
+#endif
+    addEdgesImpl<multi_property_t>(src_label_i, dst_label_i, edge_label_i,
+                                   filenames);
   }
 }
 
@@ -624,8 +623,8 @@ void CSVFragmentLoader::loadVertices() {
          ++iter) {
       vertex_files.emplace_back(iter->first, iter->second);
     }
-    LOG(INFO) << "Parallel loading with " << thread_num_ << " threads, " << " "
-              << vertex_files.size() << " vertex files, ";
+    LOG(INFO) << "Parallel loading with " << thread_num_ << " threads, "
+              << " " << vertex_files.size() << " vertex files, ";
     std::atomic<size_t> v_ind(0);
     std::vector<std::thread> threads(thread_num_);
     for (int i = 0; i < thread_num_; ++i) {
@@ -663,9 +662,9 @@ void CSVFragmentLoader::loadEdges() {
       auto& dst_label_id = std::get<1>(iter->first);
       auto& e_label_id = std::get<2>(iter->first);
       auto& e_files = iter->second;
-
       addEdges(src_label_id, dst_label_id, e_label_id, e_files);
-      break;
+
+      // break;
     }
   } else {
     std::vector<std::pair<typename LoadingConfig::edge_triplet_type,

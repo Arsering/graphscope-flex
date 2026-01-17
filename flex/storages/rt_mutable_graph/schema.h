@@ -43,7 +43,8 @@ class Schema {
                       const std::vector<PropertyType>& properties,
                       const std::vector<std::string>& prop_names,
                       EdgeStrategy oe = EdgeStrategy::kMultiple,
-                      EdgeStrategy ie = EdgeStrategy::kMultiple);
+                      EdgeStrategy ie = EdgeStrategy::kMultiple,
+                      size_t max_enum = static_cast<size_t>(1) << 32);
 
   label_t vertex_label_num() const;
 
@@ -72,6 +73,16 @@ class Schema {
       const std::string& label) const;
 
   size_t get_max_vnum(const std::string& label) const;
+  std::pair<size_t, size_t> get_max_enum(const std::string& src_label,
+                                         const std::string& dst_label,
+                                         const std::string& label) const;
+  std::pair<size_t, size_t> get_max_enum(label_t src_label, label_t dst_label,
+                                         label_t label) const;
+  void set_max_enum(const std::string& src_label, const std::string& dst_label,
+                    const std::string& label,
+                    std::pair<size_t, size_t> max_enum) const;
+  void set_max_enum(label_t src_label, label_t dst_label, label_t label,
+                    std::pair<size_t, size_t> max_enum) const;
 
   bool exist(const std::string& src_label, const std::string& dst_label,
              const std::string& edge_label) const;
@@ -84,7 +95,8 @@ class Schema {
                                                        label_t dst_label,
                                                        label_t label) const;
 
-  PropertyType get_edge_property(label_t src, label_t dst, label_t edge) const;
+  const std::vector<PropertyType>& get_edge_property(label_t src, label_t dst,
+                                                     label_t edge) const;
 
   const std::vector<std::string>& get_edge_property_names(
       const std::string& src_label, const std::string& dst_label,
@@ -148,12 +160,12 @@ class Schema {
 
   void EmplacePlugin(const std::string& plugin_name);
 
+  uint32_t generate_edge_label(label_t src, label_t dst, label_t edge) const;
+
  private:
   label_t vertex_label_to_index(const std::string& label);
 
   label_t edge_label_to_index(const std::string& label);
-
-  uint32_t generate_edge_label(label_t src, label_t dst, label_t edge) const;
 
   IdIndexer<std::string, label_t> vlabel_indexer_;
   IdIndexer<std::string, label_t> elabel_indexer_;
@@ -168,6 +180,7 @@ class Schema {
   std::map<uint32_t, EdgeStrategy> oe_strategy_;
   std::map<uint32_t, EdgeStrategy> ie_strategy_;
   std::vector<size_t> max_vnum_;
+  mutable std::map<uint32_t, std::pair<size_t, size_t>> max_enum_;
   std::vector<std::string> plugin_list_;
 };
 

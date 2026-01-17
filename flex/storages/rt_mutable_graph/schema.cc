@@ -43,7 +43,7 @@ void Schema::add_edge_label(const std::string& src_label,
                             const std::string& edge_label,
                             const std::vector<PropertyType>& properties,
                             const std::vector<std::string>& prop_names,
-                            EdgeStrategy oe, EdgeStrategy ie) {
+                            EdgeStrategy oe, EdgeStrategy ie, size_t max_enum) {
   label_t src_label_id = vertex_label_to_index(src_label);
   label_t dst_label_id = vertex_label_to_index(dst_label);
   label_t edge_label_id = edge_label_to_index(edge_label);
@@ -54,6 +54,7 @@ void Schema::add_edge_label(const std::string& src_label,
   oe_strategy_[label_id] = oe;
   ie_strategy_[label_id] = ie;
   eprop_names_[label_id] = prop_names;
+  max_enum_[label_id] = {max_enum, 0};
 }
 
 label_t Schema::vertex_label_num() const {
@@ -123,6 +124,48 @@ size_t Schema::get_max_vnum(const std::string& label) const {
   return max_vnum_[index];
 }
 
+std::pair<size_t, size_t> Schema::get_max_enum(const std::string& src_label,
+                                               const std::string& dst_label,
+                                               const std::string& label) const {
+  label_t src, dst, edge;
+  CHECK(vlabel_indexer_.get_index(src_label, src));
+  CHECK(vlabel_indexer_.get_index(dst_label, dst));
+  CHECK(elabel_indexer_.get_index(label, edge));
+  uint32_t index = generate_edge_label(src, dst, edge);
+  return max_enum_.at(index);
+}
+
+std::pair<size_t, size_t> Schema::get_max_enum(label_t src_label,
+                                               label_t dst_label,
+                                               label_t label) const {
+  CHECK(src_label < vlabel_indexer_.size());
+  CHECK(dst_label < vlabel_indexer_.size());
+  CHECK(label < elabel_indexer_.size());
+  uint32_t index = generate_edge_label(src_label, dst_label, label);
+  return max_enum_.at(index);
+}
+
+void Schema::set_max_enum(const std::string& src_label,
+                          const std::string& dst_label,
+                          const std::string& label,
+                          std::pair<size_t, size_t> max_enum) const {
+  label_t src, dst, edge;
+  CHECK(vlabel_indexer_.get_index(src_label, src));
+  CHECK(vlabel_indexer_.get_index(dst_label, dst));
+  CHECK(elabel_indexer_.get_index(label, edge));
+  uint32_t index = generate_edge_label(src, dst, edge);
+  max_enum_.at(index) = max_enum;
+}
+
+void Schema::set_max_enum(label_t src_label, label_t dst_label, label_t label,
+                          std::pair<size_t, size_t> max_enum) const {
+  CHECK(src_label < vlabel_indexer_.size());
+  CHECK(dst_label < vlabel_indexer_.size());
+  CHECK(label < elabel_indexer_.size());
+  uint32_t index = generate_edge_label(src_label, dst_label, label);
+  max_enum_.at(index) = max_enum;
+}
+
 bool Schema::exist(const std::string& src_label, const std::string& dst_label,
                    const std::string& edge_label) const {
   label_t src, dst, edge;
@@ -153,12 +196,12 @@ const std::vector<PropertyType>& Schema::get_edge_properties(
   return eproperties_.at(index);
 }
 
-PropertyType Schema::get_edge_property(label_t src, label_t dst,
-                                       label_t edge) const {
+const std::vector<PropertyType>& Schema::get_edge_property(label_t src, label_t dst,
+                                                     label_t edge) const {
   uint32_t index = generate_edge_label(src, dst, edge);
-  auto& vec = eproperties_.at(index);
-  return vec.empty() ? PropertyType::kEmpty : vec[0];
+  return eproperties_.at(index);
 }
+
 const std::vector<std::string>& Schema::get_edge_property_names(
     const std::string& src_label, const std::string& dst_label,
     const std::string& label) const {
@@ -248,7 +291,7 @@ void Schema::Serialize(std::unique_ptr<grape::LocalIOAdaptor>& writer) const {
   grape::InArchive arc;
   arc << vproperties_ << vprop_names_ << v_primary_keys_ << vprop_storage_
       << eproperties_ << eprop_names_ << ie_strategy_ << oe_strategy_
-      << max_vnum_ << plugin_list_;
+      << max_vnum_ << plugin_list_ << max_enum_;
   CHECK(writer->WriteArchive(arc));
 }
 
@@ -259,7 +302,7 @@ void Schema::Deserialize(std::unique_ptr<grape::LocalIOAdaptor>& reader) {
   CHECK(reader->ReadArchive(arc));
   arc >> vproperties_ >> vprop_names_ >> v_primary_keys_ >> vprop_storage_ >>
       eproperties_ >> eprop_names_ >> ie_strategy_ >> oe_strategy_ >>
-      max_vnum_ >> plugin_list_;
+      max_vnum_ >> plugin_list_ >> max_enum_;
 }
 
 label_t Schema::vertex_label_to_index(const std::string& label) {
@@ -633,6 +676,7 @@ static bool parse_edge_schema(YAML::Node node, Schema& schema) {
   }
   for (auto i = 0; i < vertex_type_pair_node.size(); ++i) {
     std::string src_label_name, dst_label_name;
+    size_t max_enum = 0;
     auto cur_node = vertex_type_pair_node[i];
     if (!get_scalar(cur_node, "source_vertex", src_label_name)) {
       LOG(ERROR) << "Expect field source_vertex for edge [" << edge_label_name
@@ -644,6 +688,8 @@ static bool parse_edge_schema(YAML::Node node, Schema& schema) {
                  << edge_label_name << "] in vertex_type_pair_relations";
       return false;
     }
+    get_scalar(cur_node, "max_edge_num", max_enum);
+
     // check whether edge triplet exists in current schema
     if (schema.has_edge_label(src_label_name, dst_label_name,
                               edge_label_name)) {
@@ -666,7 +712,7 @@ static bool parse_edge_schema(YAML::Node node, Schema& schema) {
              << " to " << dst_label_name << " with " << property_types.size()
              << " properties";
     schema.add_edge_label(src_label_name, dst_label_name, edge_label_name,
-                          property_types, prop_names, oe, ie);
+                          property_types, prop_names, oe, ie, max_enum);
   }
 
   // check the type_id equals to storage's label_id

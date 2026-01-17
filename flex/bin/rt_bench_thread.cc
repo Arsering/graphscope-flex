@@ -148,6 +148,37 @@ void pre_compute_forum(const std::string dir_path) {
     file.close();  // 关闭文件
   }
 }
+void test_single() {
+  {
+    std::vector<char> req_buf;
+    gs::Encoder encoder(req_buf);
+    encoder.put_long(1);
+    encoder.put_int(10);
+    encoder.put_long(1223555333);
+    encoder.put_long(1646092800000);
+    encoder.put_string("dfasdfsdfsdf");
+    encoder.put_byte(6);
+    auto result = gs::GraphDB::get().GetSession(0).Eval(
+        std::string(req_buf.data(), req_buf.size()));
+
+    gs::Decoder decoder(result.data(), result.size());
+    gs::oid_t oid = decoder.get_long();
+    gbp::GBPLOG << oid;
+    std::vector<char> req_buf1;
+    gs::Encoder encoder1(req_buf1);
+    encoder1.put_long(oid);
+    encoder1.put_byte(7);
+    result = gs::GraphDB::get().GetSession(0).Eval(
+        std::string(req_buf1.data(), req_buf1.size()));
+    gs::Decoder decoder2(result.data(), result.size());
+    decoder2.get_long();
+    assert(10 == decoder2.get_int());
+    assert(1223555333 == decoder2.get_long());
+    assert(1646092800000 == decoder2.get_long());
+    assert("dfasdfsdfsdf" == decoder2.get_string());
+  }
+}
+
 #if !OV
 class BatchTest {
  public:
@@ -557,7 +588,9 @@ class Req {
       auto tmp = end_[idx] - start_[idx];
       // gbp::get_thread_logfile()
       //     << idx << " | " << id << " | " << tmp << std::endl;
-
+      if (id >= ts.size()) {
+        continue;
+      }
       ts[id].emplace_back(tmp);
       vec[id] += tmp;
       count[id] += 1;
@@ -821,6 +854,8 @@ int main(int argc, char** argv) {
   //   // return 1;
   // }
 
+  // test_single();
+  // return 0;
   std::string req_file = vm["req-file"].as<std::string>();
   Req::get().init(warmup_num, benchmark_num);
   Req::get().load_query(req_file);
@@ -841,7 +876,7 @@ int main(int argc, char** argv) {
   std::thread cache_snapshot_thread(statFn);
   gbp::warmup_mark().store(1);
 
-  for (size_t idx = 0; idx < 1; idx++) {
+  for (size_t idx = 0; idx < 2; idx++) {
     gbp::get_counter_global(9) = 0;
     gbp::get_counter_global(10) = 0;
     gbp::get_counter_global(11) = 0;

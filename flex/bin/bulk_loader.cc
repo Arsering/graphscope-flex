@@ -123,6 +123,9 @@ int main(int argc, char** argv) {
   assert(gbp::PERSISTENT);
   t0 = -grape::GetCurrentTime();
 #endif
+  std::filesystem::path path_obj(graph_schema_path);
+  gbp::PerformanceLogServer::GetPerformanceLogger().Start(
+      data_path, path_obj.parent_path().string() + "/performance.log");
 
   auto loader = gs::LoaderFactory::CreateFragmentLoader(
       data_dir_path.string(), schema, loading_config, parallelism);

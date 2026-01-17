@@ -254,6 +254,7 @@ class ReadTransaction {
 
     std::shared_ptr<MutableCsrConstEdgeIterBase> iter_;
   };
+  const MutablePropertyFragment& GetGraph() const { return graph_; }
 
   vertex_iterator GetVertexIterator(label_t label) const;
 

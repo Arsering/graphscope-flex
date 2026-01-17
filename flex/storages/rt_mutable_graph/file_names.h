@@ -107,6 +107,12 @@ inline std::string ie_prefix(const std::string& src_label,
   return "ie_" + src_label + "_" + edge_label + "_" + dst_label;
 }
 
+inline std::string edge_table_prefix(const std::string& src_label,
+                                     const std::string& dst_label,
+                                     const std::string edge_label) {
+  return "edge_table_" + src_label + "_" + edge_label + "_" + dst_label;
+}
+
 inline std::string oe_prefix(const std::string& src_label,
                              const std::string& dst_label,
                              const std::string edge_label) {

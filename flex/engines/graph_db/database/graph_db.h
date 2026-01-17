@@ -33,7 +33,6 @@
 #include "flex/storages/rt_mutable_graph/loader/loader_factory.h"
 #include "flex/storages/rt_mutable_graph/mutable_property_fragment.h"
 
-
 namespace gs {
 
 class GraphDB;
@@ -96,6 +95,10 @@ class GraphDB {
 
   std::shared_ptr<ColumnBase> get_vertex_property_column(
       uint8_t label, const std::string& col_name) const;
+
+  std::shared_ptr<ColumnBase> get_edge_property_column(
+      label_t src_label, label_t dst_label, label_t edge_label,
+      const std::string& col_name) const;
 
   AppWrapper CreateApp(uint8_t app_type, int thread_id);
 

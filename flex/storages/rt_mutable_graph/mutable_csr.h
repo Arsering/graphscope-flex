@@ -188,7 +188,7 @@ class MutableAdjlist {
         UninitializedUtils<nbr_t>::copy(new_buffer, buffer_, size_);
       }
       // delete buffer_;//added
-      buffer_ = new_buffer;//to check, old buffer is not freed
+      buffer_ = new_buffer;  // to check, old buffer is not freed
     }
     auto& nbr = buffer_[size_.fetch_add(1)];
     nbr.neighbor = neighbor;
@@ -479,17 +479,15 @@ class MutableCsrBase {
  public:
   MutableCsrBase() {}
   virtual ~MutableCsrBase() {}
-
-  virtual void batch_init(const std::string& name, const std::string& work_dir,
-                          const std::vector<int>& degree) = 0;
+  virtual void init(const std::string& name, const std::string& work_dir) = 0;
+  virtual void batch_init(const std::vector<int>& degree) = 0;
 
   virtual void open(const std::string& name, const std::string& snapshot_dir,
                     const std::string& work_dir) = 0;
 
   virtual void dump(const std::string& name,
                     const std::string& new_spanshot_dir) = 0;
-
-  virtual void resize(vid_t vnum) = 0;
+  virtual void resize(vid_t vnum, size_t edge_num) = 0;
   virtual size_t size() const = 0;
 
   virtual void put_generic_edge(vid_t src, vid_t dst, const Any& data,
@@ -578,7 +576,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   TypedMutableCsrConstEdgeIter() : cur_idx_(0), size_(0) {}
   explicit TypedMutableCsrConstEdgeIter(const MutableNbrSlice<EDATA_T>& slice)
       : cur_idx_(0), size_(slice.size_) {
-            objs_ = slice.mmap_array_->get(slice.start_idx_, size_);
+    objs_ = slice.mmap_array_->get(slice.start_idx_, size_);
 #ifdef USING_EDGE_ITER
     iter_ = gbp::BufferBlockIter<nbr_t>(objs_);
 #endif
@@ -586,7 +584,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   explicit TypedMutableCsrConstEdgeIter(const mmap_array<nbr_t>* ma,
                                         size_t start_idx, size_t size)
       : cur_idx_(0), size_(size) {
-            objs_ = ma->get(start_idx, size);
+    objs_ = ma->get(start_idx, size);
 
 #ifdef USING_EDGE_ITER
     iter_ = gbp::BufferBlockIter<nbr_t>(objs_);
@@ -596,7 +594,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
   explicit TypedMutableCsrConstEdgeIter(const gbp::BufferBlock objs,
                                         size_t size)
       : cur_idx_(0), size_(size) {
-        objs_ = objs;
+    objs_ = objs;
 #ifdef USING_EDGE_ITER
     iter_ = gbp::BufferBlockIter<nbr_t>(objs_);
 #endif
@@ -647,16 +645,14 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 #ifdef USING_EDGE_ITER
     iter_.next();
 #endif
-  cur_idx_++;
+    cur_idx_++;
   }
   FORCE_INLINE void set_cur(size_t idx) {
     CHECK_LT(idx, size_);
     cur_idx_ = idx;
   }
   FORCE_INLINE void recover() { cur_idx_ = 0; }
-  FORCE_INLINE bool is_valid() const {
-    return cur_idx_ < size_;
-  }
+  FORCE_INLINE bool is_valid() const { return cur_idx_ < size_; }
   FORCE_INLINE size_t size() const { return size_; }
   FORCE_INLINE void free() {
 #ifdef USING_EDGE_ITER
@@ -777,19 +773,20 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     }
   }
 
-  void batch_init(const std::string& name, const std::string& work_dir,
-                  const std::vector<int>& degree) override {
-    size_t vnum = degree.size();
+  void init(const std::string& name, const std::string& work_dir) override {
     adj_lists_.open(work_dir + "/" + name + ".adj", false);
-    adj_lists_.resize(vnum);
+    nbr_list_.open(work_dir + "/" + name + ".nbr", false);
+  }
 
+  void batch_init(const std::vector<int>& degree) override {
+    size_t vnum = degree.size();
+    adj_lists_.resize(vnum);
     locks_ = new grape::SpinLock[vnum];
 
     size_t edge_num = 0;
     for (auto d : degree) {
       edge_num += d;
     }
-    nbr_list_.open(work_dir + "/" + name + ".nbr", false);
     nbr_list_.resize(edge_num);
 #if OV
     nbr_t* ptr = nbr_list_.data();
@@ -823,6 +820,8 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     mmap_array<int> degree_list;
     degree_list.open(snapshot_dir + "/" + name + ".deg", true);
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
+    nbr_list_.touch(work_dir + "/" + name + ".nbr");
+
     adj_lists_.open(work_dir + "/" + name + ".adj", false);
 
     adj_lists_.resize(degree_list.size());
@@ -844,7 +843,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
     size_ = nbr_list_.size();
     nbr_list_.touch(work_dir + "/" + name + ".nbr");
-    nbr_list_.resize(nbr_list_.size() * 5.5);  // 原子操作
+
     // nbr_list_.resize(nbr_list_.size() * 1);
     capacity_ = nbr_list_.size();
 
@@ -1007,7 +1006,7 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
   }
 #endif
 
-  void resize(vid_t vnum) override {
+  void resize(vid_t vnum, size_t edge_num) override {
     if (vnum > adj_lists_.size()) {
       size_t old_size = adj_lists_.size();
       adj_lists_.resize(vnum);
@@ -1036,6 +1035,18 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     } else {
       adj_lists_.resize(vnum);
     }
+#if OV
+    if (nbr_list_.size() < edge_num) {
+      nbr_list_.resize(edge_num);  // 原子操作
+    }
+#else
+    if (capacity_ < edge_num) {
+      nbr_list_.resize(edge_num);  // 原子操作
+      capacity_ = nbr_list_.size();
+    } else {
+      nbr_list_.resize(capacity_);
+    }
+#endif
   }
 
   size_t size() const override { return adj_lists_.size(); }
@@ -1047,7 +1058,6 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     adj_lists_[src].batch_put_edge(dst, data, ts);
   }
 #else
-
   void batch_put_edge(vid_t src, vid_t dst, const EDATA_T& data,
                       timestamp_t ts = 0) override {
     // if (nbr_list_.filename().find("ie_POST_HASCREATOR_PERSON.nbr") != -1)
@@ -1243,10 +1253,12 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
   SingleMutableCsr() {}
   ~SingleMutableCsr() {}
 
-  void batch_init(const std::string& name, const std::string& work_dir,
-                  const std::vector<int>& degree) override {
-    size_t vnum = degree.size();
+  void init(const std::string& name, const std::string& work_dir) override {
     nbr_list_.open(work_dir + "/" + name + ".nbr", false);
+  }
+
+  void batch_init(const std::vector<int>& degree) override {
+    size_t vnum = degree.size();
     nbr_list_.resize(vnum);
 #if OV
     for (size_t k = 0; k != vnum; ++k) {
@@ -1254,7 +1266,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
     }
 #else
     auto nbr_list_old = nbr_list_.get(0, vnum);
-    for (size_t k = 0; k != vnum; ++k) {
+    for (size_t k = 0; k < vnum; ++k) {
       gbp::BufferBlock::UpdateContent<nbr_t>(
           [&](nbr_t& item) {
             item.timestamp.store(std::numeric_limits<timestamp_t>::max());
@@ -1280,7 +1292,7 @@ class SingleMutableCsr : public TypedMutableCsrBase<EDATA_T> {
                                       new_snapshot_dir + "/" + name + ".nbr");
   }
 
-  void resize(vid_t vnum) override {
+  void resize(vid_t vnum, size_t edge_capacity) override {
     if (vnum > nbr_list_.size()) {
       size_t old_size = nbr_list_.size();
       nbr_list_.resize(vnum);
@@ -1480,9 +1492,8 @@ class EmptyCsr : public TypedMutableCsrBase<EDATA_T> {
  public:
   EmptyCsr() = default;
   ~EmptyCsr() = default;
-
-  void batch_init(const std::string& name, const std::string& work_dir,
-                  const std::vector<int>& degree) override {}
+  void init(const std::string& name, const std::string& work_dir) override {}
+  void batch_init(const std::vector<int>& degree) override {}
 
   void open(const std::string& name, const std::string& snapshot_dir,
             const std::string& work_dir) override {
@@ -1492,7 +1503,7 @@ class EmptyCsr : public TypedMutableCsrBase<EDATA_T> {
   void dump(const std::string& name,
             const std::string& new_spanshot_dir) override {}
 
-  void resize(vid_t vnum) override {}
+  void resize(vid_t vnum, size_t edge_num) override {}
 
   size_t size() const override { return 0; }
 
