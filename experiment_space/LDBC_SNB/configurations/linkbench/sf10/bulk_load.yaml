@@ -1,0 +1,82 @@
+graph: ldbc_snb
+loading_config:
+  data_source:
+    scheme: file  # file, oss, s3, hdfs; only file is supported now
+    # location: /mnt/nvme0n1/zyc/data/dataset/linkbench/sf100 # specify it or use FLEX_DATA_DIR env.
+    location: /mnt/nvme0n1/zyc/data/dataset/linkbench/sf10
+  import_option: init # append, overwrite, only init is supported now
+  format:
+    type: csv
+    metadata:
+      delimiter: ","  # other loading configuration places here
+vertex_mappings:
+  - type_name: NODE
+    inputs:
+      - Node.csv
+  - type_name: LINKTYPE 
+    inputs:
+      - LinkType.csv
+edge_mappings:
+  - type_triplet: 
+      edge: LINK
+      source_vertex: NODE
+      destination_vertex: NODE
+    inputs:
+      - Link.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: linkType
+        property: linkType
+      - column:
+          index: 3
+          name: visibility
+        property: visibility
+      - column:
+          index: 4
+          name: data
+        property: data
+      - column:
+          index: 5
+          name: time
+        property: time
+      - column:
+          index: 6
+          name: version
+        property: version
+  - type_triplet: 
+      edge: COUNT
+      source_vertex: NODE
+      destination_vertex: LINKTYPE
+    inputs:
+      - Count.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: count
+        property: count
+      - column:
+          index: 3
+          name: time
+        property: time
+      - column:
+          index: 4
+          name: version
+        property: version
+  

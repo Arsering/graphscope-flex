@@ -1,0 +1,398 @@
+graph: ldbc_snb
+loading_config:
+  data_source:
+    scheme: file  # file, oss, s3, hdfs; only file is supported now
+    location: /mnt/nvme0n1/zhengyang/ldbc_finbench/sf100/snapshot # specify it or use FLEX_DATA_DIR env.
+  import_option: init # append, overwrite, only init is supported now
+  format:
+    type: csv
+    metadata:
+      delimiter: "|"  # other loading configuration places here
+vertex_mappings:
+  - type_name: ACCOUNT
+    inputs:
+      - Account.csv
+  - type_name: COMPANY 
+    inputs:
+      - Company.csv
+  - type_name: LOAN
+    inputs:
+      - Loan.csv
+  - type_name: MEDIUM
+    inputs:
+      - Medium.csv
+  - type_name: PERSON
+    inputs:
+      - Person.csv
+edge_mappings:
+  - type_triplet: 
+      edge: REPAY
+      source_vertex: ACCOUNT
+      destination_vertex: LOAN
+    inputs:
+      - AccountRepayLoan.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: amount
+        property: amount
+      - column:
+          index: 3
+          name: createTime
+        property: createTime
+      - column:
+          index: 4
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: TRANSFER
+      source_vertex: ACCOUNT
+      destination_vertex: ACCOUNT
+    inputs:
+      - AccountTransferAccount.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: amount
+        property: amount
+      - column:
+          index: 3
+          name: createTime
+        property: createTime
+      - column:
+          index: 4
+          name: orderNum
+        property: orderNum
+      - column:
+          index: 5
+          name: comment
+        property: comment
+      - column:
+          index: 6
+          name: payType
+        property: payType
+      - column:
+          index: 7
+          name: goodsType
+        property: goodsType
+  - type_triplet:
+      edge: WITHDRAW
+      source_vertex: ACCOUNT
+      destination_vertex: ACCOUNT
+    inputs:
+      - AccountWithdrawAccount.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: fromType
+        property: fromType
+      - column:
+          index: 3
+          name: toType
+        property: toType
+      - column:
+          index: 4
+          name: amount
+        property: amount
+      - column:
+          index: 5
+          name: createTime
+        property: createTime
+      - column:
+          index: 6
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: APPLY
+      source_vertex: COMPANY
+      destination_vertex: LOAN
+    inputs:
+      - CompanyApplyLoan.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: loanAmount
+        property: loanAmount
+      - column:
+          index: 3
+          name: createTime
+        property: createTime
+      - column:
+          index: 4
+          name: org
+        property: org
+      - column:
+          index: 5
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: GUARANTEE
+      source_vertex: COMPANY
+      destination_vertex: COMPANY
+    inputs:
+      - CompanyGuaranteeCompany.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: createTime
+        property: createTime
+      - column:
+          index: 3
+          name: relation
+        property: relation
+      - column:
+          index: 4
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: INVEST
+      source_vertex: COMPANY
+      destination_vertex: COMPANY
+    inputs:
+      - CompanyInvestCompany.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: ratio
+        property: ratio
+      - column:
+          index: 3
+          name: createTime
+        property: createTime
+      - column:
+          index: 4
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: OWN
+      source_vertex: COMPANY
+      destination_vertex: ACCOUNT
+    inputs:
+      - CompanyOwnAccount.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: createTime
+        property: createTime
+      - column:
+          index: 3
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: DEPOSIT
+      source_vertex: LOAN
+      destination_vertex: ACCOUNT
+    inputs:
+      - LoanDepositAccount.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: amount
+        property: amount
+      - column:
+          index: 3
+          name: createTime
+        property: createTime
+      - column:
+          index: 4
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: SIGNIN
+      source_vertex: MEDIUM
+      destination_vertex: ACCOUNT
+    inputs:
+      - MediumSignInAccount.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: createTime
+        property: createTime
+      - column:
+          index: 3
+          name: location
+        property: location
+      - column:
+          index: 4
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: APPLY
+      source_vertex: PERSON
+      destination_vertex: LOAN
+    inputs:
+      - PersonApplyLoan.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: loanAmount
+        property: loanAmount
+      - column:
+          index: 3
+          name: createTime
+        property: createTime
+      - column:
+          index: 4
+          name: org
+        property: org
+      - column:
+          index: 5
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: GUARANTEE
+      source_vertex: PERSON
+      destination_vertex: PERSON
+    inputs:
+      - PersonGuaranteePerson.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: createTime
+        property: createTime
+      - column:
+          index: 3
+          name: relation
+        property: relation
+      - column:
+          index: 4
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: INVEST
+      source_vertex: PERSON
+      destination_vertex: COMPANY
+    inputs:
+      - PersonInvestCompany.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: ratio
+        property: ratio
+      - column:
+          index: 3
+          name: createTime
+        property: createTime
+      - column:
+          index: 4
+          name: comment
+        property: comment
+  - type_triplet:
+      edge: OWN
+      source_vertex: PERSON
+      destination_vertex: ACCOUNT
+    inputs:
+      - PersonOwnAccount.csv
+    source_vertex_mappings:
+      - column:
+          index: 0
+          name: id
+    destination_vertex_mappings:
+      - column:
+          index: 1
+          name: id
+    column_mappings:
+      - column:
+          index: 2
+          name: createTime
+        property: createTime
+      - column:
+          index: 3
+          name: comment
+        property: comment

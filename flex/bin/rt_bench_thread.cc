@@ -796,7 +796,7 @@ int main(int argc, char** argv) {
 #else
   // gbp::MemoryPageLogger::get_memory_page_logger();
 
-  size_t pool_num = 8;
+  size_t pool_num = 4;
   size_t io_server_num = 4;
 
   if (vm.count("buffer-pool-size")) {

@@ -1,0 +1,107 @@
+name: ldbc_snb
+store_type: mutable_csr
+stored_procedures:
+  directory: /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/linkbench
+  enable_lists:
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/linkbench/libq1.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/linkbench/libq2.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/linkbench/libq3.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/linkbench/libq4.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/linkbench/libq5.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/linkbench/libq6.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/linkbench/libq7.so
+
+schema:
+  vertex_types:
+    - type_id: 0
+      type_name: NODE
+      x_csr_params:
+        max_vertex_num: 1254000
+      properties:
+        - property_id: 0 
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 1
+          property_name: type
+          property_type:
+            primitive_type: DT_SIGNED_INT32
+        - property_id: 2
+          property_name: version
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 3
+          property_name: time
+          property_type:
+            primitive_type: DT_SIGNED_INT32
+        - property_id: 4
+          property_name: data
+          property_type:
+            primitive_type: DT_STRING
+      primary_keys:
+        - id
+    - type_id: 1
+      type_name: LINKTYPE
+      x_csr_params:
+        max_vertex_num: 100000
+      properties:
+        - property_id: 0
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+      primary_keys:
+        - id
+  edge_types:
+    - type_id: 0
+      type_name: LINK
+      vertex_type_pair_relations:
+        - source_vertex: NODE  
+          destination_vertex: NODE
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 7000000
+      properties:
+        - property_id: 0
+          property_name: linkType
+          property_type: 
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 1
+          property_name: visibility
+          property_type:
+            primitive_type: DT_SIGNED_INT32
+        - property_id: 2
+          property_name: data
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 3
+          property_name: time
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 4
+          property_name: version
+          property_type:
+            primitive_type: DT_SIGNED_INT32
+    - type_id: 1
+      type_name: COUNT
+      vertex_type_pair_relations:
+        - source_vertex: NODE  
+          destination_vertex: LINKTYPE
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: None
+          relation: ONE_TO_MANY
+          max_edge_num: 1000000
+      properties:
+        - property_id: 0
+          property_name: count
+          property_type: 
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 1
+          property_name: time
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 2
+          property_name: version
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+    

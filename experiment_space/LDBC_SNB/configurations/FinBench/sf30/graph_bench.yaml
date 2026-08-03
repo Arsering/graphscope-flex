@@ -1,0 +1,464 @@
+name: ldbc_snb
+store_type: mutable_csr
+stored_procedures:
+  directory: /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench
+  enable_lists:
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr1.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr2.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr3.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr4.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr5.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr6.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr7.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr8.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr9.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr10.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr11.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tcr12.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tsr1.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tsr2.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tsr3.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tsr4.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tsr5.so
+    - /mnt/nvme0n1/zhengyang/graphscope-flex/flex_ldbc_snb/FinBench/libn_tsr6.so
+
+
+schema:
+  vertex_types:
+    - type_id: 0
+      type_name: ACCOUNT
+      x_csr_params:
+        max_vertex_num: 1500000
+      properties:
+        - property_id: 0 
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 1
+          property_name: createTime
+          property_type:
+            # date: "date"
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: isBlocked
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 3
+          property_name: accountType
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 4
+          property_name: nickname
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 5
+          property_name: phonenum
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 6
+          property_name: email
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 7
+          property_name: freqLoginType
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 8
+          property_name: lastLoginTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 9
+          property_name: accountLevel
+          property_type:
+            primitive_type: DT_STRING
+      primary_keys:
+        - id
+    - type_id: 1
+      type_name: COMPANY
+      x_csr_params:
+        max_vertex_num: 400000
+      properties:
+        - property_id: 0
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 1
+          property_name: companyName
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: isBlocked
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 3
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 4
+          property_name: country
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 5
+          property_name: city
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 6
+          property_name: business
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 7
+          property_name: description
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 8
+          property_name: url
+          property_type:
+            primitive_type: DT_STRING
+      primary_keys:
+        - id
+    - type_id: 2
+      type_name: LOAN
+      x_csr_params:
+        max_vertex_num: 1000000
+      properties:
+        - property_id: 0
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 1
+          property_name: loanAmount
+          property_type:
+            primitive_type: DT_DOUBLE
+        - property_id: 2
+          property_name: balance
+          property_type:
+            primitive_type: DT_DOUBLE
+        - property_id: 3
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 4
+          property_name: loanUsage
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 5
+          property_name: interestRate
+          property_type:
+            primitive_type: DT_DOUBLE
+      primary_keys:
+        - id
+    - type_id: 3
+      type_name: MEDIUM
+      x_csr_params:
+        max_vertex_num: 900000
+      properties:
+        - property_id: 0
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 1
+          property_name: mediumType
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: isBlocked
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 3
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 4
+          property_name: lastLoginTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 5
+          property_name: riskLevel
+          property_type:
+            primitive_type: DT_STRING
+      primary_keys:
+        - id
+    - type_id: 4
+      type_name: PERSON
+      x_csr_params:
+        max_vertex_num: 500000
+      properties:
+        - property_id: 0
+          property_name: id
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 1
+          property_name: personName
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: isBlocked
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 3
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 4
+          property_name: gender
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 5
+          property_name: birthday
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 6
+          property_name: country
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 7
+          property_name: city
+          property_type:
+            primitive_type: DT_STRING
+      primary_keys:
+        - id
+  edge_types:
+    - type_id: 0
+      type_name: REPAY
+      vertex_type_pair_relations:
+        - source_vertex: ACCOUNT  
+          destination_vertex: LOAN
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 1500000
+      properties:
+        - property_id: 0
+          property_name: amount
+          property_type: 
+            # date: "date"
+            primitive_type: DT_DOUBLE
+        - property_id: 1
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+    - type_id: 1
+      type_name: TRANSFER
+      vertex_type_pair_relations:
+        - source_vertex: ACCOUNT  
+          destination_vertex: ACCOUNT
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 6000000
+      properties:
+        - property_id: 0
+          property_name: amount
+          property_type:
+            primitive_type: DT_DOUBLE
+        - property_id: 1
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: orderNum
+          property_type:
+            primitive_type: DT_SIGNED_INT64
+        - property_id: 3
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 4
+          property_name: payType
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 5
+          property_name: goodsType
+          property_type:
+            primitive_type: DT_STRING
+    - type_id: 2
+      type_name: WITHDRAW
+      vertex_type_pair_relations:
+        - source_vertex: ACCOUNT
+          destination_vertex: ACCOUNT
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 7000000
+      properties:
+        - property_id: 0
+          property_name: fromType
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 1
+          property_name: toType
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: amount
+          property_type:
+            primitive_type: DT_DOUBLE
+        - property_id: 3
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 4
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+    - type_id: 3
+      type_name: APPLY
+      vertex_type_pair_relations:
+        - source_vertex: COMPANY
+          destination_vertex: LOAN
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Single
+          relation: ONE_TO_MANY
+          max_edge_num: 500000
+        - source_vertex: PERSON
+          destination_vertex: LOAN
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Single
+          relation: ONE_TO_MANY
+          max_edge_num: 500000
+      properties:
+        - property_id: 0
+          property_name: loanAmount
+          property_type:
+            primitive_type: DT_DOUBLE
+        - property_id: 1
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: org
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 3
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+    - type_id: 4
+      type_name: GUARANTEE
+      vertex_type_pair_relations:
+        - source_vertex: COMPANY
+          destination_vertex: COMPANY
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 300000
+        - source_vertex: PERSON
+          destination_vertex: PERSON
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY   
+          max_edge_num: 300000   
+      properties:
+        - property_id: 0
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 1
+          property_name: relation
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+    - type_id: 5
+      type_name: INVEST
+      vertex_type_pair_relations:
+        - source_vertex: COMPANY
+          destination_vertex: COMPANY
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 1000000
+        - source_vertex: PERSON
+          destination_vertex: COMPANY
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 1000000
+      properties:
+        - property_id: 0
+          property_name: ratio
+          property_type:
+            primitive_type: DT_DOUBLE
+        - property_id: 1
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+    - type_id: 6
+      type_name: OWN
+      vertex_type_pair_relations:
+        - source_vertex: COMPANY
+          destination_vertex: ACCOUNT
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Single
+          relation: ONE_TO_MANY
+          max_edge_num: 800000
+        - source_vertex: PERSON
+          destination_vertex: ACCOUNT
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Single
+          relation: ONE_TO_MANY
+          max_edge_num: 800000
+      properties:
+        - property_id: 0
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 1
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+    - type_id: 7
+      type_name: DEPOSIT
+      vertex_type_pair_relations:
+        - source_vertex: LOAN
+          destination_vertex: ACCOUNT
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 2000000
+      properties:
+        - property_id: 0
+          property_name: amount
+          property_type:
+            primitive_type: DT_DOUBLE
+        - property_id: 1
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+    - type_id: 8
+      type_name: SIGNIN
+      vertex_type_pair_relations:
+        - source_vertex: MEDIUM
+          destination_vertex: ACCOUNT
+          outgoing_edge_strategy: Multiple
+          incoming_edge_strategy: Multiple
+          relation: MANY_TO_MANY
+          max_edge_num: 4000000
+      properties:
+        - property_id: 0
+          property_name: createTime
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 1
+          property_name: location
+          property_type:
+            primitive_type: DT_STRING
+        - property_id: 2
+          property_name: comment
+          property_type:
+            primitive_type: DT_STRING
+          
