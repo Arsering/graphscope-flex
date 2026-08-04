@@ -90,8 +90,8 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   auto query_id_t = gbp::get_query_id().load();
   // gbp::GBPLOG << (int) type;
   // assert((int) type == 31);
-  if (((int) type == 0))
-    return result_buffer;
+  // if (((int) type == 0))
+  //   return result_buffer;
   // if (gbp::get_query_id() != 38237)
   //   return result_buffer;
   // static size_t count = 0;
@@ -170,7 +170,7 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
         LOG(INFO) << "\n"
                   << std::string_view{result_buffer.data(),
                                       result_buffer.size()};
-        LOG(FATAL) << (int) type << " " << gbp::get_query_id().load();
+        assert(false);
       }
     }
     // auto ts2 = gbp::GetSystemTime();

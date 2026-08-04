@@ -35,7 +35,8 @@ class SingleVertexInsertTransaction {
   ~SingleVertexInsertTransaction();
 
   bool AddVertex(label_t label, oid_t id, const std::vector<Any>& props);
-
+  bool AddEdge(label_t src_label, oid_t src, label_t dst_label, oid_t dst,
+               label_t edge_label, const Any& props);
   bool AddEdge(label_t src_label, oid_t src, label_t dst_label, oid_t dst,
                label_t edge_label, const std::vector<Any>& props);
 

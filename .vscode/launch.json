@@ -8,10 +8,10 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/mnt/nvme0n1/zhengyang/graphscope-flex/flex/GoCache",
-      "program": "/mnt/nvme0n1/zhengyang/graphscope-flex/flex/GoCache/build/Debug/outDebug",
+      "cwd": "/mnt/nvme0n1/zhengyang/graphscope-flex/flex/storages/rt_mutable_graph/loader",
+      "program": "/mnt/nvme0n1/zhengyang/graphscope-flex/flex/storages/rt_mutable_graph/loader/build/Debug/outDebug",
       "MIMode": "gdb",
-      "miDebuggerPath": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",

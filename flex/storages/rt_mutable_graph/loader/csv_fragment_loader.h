@@ -30,7 +30,6 @@
 #include "grape/util.h"
 
 namespace gs {
-
 // LoadFragment for csv files.
 class CSVFragmentLoader : public IFragmentLoader {
  public:

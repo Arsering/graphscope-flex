@@ -415,7 +415,7 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
           << "src_col type: " << src_col->type()->ToString();
       CHECK(dst_col->type() == arrow::int64())
           << "dst_col type: " << dst_col->type()->ToString();
-
+      property_cols.clear();
       for (auto i = 2; i < columns.size(); ++i) {
         property_cols.emplace_back(columns[i]);
       }
@@ -431,7 +431,7 @@ void CSVFragmentLoader::addEdgesImpl(label_t src_label_id, label_t dst_label_id,
 
         append_edges(src_casted_array, dst_casted_array, src_indexer,
                      dst_indexer, property_cols, parsed_edges, ie_degree,
-                     oe_degree, true);
+                     oe_degree);
       }
     }
   }

@@ -840,7 +840,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
-  gbp::CleanMAS();
+  // gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
   // gbp::warmup_mark().store(1);

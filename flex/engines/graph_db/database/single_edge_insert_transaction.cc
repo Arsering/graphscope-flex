@@ -40,6 +40,45 @@ SingleEdgeInsertTransaction::~SingleEdgeInsertTransaction() { Abort(); }
 bool SingleEdgeInsertTransaction::AddEdge(label_t src_label, oid_t src,
                                           label_t dst_label, oid_t dst,
                                           label_t edge_label,
+                                          const Any& props) {
+  if (!graph_.get_lid(src_label, src, src_vid_)) {
+    std::string label_name = graph_.schema().get_vertex_label_name(src_label);
+    LOG(ERROR) << "Source vertex " << label_name << "[" << src
+               << "] not found...";
+    return false;
+  }
+  if (!graph_.get_lid(dst_label, dst, dst_vid_)) {
+    std::string label_name = graph_.schema().get_vertex_label_name(dst_label);
+    LOG(ERROR) << "Destination vertex " << label_name << "[" << dst
+               << "] not found...";
+    return false;
+  }
+
+  src_label_ = src_label;
+  dst_label_ = dst_label;
+  edge_label_ = edge_label;
+  size_t arc_size = arc_.GetSize();
+  arc_ << static_cast<uint8_t>(1) << src_label << src << dst_label << dst
+       << edge_label;
+
+  const std::vector<PropertyType>& types =
+      graph_.schema().get_edge_property(src_label, dst_label, edge_label);
+
+  if (props.type != types[0]) {
+    arc_.Resize(arc_size);
+    std::string label_name = graph_.schema().get_edge_label_name(edge_label);
+    LOG(ERROR) << "Edge property " << label_name << " type not match, expected "
+               << types[0] << ", got " << props.type;
+    return false;
+  }
+  serialize_field(arc_, props);
+
+  return true;
+}
+
+bool SingleEdgeInsertTransaction::AddEdge(label_t src_label, oid_t src,
+                                          label_t dst_label, oid_t dst,
+                                          label_t edge_label,
                                           const std::vector<Any>& props) {
   if (!graph_.get_lid(src_label, src, src_vid_)) {
     std::string label_name = graph_.schema().get_vertex_label_name(src_label);
