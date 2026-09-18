@@ -515,6 +515,7 @@ class MutableCsrBase {
   virtual const gbp::batch_request_type get_edgelist_batch(vid_t i) const = 0;
   virtual const gbp::batch_request_type get_edges_batch(
       size_t start_idx, size_t size = 1) const = 0;
+
 #endif
   // ========================== batching 接口 ==========================
 };
@@ -660,6 +661,7 @@ class TypedMutableCsrConstEdgeIter : public MutableCsrConstEdgeIterBase {
 #endif
     cur_idx_ = 0;
     size_ = 0;
+    objs_.free();
   }
 
  private:
@@ -841,14 +843,13 @@ class MutableCsr : public TypedMutableCsrBase<EDATA_T> {
     degree_list.open(snapshot_dir + "/" + name + ".deg", true);
 
     nbr_list_.open(snapshot_dir + "/" + name + ".nbr", true);
-    size_ = nbr_list_.size();
     nbr_list_.touch(work_dir + "/" + name + ".nbr");
+    size_ = nbr_list_.size();
 
     // nbr_list_.resize(nbr_list_.size() * 1);
     capacity_ = nbr_list_.size();
 
     adj_lists_.open(work_dir + "/" + name + ".adj", false);
-
     adj_lists_.resize(degree_list.size());
     locks_ = new grape::SpinLock[degree_list.size()];
 

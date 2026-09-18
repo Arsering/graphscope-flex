@@ -190,9 +190,8 @@ std::vector<gbp::BufferBlock> ReadTransaction::BatchGetOutgoingSingleEdges(
   blocks.reserve(vids.size());
 
   std::vector<gbp::batch_request_type> requests;
-
+  auto csr = graph_.get_oe_csr(v_label, neighbor_label, edge_label);
   for (auto v : vids) {
-    auto csr = graph_.get_oe_csr(v_label, neighbor_label, edge_label);
     requests.emplace_back(csr->get_edges_batch(v));
   }
   buffer_pool_manager_->GetBlockBatch(requests, blocks);
@@ -207,9 +206,8 @@ std::vector<gbp::BufferBlock> ReadTransaction::BatchGetIncomingSingleEdges(
   blocks.reserve(vids.size());
 
   std::vector<gbp::batch_request_type> requests;
-
+  auto csr = graph_.get_ie_csr(v_label, neighbor_label, edge_label);
   for (auto v : vids) {
-    auto csr = graph_.get_ie_csr(v_label, neighbor_label, edge_label);
     requests.emplace_back(csr->get_edges_batch(v));
   }
   buffer_pool_manager_->GetBlockBatch(requests, blocks);
@@ -230,7 +228,6 @@ ReadTransaction::BatchGetVertexPropsFromVids(
   columns.reserve(prop_names.size());
   for (const auto& prop_name : prop_names) {
     auto column = table.get_column(prop_name);
-    CHECK(column != nullptr) << "Column " << prop_name << " not found";
     columns.push_back(column);
   }
 

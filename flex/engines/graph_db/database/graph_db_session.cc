@@ -88,9 +88,13 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   std::vector<char> result_buffer;
 
   auto query_id_t = gbp::get_query_id().load();
+  gbp::get_counter_local(20) = (int) type;
+  gbp::get_counter_local(21) = 0;
+  gbp::get_counter_local(22) = 0;
+
   // gbp::GBPLOG << (int) type;
   // assert((int) type == 31);
-  // if (((int) type == 0))
+  // if (((int) type != 13))
   //   return result_buffer;
   // if (gbp::get_query_id() != 38237)
   //   return result_buffer;
@@ -126,6 +130,12 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
   constexpr bool store_query = false;
   constexpr bool check_result = false;
 
+  gbp::get_counter_local(30) = 0;
+  // if (((int) type > 14))
+  //   gbp::get_counter_local(30) = 1;
+  // if (gbp::warmup_mark() == 1) {
+  //   gbp::get_thread_logfile() << (int) type << std::endl;
+  // }
   if (app->Query(decoder, encoder)) {
     // ts = gbp::GetSystemTime() - ts;
 
@@ -185,6 +195,23 @@ std::vector<char> GraphDBSession::Eval(const std::string& input) {
     // }
     // if (cur_query_id % 10000 == 0)
     //   LOG(INFO) << latency_sum.load();
+
+    // gbp::get_thread_logfile()
+    //     << gbp::get_counter_local(20) << " " << gbp::get_counter_local(21)
+    //     << " " << gbp::get_counter_local(22) << " " << gbp::GetSystemTime()
+    //     << std::endl;
+
+    // gbp::get_thread_logfile() << (int) type << std::endl;
+    // if (gbp::warmup_mark() == 1) {
+    //   gbp::get_thread_logfile() << (int) type;
+    //   for (auto i = 0; i < 260; i++) {
+    //     gbp::get_thread_logfile()
+    //         << " " << gbp::get_counter_tmp_local(i).first << " "
+    //         << gbp::get_counter_tmp_local(i).second;
+    //   }
+    //   gbp::get_thread_logfile() << std::endl;
+    // }
+
     return result_buffer;
   }
 

@@ -796,7 +796,7 @@ int main(int argc, char** argv) {
 #else
   // gbp::MemoryPageLogger::get_memory_page_logger();
 
-  size_t pool_num = 4;
+  size_t pool_num = 1;
   size_t io_server_num = 4;
 
   if (vm.count("buffer-pool-size")) {
@@ -836,11 +836,11 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
-  // gbp::CleanMAS();
+  gbp::CleanMAS();
   LOG(INFO) << "Clean finish";
 #endif
   // gbp::warmup_mark().store(1);
@@ -874,9 +874,11 @@ int main(int argc, char** argv) {
     // }
   };
   std::thread cache_snapshot_thread(statFn);
-  gbp::warmup_mark().store(1);
+  gbp::warmup_mark().store(0);
 
-  for (size_t idx = 0; idx < 2; idx++) {
+  for (size_t idx = 0; idx < 1; idx++) {
+    gbp::BufferPoolManager::GetGlobalInstance().Clean();
+
     gbp::get_counter_global(9) = 0;
     gbp::get_counter_global(10) = 0;
     gbp::get_counter_global(11) = 0;
@@ -900,7 +902,9 @@ int main(int argc, char** argv) {
     auto cpu_cost_before = gbp::GetCPUTime();
 
     auto begin = std::chrono::system_clock::now();
+    gbp::get_counter_global(10) = 0;
     // gbp::MemoryPageLogger::get_memory_page_logger().reset(gbp::GetSystemTime());
+
     if (idx == 0) {
       Req::get().simulate(shard_num, true);
     } else {
@@ -934,6 +938,7 @@ int main(int argc, char** argv) {
                                                                        begin)
                      .count()
               << "\n";
+
     if (idx == 0) {
       Req::get().output(true);
     } else {
