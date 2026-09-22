@@ -836,7 +836,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Finished BufferPool warm up, elapsed " << t0 << " s";
 
   LOG(INFO) << "Clean start";
-  gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  // gbp::BufferPoolManager::GetGlobalInstance().Clean();
   LOG(INFO) << "Clean finish";
 #else
   LOG(INFO) << "Clean start";
@@ -876,8 +876,8 @@ int main(int argc, char** argv) {
   std::thread cache_snapshot_thread(statFn);
   gbp::warmup_mark().store(0);
 
-  for (size_t idx = 0; idx < 1; idx++) {
-    gbp::BufferPoolManager::GetGlobalInstance().Clean();
+  for (size_t idx = 0; idx < 2; idx++) {
+    // gbp::BufferPoolManager::GetGlobalInstance().Clean();
 
     gbp::get_counter_global(9) = 0;
     gbp::get_counter_global(10) = 0;
